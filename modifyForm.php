@@ -434,160 +434,74 @@
         </ul>
       </nav>
       <!-- partial -->
-      <div class="main-panel">
+      <div class="main-panel">        
         <div class="content-wrapper">
           <div class="row">
-            <div class="col-sm-12">
-              <div class="home-tab">
-                <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-                  <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item">
-                      <a class="nav-link active ps-0" id="home-tab" data-bs-toggle="tab" href="#overview" role="tab" aria-controls="overview" aria-selected="true">Resumen</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" id="profile-tab" href="adminDashboardProyectosTotales.php" role="tab" aria-selected="false">Proyectos totales</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" id="contact-tab" href="adminDashboardProyectosPendientes.php" role="tab" aria-selected="false">Proyectos pendientes</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link border-0" id="more-tab"  href="adminDashboardProyectosVencidos.php" role="tab" aria-selected="false">Proyectos vencidos</a>
-                    </li>
-                  </ul>
-                  <div>
-                    <div class="btn-wrapper">
-                      <a href="#" class="btn btn-otline-dark align-items-center"><i class="icon-share"></i> Compartir</a>
-                      <a href="#" class="btn btn-primary text-white me-0"><i class="icon-printer"></i> Imprimir</a>
-                    </div>
-                  </div>
-                </div>
-                <div class="tab-content tab-content-basic">
-                  <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview"> 
-                    <div class="row">
-                      <div class="col-sm-12">
-                        <div class="statistics-details d-flex align-items-center justify-content-between">
-                          <div>
-                            <p class="statistics-title">Total de objetivos</p>
-                            <h3 class="rate-percentage">20</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>-0.5% productividad</span></p>
-                          </div>
-                          <div>
-                            <p class="statistics-title">Total de proyectos</p>
-                            <h3 class="rate-percentage">24</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+0.1%</span></p>
-                          </div>
-                          <div>
-                            <p class="statistics-title">Total de avance</p>
-                            <h3 class="rate-percentage">50%</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>20% fehca esperada</span></p>
-                          </div>
-                          <div class="d-none d-md-block">
-                            <p class="statistics-title">Tiempo estimado por avance</p>
-                            <h3 class="rate-percentage">2m:35s</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
-                          </div>
-                          <div class="d-none d-md-block">
-                            <p class="statistics-title">Avances por asignar</p>
-                            <h3 class="rate-percentage">12</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>2 asignaciones</span></p>
-                          </div>
-                          <div class="d-none d-md-block">
-                            <p class="statistics-title">Tiempo estimado de cumplimiento</p>
-                            <h3 class="rate-percentage">2m:35s</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
-                          </div>
-                        </div>
-                      </div>
-                    </div> 
-                    <div class="row">
-                      <div class="col-lg-8 d-flex flex-column">
-                        <div class="row flex-grow">
-                          <div class="col-12 col-lg-4 col-lg-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="d-sm-flex justify-content-between align-items-start">
-                                  <div>
-                                   <h4 class="card-title card-title-dash">Grafica de avances semanales</h4>
-                                   <h5 class="card-subtitle card-subtitle-dash">Avances semanales de proyecto</h5>
-                                  </div>
-                                  <div id="performance-line-legend"></div>
-                                </div>
-                                <div class="chartjs-wrapper mt-5">
-                                  <canvas id="performaneLine"></canvas>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-lg-4 d-flex flex-column">
-                        <div class="row flex-grow">
-                          <div class="col-md-6 col-lg-12 grid-margin stretch-card">
-                            <div class="card bg-primary card-rounded">
-                              <div class="card-body pb-0">
-                                <h4 class="card-title card-title-dash text-white mb-4">Resumen de avances</h4>
-                                <div class="row">
-                                  <div class="col-sm-4">
-                                    <p class="status-summary-ight-white mb-1">Cumplimiento a la fecha</p>
-                                    <h2 class="text-info">100</h2>
-                                  </div>
-                                  <div class="col-sm-8">
-                                    <div class="status-summary-chart-wrapper pb-4">
-                                      <canvas id="status-summary"></canvas>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="col-md-6 col-lg-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="row">
-                                  <div class="col-sm-6">
-                                    <div class="d-flex justify-content-between align-items-center mb-2 mb-sm-0">
-                                      <div class="circle-progress-width">
-                                        <div id="totalVisitors" class="progressbar-js-circle pr-2"></div>
-                                      </div>
-                                      <div>
-                                        <p class="text-small mb-2">Proyecto terminado</p>
-                                        <h4 class="mb-0 fw-bold">60.50%</h4>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div class="col-sm-6">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                      <div class="circle-progress-width">
-                                        <div id="visitperday" class="progressbar-js-circle pr-2"></div>
-                                      </div>
-                                      <div>
-                                        <p class="text-small mb-2">Proyecto pendiente</p>
-                                        <h4 class="mb-0 fw-bold">39.50%</h4>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+            <div class="col-md-12 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Crear nuevo proyecto</h4>
+                  <p class="card-description">
+                    Ingresa la informacion de tu nuevo proyecto
+                  </p>
+                  <form class="forms-sample">
+                    <div class="form-group row">
+                      <label for="nombreDeProyecto" class="col-sm-3 col-form-label">Nombre</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control" id="nombreDeProyecto" placeholder="Ingrese el nombre del proyecto">
                       </div>
                     </div>
-                  </div>
+                    <div class="form-group row">
+                      <label for="descripcionDeProyecto" class="col-sm-3 col-form-label">Descripcion</label>
+                      <div class="col-sm-9">
+                        <input type="email" class="form-control" id="descripcionDeProyecto" placeholder="Ingrese la informacion del proyecto">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="fechaDeEntrega" class="col-sm-3 col-form-label">Fecha de entrega</label>
+                      <div class="col-sm-9">
+                        <input type="date" class="form-control" id="fechaDeEntrega">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="ar" class="col-sm-3 col-form-label">AR</label>
+                      <div class="col-sm-9">
+                        <input type="text" class="form-control" id="ar" placeholder="Ingrese el AR">
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="subirArchivo" class="col-sm-3 col-form-label">Subir archivo</label>
+                      <input type="file" name="img[]" class="file-upload-default">
+                      <div class="input-group col-xs-12">
+                        <input type="text" class="form-control" disabled placeholder="Seleccione el archivo para subir">
+                        <span class="input-group-append">
+                          <button class="file-upload-browse btn btn-primary" type="button">Subir</button>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="form-group row">
+                      <label for="exampleSelectGender" class="col-sm-3 col-form-label">Asignar a</label>
+                        <div class="col-sm-9">  
+                            <select class="form-control" id="asignarAEmpleado">
+                                <option>Ninguno</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary me-2">Crear</button>
+                    <button class="btn btn-light">Cancelar</button>
+                  </form>
                 </div>
               </div>
             </div>
           </div>
         </div>
         <!-- content-wrapper ends -->
-        <!-- partial:partials/_footer.html -->
-        <footer class="footer">
-          <div class="d-sm-flex justify-content-center justify-content-sm-between">
-            <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Premium <a href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a> from BootstrapDash.</span>
-            <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Copyright © 2021. All rights reserved.</span>
-          </div>
-        </footer>
+        <!-- partial:../../partials/_footer.html -->
         <!-- partial -->
+      </div>
+      <!-- main-panel ends -->
+    </div>
+        <!-- content-wrapper ends --> 
       </div>
       <!-- main-panel ends -->
     </div>
@@ -616,6 +530,4 @@
   <script src="js/Chart.roundedBarCharts.js"></script>
   <!-- End custom js for this page-->
 </body>
-
 </html>
-
