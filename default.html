@@ -8,7 +8,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Administrador de tareas </title>
+  <title>Administrador de proyectos </title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="vendors/feather/feather.css">
   <link rel="stylesheet" href="vendors/mdi/css/materialdesignicons.min.css">
@@ -36,10 +36,10 @@
           </button>
         </div>
         <div>
-          <a class="navbar-brand brand-logo" href="index.html">
+          <a class="navbar-brand brand-logo" href="adminDashboard">
             <img src="images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
-          <a class="navbar-brand brand-logo-mini" href="index.html">
+          <a class="navbar-brand brand-logo-mini" href="adminDashboard">
             <img src="images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
         </div>
@@ -48,7 +48,7 @@
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
             <h1 class="welcome-text">Buenos dias, <span class="text-black fw-bold">David</span></h1>
-            <h3 class="welcome-sub-text">Gestiona y visualiza proyectos grupales </h3>
+            <h3 class="welcome-sub-text">Expande la lista de usuarios</h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
@@ -146,8 +146,8 @@
             </a>
             <div class="collapse" id="ui-basic">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="gestionDeEmpleados.php">Gestion de empleados</a></li>
-                <li class="nav-item"> <a class="nav-link" href="registroDeEmpleados.php">Registrar nuevo empleado</a></li>
+                <li class="nav-item"> <a class="nav-link" href="gestionDeEmpleados">Gestion de empleados</a></li>
+                <li class="nav-item"> <a class="nav-link" href="registroDeEmpleados">Registrar nuevo empleado</a></li>
               </ul>
             </div>
           </li>
@@ -160,9 +160,9 @@
             </a>
             <div class="collapse" id="form-elements">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="nuevoProyecto.php">Crear nuevo proyecto</a></li>
-                <li class="nav-item"><a class="nav-link" href="nuevoObjetivo.php">Crear nuevo objetivo</a></li>
-                <li class="nav-item"><a class="nav-link" href="nuevoTarea.php">Crear nueva tarea</a></li>
+                <li class="nav-item"><a class="nav-link" href="nuevoProyecto">Crear nuevo proyecto</a></li>
+                <li class="nav-item"><a class="nav-link" href="nuevoObjetivo">Crear nuevo objetivo</a></li>
+                <li class="nav-item"><a class="nav-link" href="nuevoTarea">Crear nueva tarea</a></li>
               </ul>
             </div>
           </li>
@@ -174,7 +174,7 @@
             </a>
             <div class="collapse" id="charts">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="">Revisar graficos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="revisarGraficos">Revisar graficos</a></li>
               </ul>
             </div>
           </li>
@@ -186,19 +186,19 @@
             </a>
             <div class="collapse" id="tables">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="revisarProyectos.php">Revisar proyectos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="revisarProyectos">Revisar proyectos</a></li>
               </ul>
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="revisarObjetivos.php">Revisar objetivos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="revisarObjetivos">Revisar objetivos</a></li>
               </ul>
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="revisarTareas.php">Revisar tareas</a></li>
+                <li class="nav-item"> <a class="nav-link" href="revisarTareas">Revisar tareas</a></li>
               </ul>
             </div>
           </li>
           <li class="nav-item nav-category">Sesión</li>
           <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="" aria-expanded="false" aria-controls="auth">
+            <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
               <i class="menu-icon mdi mdi-logout"></i>
               <span class="menu-title">Terminar sesión</span>
               <i class="menu-arrow"></i>
@@ -214,187 +214,105 @@
       <!-- partial -->
       <div class="main-panel">        
         <div class="content-wrapper">
-          <div class="col-12 grid-margin">
-              <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title">Gestión de integrantes de proyecto</h4>
-                  <p class="card-description">Gestione los distintos integrantes dentro de un proyecto grupal</p>
-                  <hr>
-                  <div class="row">
-                    <div class="col-bg-12">
-                      <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Seleccione el proyecto</label>
+          <div class="col-12 grid-margin stretch-card">
+                            <div class="card card-rounded">
+                              <div class="card-body">
+                                <div class="d-sm-flex justify-content-between align-items-start">
+                                  <div>
+                                    <h4 class="card-title card-title-dash">Registrar nuevo usuario</h4>
+                                   <p class="card-subtitle card-subtitle-dash">Ingresa la información del nuevo usuario</p>
+                                  </div>
+                                  <div>
+                                    <a href="gestionDeEmpleados/">
+                                      <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-multiple"></i>Ver lista de usuarios</button>
+                                    </a>
+                                  </div>
+                                </div>
+                                <div><br></div>
+                                <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Nombre*</label>
                           <div class="col-sm-9">
-                            <select class="form-control">
-                              <option>Ninguno</option>
-                            </select>
+                            <input type="text" class="form-control"/>
                           </div>
-                        <hr>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Apellido*</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="table-responsive">
-                    <table class="table table-striped">
-                      <thead>
-                        <tr>
-                          <th>
-                            Usuario
-                          </th>
-                          <th>
-                            Nombre
-                          </th>
-                          <th>
-                            Progress
-                          </th>
-                          <th>
-                            Amount
-                          </th>
-                          <th>
-                            Deadline
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td class="py-1">
-                            <img src="../../images/faces/face1.jpg" alt="image"/>
-                          </td>
-                          <td>
-                            Herman Beck
-                          </td>
-                          <td>
-                            <div class="progress">
-                              <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Nombre de usuario*</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control"/>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Contraseña*</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Num de empleado*</label>
+                          <div class="col-sm-9">
+                            <input type="text" class="form-control"/>
+                          </div>
+                        </div>
+                      </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Rol*</label>
+                            <div class="col-sm-9">
+                              <select class="form-control">
+                                <option>Ninguno</option>
+                              </select>
                             </div>
-                          </td>
-                          <td>
-                            $ 77.99
-                          </td>
-                          <td>
-                            May 15, 2015
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="py-1">
-                            <img src="../../images/faces/face2.jpg" alt="image"/>
-                          </td>
-                          <td>
-                            Messsy Adam
-                          </td>
-                          <td>
-                            <div class="progress">
-                              <div class="progress-bar bg-danger" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Departamento*</label>
+                            <div class="col-sm-9">
+                              <select class="form-control">
+                                <option>Ninguno</option>
+                              </select>
                             </div>
-                          </td>
-                          <td>
-                            $245.30
-                          </td>
-                          <td>
-                            July 1, 2015
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="py-1">
-                            <img src="../../images/faces/face3.jpg" alt="image"/>
-                          </td>
-                          <td>
-                            John Richards
-                          </td>
-                          <td>
-                            <div class="progress">
-                              <div class="progress-bar bg-warning" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Superior*</label>
+                            <div class="col-sm-9">
+                              <select class="form-control">
+                                <option>Ninguno</option>
+                              </select>
                             </div>
-                          </td>
-                          <td>
-                            $138.00
-                          </td>
-                          <td>
-                            Apr 12, 2015
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="py-1">
-                            <img src="../../images/faces/face4.jpg" alt="image"/>
-                          </td>
-                          <td>
-                            Peter Meggik
-                          </td>
-                          <td>
-                            <div class="progress">
-                              <div class="progress-bar bg-primary" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                          </td>
-                          <td>
-                            $ 77.99
-                          </td>
-                          <td>
-                            May 15, 2015
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="py-1">
-                            <img src="../../images/faces/face5.jpg" alt="image"/>
-                          </td>
-                          <td>
-                            Edward
-                          </td>
-                          <td>
-                            <div class="progress">
-                              <div class="progress-bar bg-danger" role="progressbar" style="width: 35%" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                          </td>
-                          <td>
-                            $ 160.25
-                          </td>
-                          <td>
-                            May 03, 2015
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="py-1">
-                            <img src="../../images/faces/face6.jpg" alt="image"/>
-                          </td>
-                          <td>
-                            John Doe
-                          </td>
-                          <td>
-                            <div class="progress">
-                              <div class="progress-bar bg-info" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                          </td>
-                          <td>
-                            $ 123.21
-                          </td>
-                          <td>
-                            April 05, 2015
-                          </td>
-                        </tr>
-                        <tr>
-                          <td class="py-1">
-                            <img src="../../images/faces/face7.jpg" alt="image"/>
-                          </td>
-                          <td>
-                            Henry Tom
-                          </td>
-                          <td>
-                            <div class="progress">
-                              <div class="progress-bar bg-warning" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                          </td>
-                          <td>
-                            $ 150.00
-                          </td>
-                          <td>
-                            June 16, 2015
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-        </div>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <button type="submit" class="btn btn-success">Crear</button>
+                        <button class="btn btn-light">Cancelar</button>
+                      </div>
+                    </div>
         <!-- content-wrapper ends -->
         <!-- partial -->
       </div>

@@ -232,7 +232,9 @@ gestion de empleados
                                    <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los empleados</p>
                                   </div>
                                   <div>
-                                    <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo usuario</button>
+                                    <a href="../registroDeEmpleados">
+                                      <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo usuario</button>
+                                    </a>
                                   </div>
                                 </div>
                                 <div class="table-responsive  mt-1">

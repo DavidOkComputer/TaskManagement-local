@@ -214,115 +214,121 @@
       <!-- partial -->
       <div class="main-panel">        
         <div class="content-wrapper">
-          <div class="col-12 grid-margin">
-              <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title">Crear nuevo proyecto</h4>
-                  <form class="form-sample">
-                    <p class="card-description">
-                      Ingrese la información del proyecto
-                    </p>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-group row">
-                          <label class="col-sm-3 col-form-label">Nombre*</label>
-                          <div class="col-sm-9">
-                            <input type="text" class="form-control"/>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="form-group row">
-                          <label class="col-sm-3 col-form-label">Descripción*</label>
-                          <div class="col-sm-9">
-                            <input type="text" class="form-control" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-group row">
-                          <label class="col-sm-3 col-form-label">Fecha de inicio*</label>
-                          <div class="col-sm-9">
-                            <input class="form-control" placeholder="dd/mm/yyyy"/>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="form-group row">
-                          <label class="col-sm-3 col-form-label">Fecha de entrega*</label>
-                          <div class="col-sm-9">
-                            <input class="form-control" placeholder="dd/mm/yyyy"/>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-group row">
-                          <label class="col-sm-3 col-form-label">AR (Opcional)*</label>
-                          <div class="col-sm-9">
-                            <input type="text" class="form-control"/>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="form-group row">
-                          <label class="col-sm-3 col-form-label">Tipo de proyecto*</label>
-                          <div class="col-sm-4">
-                            <div class="form-check form-check-success">
-                              <label class="form-check-label">
-                                <input type="radio" class="form-check-input" name="tipoProyectoRadios" id="tipoProyectoRadios1" value="" checked>
-                                Individual
-                              </label>
-                            </div>
-                          </div>
-                          <div class="col-sm-5">
-                            <div class="form-check form-check-success">
-                              <label class="form-check-label">
-                                <input type="radio" class="form-check-input" name="tipoProyectoRadios" id="tipoProyectoRadios2" value="option2">
-                                Grupal
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <div class="form-group row">
-                            <label for="subirArchivo" class="col-sm-3 col-form-label">Subir archivo</label>
-                            <input type="file" name="img[]" class="file-upload-default">
+          <div class="col-12 grid-margin stretch-card">
+                            <div class="card card-rounded">
+                              <div class="card-body">
+                                <div class="d-sm-flex justify-content-between align-items-start">
+                                  <div>
+                                    <h4 class="card-title card-title-dash">Gestion de proyectos</h4>
+                                   <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los proyectos</p>
+                                  </div>
+                                  <div>
+                                    <a href="../revisarProyectos">
+                                      <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
+                                    </a>
+                                  </div>
+                                </div>
+                                <div><br></div>
+                                <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Nombre*</label>
                             <div class="col-sm-9">
-                                <input type="text" class="form-control" disabled placeholder="Seleccione el archivo para subir">
-                                <span class="input-group-append">
-                                <button class="file-upload-browse btn btn-success" type="button">Subir</button>
-                                </span>
+                              <input type="text" class="form-control"/>
                             </div>
+                          </div>
                         </div>
-                      </div>
-                      <div class="col-md-6">
-                        <div class="form-group row">
-                          <label class="col-sm-3 col-form-label">Asignar a*</label>
-                          <div class="col-sm-9">
-                            <select class="form-control">
-                              <option>Ninguno</option>
-                            </select>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Descripción*</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control" />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <button type="submit" class="btn btn-success">Crear</button>
-                        <button class="btn btn-light">Cancelar</button>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Fecha de inicio*</label>
+                            <div class="col-sm-9">
+                              <input class="form-control" placeholder="dd/mm/yyyy"/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Fecha de entrega*</label>
+                            <div class="col-sm-9">
+                              <input class="form-control" placeholder="dd/mm/yyyy"/>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">AR (Opcional)*</label>
+                            <div class="col-sm-9">
+                              <input type="text" class="form-control"/>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Tipo de proyecto*</label>
+                            <div class="col-sm-4">
+                              <div class="form-check form-check-success">
+                                <label class="form-check-label">
+                                  <input type="radio" class="form-check-input" name="tipoProyectoRadios" id="tipoProyectoRadios1" value="" checked>
+                                  Individual
+                                </label>
+                              </div>
+                            </div>
+                            <div class="col-sm-5">
+                              <div class="form-check form-check-success">
+                                <label class="form-check-label">
+                                  <input type="radio" class="form-check-input" name="tipoProyectoRadios" id="tipoProyectoRadios2" value="option2">
+                                  Grupal
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                              <label for="subirArchivo" class="col-sm-3 col-form-label">Subir archivo</label>
+                              <input type="file" name="img[]" class="file-upload-default">
+                              <div class="col-sm-9">
+                                  <input type="text" class="form-control" disabled placeholder="Seleccione el archivo para subir">
+                                  <span class="input-group-append">
+                                  <button class="file-upload-browse btn btn-success" type="button">Subir</button>
+                                  </span>
+                              </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="form-group row">
+                            <label class="col-sm-3 col-form-label">Asignar a*</label>
+                            <div class="col-sm-9">
+                              <select class="form-control">
+                                <option>Ninguno</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6">
+                          <button type="submit" class="btn btn-success">Crear</button>
+                          <button class="btn btn-light">Cancelar</button>
+                        </div>
+                      </div>
+                              </div>
+                            </div>
+                          </div>
         </div>
         <!-- content-wrapper ends -->
         <!-- partial -->

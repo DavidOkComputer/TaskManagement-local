@@ -8,7 +8,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Registro de empleados </title>
+  <title>Administrador de proyectos </title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="../vendors/feather/feather.css">
   <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css">
@@ -48,7 +48,7 @@
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
             <h1 class="welcome-text">Buenos dias, <span class="text-black fw-bold">David</span></h1>
-            <h3 class="welcome-sub-text">Expande la lista de usuarios </h3>
+            <h3 class="welcome-sub-text">Expande la lista de usuarios</h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
@@ -162,7 +162,7 @@
               <ul class="nav flex-column sub-menu">
                 <li class="nav-item"><a class="nav-link" href="../nuevoProyecto">Crear nuevo proyecto</a></li>
                 <li class="nav-item"><a class="nav-link" href="../nuevoObjetivo">Crear nuevo objetivo</a></li>
-                <li class="nav-item"><a class="nav-link" href="../nuevoAvance">Subir avances</a></li>
+                <li class="nav-item"><a class="nav-link" href="../nuevoTarea">Crear nueva tarea</a></li>
               </ul>
             </div>
           </li>
@@ -214,15 +214,22 @@
       <!-- partial -->
       <div class="main-panel">        
         <div class="content-wrapper">
-          <div class="col-12 grid-margin">
-              <div class="card">
-                <div class="card-body">
-                  <h4 class="card-title">Registrar nuevo usuario</h4>
-                  <form class="form-sample">
-                    <p class="card-description">
-                      Ingrese la información del usuario
-                    </p>
-                    <div class="row">
+          <div class="col-12 grid-margin stretch-card">
+                            <div class="card card-rounded">
+                              <div class="card-body">
+                                <div class="d-sm-flex justify-content-between align-items-start">
+                                  <div>
+                                    <h4 class="card-title card-title-dash">Registrar nuevo usuario</h4>
+                                   <p class="card-subtitle card-subtitle-dash">Ingresa la información del nuevo usuario</p>
+                                  </div>
+                                  <div>
+                                    <a href="../gestionDeEmpleados">
+                                      <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-multiple"></i>Ver lista de usuarios</button>
+                                    </a>
+                                  </div>
+                                </div>
+                                <div><br></div>
+                                <div class="row">
                       <div class="col-md-6">
                         <div class="form-group row">
                           <label class="col-sm-3 col-form-label">Nombre*</label>
@@ -306,11 +313,6 @@
                         <button class="btn btn-light">Cancelar</button>
                       </div>
                     </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-        </div>
         <!-- content-wrapper ends -->
         <!-- partial -->
       </div>
