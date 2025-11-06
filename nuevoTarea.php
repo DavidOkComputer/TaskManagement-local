@@ -321,5 +321,6 @@
   <script src="js/dashboard.js"></script>
   <script src="js/Chart.roundedBarCharts.js"></script>
   <!-- End custom js for this page-->
+   <script src="js/task-modal.js"></script>
 </body>
 </html>
