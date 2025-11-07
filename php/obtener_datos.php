@@ -4,6 +4,8 @@ require_once('db_config.php');
 /*obtner datos php para creacion de proyecto*/ 
 header('Content-Type: application/json');
 
+$conn = getDBConnection();
+
 $tipo = $_GET['tipo'] ?? '';
 
 try {

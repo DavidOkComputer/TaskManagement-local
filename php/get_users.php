@@ -1,5 +1,5 @@
 <?php
-// get_projects.php 
+// get_objectives.php 
 
 header('Content-Type: application/json');
 
@@ -16,8 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    //query para ver todos los proyectos
-    $query = "SELECT id_proyecto, nombre FROM tbl_proyectos ORDER BY nombre ASC";
+    //query para ver todos los objetivos
+    $query = "SELECT id_usuario, nombre, apellido, usuario, num_empleado, acceso, id_departamento, id_rol, id_superior FROM tbl_usuarios ORDER BY id_usuario ASC";
     $result = $conn->query($query);
     
     if (!$result) {
@@ -28,14 +28,21 @@ try {
     
     while ($row = $result->fetch_assoc()) {
         $projects[] = [
-            'id_proyecto' => $row['id_proyecto'],
-            'nombre' => $row['nombre']
+            'id_usuario' => $row['id_usuario'],
+            'nombre' => $row['nombre'], 
+            'apellido' => $row['apellido'],
+            'usuario'=> $row['usuario'],
+            'num_empleado'=> $row['num_empleado'],
+            'acceso'=> $row['acceso'],
+            'id_departamento'=> $row['id_departamento'],
+            'id_rol'=> $row['id_rol'],
+            'id_superior'=> $row['id_superior']
         ];
     }
     
     echo json_encode([
         'success' => true,
-        'projects' => $projects
+        'tareas' => $projects
     ]);
     
     $result->free();
@@ -43,7 +50,7 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Error al cargar proyectos: ' . $e->getMessage(),
+        'message' => 'Error al cargar objetivos: ' . $e->getMessage(),
         'projects' => []
     ]);
 }

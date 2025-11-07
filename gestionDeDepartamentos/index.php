@@ -238,7 +238,7 @@
                                    <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los departamentos</p>
                                   </div>
                                   <div>
-                                    <a href="../registroDeDepartamento">
+                                    <a href="../registroDeDepartamentos">
                                     <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i>Crear nuevo departamento</button>
                                     </a>
                                   </div>

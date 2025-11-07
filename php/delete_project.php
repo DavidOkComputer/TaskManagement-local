@@ -1,14 +1,8 @@
 <?php
 header('Content-Type: application/json');
-
+require_once('db_config.php');
 // conexion a la base de datos
-$servername = "localhost";
-$username = "root";
-$password = ""; 
-$dbname = "task_management_db";
-
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = getDBConnection();
 
 if ($conn->connect_error) {
     die(json_encode(['success' => false, 'error' => 'Connection failed: ' . $conn->connect_error]));

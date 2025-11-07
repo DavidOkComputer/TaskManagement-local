@@ -2,8 +2,8 @@
     function getDBConnection(){
         define('DB_HOST', 'localhost');
         define('DB_USER', 'root'); 
-        define('DB_PASS', 'REYF0rm@+1'); 
-        define('DB_NAME', 'calendario_accidentes_db');
+        define('DB_PASS', ''); 
+        define('DB_NAME', 'task_management_db');
 
         $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 

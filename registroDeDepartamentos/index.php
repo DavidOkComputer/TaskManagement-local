@@ -395,7 +395,7 @@ $user_id = 1; //usuario viene de la sesion
                       </p>
                     </div>
                     <div>
-                      <a href="../revisarDepartamentos">
+                      <a href="../gestionDeDepartamentos">
                         <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button">
                           <i class="mdi mdi-checkbox-multiple-marked">
                           </i>

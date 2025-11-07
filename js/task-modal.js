@@ -1,7 +1,7 @@
-// Task Manager - Modal for adding new tasks with database integration
+
 document.addEventListener('DOMContentLoaded', function() {
   
-  // Create modal HTML and inject into the page
+  //crear el modal en html e insertarlo a el cuerpo
   const modalHTML = `
     <div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
@@ -54,26 +54,26 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   `;
   
-  // Inject modal into body
+  //insertar modal en el cuerpo
   document.body.insertAdjacentHTML('beforeend', modalHTML);
   
-  // Get modal element
+  //elementos del modal
   const taskModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
   
-  // Get the plus button
+  //boton añadir
   const addBtn = document.querySelector('.todo-list-add-btn');
   
-  // Get the todo list
+  //tomar to do list
   const todoList = document.querySelector('.todo-list');
   
-  // Load projects when modal is opened
+  //cargar proyectos cuando se abre el modal
   document.getElementById('addTaskModal').addEventListener('show.bs.modal', function () {
     loadProjects();
   });
   
-  // Function to load projects
+  // funcion para cargar proyectos
   function loadProjects() {
-    fetch('php/get_projects.php')
+    fetch('../php/get_projects.php')
       .then(response => response.json())
       .then(data => {
         const projectSelect = document.getElementById('taskProject');
@@ -94,19 +94,16 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   }
   
-  // Add click event to plus button
-  if (addBtn) {
+  if (addBtn) {//evento de clic en el boton agregar
     addBtn.addEventListener('click', function(e) {
       e.preventDefault();
       taskModal.show();
     });
   }
   
-  // Get save button
   const saveBtn = document.getElementById('saveTaskBtn');
   
-  // Function to show messages
-  function showMessage(message, type) {
+  function showMessage(message, type) {//funcion para mostrar el mensaje
     const messageDiv = document.getElementById('taskMessage');
     messageDiv.className = `alert alert-${type}`;
     messageDiv.textContent = message;
@@ -117,8 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 3000);
   }
   
-  // Function to toggle loading state
-  function setLoading(isLoading) {
+  function setLoading(isLoading) {//cargar estadisticas
     const btnText = saveBtn.querySelector('.btn-text');
     const spinner = saveBtn.querySelector('.spinner-border');
     
@@ -133,28 +129,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Add click event to save button
-  if (saveBtn) {
+  if (saveBtn) {//evento de clic en boton guardar
     saveBtn.addEventListener('click', function() {
       const form = document.getElementById('addTaskForm');
       
-      // Validate form
-      if (!form.checkValidity()) {
+      if (!form.checkValidity()) {//validar form
         form.reportValidity();
         return;
       }
       
-      // Get form values
+      //tomar los valores del form
       const taskName = document.getElementById('taskName').value;
       const taskDescription = document.getElementById('taskDescription').value;
       const taskProject = document.getElementById('taskProject').value;
       const taskDate = document.getElementById('taskDate').value;
       const taskStatus = document.getElementById('taskStatus').value;
       
-      // Show loading state
       setLoading(true);
       
-      // Prepare data to send
+      //preparar la info para mandarla
       const formData = new FormData();
       formData.append('nombre', taskName);
       formData.append('descripcion', taskDescription);
@@ -162,8 +155,8 @@ document.addEventListener('DOMContentLoaded', function() {
       formData.append('fecha_vencimiento', taskDate);
       formData.append('estado', taskStatus);
       
-      // Send data to server
-      fetch('php/save_task.php', {
+      //enviar informacion al servidor
+      fetch('../php/save_task.php', {
         method: 'POST',
         body: formData
       })
@@ -172,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setLoading(false);
         
         if (data.success) {
-          // Format date for display
+          //darle formato a la fecha
           const dateObj = new Date(taskDate);
           const formattedDate = dateObj.toLocaleDateString('es-MX', { 
             day: '2-digit', 
@@ -180,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
             year: 'numeric' 
           });
           
-          // Determine badge based on status
           let badgeClass = 'badge-opacity-warning';
           let badgeText = 'Pendiente';
           
@@ -192,7 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
             badgeText = 'En Progreso';
           }
           
-          // Create new task item
           const newTaskHTML = `
             <li class="d-block" data-task-id="${data.task_id}">
               <div class="form-check w-100">
@@ -210,15 +201,12 @@ document.addEventListener('DOMContentLoaded', function() {
             </li>
           `;
           
-          // Add new task to the list
           if (todoList) {
             todoList.insertAdjacentHTML('beforeend', newTaskHTML);
           }
           
-          // Show success message
           showMessage('Tarea guardada exitosamente', 'success');
-          
-          // Clear form and close modal after delay
+          //limpiar form
           setTimeout(() => {
             form.reset();
             taskModal.hide();
@@ -236,7 +224,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Clear form when modal is closed
   document.getElementById('addTaskModal').addEventListener('hidden.bs.modal', function () {
     document.getElementById('addTaskForm').reset();
     document.getElementById('taskMessage').style.display = 'none';

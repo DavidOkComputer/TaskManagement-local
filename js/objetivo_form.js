@@ -93,7 +93,7 @@ function handleFormSubmit(e) {//manejo de informacion del form
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creando...';
     
     //subir form
-    fetch('../php/crear_objetivo.php', {
+    fetch('../php/create_objective.php', {
         method: 'POST',
         body: formData
     })
@@ -162,16 +162,6 @@ function validateForm(formData) {
         return false;
     }
     
-    //validar que la fecha de cumplimiento es en el futuro
-    const selectedDate = new Date(fecha_cumplimiento);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    if (selectedDate < today) {
-        showNotification('La fecha de cumplimiento debe ser posterior a hoy', 'warning');
-        document.getElementById('fecha_cumplimiento').focus();
-        return false;
-    }
     
     if (!id_departamento || id_departamento === '') {
         showNotification('Debe seleccionar un departamento', 'warning');
