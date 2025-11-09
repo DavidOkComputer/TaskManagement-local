@@ -11625,20 +11625,20 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 
 .btn-success {
   color: #000;
-  background-color: #34B1AA;
-  border-color: #34B1AA;
+  background-color: #009b4a;
+  border-color: #009b4a;
 }
 
 .btn-success:hover {
   color: #000;
-  background-color: #52bdb7;
-  border-color: #48b9b3;
+  background-color: #009b4a;
+  border-color: #009b4a;
 }
 
 .btn-check:focus + .btn-success, .btn-success:focus {
   color: #000;
-  background-color: #52bdb7;
-  border-color: #48b9b3;
+  background-color: #009b4a;
+  border-color: #009b4a;
   box-shadow: 0 0 0 0.25rem rgba(44, 150, 145, 0.5);
 }
 
@@ -11646,8 +11646,8 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 .btn-check:active + .btn-success, .btn-success:active, .btn-success.active,
 .show > .btn-success.dropdown-toggle {
   color: #000;
-  background-color: #5dc1bb;
-  border-color: #48b9b3;
+  background-color: #009b4a;
+  border-color: #009b4a;
 }
 
 .btn-check:checked + .btn-success:focus,
@@ -11658,8 +11658,8 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 
 .btn-success:disabled, .btn-success.disabled {
   color: #000;
-  background-color: #34B1AA;
-  border-color: #34B1AA;
+  background-color: #009b4a;
+  border-color: #009b4a;
 }
 
 .btn-info {
@@ -11857,6 +11857,91 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
   border-color: #1E283D;
 }
 
+        .alert { 
+
+            padding: 15px; 
+
+            margin-bottom: 20px; 
+
+            border: 1px solid transparent; 
+
+            border-radius: 4px; 
+
+        } 
+
+        .alert-success { 
+
+            color: #155724; 
+
+            background-color: #d4edda; 
+
+            border-color: #c3e6cb; 
+
+        } 
+
+        .alert-danger { 
+
+            color: #721c24; 
+
+            background-color: #f8d7da; 
+
+            border-color: #f5c6cb; 
+
+        } 
+
+        .alert-info { 
+
+            color: #0c5460; 
+
+            background-color: #d1ecf1; 
+
+            border-color: #bee5eb; 
+
+        } 
+
+        .btn-action { 
+
+            margin: 0 5px; 
+
+        } 
+
+        .table-responsive { 
+
+            overflow-x: auto; 
+
+        } 
+
+        .empty-state { 
+
+            text-align: center; 
+
+            padding: 50px 20px; 
+
+        } 
+
+        .empty-state i { 
+
+            font-size: 64px; 
+
+            color: #ccc; 
+
+            margin-bottom: 20px; 
+
+        } 
+
+        .loading-spinner { 
+
+            text-align: center; 
+
+            padding: 50px; 
+
+        } 
+
+        .action-buttons { 
+
+            white-space: nowrap; 
+
+        } 
 .btn-outline-primary {
   color: #1F3BB3;
   border-color: #1F3BB3;
