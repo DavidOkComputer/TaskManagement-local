@@ -3,6 +3,7 @@
 const Config = { 
     API_ENDPOINTS: { 
         LIST: '../php/get_departments.php', 
+        LISTUSERS: '../php/get_users.php',
         UPDATE: '../php/update_departments.php', 
         DELETE: '../php/delete_department.php' 
     } 
@@ -58,6 +59,42 @@ function loadDepartments() {
         }); 
 } 
 
+function loadusers() { 
+    const tableBody = document.getElementById('departamentosTableBody'); 
+    const loadingRow = document.getElementById('loadingRow'); 
+
+    fetch(Config.API_ENDPOINTS.LISTUSERS) 
+        .then(response => { 
+            if (!response.ok) { 
+                throw new Error('Error al cargar usuarios'); 
+            } 
+            return response.json(); 
+        }) 
+
+        .then(data => { 
+            if (data.success) { 
+                allDepartments = data.departamentos; 
+                displayDepartments(allDepartments); 
+            } else { 
+                showError(data.message || 'Error al cargar usurios'); 
+                displayEmptyState(); 
+            } 
+        }) 
+
+        .catch(error => { 
+            console.error('Error:', error); 
+            showError('Error al conectar con el servidor'); 
+            displayEmptyState(); 
+        }) 
+
+        .finally(() => { 
+            if (loadingRow) { 
+                loadingRow.remove(); 
+            } 
+        }); 
+} 
+
+
 function displayDepartments(departamentos) { 
     const tableBody = document.getElementById('departamentosTableBody'); 
     if (!tableBody) return; 
@@ -82,7 +119,7 @@ function createDepartmentRow(dept, rowNumber) {
         <td><h6>${rowNumber}</h6></td> 
         <td><h6>${escapeHtml(dept.nombre)}</h6></td> 
         <td><h6>${escapeHtml(dept.descripcion)}</h6></td> 
-        <td><h6>${escapeHtml(dept.creador_nombre || 'N/A')}</h6></td> 
+        <td><h6>${escapeHtml(dept.id_creador || 'N/A')}</h6></td> 
         <td class="text-center action-buttons"> 
             <button class="btn btn-sm btn-success btn-action" onclick="editDepartment(${dept.id_departamento})" title="Editar"> 
                 <i class="mdi mdi-pencil"></i> Editar 

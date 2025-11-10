@@ -1,23 +1,21 @@
-/**
- * proyecto-form-handler.js
- * Handles all form operations for project creation including validation, file upload, and submission
- */
-
-// Initialize form on page load
+/**create_proyect.js //javascript para creacion de proyectos*/
+//inicializar pagina al cargar
 document.addEventListener('DOMContentLoaded', function() {
   cargarDepartamentos();
-  cargarEmpleados();
+  //cargarEmpleados();
+  loadUsuarios();
   setupFormHandlers();
 });
 
-/**
- * Load departments from database and populate select dropdown
- */
+const app = {
+        usuarios: []
+    };
+
 function cargarDepartamentos() {
-  fetch('../php/obtener_departamentos.php')
+  fetch('../php/get_departments.php')
     .then(response => {
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('La respuesta de red no fue ok');
       }
       return response.json();
     })
@@ -35,19 +33,51 @@ function cargarDepartamentos() {
       }
     })
     .catch(error => {
-      console.error('Error loading departments:', error);
+      console.error('Error al cargar los departamentos:', error);
       showAlert('Error al cargar departamentos', 'danger');
     });
 }
 
-/**
- * Load employees from database and populate select dropdown
- */
+
+function loadUsuarios() {
+        fetch('../php/get_users.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.usuarios) {
+                    app.usuarios = data.usuarios;
+                    populateUsuariosSelect(data.usuarios);
+                    console.log(`${data.usuarios.length}`);
+                } else {
+                    console.error('Error al cargar usuarios:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error en fetch de usuarios:', error);
+            });
+    }
+
+    function populateUsuariosSelect(usuarios) {
+        const select = document.getElementById('id_participante');
+        if (!select) return;
+
+        // Limpiar opciones existentes excepto la primera
+        select.innerHTML = '<option value="0">Sin usuario asignado</option>';
+
+        // Agregar opciones
+        usuarios.forEach(usuario => {
+            const option = document.createElement('option');
+            option.value = usuario.id_usuario;
+            option.textContent = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
+            select.appendChild(option);
+        });
+    }
+
+/*
 function cargarEmpleados() {
-  fetch('../php/obtener_empleados.php')
+  fetch('../php/get_users.php')
     .then(response => {
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('La respuesta de la red no fue ok.');
       }
       return response.json();
     })
@@ -61,66 +91,55 @@ function cargarEmpleados() {
           select.appendChild(option);
         });
       } else {
-        showAlert('Error al cargar empleados', 'warning');
+        showAlert('Error al cargar empleados', 'warning');//alerta en amarillo
       }
     })
     .catch(error => {
-      console.error('Error loading employees:', error);
-      showAlert('Error al cargar empleados', 'danger');
+      console.error('Error al cargar los empleados: ', error);
+      showAlert('Error al cargar empleados.', 'danger');//alerta en rojo
     });
-}
+}*/
 
-/**
- * Setup event listeners for form buttons and inputs
- */
 function setupFormHandlers() {
-  // File upload button click
-  document.getElementById('btnSubirArchivo').addEventListener('click', function() {
+    document.getElementById('btnSubirArchivo').addEventListener('click', function() {
     document.getElementById('archivoInput').click();
   });
 
-  // File input change - display selected filename
   document.getElementById('archivoInput').addEventListener('change', function(e) {
     if (e.target.files.length > 0) {
       document.getElementById('nombreArchivo').value = e.target.files[0].name;
     }
   });
 
-  // Cancel button - redirect to projects list
   document.getElementById('btnCancelar').addEventListener('click', function() {
     if (confirm('¿Deseas cancelar la creación del proyecto?')) {
       window.location.href = '../revisarProyectos/';
     }
   });
 
-  // Form submission
   document.getElementById('proyectoForm').addEventListener('submit', function(e) {
     e.preventDefault();
     crearProyecto();
   });
 }
 
-/**
- * Main function to create project - handles file upload and form submission
- */
+
+
 function crearProyecto() {
   const form = document.getElementById('proyectoForm');
   const formData = new FormData(form);
   const archivoInput = document.getElementById('archivoInput');
 
-  // Validate that all required fields are filled
   if (!form.checkValidity()) {
     showAlert('Por favor, completa todos los campos requeridos', 'danger');
     form.classList.add('was-validated');
     return;
   }
 
-  // Disable submit button to prevent double submission
   const btnCrear = document.getElementById('btnCrear');
   btnCrear.disabled = true;
   btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creando...';
 
-  // If file is selected, upload it first
   if (archivoInput.files.length > 0) {
     uploadFile(archivoInput.files[0], function(filePath) {
       if (filePath) {
@@ -137,16 +156,11 @@ function crearProyecto() {
   }
 }
 
-/**
- * Upload file to server
- * @param {File} file - The file to upload
- * @param {Function} callback - Callback function with file path parameter
- */
 function uploadFile(file, callback) {
   const fileFormData = new FormData();
   fileFormData.append('archivo', file);
 
-  fetch('../php/subir_archivo.php', {
+  fetch('../php/upload_file.php', {
     method: 'POST',
     body: fileFormData
   })
@@ -171,13 +185,10 @@ function uploadFile(file, callback) {
   });
 }
 
-/**
- * Submit form data to backend
- * @param {FormData} formData - The form data to submit
- * @param {HTMLElement} btnCrear - The submit button element
- */
+
+
 function submitForm(formData, btnCrear) {
-  fetch('../php/crear_proyecto.php', {
+  fetch('../php/create_project.php', {
     method: 'POST',
     body: formData
   })
@@ -190,7 +201,7 @@ function submitForm(formData, btnCrear) {
   .then(data => {
     if (data.success) {
       showAlert('¡Proyecto creado exitosamente!', 'success');
-      // Redirect after 1.5 seconds
+      //redirigir despues de 1.5s
       setTimeout(function() {
         window.location.href = '../revisarProyectos/';
       }, 1500);
@@ -208,11 +219,6 @@ function submitForm(formData, btnCrear) {
   });
 }
 
-/**
- * Display alert messages in the alert container
- * @param {string} message - The message to display
- * @param {string} type - Bootstrap alert type (success, danger, warning, info)
- */
 function showAlert(message, type) {
   const alertContainer = document.getElementById('alertContainer');
   const alertDiv = document.createElement('div');
@@ -223,11 +229,10 @@ function showAlert(message, type) {
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   `;
   
-  // Clear previous alerts
-  alertContainer.innerHTML = '';
+  alertContainer.innerHTML = '';//limpiar alertas anteriores
   alertContainer.appendChild(alertDiv);
 
-  // Auto-dismiss after 5 seconds
+  //auto eliminar despues de 5s
   setTimeout(function() {
     if (alertDiv.parentNode) {
       alertDiv.remove();

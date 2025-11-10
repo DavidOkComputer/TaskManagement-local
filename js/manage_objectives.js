@@ -1,14 +1,14 @@
-/**manage projects maneja la carga y muestra todos lo proyectos de la tabla con botones de accion
+/**manage objectives maneja la carga y muestra todos lo objetivos de la tabla con botones de accion
  */
 
-document.addEventListener('DOMContentLoaded', function() {//cargar tabla de proectos cuando cargue la pagina
-  cargarProyectos();
+document.addEventListener('DOMContentLoaded', function() {//cargar tabla de objetivos cuando cargue la pagina
+  cargarObjetivos();
 });
 
-function cargarProyectos() {
+function cargarObjetivos() {
   const tableBody = document.querySelector('table tbody');
   
-  fetch('../php/get_projects.php')
+  fetch('../php/get_objectives.php')
     .then(response => {
       if (!response.ok) {
         throw new Error('La respuesta de red no fue ok');
@@ -16,60 +16,60 @@ function cargarProyectos() {
       return response.json();
     })
     .then(data => {
-      if (data.success && data.proyectos) {
+      if (data.success && data.objetivos) {
         tableBody.innerHTML = ''; // limpiar spiner
         
-        if (data.proyectos.length === 0) {
+        if (data.objetivos.length === 0) {
           tableBody.innerHTML = `
             <tr>
               <td colspan="9" class="text-center">
-                <p class="mt-3">No hay proyectos registrados</p>
+                <p class="mt-3">No hay objetivos registrados</p>
               </td>
             </tr>
           `;
           return;
         }
 
-        data.proyectos.forEach((proyecto, index) => {//llenar la tabla con proyectos
-          const row = createProjectRow(proyecto, index + 1);
+        data.objetivos.forEach((objetivo, index) => {//llenar la tabla con objetivos
+          const row = createObjectiveRow(objetivo, index + 1);
           tableBody.appendChild(row);
         });
       } else {
         tableBody.innerHTML = `
           <tr>
             <td colspan="9" class="text-center text-danger">
-              <p class="mt-3">Error al cargar proyectos</p>
+              <p class="mt-3">Error al cargar objetivos</p>
             </td>
           </tr>
         `;
       }
     })
     .catch(error => {
-      console.error('Error loading projects:', error);
+      console.error('Error al cargar los objetivos:', error);
       tableBody.innerHTML = `
         <tr>
           <td colspan="9" class="text-center text-danger">
-            <p class="mt-3">Error al cargar los proyectos</p>
+            <p class="mt-3">Error al cargar los objetivos</p>
           </td>
         </tr>
       `;
     });
 }
 
-function createProjectRow(proyecto, index) {
+function createObjectiveRow(objetivo, index) {
   const row = document.createElement('tr');
   
-  const statusColor = getStatusColor(proyecto.estado);//color de la insignia de estatus
-  const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado}</span>`;
+  const statusColor = getStatusColor(objetivo.estado);//color de la insignia de estatus
+  const statusBadge = `<span class="badge badge-${statusColor}">${objetivo.estado}</span>`;
   
-  const progressBar = createProgressBar(proyecto.progreso);
+  const progressBar = createProgressBar(objetivo.progreso);
   
   const actionsButtons = `
     <div class="action-buttons">
-      <button class="btn btn-sm btn-success btn-action" onclick="editarProyecto(${proyecto.id_proyecto})" title="Editar">
+      <button class="btn btn-sm btn-success btn-action" onclick="editarobjetivo(${objetivo.id_objetivo})" title="Editar">
         <i class="mdi mdi-pencil"></i>
       </button>
-      <button class="btn btn-sm btn-danger btn-action" onclick="eliminarProyecto(${proyecto.id_proyecto})" title="Eliminar">
+      <button class="btn btn-sm btn-danger btn-action" onclick="eliminarobjetivo(${objetivo.id_objetivo})" title="Eliminar">
         <i class="mdi mdi-delete"></i>
       </button>
     </div>
@@ -78,18 +78,17 @@ function createProjectRow(proyecto, index) {
   row.innerHTML = `
     <td>${index}</td>
     <td>
-      <strong>${truncateText(proyecto.nombre, 30)}</strong>
+      <strong>${truncateText(objetivo.nombre, 30)}</strong>
     </td>
-    <td>${truncateText(proyecto.descripcion, 40)}</td>
-    <td>${proyecto.area}</td>
-    <td>${formatDate(proyecto.fecha_cumplimiento)}</td>
+    <td>${truncateText(objetivo.descripcion, 40)}</td>
+    <td>${objetivo.area}</td>
+    <td>${formatDate(objetivo.fecha_cumplimiento)}</td>
     <td>
       ${progressBar}
     </td>
     <td>
       ${statusBadge}
     </td>
-    <td>${proyecto.participante}</td>
     <td>
       ${actionsButtons}
     </td>
@@ -134,23 +133,23 @@ function formatDate(dateString) {
   return date.toLocaleDateString('es-MX', options);
 }
 
-function verProyecto(idProyecto) {
-  window.location.href = `../detallesProyecto/?id=${idProyecto}`;//redirigir a detalles de proyecto
+function verobjetivo(idObjetivo) {
+  window.location.href = `../detallesobjetivo/?id=${idObjetivo}`;//redirigir a detalles de objetivo
 }
 
-function editarProyecto(idProyecto) {//redirigir a pagina de editar proyecto
-  window.location.href = `../editarProyecto/?id=${idProyecto}`;
+function editarobjetivo(idObjetivo) {//redirigir a pagina de editar objetivo
+  window.location.href = `../editarObjetivo/?id=${idObjetivo}`;
 }
 
-function eliminarProyecto(idProyecto) {
-  if (confirm('¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer.')) {
-    fetch('../php/delete_project.php', {
+function eliminarobjetivo(idObjetivo) {
+  if (confirm('¿Estás seguro de que deseas eliminar este objetivo? Esta acción no se puede deshacer.')) {
+    fetch('../php/delete_objective.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        id_proyecto: idProyecto
+        id_objetivo: idObjetivo
       })
     })
     .then(response => {
@@ -161,15 +160,15 @@ function eliminarProyecto(idProyecto) {
     })
     .then(data => {
       if (data.success) {
-        alert('Proyecto eliminado exitosamente');
-        cargarProyectos(); //recargar tabla de proyectos 
+        alert('objetivo eliminado exitosamente');
+        cargarObjetivos(); //recargar tabla de objetivos 
       } else {
-        alert('Error al eliminar el proyecto: ' + data.message);
+        alert('Error al eliminar el objetivo: ' + data.message);
       }
     })
     .catch(error => {
-      console.error('Error deleting project:', error);
-      alert('Error al eliminar el proyecto');
+      console.error('Error deleting objective:', error);
+      alert('Error al eliminar el objetivo');
     });
   }
 }

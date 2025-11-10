@@ -1,11 +1,10 @@
 <?php
-// get_objectives.php 
+// obtener_proyectos.php
 
 header('Content-Type: application/json');
-
 require_once 'db_config.php';
 
-$conn=getDBConnection();
+$conn = getDBConnection();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode([
@@ -16,35 +15,42 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    //query para ver todos los objetivos
-    $query = "SELECT id_objetivo, nombre,  descripcion, id_departamento, fecha_creacion, fecha_cumplimiento, progreso, estado, ar, archivo_adjunto, id_creador FROM tbl_objetivos ORDER BY id_objetivo ASC";
+    $query = "SELECT 
+                p.id_objetivo,
+                p.nombre,
+                p.descripcion,
+                p.fecha_cumplimiento,
+                p.progreso,
+                p.estado,
+                d.nombre as area
+              FROM tbl_objetivos p
+              LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento
+              ORDER BY p.fecha_cumplimiento ASC";
+    
     $result = $conn->query($query);
     
     if (!$result) {
         throw new Exception("Error en la consulta: " . $conn->error);
     }
     
-    $projects = [];
+    $proyectos = [];
     
     while ($row = $result->fetch_assoc()) {
-        $projects[] = [
-            'id_objetivo' => $row['id_objetivo'],
-            'nombre' => $row['nombre'], 
+        $proyectos[] = [
+            'id_objetivo' => (int)$row['id_objetivo'],
+            'nombre' => $row['nombre'],
             'descripcion' => $row['descripcion'],
-            'id_departamento'=> $row['id_departamento'],
-            'fecha_creacion'=> $row['fecha_creacion'],
-            'fecha_cumplimiento'=> $row['fecha_cumplimiento'],
-            'progreso'=> $row['progreso'],
-            'estado'=> $row['estado'],
-            'ar'=> $row['ar'],
-            'archivo_adjunto'=> $row['archivo_adjunto'],
-            'id_creador'=> $row['id_creador']
+            'area' => $row['area'] ?? 'Sin asignar',
+            'fecha_cumplimiento' => $row['fecha_cumplimiento'],
+            'progreso' => (int)$row['progreso'],
+            'estado' => $row['estado']
         ];
     }
     
     echo json_encode([
         'success' => true,
-        'projects' => $projects
+        'objetivos' => $proyectos,
+        'total' => count($proyectos)
     ]);
     
     $result->free();
@@ -52,8 +58,8 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Error al cargar objetivos: ' . $e->getMessage(),
-        'projects' => []
+        'message' => 'Error al cargar proyectos: ' . $e->getMessage(),
+        'proyectos' => []
     ]);
 }
 

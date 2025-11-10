@@ -254,41 +254,17 @@
                                         <th>Fecha de entrega</th>
                                         <th>Progreso</th>
                                         <th>Estado</th>
-                                        <th>Asignado a</th>
                                         <th>Acciones</th>
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      <tr>                           
-                                        <td>
-                                            <h6>1</h6>
-                                        </td>
-                                        <td>
-                                            <h6>Comandos para Windows Update</h6>
-                                        </td>
-                                        <td>
-                                            <h6>Hacer actualizaciones de Windows Update desde la consola</h6>
-                                        </td>
-                                        <td>
-                                          <h6>TI</h6>
-                                        </td>
-                                        <td>
-                                          <h6>11/05/2025</h6>
-                                        </td>
-                                        <td>
-                                            <div>
-                                            <div class="d-flex justify-content-between align-items-center mb-1 max-width-progress-wrap">
-                                              <p class="text-success">65%</p>
-                                              <p>6/10</p>
-                                            </div>
-                                            <div class="progress progress-md">
-                                              <div class="progress-bar bg-warning" role="progressbar" style="width: 38%" aria-valuenow="38" aria-valuemin="0" aria-valuemax="100"></div>
-                                            </div>
+                                      <tr>
+                                        <td colspan="9" class="text-center">
+                                          <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
                                           </div>
+                                          <p class="mt-2">Cargando proyectos...</p>
                                         </td>
-                                        <td><div class="badge badge-opacity-warning">En progreso</div></td>
-                                        <td><h6>Felipe Mireles</h6></td>
-                                        <td>Editar Eliminar Progreso</td>
                                       </tr>
                                     </tbody>
                                   </table>
@@ -325,5 +301,6 @@
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
   <!-- End custom js for this page-->
+   <script src="../js/manage_objectives.js"> </script>
 </body>
 </html>

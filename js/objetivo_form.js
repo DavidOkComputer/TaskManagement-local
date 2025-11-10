@@ -21,31 +21,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function loadDepartamentos() { //obtener items de la base de datos
-    fetch('../php/get_departamentos.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const select = document.getElementById('id_departamento');
-                
-                //limpiar las opciones existentes menos la actual
-                select.innerHTML = '<option value="">Seleccione un departamento</option>';
-                
-                //agregar departamento
-                data.data.forEach(dept => {
-                    const option = document.createElement('option');
-                    option.value = dept.id;
-                    option.textContent = dept.nombre;
-                    select.appendChild(option);
-                });
-            } else {
-                showNotification('Error al cargar departamentos: ' + data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Error al cargar los departamentos', 'error');
+function loadDepartamentos() {
+  fetch('../php/get_departments.php')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('La respuesta de red no fue ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success && data.departamentos) {
+        const select = document.getElementById('id_departamento');
+        data.departamentos.forEach(dept => {
+          const option = document.createElement('option');
+          option.value = dept.id_departamento;
+          option.textContent = dept.nombre;
+          select.appendChild(option);
         });
+      } else {
+        showAlert('Error al cargar departamentos', 'warning');
+      }
+    })
+    .catch(error => {
+      console.error('Error al cargar los departamentos:', error);
+      showAlert('Error al cargar departamentos', 'danger');
+    });
 }
 
 function initFileUpload() {

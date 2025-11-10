@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $query = "SELECT id_departamento, nombre 
+    $query = "SELECT id_departamento, nombre, descripcion, id_creador 
               FROM tbl_departamentos 
               ORDER BY nombre ASC";
     $result = $conn->query($query);
@@ -30,7 +30,9 @@ try {
     while ($row = $result->fetch_assoc()) {
         $departamentos[] = [
             'id_departamento' => (int)$row['id_departamento'],
-            'nombre' => $row['nombre']
+            'nombre' => $row['nombre'],
+            'descripcion' => $row['descripcion'],
+            'id_creador' => $row['id_creador']
         ];
     }
     

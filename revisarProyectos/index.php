@@ -302,6 +302,6 @@
   <!-- End custom js for this page-->
   
   <!-- Load projects script -->
-  <script src="../js/load_projects.js"></script>
+  <script src="../js/manage_projects.js"></script>
 </body>
 </html>

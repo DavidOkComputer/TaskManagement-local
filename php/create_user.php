@@ -5,18 +5,16 @@ header('Content-Type: application/json');
 error_reporting(E_ALL); 
 ini_set('display_errors', 0); 
 
-// Start output buffering to catch any unexpected output
+//iniciar buffer de output para hacer catch a output inesperado
 ob_start();
 
-// Initialize response before anything else
-$response = [ 
+$response = [//inicializar respuesta antes de todo 
     'success' => false, 
     'message' => '' 
 ];
 
 try {
-    // Check if db_config.php exists
-    if (!file_exists('db_config.php')) {
+    if (!file_exists('db_config.php')) {//revisar si existe el archivo 
         throw new Exception('db_config.php no encontrado en ' . __DIR__);
     }
 
@@ -208,11 +206,9 @@ try {
     error_log("Error en create_user.php: " . $e->getMessage()); 
 }
 
-// Clean any unexpected output
-ob_end_clean();
+ob_end_clean();//limpiar output inesperado
 
-// Send response
-header('Content-Type: application/json; charset=utf-8');
+header('Content-Type: application/json; charset=utf-8');//enviar respuesta
 echo json_encode($response, JSON_UNESCAPED_UNICODE); 
 exit; 
 ?>
