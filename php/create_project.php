@@ -16,6 +16,7 @@ try {
         'nombre',
         'descripcion',
         'id_departamento',
+        'fecha_inicio',
         'fecha_creacion',
         'fecha_cumplimiento',
         'ar',

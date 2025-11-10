@@ -17,7 +17,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 try {
     //query para ver todos los objetivos
-    $query = "SELECT id_tarea, nombre,  descripcion, id_proyecto, id_creador, fecha_creacion, fecha_cumplimiento, estado FROM tbl_tareas ORDER BY id_tarea ASC";
+    $query = "SELECT 
+                t.id_tarea, 
+                t.nombre,  
+                t.descripcion, 
+                p.nombre, 
+                u.nombre as creador, 
+                t.fecha_creacion, 
+                t.fecha_cumplimiento, 
+                t.estado,
+                t.id_proyecto
+            FROM tbl_tareas t
+            LEFT JOIN tbl_proyectos p ON t.id_proyecto= p.id_proyecto
+            LEFT JOIN tbl_usuarios u ON t.id_creador= u.id_usuario
+            ORDER BY t.id_tarea ASC";
+
     $result = $conn->query($query);
     
     if (!$result) {
@@ -49,8 +63,8 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Error al cargar objetivos: ' . $e->getMessage(),
-        'projects' => []
+        'message' => 'Error al cargar tareas: ' . $e->getMessage(),
+        'tareas' => []
     ]);
 }
 
