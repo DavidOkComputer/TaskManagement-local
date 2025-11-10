@@ -1,11 +1,11 @@
 <?php
-// get_objectives.php 
+// get_users.php 
 
 header('Content-Type: application/json');
 
 require_once 'db_config.php';
 
-$conn=getDBConnection();
+$conn = getDBConnection();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode([
@@ -16,42 +16,63 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    //query para ver todos los objetivos
-    $query = "SELECT id_usuario, nombre, apellido, usuario, num_empleado, acceso, id_departamento, id_rol, id_superior FROM tbl_usuarios ORDER BY id_usuario ASC";
-    $result = $conn->query($query);
+    // Obtener parámetro de filtro de rol (opcional)
+    $filter_rol = isset($_GET['id_rol']) ? intval($_GET['id_rol']) : null;
+    
+    // Construir query con filtro opcional
+    if ($filter_rol !== null && $filter_rol > 0) {
+        $query = "SELECT id_usuario, nombre, apellido, usuario, num_empleado, id_departamento, id_rol, id_superior, e_mail 
+                  FROM tbl_usuarios 
+                  WHERE id_rol = ?
+                  ORDER BY apellido ASC, nombre ASC";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $filter_rol);
+        $stmt->execute();
+        $result = $stmt->get_result();
+    } else {
+        // Sin filtro, obtener todos los usuarios
+        $query = "SELECT id_usuario, nombre, apellido, usuario, num_empleado, id_departamento, id_rol, id_superior, e_mail 
+                  FROM tbl_usuarios 
+                  ORDER BY apellido ASC, nombre ASC";
+        $result = $conn->query($query);
+    }
     
     if (!$result) {
         throw new Exception("Error en la consulta: " . $conn->error);
     }
     
-    $projects = [];
+    $usuarios = [];
     
     while ($row = $result->fetch_assoc()) {
-        $projects[] = [
-            'id_usuario' => $row['id_usuario'],
+        $usuarios[] = [
+            'id_usuario' => (int)$row['id_usuario'],
             'nombre' => $row['nombre'], 
             'apellido' => $row['apellido'],
-            'usuario'=> $row['usuario'],
-            'num_empleado'=> $row['num_empleado'],
-            'acceso'=> $row['acceso'],
-            'id_departamento'=> $row['id_departamento'],
-            'id_rol'=> $row['id_rol'],
-            'id_superior'=> $row['id_superior']
+            'usuario' => $row['usuario'],
+            'num_empleado' => (int)$row['num_empleado'],
+            'id_departamento' => (int)$row['id_departamento'],
+            'id_rol' => (int)$row['id_rol'],
+            'id_superior' => (int)$row['id_superior'],
+            'e_mail' => $row['e_mail'],
+            'nombre_completo' => $row['nombre'] . ' ' . $row['apellido']
         ];
     }
     
     echo json_encode([
         'success' => true,
-        'tareas' => $projects
+        'usuarios' => $usuarios
     ]);
     
     $result->free();
+    if (isset($stmt)) {
+        $stmt->close();
+    }
     
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Error al cargar objetivos: ' . $e->getMessage(),
-        'projects' => []
+        'message' => 'Error al cargar usuarios: ' . $e->getMessage(),
+        'usuarios' => []
     ]);
 }
 

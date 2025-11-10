@@ -1,23 +1,36 @@
 <?php 
-//create_usuer.php 
+// create_user.php 
 header('Content-Type: application/json'); 
 
 error_reporting(E_ALL); 
-
 ini_set('display_errors', 0); 
-require_once('db_config.php');
 
+// Start output buffering to catch any unexpected output
+ob_start();
+
+// Initialize response before anything else
 $response = [ 
     'success' => false, 
     'message' => '' 
-]; 
+];
 
-try {  
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') { //revisar el tipo de solicitud enviado 
+try {
+    // Check if db_config.php exists
+    if (!file_exists('db_config.php')) {
+        throw new Exception('db_config.php no encontrado en ' . __DIR__);
+    }
+
+    require_once('db_config.php');
+    
+    if (!function_exists('getDBConnection')) {
+        throw new Exception('Función getDBConnection no encontrada en db_config.php');
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Método de solicitud no válido'); 
     } 
 
-    //validar y limpiar input
+    // Validar y limpiar input
     $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : ''; 
     $apellido = isset($_POST['apellido']) ? trim($_POST['apellido']) : ''; 
     $usuario = isset($_POST['usuario']) ? trim($_POST['usuario']) : ''; 
@@ -26,7 +39,9 @@ try {
     $id_departamento = isset($_POST['id_departamento']) ? intval($_POST['id_departamento']) : 0; 
     $id_rol = isset($_POST['id_rol']) ? intval($_POST['id_rol']) : 0; 
     $id_superior = isset($_POST['id_superior']) ? intval($_POST['id_superior']) : 0; 
+    $e_mail = isset($_POST['e_mail']) ? trim($_POST['e_mail']) : ''; 
 
+    // Validaciones
     if (empty($nombre)) { 
         throw new Exception('El nombre es requerido'); 
     } 
@@ -62,15 +77,27 @@ try {
     } 
     if ($id_rol <= 0) { 
         throw new Exception('Debe seleccionar un rol'); 
-    } 
+    }
+    if (!empty($e_mail) && !filter_var($e_mail, FILTER_VALIDATE_EMAIL)) {
+        throw new Exception('El formato del correo electrónico no es válido');
+    }
+
     $conn = getDBConnection(); 
 
+    if (!$conn) {
+        throw new Exception('No se pudo obtener la conexión a la base de datos');
+    }
+
     if ($conn->connect_error) { 
-        throw new Exception('Error de conexión a la base de datos'); 
+        throw new Exception('Error de conexión a la base de datos: ' . $conn->connect_error); 
     } 
     $conn->set_charset('utf8mb4'); 
-    //revisar si ya existe el usuario
+
+    // Revisar si ya existe el usuario
     $stmt = $conn->prepare("SELECT id_usuario FROM tbl_usuarios WHERE usuario = ?"); 
+    if (!$stmt) {
+        throw new Exception('Error en prepare (usuario): ' . $conn->error);
+    }
     $stmt->bind_param("s", $usuario); 
     $stmt->execute();
     $result = $stmt->get_result(); 
@@ -80,8 +107,11 @@ try {
     } 
     $stmt->close(); 
  
-    //revisar si ya exite el numeor de empleado 
+    // Revisar si ya existe el número de empleado 
     $stmt = $conn->prepare("SELECT id_usuario FROM tbl_usuarios WHERE num_empleado = ?"); 
+    if (!$stmt) {
+        throw new Exception('Error en prepare (num_empleado): ' . $conn->error);
+    }
     $stmt->bind_param("i", $num_empleado); 
     $stmt->execute(); 
     $result = $stmt->get_result(); 
@@ -89,8 +119,12 @@ try {
         throw new Exception('El número de empleado ya está registrado'); 
     } 
     $stmt->close(); 
-    //verificar que exista el departamento 
+
+    // Verificar que exista el departamento 
     $stmt = $conn->prepare("SELECT id_departamento FROM tbl_departamentos WHERE id_departamento = ?"); 
+    if (!$stmt) {
+        throw new Exception('Error en prepare (departamento): ' . $conn->error);
+    }
     $stmt->bind_param("i", $id_departamento); 
     $stmt->execute(); 
     $result = $stmt->get_result(); 
@@ -98,9 +132,12 @@ try {
         throw new Exception('El departamento seleccionado no existe'); 
     } 
     $stmt->close(); 
-    //verificar que existe el rol 
 
+    // Verificar que existe el rol 
     $stmt = $conn->prepare("SELECT id_rol FROM tbl_roles WHERE id_rol = ?"); 
+    if (!$stmt) {
+        throw new Exception('Error en prepare (rol): ' . $conn->error);
+    }
     $stmt->bind_param("i", $id_rol); 
     $stmt->execute(); 
     $result = $stmt->get_result();
@@ -109,8 +146,12 @@ try {
     } 
     $stmt->close();  
 
-    if ($id_superior > 0) {//verificar que existe el superior si se selecciona 
+    // Verificar que existe el superior si se selecciona 
+    if ($id_superior > 0) {
         $stmt = $conn->prepare("SELECT id_usuario FROM tbl_usuarios WHERE id_usuario = ?"); 
+        if (!$stmt) {
+            throw new Exception('Error en prepare (superior): ' . $conn->error);
+        }
         $stmt->bind_param("i", $id_superior); 
         $stmt->execute(); 
         $result = $stmt->get_result(); 
@@ -121,18 +162,22 @@ try {
         $stmt->close(); 
     } 
 
- 
-    //hash de contrasenia usando md5 por ahora por compatibilidad pero cambiar a password_hash()despiues
+    // Hash de contraseña usando md5 por ahora por compatibilidad
+    // TODO: Cambiar a password_hash() en futuras versiones
     $acceso_hash = md5($acceso); 
 
     $stmt = $conn->prepare(" 
         INSERT INTO tbl_usuarios  
-        (nombre, apellido, usuario, num_empleado, acceso, id_departamento, id_rol, id_superior)  
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
+        (nombre, apellido, usuario, num_empleado, acceso, id_departamento, id_rol, id_superior, e_mail)  
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) 
     "); 
 
+    if (!$stmt) {
+        throw new Exception('Error en prepare (INSERT): ' . $conn->error);
+    }
+
     $stmt->bind_param( 
-        "sssisiii", 
+        "sssisiiis", 
         $nombre, 
         $apellido, 
         $usuario, 
@@ -140,7 +185,8 @@ try {
         $acceso_hash, 
         $id_departamento, 
         $id_rol, 
-        $id_superior 
+        $id_superior,
+        $e_mail 
     ); 
 
     if ($stmt->execute()) { 
@@ -149,39 +195,24 @@ try {
         $response['message'] = "Usuario '{$usuario}' creado exitosamente"; 
         $response['id_usuario'] = $nuevo_id; 
         $response['usuario'] = $usuario; 
-
- 
-
         error_log("Usuario creado: ID={$nuevo_id}, Usuario={$usuario}, Num Empleado={$num_empleado}"); 
-
     } else { 
-
         throw new Exception('Error al crear el usuario: ' . $stmt->error); 
-
     } 
-
- 
-
     $stmt->close(); 
-
     $conn->close(); 
 
- 
-
 } catch (Exception $e) { 
-
     $response['success'] = false; 
-
     $response['message'] = $e->getMessage(); 
+    error_log("Error en create_user.php: " . $e->getMessage()); 
+}
 
-    error_log("Error en procesar_usuario.php: " . $e->getMessage()); 
+// Clean any unexpected output
+ob_end_clean();
 
-} 
-
- 
-
+// Send response
+header('Content-Type: application/json; charset=utf-8');
 echo json_encode($response, JSON_UNESCAPED_UNICODE); 
-
 exit; 
-
-?> 
+?>

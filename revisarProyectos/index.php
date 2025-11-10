@@ -8,7 +8,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Administrador de proyectos </title>
+  <title>Administrador de proyectos</title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="../vendors/feather/feather.css">
   <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css">
@@ -44,7 +44,7 @@
       <div class="navbar-menu-wrapper d-flex align-items-top"> 
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-            <h1 class="welcome-text">Buenos dias, <span class="text-black fw-bold">David</span></h1>
+            <h1 class="welcome-text">Buenos días, <span class="text-black fw-bold">David</span></h1>
             <h3 class="welcome-sub-text">Gestiona los proyectos registrados</h3>
           </li>
         </ul>
@@ -52,7 +52,7 @@
           <li class="nav-item">
             <form class="search-form" action="#">
               <i class="icon-search"></i>
-              <input type="search" class="form-control" placeholder="Buscar usuario" title="Search here">
+              <input type="search" class="form-control" placeholder="Buscar proyecto" title="Search here">
             </form>
           </li>
           <li class="nav-item dropdown">
@@ -69,7 +69,7 @@
                   <i class="mdi mdi-settings m-auto text-primary"></i>
                 </div>
                 <div class="preview-item-content">
-                  <h6 class="preview-subject fw-normal text-dark mb-1">Configuracion</h6>
+                  <h6 class="preview-subject fw-normal text-dark mb-1">Configuración</h6>
                   <p class="fw-light small-text mb-0">Configurar distintos ajustes</p>
                 </div>
               </a>
@@ -82,7 +82,7 @@
             </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="countDropdown">
               <a class="dropdown-item py-3">
-                <p class="mb-0 font-weight-medium float-left">Tienes nuevas notificaciones </p>
+                <p class="mb-0 font-weight-medium float-left">Tienes nuevas notificaciones</p>
                 <span class="badge badge-pill badge-primary float-right">Ver todo</span>
               </a>
               <div class="dropdown-divider"></div>
@@ -91,8 +91,8 @@
                   <img src="../images/faces/face10.jpg" alt="image" class="img-sm profile-pic">
                 </div>
                 <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">Marian Garner </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
+                  <p class="preview-subject ellipsis font-weight-medium text-dark">Marian Garner</p>
+                  <p class="fw-light small-text mb-0">Requiere de avances</p>
                 </div>
               </a>
               <a class="dropdown-item preview-item">
@@ -100,8 +100,8 @@
                   <img src="../images/faces/face12.jpg" alt="image" class="img-sm profile-pic">
                 </div>
                 <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">David Grey </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
+                  <p class="preview-subject ellipsis font-weight-medium text-dark">David Grey</p>
+                  <p class="fw-light small-text mb-0">Requiere de avances</p>
                 </div>
               </a>
               <a class="dropdown-item preview-item">
@@ -109,15 +109,15 @@
                   <img src="../images/faces/face1.jpg" alt="image" class="img-sm profile-pic">
                 </div>
                 <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">Desarrollo de calendario </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
+                  <p class="preview-subject ellipsis font-weight-medium text-dark">Desarrollo de calendario</p>
+                  <p class="fw-light small-text mb-0">Requiere de avances</p>
                 </div>
               </a>
             </div>
           </li>
           <li class="nav-item dropdown d-none d-lg-block user-dropdown">
             <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> </a>
+              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"></a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
                 <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
@@ -125,7 +125,7 @@
                 <p class="fw-light text-muted mb-0">david.barreto@nidec.com</p>
               </div>
               <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> Mi Perfil <span class="badge badge-pill badge-danger">1</span></a>
-              <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesion</a>
+              <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
             </div>
           </li>
         </ul>
@@ -140,7 +140,7 @@
       <!-- partial:partials/_sidebar.html -->
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
-          <li class="nav-item nav-category">Gestion de usuarios</li>
+          <li class="nav-item nav-category">Gestión de usuarios</li>
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
               <i class="menu-icon mdi mdi-account-multiple"></i>
@@ -149,8 +149,8 @@
             </a>
             <div class="collapse" id="ui-basic">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../gestionDeEmpleados/">Gestion de empleados</a></li>
-                <li class="nav-item"> <a class="nav-link" href="../registroDeEmpleados">Registrar nuevo empleado</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../gestionDeEmpleados/">Gestión de empleados</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../registroDeEmpleados/">Registrar nuevo empleado</a></li>
               </ul>
             </div>
           </li>
@@ -162,8 +162,8 @@
             </a>
             <div class="collapse" id="departamentos">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../gestionDeDepartamentos/">Gestion de departamentos</a></li>
-                <li class="nav-item"> <a class="nav-link" href="../registroDeDepartamentos">Registrar departamento</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../gestionDeDepartamentos/">Gestión de departamentos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../registroDeDepartamentos/">Registrar departamento</a></li>
               </ul>
             </div>
           </li>
@@ -185,12 +185,12 @@
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
               <i class="menu-icon mdi mdi-chart-line"></i>
-              <span class="menu-title">Graficado</span>
+              <span class="menu-title">Gráficos</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="charts">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarGraficos">Revisar graficos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarGraficos/">Revisar gráficos</a></li>
               </ul>
             </div>
           </li>
@@ -203,11 +203,7 @@
             <div class="collapse" id="tables">
               <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link" href="../revisarProyectos/">Revisar proyectos</a></li>
-              </ul>
-              <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link" href="../revisarObjetivos/">Revisar objetivos</a></li>
-              </ul>
-              <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link" href="../revisarTareas/">Revisar tareas</a></li>
               </ul>
             </div>
@@ -221,63 +217,64 @@
             </a>
             <div class="collapse" id="auth">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href=""> Cerrar Sesión </a></li>
+                <li class="nav-item"> <a class="nav-link" href="">Cerrar Sesión</a></li>
               </ul>
             </div>
           </li>
         </ul>
       </nav>
       <!-- partial -->
-      <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="d-sm-flex justify-content-between align-items-start">
-                                  <div>
-                                    <h4 class="card-title card-title-dash">Gestion de proyectos</h4>
-                                   <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los proyectos</p>
-                                  </div>
-                                  <div>
-                                    <a href="../nuevoProyecto">
-                                    <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i>Crear nuevo proyecto</button>
-                                    </a>
-                                  </div>
-                                </div>
-                                <div class="table-responsive  mt-1">
-                                  <table class="table select-table">
-                                    <thead>
-                                      <tr>
-                                        <th>#</th>
-                                        <th>Titulo</th>
-                                        <th>Descripcion</th>
-                                        <th>Área</th>
-                                        <th>Fecha de entrega</th>
-                                        <th>Progreso</th>
-                                        <th>Estado</th>
-                                        <th>Asignado a</th>
-                                        <th>Acciones</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <!-- Projects will be loaded here dynamically -->
-                                      <tr>
-                                        <td colspan="9" class="text-center">
-                                          <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Cargando...</span>
-                                          </div>
-                                          <p class="mt-2">Cargando proyectos...</p>
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div class="row flex-grow">
+            <div class="col-12 grid-margin stretch-card">
+              <div class="card card-rounded">
+                <div class="card-body">
+                  <div class="d-sm-flex justify-content-between align-items-start">
+                    <div>
+                      <h4 class="card-title card-title-dash">Gestión de proyectos</h4>
+                      <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los proyectos registrados</p>
+                    </div>
+                    <div>
+                      <a href="../nuevoProyecto/">
+                        <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i>Crear nuevo proyecto</button>
+                      </a>
+                    </div>
+                  </div>
+                  <div class="table-responsive mt-3">
+                    <table class="table select-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Título</th>
+                          <th>Descripción</th>
+                          <th>Área</th>
+                          <th>Fecha de entrega</th>
+                          <th>Progreso</th>
+                          <th>Estado</th>
+                          <th>Asignado a</th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <!-- Projects will be loaded here dynamically -->
+                        <tr>
+                          <td colspan="9" class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                              <span class="visually-hidden">Cargando...</span>
                             </div>
-                          </div>
-                        </div>
-      <!-- main-panel ends -->
-    </div>
-        <!-- content-wrapper ends --> 
+                            <p class="mt-2">Cargando proyectos...</p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- content-wrapper ends -->
       </div>
       <!-- main-panel ends -->
     </div>

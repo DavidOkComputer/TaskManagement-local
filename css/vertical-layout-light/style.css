@@ -11858,90 +11858,66 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
         .alert { 
-
             padding: 15px; 
-
             margin-bottom: 20px; 
-
             border: 1px solid transparent; 
-
             border-radius: 4px; 
-
         } 
 
         .alert-success { 
-
             color: #155724; 
-
             background-color: #d4edda; 
-
             border-color: #c3e6cb; 
-
         } 
-
         .alert-danger { 
-
             color: #721c24; 
-
             background-color: #f8d7da; 
-
             border-color: #f5c6cb; 
-
         } 
 
         .alert-info { 
-
             color: #0c5460; 
-
             background-color: #d1ecf1; 
-
             border-color: #bee5eb; 
-
         } 
 
         .btn-action { 
-
             margin: 0 5px; 
-
         } 
 
         .table-responsive { 
-
             overflow-x: auto; 
-
         } 
 
         .empty-state { 
-
             text-align: center; 
-
             padding: 50px 20px; 
-
         } 
 
         .empty-state i { 
-
             font-size: 64px; 
-
             color: #ccc; 
-
             margin-bottom: 20px; 
-
         } 
 
         .loading-spinner { 
-
             text-align: center; 
-
             padding: 50px; 
-
         } 
 
         .action-buttons { 
-
             white-space: nowrap; 
-
         } 
+        .password-toggle { 
+            position: relative; 
+        } 
+        .password-toggle-icon { 
+            position: absolute; 
+            right: 10px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            cursor: pointer; 
+        }
 .btn-outline-primary {
   color: #1F3BB3;
   border-color: #1F3BB3;
@@ -23245,6 +23221,20 @@ code {
   font-size: 0.875rem;
   border-radius: 4px;
   height: 2rem;
+}
+
+select.form-control {
+  color: #495057 !important;
+  background-color: #fff !important;
+}
+
+select.form-control option {
+  color: #212529 !important;
+  background-color: #fff !important;
+}
+
+select.form-control option:disabled {
+  color: #6c757d !important;
 }
 
 select.form-control, select.asColorPicker-input, .dataTables_wrapper select, .select2-container--default select.select2-selection--single, .select2-container--default .select2-selection--single select.select2-search__field, select.typeahead,

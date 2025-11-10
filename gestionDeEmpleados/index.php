@@ -1,8 +1,6 @@
 <?php
-/*
-require_once('php/check_auth.php');
-gestion de empleados
-*/
+//require_once('../php/check_auth.php');
+// Gestion de empleados
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -58,7 +56,7 @@ gestion de empleados
           <li class="nav-item">
             <form class="search-form" action="#">
               <i class="mdi mdi-account-search"></i>
-              <input type="search" class="form-control" placeholder="Buscar usuario" title="Search here">
+              <input type="search" class="form-control" id="searchUser" placeholder="Buscar usuario" title="Search here">
             </form>
           </li>
           <li class="nav-item dropdown">
@@ -98,24 +96,6 @@ gestion de empleados
                 </div>
                 <div class="preview-item-content flex-grow py-2">
                   <p class="preview-subject ellipsis font-weight-medium text-dark">Marian Garner </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
-                </div>
-              </a>
-              <a class="dropdown-item preview-item">
-                <div class="preview-thumbnail">
-                  <img src="../images/faces/face12.jpg" alt="image" class="img-sm profile-pic">
-                </div>
-                <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">David Grey </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
-                </div>
-              </a>
-              <a class="dropdown-item preview-item">
-                <div class="preview-thumbnail">
-                  <img src="../images/faces/face1.jpg" alt="image" class="img-sm profile-pic">
-                </div>
-                <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">Desarrollo de calendario </p>
                   <p class="fw-light small-text mb-0"> Requiere de avances </p>
                 </div>
               </a>
@@ -235,105 +215,101 @@ gestion de empleados
       </nav>
       <!-- partial -->
       <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="d-sm-flex justify-content-between align-items-start">
-                                  <div>
-                                    <h4 class="card-title card-title-dash">Gestion de empleados</h4>
-                                   <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los empleados</p>
-                                  </div>
-                                  <div>
-                                    <a href="../registroDeEmpleados">
-                                      <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo usuario</button>
-                                    </a>
-                                  </div>
-                                </div>
-                                <div class="table-responsive  mt-1">
-                                  <table class="table select-table">
-                                    <thead>
-                                      <tr>
-                                        <th>
-                                          <div class="form-check form-check-flat mt-0">
-                                            <label class="form-check-label">
-                                              <input type="checkbox" class="form-check-input" aria-checked="false"><i class="input-helper"></i></label>
-                                          </div>
-                                        </th>
-                                        <th>Nombre</th>
-                                        <th>Departamento</th>
-                                        <th>Superior</th>
-                                        <th>Rol</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td>
-                                          <div class="form-check form-check-flat mt-0">
-                                            <label class="form-check-label">
-                                            <input type="checkbox" class="form-check-input" aria-checked="false"><i class="input-helper"></i></label>
-                                          </div>
-                                        </td>
-                                        <td>
-                                          <div class="d-flex ">
-                                            <img src="../images/faces/face4.jpg" alt="">
-                                            <div>
-                                              <h6>David Barreto</h6>
-                                              <p>DB1858</p>
-                                            </div>
-                                          </div>
-                                        </td>
-                                        <td>
-                                          <h6>Departamento de TI</h6>
-                                          <p>Practicante</p>
-                                        </td>
-                                        <td>
-                                          <h6>Felipe Mireles</h6>
-                                          <p>FM-ADM</p>
-                                        </td>
-                                        <td><div class="badge badge-opacity-warning">Usuario</div></td>
-                                      </tr>
-                                      <tr>
-                                        <td>
-                                          <div class="form-check form-check-flat mt-0">
-                                            <label class="form-check-label">
-                                            <input type="checkbox" class="form-check-input" aria-checked="false"><i class="input-helper"></i></label>
-                                          </div>
-                                        </td>
-                                        <td>
-                                          <div class="d-flex">
-                                            <img src="../images/faces/face3.jpg" alt=""><!--Se puede agregar icono de usuario y el color de fondo representa el tipo de usuario-->
-                                            <div>
-                                              <h6>Felipe Mireles</h6>
-                                              <p>FM-ADM</p>
-                                            </div>
-                                          </div>
-                                        </td>
-                                        <td>
-                                          <h6>Departamento de TI</h6>
-                                          <p>Administrador de TI</p>
-                                        </td>
-                                        <td>
-                                          <h6>N/A</h6>
-                                          <p>N/A</p>
-                                        </td>
-                                        <td><div class="badge badge-opacity-success">Administrador</div></td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+        <div class="col-12 grid-margin stretch-card">
+          <div class="card card-rounded">
+            <div class="card-body">
+              <div class="d-sm-flex justify-content-between align-items-start">
+                <div>
+                  <h4 class="card-title card-title-dash">Gestion de empleados</h4>
+                  <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los empleados</p>
+                </div>
+                <div>
+                  <a href="../registroDeEmpleados">
+                    <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo usuario</button>
+                  </a>
+                </div>
+              </div>
+              <div class="table-responsive mt-1">
+                <table class="table select-table">
+                  <thead>
+                    <tr>
+                      <th>
+                        <div class="form-check form-check-flat mt-0">
+                          <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" id="selectAllCheckbox" aria-checked="false"><i class="input-helper"></i></label>
                         </div>
-      <!-- main-panel ends -->
-    </div>
-        <!-- content-wrapper ends --> 
+                      </th>
+                      <th>Nombre</th>
+                      <th>Departamento</th>
+                      <th>Superior</th>
+                      <th>Rol</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usuariosTableBody">
+                    <!-- Users will be loaded here dynamically -->
+                    <tr>
+                      <td colspan="6" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">Cargando...</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <!-- main-panel ends -->
     </div>
-    <!-- page-body-wrapper ends -->
+    <!-- content-wrapper ends --> 
   </div>
-  <!-- container-scroller -->
+  <!-- page-body-wrapper ends -->
+</div>
+<!-- container-scroller -->
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editUserModalLabel">Editar Usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editUserForm">
+          <input type="hidden" id="editUserId">
+          <div class="mb-3">
+            <label for="editNombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="editNombre" required>
+          </div>
+          <div class="mb-3">
+            <label for="editApellido" class="form-label">Apellido</label>
+            <input type="text" class="form-control" id="editApellido" required>
+          </div>
+          <div class="mb-3">
+            <label for="editUsuario" class="form-label">Usuario</label>
+            <input type="text" class="form-control" id="editUsuario" required>
+          </div>
+          <div class="mb-3">
+            <label for="editEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="editEmail" required>
+          </div>
+          <div class="mb-3">
+            <label for="editDepartamento" class="form-label">Departamento</label>
+            <input type="text" class="form-control" id="editDepartamento">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" id="saveUserChanges">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- plugins:js -->
   <script src="../vendors/js/vendor.bundle.base.js"></script>
@@ -352,6 +328,8 @@ gestion de empleados
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
+  <!-- Employee Management JS -->
+  <script src="../js/manage_users.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

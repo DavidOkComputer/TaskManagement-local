@@ -8,7 +8,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Administrador de proyectos </title>
+  <title>Administrador de proyectos</title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="../vendors/feather/feather.css">
   <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css">
@@ -45,7 +45,7 @@
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
             <h1 class="welcome-text">Buenos dias, <span class="text-black fw-bold">David</span></h1>
-            <h3 class="welcome-sub-text">Crea y desarrolla nuevos proyectos </h3>
+            <h3 class="welcome-sub-text">Crea y desarrolla nuevos proyectos</h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
@@ -76,7 +76,7 @@
             </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="countDropdown">
               <a class="dropdown-item py-3">
-                <p class="mb-0 font-weight-medium float-left">Tienes nuevas notificaciones </p>
+                <p class="mb-0 font-weight-medium float-left">Tienes nuevas notificaciones</p>
                 <span class="badge badge-pill badge-primary float-right">Ver todo</span>
               </a>
               <div class="dropdown-divider"></div>
@@ -85,8 +85,8 @@
                   <img src="../images/faces/face10.jpg" alt="image" class="img-sm profile-pic">
                 </div>
                 <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">Marian Garner </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
+                  <p class="preview-subject ellipsis font-weight-medium text-dark">Marian Garner</p>
+                  <p class="fw-light small-text mb-0">Requiere de avances</p>
                 </div>
               </a>
               <a class="dropdown-item preview-item">
@@ -94,8 +94,8 @@
                   <img src="../images/faces/face12.jpg" alt="image" class="img-sm profile-pic">
                 </div>
                 <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">David Grey </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
+                  <p class="preview-subject ellipsis font-weight-medium text-dark">David Grey</p>
+                  <p class="fw-light small-text mb-0">Requiere de avances</p>
                 </div>
               </a>
               <a class="dropdown-item preview-item">
@@ -103,15 +103,15 @@
                   <img src="../images/faces/face1.jpg" alt="image" class="img-sm profile-pic">
                 </div>
                 <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">Desarrollo de calendario </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
+                  <p class="preview-subject ellipsis font-weight-medium text-dark">Desarrollo de calendario</p>
+                  <p class="fw-light small-text mb-0">Requiere de avances</p>
                 </div>
               </a>
             </div>
           </li>
           <li class="nav-item dropdown d-none d-lg-block user-dropdown">
             <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> </a>
+              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"></a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
                 <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
@@ -215,7 +215,7 @@
             </a>
             <div class="collapse" id="auth">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href=""> Cerrar Sesión </a></li>
+                <li class="nav-item"> <a class="nav-link" href=""> Cerrar Sesión</a></li>
               </ul>
             </div>
           </li>
@@ -225,127 +225,152 @@
       <div class="main-panel">        
         <div class="content-wrapper">
           <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="d-sm-flex justify-content-between align-items-start">
-                                  <div>
-                                    <h4 class="card-title card-title-dash">Gestion de proyectos</h4>
-                                   <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los proyectos</p>
-                                  </div>
-                                  <div>
-                                    <a href="../revisarProyectos">
-                                      <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
-                                    </a>
-                                  </div>
-                                </div>
-                                <div><br></div>
-                                <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group row">
-                            <label class="col-sm-3 col-form-label">Nombre*</label>
-                            <div class="col-sm-9">
-                              <input type="text" class="form-control"/>
-                            </div>
+            <div class="card card-rounded">
+              <div class="card-body">
+                <div class="d-sm-flex justify-content-between align-items-start">
+                  <div>
+                    <h4 class="card-title card-title-dash">Crear nuevo proyecto</h4>
+                    <p class="card-subtitle card-subtitle-dash">Completa el formulario para crear un nuevo proyecto</p>
+                  </div>
+                  <div>
+                    <a href="../revisarProyectos">
+                      <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
+                    </a>
+                  </div>
+                </div>
+                <div><br></div>
+                
+                <!-- Alert messages -->
+                <div id="alertContainer"></div>
+
+                <!-- Project Form -->
+                <form id="proyectoForm">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Nombre*</label>
+                        <div class="col-sm-9">
+                          <input type="text" id="nombre" name="nombre" class="form-control" required/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Descripción*</label>
+                        <div class="col-sm-9">
+                          <input type="text" id="descripcion" name="descripcion" class="form-control" required/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Departamento*</label>
+                        <div class="col-sm-9">
+                          <select id="id_departamento" name="id_departamento" class="form-control" required>
+                            <option value="">Seleccione un departamento</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Asignar a*</label>
+                        <div class="col-sm-9">
+                          <select id="id_participante" name="id_participante" class="form-control" required>
+                            <option value="">Seleccione un empleado</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Fecha de inicio*</label>
+                        <div class="col-sm-9">
+                          <input type="datetime-local" id="fecha_creacion" name="fecha_creacion" class="form-control" required/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Fecha de entrega*</label>
+                        <div class="col-sm-9">
+                          <input type="date" id="fecha_cumplimiento" name="fecha_cumplimiento" class="form-control" required/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">AR (Opcional)</label>
+                        <div class="col-sm-9">
+                          <input type="text" id="ar" name="ar" class="form-control"/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Tipo de proyecto*</label>
+                        <div class="col-sm-4">
+                          <div class="form-check form-check-success">
+                            <label class="form-check-label">
+                              <input type="radio" class="form-check-input" name="id_tipo_proyecto" id="tipoProyecto1" value="2" required>
+                              Individual
+                            </label>
                           </div>
                         </div>
-                        <div class="col-md-6">
-                          <div class="form-group row">
-                            <label class="col-sm-3 col-form-label">Descripción*</label>
-                            <div class="col-sm-9">
-                              <input type="text" class="form-control" />
-                            </div>
+                        <div class="col-sm-5">
+                          <div class="form-check form-check-success">
+                            <label class="form-check-label">
+                              <input type="radio" class="form-check-input" name="id_tipo_proyecto" id="tipoProyecto2" value="1" required>
+                              Grupal
+                            </label>
                           </div>
                         </div>
                       </div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group row">
-                            <label class="col-sm-3 col-form-label">Fecha de inicio*</label>
-                            <div class="col-sm-9">
-                              <input class="form-control" placeholder="dd/mm/yyyy"/>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="form-group row">
-                            <label class="col-sm-3 col-form-label">Fecha de entrega*</label>
-                            <div class="col-sm-9">
-                              <input class="form-control" placeholder="dd/mm/yyyy"/>
-                            </div>
-                          </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label for="subirArchivo" class="col-sm-3 col-form-label">Subir archivo</label>
+                        <input type="file" id="archivoInput" name="archivo_adjunto" class="file-upload-default">
+                        <div class="col-sm-9">
+                          <input type="text" id="nombreArchivo" class="form-control" disabled placeholder="Seleccione el archivo para subir">
+                          <span class="input-group-append">
+                            <button class="file-upload-browse btn btn-success" type="button" id="btnSubirArchivo">Subir</button>
+                          </span>
                         </div>
                       </div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group row">
-                            <label class="col-sm-3 col-form-label">AR (Opcional)*</label>
-                            <div class="col-sm-9">
-                              <input type="text" class="form-control"/>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="form-group row">
-                            <label class="col-sm-3 col-form-label">Tipo de proyecto*</label>
-                            <div class="col-sm-4">
-                              <div class="form-check form-check-success">
-                                <label class="form-check-label">
-                                  <input type="radio" class="form-check-input" name="tipoProyectoRadios" id="tipoProyectoRadios1" value="" checked>
-                                  Individual
-                                </label>
-                              </div>
-                            </div>
-                            <div class="col-sm-5">
-                              <div class="form-check form-check-success">
-                                <label class="form-check-label">
-                                  <input type="radio" class="form-check-input" name="tipoProyectoRadios" id="tipoProyectoRadios2" value="option2">
-                                  Grupal
-                                </label>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="form-group row">
-                              <label for="subirArchivo" class="col-sm-3 col-form-label">Subir archivo</label>
-                              <input type="file" name="img[]" class="file-upload-default">
-                              <div class="col-sm-9">
-                                  <input type="text" class="form-control" disabled placeholder="Seleccione el archivo para subir">
-                                  <span class="input-group-append">
-                                  <button class="file-upload-browse btn btn-success" type="button">Subir</button>
-                                  </span>
-                              </div>
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="form-group row">
-                            <label class="col-sm-3 col-form-label">Asignar a*</label>
-                            <div class="col-sm-9">
-                              <select class="form-control">
-                                <option>Ninguno</option>
-                              </select>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <button type="submit" class="btn btn-success">Crear</button>
-                          <button class="btn btn-light">Cancelar</button>
-                        </div>
-                      </div>
-                              </div>
-                            </div>
-                          </div>
+                    </div>
+                  </div>
+
+                  <!-- Hidden fields -->
+                  <input type="hidden" id="id_creador" name="id_creador" value="1"/> <!-- Will be set to current user ID -->
+                  <input type="hidden" id="progreso" name="progreso" value="0"/>
+                  <input type="hidden" id="estado" name="estado" value="pendiente"/>
+                  <input type="hidden" id="archivo_adjunto_ruta" name="archivo_adjunto"/>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <button type="submit" class="btn btn-success" id="btnCrear">Crear</button>
+                      <button type="button" class="btn btn-light" id="btnCancelar">Cancelar</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
         <!-- content-wrapper ends -->
-        <!-- partial -->
-      </div>
-      <!-- main-panel ends -->
-    </div>
-        <!-- content-wrapper ends --> 
       </div>
       <!-- main-panel ends -->
     </div>
@@ -362,6 +387,7 @@
   <!-- Custom js for this page-->
   <script src="../js/file-upload.js"></script>
   <script src="../js/dashboard.js"></script>
+  <script src="../js/proyecto-form-handler.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>
