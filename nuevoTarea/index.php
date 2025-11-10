@@ -246,65 +246,65 @@
                       </div>
                     </div>
                   <div class="row">
-                                  <div class="col-lg-12">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                      <h4 class="card-title card-title-dash">Lista de tareas</h4>
-                                      <div class="add-items d-flex mb-0">
-                                        <!-- <input type="text" class="form-control todo-list-input" placeholder="What do you need to do today?"> -->
-                                        <button class="add btn btn-icons btn-rounded btn-primary todo-list-add-btn text-white me-0 pl-12p"><i class="mdi mdi-plus"></i></button>
-                                      </div>
-                                    </div>
-                                    <div class="list-wrapper">
-                                      <ul class="todo-list todo-list-rounded">
-                                        <li class="d-block">
-                                          <div class="form-check w-100">
-                                            <label class="form-check-label">
-                                              <input class="checkbox" type="checkbox"> Digitalizacion de captura de produccion <i class="input-helper rounded"></i>
-                                            </label>
-                                            <div class="d-flex mt-2">
-                                              <div class="ps-4 text-small me-3">24-Dic-2025</div>
-                                              <div class="badge badge-opacity-warning me-3">Para mañana </div>
-                                              <i class="mdi mdi-flag ms-2 flag-color"></i>
-                                            </div>
-                                          </div>
-                                        </li>
-                                        <li class="d-block">
-                                          <div class="form-check w-100">
-                                            <label class="form-check-label">
-                                              <input class="checkbox" type="checkbox"> Implementacion Polycom <i class="input-helper rounded"></i>
-                                            </label>
-                                            <div class="d-flex mt-2">
-                                              <div class="ps-4 text-small me-3">01 Enero 2026</div>
-                                              <div class="badge badge-opacity-success me-3">Completado</div>
-                                            </div>
-                                          </div>
-                                        </li>
-                                        <li>
-                                          <div class="form-check w-100">
-                                            <label class="form-check-label">
-                                              <input class="checkbox" type="checkbox"> Curso de seguridad IA <i class="input-helper rounded"></i>
-                                            </label>
-                                            <div class="d-flex mt-2">
-                                              <div class="ps-4 text-small me-3">06 Dic 2025</div>
-                                              <div class="badge badge-opacity-success me-3">Completado</div>
-                                            </div>
-                                          </div>
-                                        </li>
-                                        <li class="border-bottom-0">
-                                          <div class="form-check w-100">
-                                            <label class="form-check-label">
-                                              <input class="checkbox" type="checkbox"> Desarrollo Instructivos de trabajo <i class="input-helper rounded"></i>
-                                            </label>
-                                            <div class="d-flex mt-2">
-                                              <div class="ps-4 text-small me-3">03 Nov 2022</div>
-                                              <div class="badge badge-opacity-danger me-3">Expirado</div>
-                                            </div>
-                                          </div>
-                                        </li>
-                                      </ul>
-                                    </div>
+                    <div class="col-lg-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="card-title card-title-dash">Lista de tareas</h4>
+                              <div class="add-items d-flex mb-0">
+                                <!-- <input type="text" class="form-control todo-list-input" placeholder="What do you need to do today?"> -->
+                                <button class="add btn btn-icons btn-rounded btn-primary todo-list-add-btn text-white me-0 pl-12p"><i class="mdi mdi-plus"></i></button>
+                              </div>
+                        </div>
+                        <div class="list-wrapper">
+                          <ul class="todo-list todo-list-rounded">
+                            <li class="d-block">
+                              <div class="form-check w-100">
+                                <label class="form-check-label">
+                                  <input class="checkbox" type="checkbox"> Digitalizacion de captura de produccion <i class="input-helper rounded"></i>
+                                </label>
+                                  <div class="d-flex mt-2">
+                                    <div class="ps-4 text-small me-3">24-Dic-2025</div>
+                                    <div class="badge badge-opacity-warning me-3">Para mañana </div>
+                                    <i class="mdi mdi-flag ms-2 flag-color"></i>
                                   </div>
+                              </div>
+                            </li>
+                            <li class="d-block">
+                              <div class="form-check w-100">
+                                <label class="form-check-label">
+                                  <input class="checkbox" type="checkbox"> Implementacion Polycom <i class="input-helper rounded"></i>
+                                </label>
+                                <div class="d-flex mt-2">
+                                  <div class="ps-4 text-small me-3">01 Enero 2026</div>
+                                  <div class="badge badge-opacity-success me-3">Completado</div>
                                 </div>
+                              </div>
+                            </li>
+                            <li>
+                              <div class="form-check w-100">
+                                <label class="form-check-label">
+                                  <input class="checkbox" type="checkbox"> Curso de seguridad IA <i class="input-helper rounded"></i>
+                                </label>
+                                <div class="d-flex mt-2">
+                                  <div class="ps-4 text-small me-3">06 Dic 2025</div>
+                                  <div class="badge badge-opacity-success me-3">Completado</div>
+                                </div>
+                              </div>
+                            </li>
+                            <li class="border-bottom-0">
+                              <div class="form-check w-100">
+                                <label class="form-check-label">
+                                  <input class="checkbox" type="checkbox"> Desarrollo Instructivos de trabajo <i class="input-helper rounded"></i>
+                                </label>
+                                <div class="d-flex mt-2">
+                                  <div class="ps-4 text-small me-3">03 Nov 2022</div>
+                                  <div class="badge badge-opacity-danger me-3">Expirado</div>
+                                </div>
+                              </div>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                  </div>
                 </div>
               </div>
             </div>
