@@ -310,6 +310,38 @@ function crearProyecto() {
   }
 }
 
+function setupCharacterCounters(){
+  const nombreInput = document.getElementById('nombre');
+  const descripcionInput = document.getElementById('descripcion');
+  if(nombreInput){
+    addCharacterCounter(nombreInput,100);
+  }
+  if(descripcionInput){
+    addCharacterCounter(descripcionInput,200);
+  }
+}
+
+function addCharacterCounter(input, maxLength){
+  const counter = document.createElement('small');
+  counter.className = 'form-text text-muted';
+  counter.textContent = `0/${maxLength} caracteres`;
+
+  input.parentElement.appendChild(counter);
+
+  input.addEventListener('input',function(){
+    const length = this.value.length;
+    counter.textContent = `${length}/${maxLength} caracteres`;
+
+    if(length>maxLength){
+      counter.classList.add('text-danger');
+      counter.classList.remove('text-muted');
+    }else{
+      counter.classList.add('text-muted');
+      counter.classList.remove('text-danger');
+    }
+  });
+}
+
 function editarProyecto() {
   const form = document.getElementById('proyectoForm');
   const formData = new FormData(form);
@@ -457,3 +489,5 @@ function showAlert(message, type) {
     }
   }, 5000);
 }
+
+document.addEventListener('DOMContentLoaded', setupCharacterCounters);

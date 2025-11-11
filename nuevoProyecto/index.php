@@ -248,17 +248,31 @@
                   <div class="row">
                     <div class="col-md-6">
                       <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Nombre*</label>
+                        <label class="col-sm-3 col-form-label">Nombre <span class="text-danger">*</span></label>
                         <div class="col-sm-9">
-                          <input type="text" id="nombre" name="nombre" class="form-control" required/>
+                          <input type="text" 
+                                 id="nombre" 
+                                 name="nombre" 
+                                 class="form-control"
+                                 maxlength="100"
+                                 placeholder="Ingrese el nombre del proyecto" 
+                                 required/>
                         </div>
                       </div>
                     </div>
                     <div class="col-md-6">
                       <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Descripción*</label>
+                        <label class="col-sm-3 col-form-label">Descripción<span class="text-danger">*</span></label>
                         <div class="col-sm-9">
-                          <input type="text" id="descripcion" name="descripcion" class="form-control" required/>
+                          <textarea type="text" 
+                                    id="descripcion" 
+                                    name="descripcion" 
+                                    class="form-control"
+                                    placeholder="Ingrese la descripción del proyecto"
+                                    maxlength="200"
+                                    rows="3" 
+                                    required
+                          ></textarea>
                         </div>
                       </div>
                     </div>
@@ -267,9 +281,12 @@
                   <div class="row">
                     <div class="col-md-6">
                       <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Departamento*</label>
+                        <label class="col-sm-3 col-form-label">Departamento<span class="text-danger">*</span></label>
                         <div class="col-sm-9">
-                          <select id="id_departamento" name="id_departamento" class="form-control" required>
+                          <select id="id_departamento" 
+                                  name="id_departamento" 
+                                  class="form-control" 
+                                  required>
                             <option value="">Seleccione un departamento</option>
                           </select>
                         </div>
@@ -277,7 +294,7 @@
                     </div>
                     <div class="col-md-6">
                       <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Asignar a*</label>
+                        <label class="col-sm-3 col-form-label">Asignar a <span class="text-danger">*</span></label>
                         <div class="col-sm-9">
                           <select id="id_participante" name="id_participante" class="form-control" required>
                             <option value="">Seleccione un empleado</option>
@@ -290,17 +307,27 @@
                   <div class="row">
                     <div class="col-md-6">
                       <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Fecha de inicio*</label>
+                        <label class="col-sm-3 col-form-label">Fecha de inicio <span class="text-danger">*</span></label>
                         <div class="col-sm-9">
-                          <input type="datetime-local" id="fecha_creacion" name="fecha_creacion" class="form-control" required/>
+                          <input type="datetime-local" 
+                                 id="fecha_creacion" 
+                                 name="fecha_creacion" 
+                                 class="form-control" 
+                                 required/>
+                          <small class="form-text text-muted">Seleccione la fecha de inicio del proyecto</small>
                         </div>
                       </div>
                     </div>
                     <div class="col-md-6">
                       <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Fecha de entrega*</label>
+                        <label class="col-sm-3 col-form-label">Fecha de entrega <span class="text-danger">*</span></label>
                         <div class="col-sm-9">
-                          <input type="date" id="fecha_cumplimiento" name="fecha_cumplimiento" class="form-control" required/>
+                          <input type="date" 
+                                 id="fecha_cumplimiento" 
+                                 name="fecha_cumplimiento" 
+                                 class="form-control" 
+                                 required/>
+                          <small class="form-text text-muted">Seleccione la fecha límite para el proyecto</small>
                         </div>
                       </div>
                     </div>
@@ -311,17 +338,30 @@
                       <div class="form-group row">
                         <label class="col-sm-3 col-form-label">AR (Opcional)</label>
                         <div class="col-sm-9">
-                          <input type="text" id="ar" name="ar" class="form-control"/>
+                          <input 
+                            type="text" 
+                            id="ar" 
+                            name="ar" 
+                            class="form-control"
+                            maxlength="200"
+                            placeholder="Ingrese el código AR si aplica"
+                          />
+                          <small class="form-text text-muted">Código de referencia adicional</small>
                         </div>
                       </div>
                     </div>
                     <div class="col-md-6">
                       <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Tipo de proyecto*</label>
+                        <label class="col-sm-3 col-form-label">Tipo de proyecto <span class="text-danger">*</span></label>
                         <div class="col-sm-4">
                           <div class="form-check form-check-success">
                             <label class="form-check-label">
-                              <input type="radio" class="form-check-input" name="id_tipo_proyecto" id="tipoProyecto1" value="2" required>
+                              <input type="radio" 
+                                     class="form-check-input" 
+                                     name="id_tipo_proyecto" 
+                                     id="tipoProyecto1" 
+                                     value="2" 
+                                     required>
                               Individual
                             </label>
                           </div>
@@ -329,7 +369,12 @@
                         <div class="col-sm-5">
                           <div class="form-check form-check-success">
                             <label class="form-check-label">
-                              <input type="radio" class="form-check-input" name="id_tipo_proyecto" id="tipoProyecto2" value="1" required>
+                              <input type="radio" 
+                                     class="form-check-input" 
+                                     name="id_tipo_proyecto" 
+                                     id="tipoProyecto2" 
+                                     value="1" 
+                                     required>
                               Grupal
                             </label>
                           </div>
@@ -342,9 +387,17 @@
                     <div class="col-md-6">
                       <div class="form-group row">
                         <label for="subirArchivo" class="col-sm-3 col-form-label">Subir archivo</label>
-                        <input type="file" id="archivoInput" name="archivo_adjunto" class="file-upload-default">
+                        <input type="file" 
+                               id="archivoInput" 
+                               name="archivo_adjunto" 
+                               class="file-upload-default">
+                        
                         <div class="col-sm-9">
-                          <input type="text" id="nombreArchivo" class="form-control" disabled placeholder="Seleccione el archivo para subir">
+                          <input type="text" 
+                                 id="nombreArchivo" 
+                                 class="form-control" 
+                                 disabled placeholder="Seleccione el archivo para subir">
+                          
                           <span class="input-group-append">
                             <button class="file-upload-browse btn btn-success" type="button" id="btnSubirArchivo">Subir</button>
                           </span>

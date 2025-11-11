@@ -216,7 +216,7 @@ function validateForm(formData) {
     const fecha_cumplimiento = formData.get('fecha_cumplimiento');
     const id_departamento = formData.get('id_departamento');
     
-    // Check required fields
+    //revisar campos requeridos
     if (!nombre || nombre.trim() === '') {
         showNotification('El nombre es requerido', 'warning');
         document.getElementById('nombre').focus();
