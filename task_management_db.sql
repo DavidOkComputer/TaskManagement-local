@@ -282,6 +282,25 @@ ALTER TABLE `tbl_usuarios`
   MODIFY `id_usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 COMMIT;
 
+/**
+ * SQL QUERIES - Run these in your database to support group projects
+ */
+
+-- 1. Create junction table for project-user relationships (if not exists)
+CREATE TABLE IF NOT EXISTS tbl_proyecto_usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_proyecto INT NOT NULL,
+    id_usuario INT NOT NULL,
+    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_proyecto) REFERENCES tbl_proyectos(id_proyecto) ON DELETE CASCADE,
+    FOREIGN KEY (id_usuario) REFERENCES tbl_usuarios(id_usuario) ON DELETE CASCADE,
+    UNIQUE KEY unique_proyecto_usuario (id_proyecto, id_usuario)
+);
+
+-- 2. Create index for faster queries
+CREATE INDEX idx_proyecto_usuarios ON tbl_proyecto_usuarios(id_proyecto);
+CREATE INDEX idx_usuario_proyectos ON tbl_proyecto_usuarios(id_usuario);
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

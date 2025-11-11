@@ -365,6 +365,37 @@
                       <button type="button" class="btn btn-light" id="btnCancelar">Cancelar</button>
                     </div>
                   </div>
+                  <!-- MODAL FOR GROUP PROJECT USER SELECTION -->
+<!-- Add this code BEFORE the closing </form> tag in your HTML -->
+
+<!-- Modal for Group Project User Selection -->
+<div class="modal fade" id="grupalUsuariosModal" tabindex="-1" aria-labelledby="grupalUsuariosLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="grupalUsuariosLabel">Seleccionar integrantes del proyecto grupal</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <input type="text" id="searchUsuarios" class="form-control" placeholder="Buscar usuario por nombre o email...">
+          </div>
+        </div>
+        <div id="usuariosListContainer" style="max-height: 400px; overflow-y: auto;">
+          <!-- Users will be populated here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="col-md-12" id="selectedUsersDisplay" class="mb-2">
+          <small class="text-muted">Usuarios seleccionados: <span id="countSelected">0</span></small>
+        </div>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" id="btnConfirmarGrupal">Confirmar selección</button>
+      </div>
+    </div>
+  </div>
+</div>
                 </form>
               </div>
             </div>

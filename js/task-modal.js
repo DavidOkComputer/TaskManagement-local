@@ -1,7 +1,16 @@
+/**
+ * task-modal.js - Updated to support task completion tracking and automatic project progress
+ * 
+ * Features:
+ * - Create new tasks
+ * - Update task status by checking/unchecking
+ * - Automatic project progress calculation based on task completion
+ * - Real-time project progress updates
+ */
 
 document.addEventListener('DOMContentLoaded', function() {
   
-  //crear el modal en html e insertarlo a el cuerpo
+  // crear el modal en html e insertarlo a el cuerpo
   const modalHTML = `
     <div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
@@ -29,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
               <div class="mb-3">
                 <label for="taskDate" class="form-label">Fecha de Vencimiento</label>
-                <input type="date" class="form-control" id="taskDate" required>
+                <input type="date" class="form-control" id="taskDate">
               </div>
               <div class="mb-3">
                 <label for="taskStatus" class="form-label">Estado</label>
@@ -54,19 +63,19 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   `;
   
-  //insertar modal en el cuerpo
+  // insertar modal en el cuerpo
   document.body.insertAdjacentHTML('beforeend', modalHTML);
   
-  //elementos del modal
+  // elementos del modal
   const taskModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
   
-  //boton añadir
+  // boton añadir
   const addBtn = document.querySelector('.todo-list-add-btn');
   
-  //tomar to do list
+  // tomar to do list
   const todoList = document.querySelector('.todo-list');
   
-  //cargar proyectos cuando se abre el modal
+  // cargar proyectos cuando se abre el modal
   document.getElementById('addTaskModal').addEventListener('show.bs.modal', function () {
     loadProjects();
   });
@@ -79,8 +88,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const projectSelect = document.getElementById('taskProject');
         projectSelect.innerHTML = '<option value="">Seleccione un proyecto</option>';
         
-        if (data.success && data.projects) {
-          data.projects.forEach(project => {
+        if (data.success && data.proyectos) {
+          data.proyectos.forEach(project => {
             const option = document.createElement('option');
             option.value = project.id_proyecto;
             option.textContent = project.nombre;
@@ -94,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   }
   
-  if (addBtn) {//evento de clic en el boton agregar
+  if (addBtn) { // evento de clic en el boton agregar
     addBtn.addEventListener('click', function(e) {
       e.preventDefault();
       taskModal.show();
@@ -103,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   const saveBtn = document.getElementById('saveTaskBtn');
   
-  function showMessage(message, type) {//funcion para mostrar el mensaje
+  function showMessage(message, type) { // funcion para mostrar el mensaje
     const messageDiv = document.getElementById('taskMessage');
     messageDiv.className = `alert alert-${type}`;
     messageDiv.textContent = message;
@@ -114,7 +123,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 3000);
   }
   
-  function setLoading(isLoading) {//cargar estadisticas
+  function setLoading(isLoading) { // cargar estadisticas
     const btnText = saveBtn.querySelector('.btn-text');
     const spinner = saveBtn.querySelector('.spinner-border');
     
@@ -129,16 +138,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  if (saveBtn) {//evento de clic en boton guardar
+  if (saveBtn) { // evento de clic en boton guardar
     saveBtn.addEventListener('click', function() {
       const form = document.getElementById('addTaskForm');
       
-      if (!form.checkValidity()) {//validar form
+      if (!form.checkValidity()) { // validar form
         form.reportValidity();
         return;
       }
       
-      //tomar los valores del form
+      // tomar los valores del form
       const taskName = document.getElementById('taskName').value;
       const taskDescription = document.getElementById('taskDescription').value;
       const taskProject = document.getElementById('taskProject').value;
@@ -147,15 +156,16 @@ document.addEventListener('DOMContentLoaded', function() {
       
       setLoading(true);
       
-      //preparar la info para mandarla
+      // preparar la info para mandarla
       const formData = new FormData();
       formData.append('nombre', taskName);
       formData.append('descripcion', taskDescription);
       formData.append('id_proyecto', taskProject);
       formData.append('fecha_vencimiento', taskDate);
       formData.append('estado', taskStatus);
+      formData.append('id_creador', 1); // Should be set to current user ID
       
-      //enviar informacion al servidor
+      // enviar informacion al servidor
       fetch('../php/save_task.php', {
         method: 'POST',
         body: formData
@@ -165,13 +175,16 @@ document.addEventListener('DOMContentLoaded', function() {
         setLoading(false);
         
         if (data.success) {
-          //darle formato a la fecha
-          const dateObj = new Date(taskDate);
-          const formattedDate = dateObj.toLocaleDateString('es-MX', { 
-            day: '2-digit', 
-            month: 'short', 
-            year: 'numeric' 
-          });
+          // darle formato a la fecha
+          let formattedDate = 'Sin fecha';
+          if (taskDate) {
+            const dateObj = new Date(taskDate);
+            formattedDate = dateObj.toLocaleDateString('es-MX', { 
+              day: '2-digit', 
+              month: 'short', 
+              year: 'numeric' 
+            });
+          }
           
           let badgeClass = 'badge-opacity-warning';
           let badgeText = 'Pendiente';
@@ -179,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
           if (taskStatus === 'completado') {
             badgeClass = 'badge-opacity-success';
             badgeText = 'Completado';
-          } else if (taskStatus === 'en-progreso') {
+          } else if (taskStatus === 'en-progreso' || taskStatus === 'en proceso') {
             badgeClass = 'badge-opacity-info';
             badgeText = 'En Progreso';
           }
@@ -188,13 +201,13 @@ document.addEventListener('DOMContentLoaded', function() {
             <li class="d-block" data-task-id="${data.task_id}">
               <div class="form-check w-100">
                 <label class="form-check-label">
-                  <input class="checkbox" type="checkbox" ${taskStatus === 'completado' ? 'checked' : ''}> 
+                  <input class="checkbox task-checkbox" type="checkbox" data-task-id="${data.task_id}" ${taskStatus === 'completado' ? 'checked' : ''}> 
                   ${taskName} 
                   <i class="input-helper rounded"></i>
                 </label>
                 <div class="d-flex mt-2">
                   <div class="ps-4 text-small me-3">${formattedDate}</div>
-                  <div class="badge ${badgeClass} me-3">${badgeText}</div>
+                  <div class="badge ${badgeClass} me-3 task-badge">${badgeText}</div>
                   <i class="mdi mdi-flag ms-2 flag-color"></i>
                 </div>
               </div>
@@ -203,10 +216,16 @@ document.addEventListener('DOMContentLoaded', function() {
           
           if (todoList) {
             todoList.insertAdjacentHTML('beforeend', newTaskHTML);
+            
+            // Add event listener to the new checkbox
+            const newCheckbox = todoList.querySelector(`[data-task-id="${data.task_id}"]`);
+            if (newCheckbox) {
+              attachTaskCheckboxListener(newCheckbox);
+            }
           }
           
           showMessage('Tarea guardada exitosamente', 'success');
-          //limpiar form
+          // limpiar form
           setTimeout(() => {
             form.reset();
             taskModal.hide();
@@ -228,5 +247,88 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addTaskForm').reset();
     document.getElementById('taskMessage').style.display = 'none';
   });
+
+  /**
+   * Attach checkbox event listener to update task status
+   * When checkbox is clicked, update task status and recalculate project progress
+   */
+  function attachTaskCheckboxListener(checkboxElement) {
+    const checkbox = checkboxElement.querySelector('.task-checkbox');
+    if (!checkbox) return;
+
+    checkbox.addEventListener('change', function() {
+      const taskId = this.getAttribute('data-task-id');
+      const isChecked = this.checked;
+      const newStatus = isChecked ? 'completado' : 'pendiente';
+
+      // Show loading state
+      const li = checkboxElement;
+      li.style.opacity = '0.6';
+      li.style.pointerEvents = 'none';
+
+      // Send update to server
+      const updateData = new FormData();
+      updateData.append('id_tarea', taskId);
+      updateData.append('estado', newStatus);
+
+      fetch('../php/update_task_status.php', {
+        method: 'POST',
+        body: updateData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update badge
+          const badge = li.querySelector('.task-badge');
+          if (badge) {
+            if (isChecked) {
+              badge.className = 'badge badge-opacity-success me-3 task-badge';
+              badge.textContent = 'Completado';
+            } else {
+              badge.className = 'badge badge-opacity-warning me-3 task-badge';
+              badge.textContent = 'Pendiente';
+            }
+          }
+
+          // Restore normal state
+          li.style.opacity = '1';
+          li.style.pointerEvents = 'auto';
+
+          showMessage('Estado de tarea actualizado correctamente', 'success');
+          
+          // Optionally reload project progress from server
+          // This could be done by emitting a custom event or calling a function
+          // to update the project progress display if it's visible on the same page
+        } else {
+          // Revert checkbox on error
+          checkbox.checked = !isChecked;
+          li.style.opacity = '1';
+          li.style.pointerEvents = 'auto';
+          
+          showMessage(data.message || 'Error al actualizar la tarea', 'danger');
+        }
+      })
+      .catch(error => {
+        console.error('Error updating task:', error);
+        
+        // Revert checkbox on error
+        checkbox.checked = !isChecked;
+        li.style.opacity = '1';
+        li.style.pointerEvents = 'auto';
+        
+        showMessage('Error al conectar con el servidor', 'danger');
+      });
+    });
+  }
+
+  /**
+   * Initialize existing task checkboxes
+   */
+  if (todoList) {
+    const existingCheckboxes = todoList.querySelectorAll('li');
+    existingCheckboxes.forEach(li => {
+      attachTaskCheckboxListener(li);
+    });
+  }
   
 });

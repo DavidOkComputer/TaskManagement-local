@@ -1,15 +1,44 @@
-/**create_proyect.js //javascript para creacion de proyectos*/
+/**create_proyect.js //javascript para creacion y edicion de proyectos*/
+
+const editMode = {
+    isEditing: false,
+    projectId: null
+};
+
+// Estado para proyecto grupal
+const grupalState = {
+    selectedUsers: [],
+    usuariosModal: null
+};
+
 //inicializar pagina al cargar
 document.addEventListener('DOMContentLoaded', function() {
+  // Detectar si estamos en modo edición
+  const params = new URLSearchParams(window.location.search);
+  editMode.projectId = params.get('edit');
+  editMode.isEditing = !!editMode.projectId;
+  
+  // Cambiar título y botón si estamos editando
+  if (editMode.isEditing) {
+    document.querySelector('h4.card-title')?.textContent = 'Editar Proyecto';
+    document.querySelector('p.card-subtitle')?.textContent = 'Actualiza la información del proyecto';
+    document.getElementById('btnCrear').textContent = 'Actualizar';
+  }
+  
   cargarDepartamentos();
-  //cargarEmpleados();
   loadUsuarios();
   setupFormHandlers();
+  setupGrupalHandlers();
+  
+  // Si es edición, cargar datos del proyecto
+  if (editMode.isEditing) {
+    cargarProyectoParaEditar(editMode.projectId);
+  }
 });
 
 const app = {
-        usuarios: []
-    };
+    usuarios: []
+};
 
 function cargarDepartamentos() {
   fetch('../php/get_departments.php')
@@ -38,70 +67,207 @@ function cargarDepartamentos() {
     });
 }
 
-
 function loadUsuarios() {
-        fetch('../php/get_users.php')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.usuarios) {
-                    app.usuarios = data.usuarios;
-                    populateUsuariosSelect(data.usuarios);
-                    console.log(`${data.usuarios.length}`);
-                } else {
-                    console.error('Error al cargar usuarios:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error en fetch de usuarios:', error);
-            });
-    }
-
-    function populateUsuariosSelect(usuarios) {
-        const select = document.getElementById('id_participante');
-        if (!select) return;
-
-        // Limpiar opciones existentes excepto la primera
-        select.innerHTML = '<option value="0">Sin usuario asignado</option>';
-
-        // Agregar opciones
-        usuarios.forEach(usuario => {
-            const option = document.createElement('option');
-            option.value = usuario.id_usuario;
-            option.textContent = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
-            select.appendChild(option);
-        });
-    }
-
-/*
-function cargarEmpleados() {
   fetch('../php/get_users.php')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.usuarios) {
+        app.usuarios = data.usuarios;
+        populateUsuariosSelect(data.usuarios);
+        populateGrupalModal(data.usuarios);
+        console.log(`${data.usuarios.length} usuarios cargados`);
+      } else {
+        console.error('Error al cargar usuarios:', data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error en fetch de usuarios:', error);
+    });
+}
+
+function populateUsuariosSelect(usuarios) {
+  const select = document.getElementById('id_participante');
+  if (!select) return;
+
+  // Limpiar opciones existentes excepto la primera
+  select.innerHTML = '<option value="0">Sin usuario asignado</option>';
+
+  // Agregar opciones
+  usuarios.forEach(usuario => {
+    const option = document.createElement('option');
+    option.value = usuario.id_usuario;
+    option.textContent = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
+    select.appendChild(option);
+  });
+}
+
+/**
+ * Poblar el modal con usuarios para proyecto grupal
+ */
+function populateGrupalModal(usuarios) {
+  const container = document.getElementById('usuariosListContainer');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  usuarios.forEach(usuario => {
+    const userCheckbox = document.createElement('div');
+    userCheckbox.className = 'form-check mb-3 p-2 border-bottom';
+    userCheckbox.innerHTML = `
+      <input class="form-check-input usuario-checkbox" type="checkbox" value="${usuario.id_usuario}" id="check_${usuario.id_usuario}">
+      <label class="form-check-label w-100" for="check_${usuario.id_usuario}">
+        <strong>${usuario.nombre_completo}</strong>
+        <br>
+        <small class="text-muted">Empleado #${usuario.num_empleado} - ${usuario.e_mail}</small>
+      </label>
+    `;
+    container.appendChild(userCheckbox);
+  });
+
+  // Agregar event listeners a los checkboxes
+  document.querySelectorAll('.usuario-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', updateSelectedCount);
+  });
+}
+
+/**
+ * Actualizar contador de usuarios seleccionados
+ */
+function updateSelectedCount() {
+  const checkedCount = document.querySelectorAll('.usuario-checkbox:checked').length;
+  document.getElementById('countSelected').textContent = checkedCount;
+}
+
+/**
+ * Setup handlers para proyecto grupal
+ */
+function setupGrupalHandlers() {
+  const tipoProyectoRadios = document.querySelectorAll('input[name="id_tipo_proyecto"]');
+  const participanteField = document.getElementById('id_participante');
+
+  tipoProyectoRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+      if (this.value == '1') { // Grupal (value 1)
+        // Mostrar modal de selección grupal
+        if (!grupalState.usuariosModal) {
+          grupalState.usuariosModal = new bootstrap.Modal(document.getElementById('grupalUsuariosModal'));
+        }
+        grupalState.usuariosModal.show();
+        
+        // Desactivar/ocultar el campo de participante individual
+        participanteField.disabled = true;
+        participanteField.value = '0';
+      } else { // Individual (value 2)
+        // Limpiar selección grupal
+        grupalState.selectedUsers = [];
+        document.querySelectorAll('.usuario-checkbox').forEach(cb => cb.checked = false);
+        updateSelectedCount();
+        
+        // Activar campo de participante individual
+        participanteField.disabled = false;
+      }
+    });
+  });
+
+  // Botón de confirmar en modal
+  const btnConfirmar = document.getElementById('btnConfirmarGrupal');
+  if (btnConfirmar) {
+    btnConfirmar.addEventListener('click', function() {
+      const selectedCheckboxes = document.querySelectorAll('.usuario-checkbox:checked');
+      if (selectedCheckboxes.length === 0) {
+        showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'warning');
+        return;
+      }
+
+      grupalState.selectedUsers = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
+      
+      // Cerrar modal
+      grupalState.usuariosModal.hide();
+      
+      showAlert(`${grupalState.selectedUsers.length} usuario(s) seleccionado(s) para el proyecto grupal`, 'success');
+    });
+  }
+
+  // Búsqueda en el modal
+  const searchInput = document.getElementById('searchUsuarios');
+  if (searchInput) {
+    searchInput.addEventListener('keyup', function() {
+      const searchTerm = this.value.toLowerCase();
+      const checkboxes = document.querySelectorAll('.usuario-checkbox');
+      
+      checkboxes.forEach(checkbox => {
+        const label = checkbox.closest('.form-check').querySelector('label').textContent.toLowerCase();
+        if (label.includes(searchTerm)) {
+          checkbox.closest('.form-check').style.display = 'block';
+        } else {
+          checkbox.closest('.form-check').style.display = 'none';
+        }
+      });
+    });
+  }
+}
+
+/**
+ * Cargar proyecto existente para edición
+ */
+function cargarProyectoParaEditar(projectId) {
+  fetch(`../php/get_project_by_id.php?id=${projectId}`)
     .then(response => {
       if (!response.ok) {
-        throw new Error('La respuesta de la red no fue ok.');
+        throw new Error('La respuesta de red no fue ok');
       }
       return response.json();
     })
     .then(data => {
-      if (data.success && data.empleados) {
-        const select = document.getElementById('id_participante');
-        data.empleados.forEach(emp => {
-          const option = document.createElement('option');
-          option.value = emp.id_usuario;
-          option.textContent = emp.nombre + ' ' + emp.apellido;
-          select.appendChild(option);
-        });
+      if (data.success && data.proyecto) {
+        const proyecto = data.proyecto;
+        
+        // Llenar formulario con datos del proyecto
+        document.getElementById('nombre').value = proyecto.nombre || '';
+        document.getElementById('descripcion').value = proyecto.descripcion || '';
+        document.getElementById('id_departamento').value = proyecto.id_departamento || '';
+        document.getElementById('fecha_creacion').value = proyecto.fecha_inicio || '';
+        document.getElementById('fecha_cumplimiento').value = proyecto.fecha_cumplimiento || '';
+        document.getElementById('progreso').value = proyecto.progreso || 0;
+        document.getElementById('ar').value = proyecto.ar || '';
+        document.getElementById('estado').value = proyecto.estado || 'pendiente';
+        document.getElementById('id_participante').value = proyecto.id_participante || 0;
+        
+        // Establecer tipo de proyecto
+        const tipoValue = proyecto.id_tipo_proyecto == 1 ? '1' : '2';
+        document.querySelector(`input[name="id_tipo_proyecto"][value="${tipoValue}"]`).checked = true;
+        
+        // Si es grupal, cargar los usuarios asignados
+        if (tipoValue == '1' && proyecto.usuarios_asignados) {
+          grupalState.selectedUsers = proyecto.usuarios_asignados.map(u => u.id_usuario);
+          // Pre-seleccionar checkboxes
+          grupalState.selectedUsers.forEach(userId => {
+            const checkbox = document.querySelector(`#check_${userId}`);
+            if (checkbox) checkbox.checked = true;
+          });
+          updateSelectedCount();
+        }
+        
+        // Mostrar archivo adjunto si existe
+        if (proyecto.archivo_adjunto) {
+          document.getElementById('nombreArchivo').value = proyecto.archivo_adjunto.split('/').pop();
+        }
+        
+        showAlert('Proyecto cargado correctamente', 'success');
       } else {
-        showAlert('Error al cargar empleados', 'warning');//alerta en amarillo
+        showAlert('Error al cargar el proyecto: ' + data.message, 'danger');
+        window.location.href = '../revisarProyectos/';
       }
     })
     .catch(error => {
-      console.error('Error al cargar los empleados: ', error);
-      showAlert('Error al cargar empleados.', 'danger');//alerta en rojo
+      console.error('Error al cargar proyecto:', error);
+      showAlert('Error al cargar el proyecto: ' + error.message, 'danger');
+      window.location.href = '../revisarProyectos/';
     });
-}*/
+}
 
 function setupFormHandlers() {
-    document.getElementById('btnSubirArchivo').addEventListener('click', function() {
+  document.getElementById('btnSubirArchivo').addEventListener('click', function() {
     document.getElementById('archivoInput').click();
   });
 
@@ -112,27 +278,39 @@ function setupFormHandlers() {
   });
 
   document.getElementById('btnCancelar').addEventListener('click', function() {
-    if (confirm('¿Deseas cancelar la creación del proyecto?')) {
+    if (confirm('¿Deseas cancelar?')) {
       window.location.href = '../revisarProyectos/';
     }
   });
 
   document.getElementById('proyectoForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    crearProyecto();
+    if (editMode.isEditing) {
+      editarProyecto();
+    } else {
+      crearProyecto();
+    }
   });
 }
 
-
-
+/**
+ * Crear nuevo proyecto
+ */
 function crearProyecto() {
   const form = document.getElementById('proyectoForm');
   const formData = new FormData(form);
   const archivoInput = document.getElementById('archivoInput');
+  const tipoProyecto = document.querySelector('input[name="id_tipo_proyecto"]:checked').value;
 
   if (!form.checkValidity()) {
     showAlert('Por favor, completa todos los campos requeridos', 'danger');
     form.classList.add('was-validated');
+    return;
+  }
+
+  // Validar que se hayan seleccionado usuarios para proyecto grupal
+  if (tipoProyecto == '1' && grupalState.selectedUsers.length === 0) {
+    showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
     return;
   }
 
@@ -144,7 +322,11 @@ function crearProyecto() {
     uploadFile(archivoInput.files[0], function(filePath) {
       if (filePath) {
         formData.set('archivo_adjunto', filePath);
-        submitForm(formData, btnCrear);
+        // Agregar usuarios seleccionados para proyecto grupal
+        if (tipoProyecto == '1') {
+          formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
+        }
+        submitForm(formData, btnCrear, 'create');
       } else {
         btnCrear.disabled = false;
         btnCrear.innerHTML = 'Crear';
@@ -152,7 +334,65 @@ function crearProyecto() {
     });
   } else {
     formData.set('archivo_adjunto', '');
-    submitForm(formData, btnCrear);
+    // Agregar usuarios seleccionados para proyecto grupal
+    if (tipoProyecto == '1') {
+      formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
+    }
+    submitForm(formData, btnCrear, 'create');
+  }
+}
+
+/**
+ * Editar proyecto existente
+ */
+function editarProyecto() {
+  const form = document.getElementById('proyectoForm');
+  const formData = new FormData(form);
+  const archivoInput = document.getElementById('archivoInput');
+  const tipoProyecto = document.querySelector('input[name="id_tipo_proyecto"]:checked').value;
+
+  if (!form.checkValidity()) {
+    showAlert('Por favor, completa todos los campos requeridos', 'danger');
+    form.classList.add('was-validated');
+    return;
+  }
+
+  // Validar que se hayan seleccionado usuarios para proyecto grupal
+  if (tipoProyecto == '1' && grupalState.selectedUsers.length === 0) {
+    showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
+    return;
+  }
+
+  const btnCrear = document.getElementById('btnCrear');
+  btnCrear.disabled = true;
+  btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Actualizando...';
+
+  // Si hay archivo nuevo, subirlo
+  if (archivoInput.files.length > 0) {
+    uploadFile(archivoInput.files[0], function(filePath) {
+      if (filePath) {
+        formData.set('archivo_adjunto', filePath);
+        // Agregar usuarios seleccionados para proyecto grupal
+        if (tipoProyecto == '1') {
+          formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
+        }
+        submitForm(formData, btnCrear, 'edit');
+      } else {
+        btnCrear.disabled = false;
+        btnCrear.innerHTML = 'Actualizar';
+      }
+    });
+  } else {
+    // Si no hay archivo nuevo, mantener el existente
+    const nombreArchivoField = document.getElementById('nombreArchivo').value;
+    if (nombreArchivoField) {
+      formData.set('archivo_adjunto', nombreArchivoField);
+    }
+    // Agregar usuarios seleccionados para proyecto grupal
+    if (tipoProyecto == '1') {
+      formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
+    }
+    submitForm(formData, btnCrear, 'edit');
   }
 }
 
@@ -185,10 +425,17 @@ function uploadFile(file, callback) {
   });
 }
 
+function submitForm(formData, btnCrear, action) {
+  const endpoint = action === 'edit' 
+    ? '../php/update_project.php' 
+    : '../php/create_project.php';
 
+  // Agregar ID del proyecto si es edición
+  if (editMode.isEditing) {
+    formData.append('id_proyecto', editMode.projectId);
+  }
 
-function submitForm(formData, btnCrear) {
-  fetch('../php/create_project.php', {
+  fetch(endpoint, {
     method: 'POST',
     body: formData
   })
@@ -200,22 +447,31 @@ function submitForm(formData, btnCrear) {
   })
   .then(data => {
     if (data.success) {
-      showAlert('¡Proyecto creado exitosamente!', 'success');
-      //redirigir despues de 1.5s
+      const successMessage = action === 'edit' 
+        ? '¡Proyecto actualizado exitosamente!' 
+        : '¡Proyecto creado exitosamente!';
+      
+      showAlert(successMessage, 'success');
+      
+      // Redirigir después de 1.5s
       setTimeout(function() {
         window.location.href = '../revisarProyectos/';
       }, 1500);
     } else {
       showAlert('Error: ' + data.message, 'danger');
       btnCrear.disabled = false;
-      btnCrear.innerHTML = 'Crear';
+      btnCrear.innerHTML = action === 'edit' ? 'Actualizar' : 'Crear';
     }
   })
   .catch(error => {
-    console.error('Error creating project:', error);
-    showAlert('Error al crear el proyecto: ' + error.message, 'danger');
+    console.error('Error:', error);
+    const errorMsg = action === 'edit' 
+      ? 'Error al actualizar el proyecto: ' 
+      : 'Error al crear el proyecto: ';
+    
+    showAlert(errorMsg + error.message, 'danger');
     btnCrear.disabled = false;
-    btnCrear.innerHTML = 'Crear';
+    btnCrear.innerHTML = action === 'edit' ? 'Actualizar' : 'Crear';
   });
 }
 
@@ -229,7 +485,7 @@ function showAlert(message, type) {
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   `;
   
-  alertContainer.innerHTML = '';//limpiar alertas anteriores
+  alertContainer.innerHTML = ''; //limpiar alertas anteriores
   alertContainer.appendChild(alertDiv);
 
   //auto eliminar despues de 5s

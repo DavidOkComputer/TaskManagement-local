@@ -1,8 +1,34 @@
+/**objetivo_form.js - Maneja creacion y edicion de objetivos */
+
+const editMode = {
+    isEditing: false,
+    objectiveId: null
+};
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadDepartamentos();//cargar departamentos al cargar la pagina
+    // Detectar si estamos en modo edición
+    const params = new URLSearchParams(window.location.search);
+    editMode.objectiveId = params.get('edit');
+    editMode.isEditing = !!editMode.objectiveId;
     
-    initFileUpload();//inicializar carga de pagina
+    // Cambiar título y botón si estamos editando
+    if (editMode.isEditing) {
+        const titleElement = document.querySelector('h4.card-title');
+        if (titleElement) {
+            titleElement.textContent = 'Editar Objetivo';
+        }
+        const subtitleElement = document.querySelector('p.card-subtitle');
+        if (subtitleElement) {
+            subtitleElement.textContent = 'Modifica la información del objetivo';
+        }
+        const submitBtn = document.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="mdi mdi-check"></i> Actualizar Objetivo';
+        }
+    }
+    
+    loadDepartamentos();//cargar departamentos al cargar la pagina
+    initFileUpload();//inicializar carga de archivos
     
     const form = document.getElementById('formCrearObjetivo');//maneja la creacion del form
     if (form) {
@@ -14,10 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
         cancelBtn.addEventListener('click', function(e) {
             e.preventDefault();
             if (confirm('¿Está seguro de que desea cancelar? Se perderán los datos ingresados.')) {
-                form.reset();
-                document.getElementById('fileUploadLabel').value = '';
+                window.location.href = '../revisarObjetivos/';
             }
         });
+    }
+    
+    // Si es edición, cargar datos del objetivo
+    if (editMode.isEditing) {
+        cargarObjetivoParaEditar(editMode.objectiveId);
     }
 });
 
@@ -39,12 +69,60 @@ function loadDepartamentos() {
           select.appendChild(option);
         });
       } else {
-        showAlert('Error al cargar departamentos', 'warning');
+        showNotification('Error al cargar departamentos', 'warning');
       }
     })
     .catch(error => {
       console.error('Error al cargar los departamentos:', error);
-      showAlert('Error al cargar departamentos', 'danger');
+      showNotification('Error al cargar departamentos', 'danger');
+    });
+}
+
+/**
+ * Cargar objetivo existente para edición
+ */
+function cargarObjetivoParaEditar(objectiveId) {
+  fetch(`../php/get_objective_by_id.php?id=${objectiveId}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('La respuesta de red no fue ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success && data.objetivo) {
+        const objetivo = data.objetivo;
+        
+        // Llenar formulario con datos del objetivo
+        document.getElementById('nombre').value = objetivo.nombre || '';
+        document.getElementById('descripcion').value = objetivo.descripcion || '';
+        document.getElementById('fecha_cumplimiento').value = objetivo.fecha_cumplimiento || '';
+        document.getElementById('ar').value = objetivo.ar || '';
+        document.getElementById('id_departamento').value = objetivo.id_departamento || '';
+        
+        // Mostrar archivo adjunto si existe
+        if (objetivo.archivo_adjunto) {
+          document.getElementById('fileUploadLabel').value = objetivo.archivo_adjunto.split('/').pop();
+          const fileContainer = document.querySelector('.input-group');
+          if (fileContainer) {
+            const fileInfo = document.createElement('small');
+            fileInfo.className = 'text-muted d-block mt-2';
+            fileInfo.id = 'archivoActual';
+            fileInfo.innerHTML = `Archivo actual: <a href="../${objetivo.archivo_adjunto}" target="_blank">${objetivo.archivo_adjunto.split('/').pop()}</a>`;
+            fileContainer.parentElement.appendChild(fileInfo);
+          }
+        }
+        
+        showNotification('Objetivo cargado correctamente', 'success');
+      } else {
+        showNotification('Error al cargar el objetivo: ' + data.message, 'warning');
+        window.location.href = '../revisarObjetivos/';
+      }
+    })
+    .catch(error => {
+      console.error('Error al cargar objetivo:', error);
+      showNotification('Error al cargar el objetivo: ' + error.message, 'danger');
+      window.location.href = '../revisarObjetivos/';
     });
 }
 
@@ -77,9 +155,15 @@ function handleFormSubmit(e) {//manejo de informacion del form
     if (fileInput && fileInput.files.length > 0) {
         formData.append('archivo', fileInput.files[0]);
     }
+    
     //se agrega el ID del creador (se obtiene desde la sesion)
     const idCreador = getUserId();
     formData.append('id_creador', idCreador);
+    
+    // Si es edición, agregar ID del objetivo
+    if (editMode.isEditing) {
+        formData.append('id_objetivo', editMode.objectiveId);
+    }
     
     //validar el form
     if (!validateForm(formData)) {
@@ -88,40 +172,44 @@ function handleFormSubmit(e) {//manejo de informacion del form
     
     //se muestra el estado de carga
     const submitBtn = this.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
+    const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creando...';
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' + (editMode.isEditing ? 'Actualizando...' : 'Creando...');
+    
+    // Elegir endpoint según modo
+    const endpoint = editMode.isEditing 
+        ? '../php/update_objective.php' 
+        : '../php/create_objective.php';
     
     //subir form
-    fetch('../php/create_objective.php', {
+    fetch(endpoint, {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showNotification('Objetivo creado exitosamente', 'success');
+            const successMessage = editMode.isEditing 
+                ? '¡Objetivo actualizado exitosamente!' 
+                : '¡Objetivo creado exitosamente!';
             
-            //reiniciar form despues de un segundo
+            showNotification(successMessage, 'success');
+            
+            //redirigir despues de 1.5 segundos
             setTimeout(() => {
-                this.reset();
-                document.getElementById('fileUploadLabel').value = '';
-                
-                //si se quiere redirigir a la lista de objetivos de manera automatica
-                // window.location.href = '../revisarObjetivos';
+                window.location.href = '../revisarObjetivos/';
             }, 1500);
         } else {
             showNotification('Error: ' + data.message, 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('Error al crear el objetivo. Por favor, intente nuevamente.', 'error');
-    })
-    .finally(() => {
-        //restaurar el estado original del boton
+        showNotification('Error al ' + (editMode.isEditing ? 'actualizar' : 'crear') + ' el objetivo. Por favor, intente nuevamente.', 'error');
         submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
+        submitBtn.innerHTML = originalText;
     });
 }
 
@@ -162,7 +250,6 @@ function validateForm(formData) {
         return false;
     }
     
-    
     if (!id_departamento || id_departamento === '') {
         showNotification('Debe seleccionar un departamento', 'warning');
         document.getElementById('id_departamento').focus();
@@ -185,14 +272,13 @@ function validateForm(formData) {
 }
 
 /**
- * tomar el Id de la sesion
- * implementar basado en el sistema de autenticacion
+ * Tomar el Id de la sesion
+ * Implementar basado en el sistema de autenticacion
  */
 function getUserId() {
-    
     //return sessionStorage.getItem('userId');
-    // uso de id default 
-    return 1; // se remplaza con id que se toma de la sesion
+    // Uso de id default 
+    return 1; // Se remplaza con id que se toma de la sesion
 }
 
 function showNotification(message, type = 'info') {

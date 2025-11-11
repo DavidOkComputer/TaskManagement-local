@@ -16,14 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $query = "SELECT 
-                d.id_departamento,
-                d.nombre, 
-                d.descripcion, 
-                d.id_creador,
-                u.nombre as creador_nombre
-              FROM tbl_departamentos d 
-              LEFT JOIN tbl_usuarios u ON d.id_creador = u.id_usuario
+    $query = "SELECT id_departamento, nombre, descripcion, id_creador 
+              FROM tbl_departamentos 
               ORDER BY nombre ASC";
     $result = $conn->query($query);
     
@@ -38,7 +32,8 @@ try {
             'id_departamento' => (int)$row['id_departamento'],
             'nombre' => $row['nombre'],
             'descripcion' => $row['descripcion'],
-            'id_creador' => $row['id_creador']
+            'id_creador' => (int)$row['id_creador'],
+            'nombre_creador' => $row['nombre_creador'] ?? 'N/A'
         ];
     }
     

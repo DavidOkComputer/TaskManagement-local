@@ -17,7 +17,7 @@ function cargarObjetivos() {
     })
     .then(data => {
       if (data.success && data.objetivos) {
-        tableBody.innerHTML = ''; // limpiar spiner
+        tableBody.innerHTML = ''; // limpiar spinner
         
         if (data.objetivos.length === 0) {
           tableBody.innerHTML = `
@@ -66,10 +66,10 @@ function createObjectiveRow(objetivo, index) {
   
   const actionsButtons = `
     <div class="action-buttons">
-      <button class="btn btn-sm btn-success btn-action" onclick="editarobjetivo(${objetivo.id_objetivo})" title="Editar">
+      <button class="btn btn-sm btn-success btn-action" onclick="editarObjetivo(${objetivo.id_objetivo})" title="Editar">
         <i class="mdi mdi-pencil"></i>
       </button>
-      <button class="btn btn-sm btn-danger btn-action" onclick="eliminarobjetivo(${objetivo.id_objetivo})" title="Eliminar">
+      <button class="btn btn-sm btn-danger btn-action" onclick="eliminarObjetivo(${objetivo.id_objetivo})" title="Eliminar">
         <i class="mdi mdi-delete"></i>
       </button>
     </div>
@@ -133,15 +133,15 @@ function formatDate(dateString) {
   return date.toLocaleDateString('es-MX', options);
 }
 
-function verobjetivo(idObjetivo) {
-  window.location.href = `../detallesobjetivo/?id=${idObjetivo}`;//redirigir a detalles de objetivo
+function verObjetivo(idObjetivo) {
+  window.location.href = `../detallesObjetivo/?id=${idObjetivo}`;//redirigir a detalles de objetivo
 }
 
-function editarobjetivo(idObjetivo) {//redirigir a pagina de editar objetivo
-  window.location.href = `../editarObjetivo/?id=${idObjetivo}`;
+function editarObjetivo(idObjetivo) {//redirigir a pagina de nuevo objetivo en modo edicion
+  window.location.href = `../nuevoObjetivo/?edit=${idObjetivo}`;
 }
 
-function eliminarobjetivo(idObjetivo) {
+function eliminarObjetivo(idObjetivo) {
   if (confirm('¿Estás seguro de que deseas eliminar este objetivo? Esta acción no se puede deshacer.')) {
     fetch('../php/delete_objective.php', {
       method: 'POST',
@@ -160,7 +160,7 @@ function eliminarobjetivo(idObjetivo) {
     })
     .then(data => {
       if (data.success) {
-        alert('objetivo eliminado exitosamente');
+        alert('Objetivo eliminado exitosamente');
         cargarObjetivos(); //recargar tabla de objetivos 
       } else {
         alert('Error al eliminar el objetivo: ' + data.message);

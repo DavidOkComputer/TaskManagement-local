@@ -1,9 +1,10 @@
 <?php
+/**
+ * update_project.php - Updated to handle group project user changes
+ */
+
 header('Content-Type: application/json');
 require_once 'db_config.php';
-//create_project.php - Updated to handle group projects
-error_reporting(E_ALL);
-ini_set('display_errors', 0);
 
 $response = ['success' => false, 'message' => ''];
 
@@ -12,23 +13,18 @@ try {
         throw new Exception('Método de solicitud inválido');
     }
 
-    $required_fields = [
-        'nombre',
-        'descripcion',
-        'id_departamento',
-        'fecha_creacion',
-        'fecha_cumplimiento',
-        'ar',
-        'estado',
-        'archivo_adjunto',
-        'id_creador',
-        'id_tipo_proyecto'
-    ];
+    if (!isset($_POST['id_proyecto'])) {
+        throw new Exception('ID de proyecto requerido');
+    }
+
+    $id_proyecto = intval($_POST['id_proyecto']);
+
+    // Same validation as create_project.php
+    $required_fields = ['nombre', 'descripcion', 'id_departamento', 'fecha_creacion', 
+                        'fecha_cumplimiento', 'estado', 'id_creador', 'id_tipo_proyecto'];
 
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
-            // AR is optional, skip validation
-            if ($field === 'ar') continue;
             throw new Exception("El campo {$field} es requerido");
         }
     }
@@ -88,21 +84,20 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Insert project
-    $sql = "INSERT INTO tbl_proyectos (
-                nombre,
-                descripcion,
-                id_departamento,
-                fecha_inicio,
-                fecha_cumplimiento,
-                progreso,
-                ar,
-                estado,
-                archivo_adjunto,
-                id_creador,
-                id_participante,
-                id_tipo_proyecto
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    // Update project
+    $sql = "UPDATE tbl_proyectos SET
+            nombre = ?,
+            descripcion = ?,
+            id_departamento = ?,
+            fecha_inicio = ?,
+            fecha_cumplimiento = ?,
+            progreso = ?,
+            ar = ?,
+            estado = ?,
+            archivo_adjunto = ?,
+            id_participante = ?,
+            id_tipo_proyecto = ?
+            WHERE id_proyecto = ?";
 
     $stmt = $conn->prepare($sql);
 
@@ -111,7 +106,7 @@ try {
     }
 
     $stmt->bind_param(
-        "ssissiissiii",
+        "ssissiissiiii",
         $nombre,
         $descripcion,
         $id_departamento,
@@ -121,41 +116,56 @@ try {
         $ar,
         $estado,
         $archivo_adjunto,
-        $id_creador,
         $id_participante,
-        $id_tipo_proyecto
+        $id_tipo_proyecto,
+        $id_proyecto
     );
 
     if (!$stmt->execute()) {
-        throw new Exception('Error al crear el proyecto: ' . $stmt->error);
+        throw new Exception('Error al actualizar el proyecto: ' . $stmt->error);
     }
 
-    $id_proyecto = $stmt->insert_id;
     $stmt->close();
 
-    // If group project, insert users into junction table
-    if ($id_tipo_proyecto == 1 && !empty($usuarios_grupo)) {
-        $sql_usuarios = "INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)";
-        $stmt_usuarios = $conn->prepare($sql_usuarios);
-
-        if (!$stmt_usuarios) {
-            throw new Exception('Error al preparar la consulta de usuarios: ' . $conn->error);
+    // Handle group project users
+    if ($id_tipo_proyecto == 1) {
+        // Delete existing user assignments
+        $sql_delete = "DELETE FROM tbl_proyecto_usuarios WHERE id_proyecto = ?";
+        $stmt_delete = $conn->prepare($sql_delete);
+        
+        if (!$stmt_delete) {
+            throw new Exception('Error al preparar delete: ' . $conn->error);
         }
 
-        foreach ($usuarios_grupo as $id_usuario) {
-            $id_usuario = intval($id_usuario);
-            $stmt_usuarios->bind_param("ii", $id_proyecto, $id_usuario);
-            
-            if (!$stmt_usuarios->execute()) {
-                throw new Exception('Error al asignar usuarios al proyecto: ' . $stmt_usuarios->error);
+        $stmt_delete->bind_param("i", $id_proyecto);
+        if (!$stmt_delete->execute()) {
+            throw new Exception('Error al eliminar asignaciones anteriores: ' . $stmt_delete->error);
+        }
+        $stmt_delete->close();
+
+        // Insert new user assignments
+        if (!empty($usuarios_grupo)) {
+            $sql_insert = "INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)";
+            $stmt_insert = $conn->prepare($sql_insert);
+
+            if (!$stmt_insert) {
+                throw new Exception('Error al preparar insert: ' . $conn->error);
             }
-        }
 
-        $stmt_usuarios->close();
+            foreach ($usuarios_grupo as $id_usuario) {
+                $id_usuario = intval($id_usuario);
+                $stmt_insert->bind_param("ii", $id_proyecto, $id_usuario);
+                
+                if (!$stmt_insert->execute()) {
+                    throw new Exception('Error al asignar usuarios: ' . $stmt_insert->error);
+                }
+            }
+            $stmt_insert->close();
+        }
     }
 
     $response['success'] = true;
-    $response['message'] = 'Proyecto registrado exitosamente';
+    $response['message'] = 'Proyecto actualizado exitosamente';
     $response['id_proyecto'] = $id_proyecto;
 
     $conn->close();
