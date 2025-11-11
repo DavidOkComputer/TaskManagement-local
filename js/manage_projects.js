@@ -138,8 +138,8 @@ function verProyecto(idProyecto) {
   window.location.href = `../detallesProyecto/?id=${idProyecto}`;//redirigir a detalles de proyecto
 }
 
-function editarProyecto(idProyecto) {//redirigir a pagina de editar proyecto
-  window.location.href = `../editarProyecto/?id=${idProyecto}`;
+function editarProyecto(idProyecto) {//redirigir a pagina de crear proyecto en modo edicion
+  window.location.href = `../nuevoProyecto/?edit=${idProyecto}`;
 }
 
 function eliminarProyecto(idProyecto) {

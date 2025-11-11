@@ -16,9 +16,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $query = "SELECT id_departamento, nombre, descripcion, id_creador 
-              FROM tbl_departamentos 
-              ORDER BY nombre ASC";
+    // Join with tbl_usuarios to get creator's full name
+    $query = "SELECT 
+                td.id_departamento, 
+                td.nombre, 
+                td.descripcion, 
+                td.id_creador,
+                CONCAT(tu.nombre, ' ', tu.apellido) as nombre_creador
+              FROM tbl_departamentos td
+              LEFT JOIN tbl_usuarios tu ON td.id_creador = tu.id_usuario
+              ORDER BY td.nombre ASC";
+    
     $result = $conn->query($query);
     
     if (!$result) {
@@ -32,7 +40,8 @@ try {
             'id_departamento' => (int)$row['id_departamento'],
             'nombre' => $row['nombre'],
             'descripcion' => $row['descripcion'],
-            'id_creador' => $row['id_creador']
+            'id_creador' => (int)$row['id_creador'],
+            'nombre_creador' => $row['nombre_creador'] ?? 'N/A'
         ];
     }
     
