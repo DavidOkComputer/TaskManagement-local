@@ -1,9 +1,7 @@
 <?php
-/**
- * update_task_status.php - Update task status and recalculate project progress
- * 
- * When a task status changes, this automatically recalculates the parent project's progress
- */
+/** update_task_status.php 
+ *actualizar el estatus de la tarea y recalcular el progreso del proyecto
+ *cuando el estado de una tarea cambia, se recalcula automaticamente */
 
 header('Content-Type: application/json');
 require_once('db_config.php');
@@ -17,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // Validate and sanitize inputs
+    //validar y limpiar inputs
     $id_tarea = isset($_POST['id_tarea']) ? intval($_POST['id_tarea']) : 0;
     $nuevo_estado = isset($_POST['estado']) ? trim($_POST['estado']) : '';
 
@@ -29,7 +27,7 @@ try {
         throw new Exception('El nuevo estado es requerido');
     }
 
-    // Validate estado
+    //validar estado
     $estados_validos = ['pendiente', 'en-progreso', 'en proceso', 'completado'];
     $nuevo_estado = strtolower($nuevo_estado);
     if (!in_array($nuevo_estado, $estados_validos)) {
@@ -41,7 +39,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Get task info to find its project
+    //obtener la info de la tarea para encontrar el proyecto
     $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_tareas WHERE id_tarea = ?");
     $stmt->bind_param("i", $id_tarea);
     $stmt->execute();
@@ -55,7 +53,7 @@ try {
     $id_proyecto = $row['id_proyecto'];
     $stmt->close();
 
-    // Update task status
+    //actualizar el estado de la tarea
     $stmt = $conn->prepare("UPDATE tbl_tareas SET estado = ? WHERE id_tarea = ?");
     $stmt->bind_param("si", $nuevo_estado, $id_tarea);
 
@@ -65,7 +63,7 @@ try {
 
     $stmt->close();
 
-    // Recalculate project progress
+    // Recalculate project progres recalcular el progreso del proyecto
     recalculateProjectProgress($conn, $id_proyecto);
 
     echo json_encode([
@@ -83,16 +81,9 @@ try {
         'message' => 'Error al actualizar la tarea: ' . $e->getMessage()
     ]);
 }
-
-/**
- * Recalculate project progress based on completed tasks
- * 
- * @param mysqli $conn Database connection
- * @param int $id_proyecto Project ID
- */
 function recalculateProjectProgress($conn, $id_proyecto) {
     try {
-        // Get total tasks count
+        //obtener el conteo total de tareas
         $stmt = $conn->prepare("SELECT COUNT(*) as total FROM tbl_tareas WHERE id_proyecto = ?");
         $stmt->bind_param("i", $id_proyecto);
         $stmt->execute();
@@ -101,11 +92,11 @@ function recalculateProjectProgress($conn, $id_proyecto) {
         $total_tasks = (int)$row['total'];
         $stmt->close();
 
-        // If no tasks, set progress to 0
+        //si no hay tareas poner el progreso en 0
         if ($total_tasks === 0) {
             $progress = 0;
         } else {
-            // Get completed tasks count
+            //obtener conteo de tareas completadas
             $stmt = $conn->prepare("SELECT COUNT(*) as completadas FROM tbl_tareas WHERE id_proyecto = ? AND estado = 'completado'");
             $stmt->bind_param("i", $id_proyecto);
             $stmt->execute();
@@ -114,11 +105,11 @@ function recalculateProjectProgress($conn, $id_proyecto) {
             $completed_tasks = (int)$row['completadas'];
             $stmt->close();
 
-            // Calculate progress percentage
+            //calcular el porcentaje de progreso
             $progress = round(($completed_tasks / $total_tasks) * 100);
         }
 
-        // Update project progress and status based on progress
+        //actualizar el progreso del proyecto y el estado basado en el progreso
         $nuevo_estado = determineProjectStatus($progress, $id_proyecto, $conn);
 
         $stmt = $conn->prepare("UPDATE tbl_proyectos SET progreso = ?, estado = ? WHERE id_proyecto = ?");
@@ -133,17 +124,9 @@ function recalculateProjectProgress($conn, $id_proyecto) {
     }
 }
 
-/**
- * Determine project status based on progress and deadline
- * 
- * @param int $progress Progress percentage (0-100)
- * @param int $id_proyecto Project ID
- * @param mysqli $conn Database connection
- * @return string Project status
- */
 function determineProjectStatus($progress, $id_proyecto, $conn) {
     try {
-        // Get project due date
+        //obtener la fecha de cumplimiento del proyecto
         $stmt = $conn->prepare("SELECT fecha_cumplimiento FROM tbl_proyectos WHERE id_proyecto = ?");
         $stmt->bind_param("i", $id_proyecto);
         $stmt->execute();
@@ -154,23 +137,17 @@ function determineProjectStatus($progress, $id_proyecto, $conn) {
         $fecha_vencimiento = strtotime($row['fecha_cumplimiento']);
         $hoy = time();
 
-        // If deadline passed and not completed, mark as expired
+        //si pasa la fecha de entrega y no se hacompletado marcar como vencido
         if ($hoy > $fecha_vencimiento && $progress < 100) {
             return 'vencido';
         }
-
-        // If 100% complete, mark as completed
-        if ($progress == 100) {
+        if ($progress == 100) {//si se completa al 100 marcar como completado
             return 'completado';
         }
-
-        // If has progress but not complete, mark as in progress
-        if ($progress > 0) {
+        if ($progress > 0) {//si tiene progreso pero no se ha completado marcar en progreso
             return 'en proceso';
         }
-
-        // Default to pending
-        return 'pendiente';
+        return 'pendiente';//default en pendiente
 
     } catch (Exception $e) {
         error_log("Error determinando estado del proyecto: " . $e->getMessage());

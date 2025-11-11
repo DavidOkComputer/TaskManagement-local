@@ -1,7 +1,5 @@
 <?php
-/**
- * update_project.php - Updated to handle group project user changes
- */
+/**update_project.php para actualizar un proyecto*/
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -19,9 +17,14 @@ try {
 
     $id_proyecto = intval($_POST['id_proyecto']);
 
-    // Same validation as create_project.php
-    $required_fields = ['nombre', 'descripcion', 'id_departamento', 'fecha_creacion', 
-                        'fecha_cumplimiento', 'estado', 'id_creador', 'id_tipo_proyecto'];
+    $required_fields = ['nombre', //validar campos requeridos
+                        'descripcion', 
+                        'id_departamento', 
+                        'fecha_creacion', 
+                        'fecha_cumplimiento', 
+                        'estado', 
+                        'id_creador', 
+                        'id_tipo_proyecto'];
 
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
@@ -41,8 +44,7 @@ try {
     $id_creador = intval($_POST['id_creador']);
     $id_tipo_proyecto = intval($_POST['id_tipo_proyecto']);
     
-    // Parse usuarios_grupo if it's a group project
-    $usuarios_grupo = [];
+    $usuarios_grupo = [];//enviar a usuarios_grupo si es un proyecto en grupo
     if ($id_tipo_proyecto == 1 && isset($_POST['usuarios_grupo'])) {
         $usuarios_grupo = json_decode($_POST['usuarios_grupo'], true);
         if (!is_array($usuarios_grupo) || empty($usuarios_grupo)) {
@@ -50,13 +52,12 @@ try {
         }
     }
 
-    // For individual projects, use id_participante
-    $id_participante = 0;
+    $id_participante = 0;//para proyectos individuales usar el id de participante
     if ($id_tipo_proyecto == 2 && isset($_POST['id_participante'])) {
         $id_participante = intval($_POST['id_participante']);
     }
 
-    // Validations
+    //validaciones de campos
     if (strlen($nombre) > 100) {
         throw new Exception('El nombre no puede exceder 100 caracteres');
     }
@@ -84,7 +85,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Update project
+    //actualizar proyecto
     $sql = "UPDATE tbl_proyectos SET
             nombre = ?,
             descripcion = ?,
@@ -106,19 +107,19 @@ try {
     }
 
     $stmt->bind_param(
-        "ssissiissiiii",
-        $nombre,
-        $descripcion,
-        $id_departamento,
-        $fecha_creacion,
-        $fecha_cumplimiento,
-        $progreso,
-        $ar,
-        $estado,
-        $archivo_adjunto,
-        $id_participante,
-        $id_tipo_proyecto,
-        $id_proyecto
+        "ssissssssiii",
+        $nombre,                //s-1
+        $descripcion,          //s-2
+        $id_departamento,             //i-3
+        $fecha_creacion,              //s-4
+        $fecha_cumplimiento,          //s-5
+        $progreso,                    //s-6
+        $ar,                          //s-7
+        $estado,                      //s-8
+        $archivo_adjunto,             //s-9
+        $id_participante,             //i-10
+        $id_tipo_proyecto,            //i-11
+        $id_proyecto                  //i-12
     );
 
     if (!$stmt->execute()) {
@@ -127,9 +128,8 @@ try {
 
     $stmt->close();
 
-    // Handle group project users
-    if ($id_tipo_proyecto == 1) {
-        // Delete existing user assignments
+    if ($id_tipo_proyecto == 1) {//manejar usuarios de proyecto grupal
+        //eliminar asignaciones existentes de usuario individual
         $sql_delete = "DELETE FROM tbl_proyecto_usuarios WHERE id_proyecto = ?";
         $stmt_delete = $conn->prepare($sql_delete);
         
@@ -143,8 +143,7 @@ try {
         }
         $stmt_delete->close();
 
-        // Insert new user assignments
-        if (!empty($usuarios_grupo)) {
+        if (!empty($usuarios_grupo)) {//insertar nueva asignacion de usuario
             $sql_insert = "INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)";
             $stmt_insert = $conn->prepare($sql_insert);
 

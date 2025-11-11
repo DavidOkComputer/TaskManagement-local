@@ -20,7 +20,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Get project details
+    //obtener detalles del proyecto
     $sql = "SELECT * FROM tbl_proyectos WHERE id_proyecto = ?";
     $stmt = $conn->prepare($sql);
     
@@ -40,7 +40,7 @@ try {
         throw new Exception('Proyecto no encontrado');
     }
 
-    // If it's a group project, get assigned users
+    //si es un proyecto grupal obtener los usuarios asignados
     if ($proyecto['id_tipo_proyecto'] == 1) {
         $sql_usuarios = "SELECT pu.id_usuario, u.nombre, u.apellido, u.e_mail, u.num_empleado
                         FROM tbl_proyecto_usuarios pu

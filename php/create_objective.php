@@ -15,7 +15,11 @@ try {
     }
 
     //validar los campos requeridos
-    $required_fields = ['nombre', 'descripcion', 'fecha_cumplimiento', 'id_departamento', 'id_creador'];
+    $required_fields = ['nombre', 
+                        'descripcion', 
+                        'fecha_cumplimiento', 
+                        'id_departamento', 
+                        'id_creador'];
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
             throw new Exception("El campo {$field} es requerido");

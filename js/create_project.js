@@ -20,9 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Cambiar título y botón si estamos editando
   if (editMode.isEditing) {
-    document.querySelector('h4.card-title')?.textContent = 'Editar Proyecto';
-    document.querySelector('p.card-subtitle')?.textContent = 'Actualiza la información del proyecto';
-    document.getElementById('btnCrear').textContent = 'Actualizar';
+    document.querySelector('h4.card-title')?.textContent == 'Editar Proyecto';
+    document.querySelector('p.card-subtitle')?.textContent == 'Actualiza la información del proyecto';
+    document.getElementById('btnCrear').textContent == 'Actualizar';
   }
   
   cargarDepartamentos();
@@ -89,10 +89,8 @@ function populateUsuariosSelect(usuarios) {
   const select = document.getElementById('id_participante');
   if (!select) return;
 
-  // Limpiar opciones existentes excepto la primera
   select.innerHTML = '<option value="0">Sin usuario asignado</option>';
 
-  // Agregar opciones
   usuarios.forEach(usuario => {
     const option = document.createElement('option');
     option.value = usuario.id_usuario;
@@ -101,9 +99,6 @@ function populateUsuariosSelect(usuarios) {
   });
 }
 
-/**
- * Poblar el modal con usuarios para proyecto grupal
- */
 function populateGrupalModal(usuarios) {
   const container = document.getElementById('usuariosListContainer');
   if (!container) return;
@@ -124,23 +119,16 @@ function populateGrupalModal(usuarios) {
     container.appendChild(userCheckbox);
   });
 
-  // Agregar event listeners a los checkboxes
   document.querySelectorAll('.usuario-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', updateSelectedCount);
   });
 }
 
-/**
- * Actualizar contador de usuarios seleccionados
- */
 function updateSelectedCount() {
   const checkedCount = document.querySelectorAll('.usuario-checkbox:checked').length;
   document.getElementById('countSelected').textContent = checkedCount;
 }
 
-/**
- * Setup handlers para proyecto grupal
- */
 function setupGrupalHandlers() {
   const tipoProyectoRadios = document.querySelectorAll('input[name="id_tipo_proyecto"]');
   const participanteField = document.getElementById('id_participante');
@@ -153,23 +141,17 @@ function setupGrupalHandlers() {
           grupalState.usuariosModal = new bootstrap.Modal(document.getElementById('grupalUsuariosModal'));
         }
         grupalState.usuariosModal.show();
-        
-        // Desactivar/ocultar el campo de participante individual
-        participanteField.disabled = true;
+        participanteField.disabled = true;// Desactivar/ocultar el campo de participante individual
         participanteField.value = '0';
       } else { // Individual (value 2)
-        // Limpiar selección grupal
-        grupalState.selectedUsers = [];
+        grupalState.selectedUsers = [];// Limpiar selección grupal
         document.querySelectorAll('.usuario-checkbox').forEach(cb => cb.checked = false);
         updateSelectedCount();
-        
-        // Activar campo de participante individual
-        participanteField.disabled = false;
+        participanteField.disabled = false;// Activar campo de participante individual
       }
     });
   });
 
-  // Botón de confirmar en modal
   const btnConfirmar = document.getElementById('btnConfirmarGrupal');
   if (btnConfirmar) {
     btnConfirmar.addEventListener('click', function() {
@@ -178,17 +160,12 @@ function setupGrupalHandlers() {
         showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'warning');
         return;
       }
-
       grupalState.selectedUsers = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
-      
-      // Cerrar modal
       grupalState.usuariosModal.hide();
-      
       showAlert(`${grupalState.selectedUsers.length} usuario(s) seleccionado(s) para el proyecto grupal`, 'success');
     });
   }
 
-  // Búsqueda en el modal
   const searchInput = document.getElementById('searchUsuarios');
   if (searchInput) {
     searchInput.addEventListener('keyup', function() {
@@ -207,9 +184,6 @@ function setupGrupalHandlers() {
   }
 }
 
-/**
- * Cargar proyecto existente para edición
- */
 function cargarProyectoParaEditar(projectId) {
   fetch(`../php/get_project_by_id.php?id=${projectId}`)
     .then(response => {
@@ -222,7 +196,6 @@ function cargarProyectoParaEditar(projectId) {
       if (data.success && data.proyecto) {
         const proyecto = data.proyecto;
         
-        // Llenar formulario con datos del proyecto
         document.getElementById('nombre').value = proyecto.nombre || '';
         document.getElementById('descripcion').value = proyecto.descripcion || '';
         document.getElementById('id_departamento').value = proyecto.id_departamento || '';
@@ -233,14 +206,14 @@ function cargarProyectoParaEditar(projectId) {
         document.getElementById('estado').value = proyecto.estado || 'pendiente';
         document.getElementById('id_participante').value = proyecto.id_participante || 0;
         
-        // Establecer tipo de proyecto
+        //tipo de proyecto
         const tipoValue = proyecto.id_tipo_proyecto == 1 ? '1' : '2';
         document.querySelector(`input[name="id_tipo_proyecto"][value="${tipoValue}"]`).checked = true;
         
         // Si es grupal, cargar los usuarios asignados
         if (tipoValue == '1' && proyecto.usuarios_asignados) {
           grupalState.selectedUsers = proyecto.usuarios_asignados.map(u => u.id_usuario);
-          // Pre-seleccionar checkboxes
+          //checar checkboxes cuando carga modal
           grupalState.selectedUsers.forEach(userId => {
             const checkbox = document.querySelector(`#check_${userId}`);
             if (checkbox) checkbox.checked = true;
@@ -248,8 +221,7 @@ function cargarProyectoParaEditar(projectId) {
           updateSelectedCount();
         }
         
-        // Mostrar archivo adjunto si existe
-        if (proyecto.archivo_adjunto) {
+        if (proyecto.archivo_adjunto) {//si existe el archivo adjunto mostrarlo
           document.getElementById('nombreArchivo').value = proyecto.archivo_adjunto.split('/').pop();
         }
         
@@ -293,9 +265,6 @@ function setupFormHandlers() {
   });
 }
 
-/**
- * Crear nuevo proyecto
- */
 function crearProyecto() {
   const form = document.getElementById('proyectoForm');
   const formData = new FormData(form);
@@ -307,8 +276,7 @@ function crearProyecto() {
     form.classList.add('was-validated');
     return;
   }
-
-  // Validar que se hayan seleccionado usuarios para proyecto grupal
+  //revisar que se seleccionen usuarios para el poryecto grupal
   if (tipoProyecto == '1' && grupalState.selectedUsers.length === 0) {
     showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
     return;
@@ -342,9 +310,6 @@ function crearProyecto() {
   }
 }
 
-/**
- * Editar proyecto existente
- */
 function editarProyecto() {
   const form = document.getElementById('proyectoForm');
   const formData = new FormData(form);
@@ -357,7 +322,6 @@ function editarProyecto() {
     return;
   }
 
-  // Validar que se hayan seleccionado usuarios para proyecto grupal
   if (tipoProyecto == '1' && grupalState.selectedUsers.length === 0) {
     showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
     return;
@@ -430,8 +394,7 @@ function submitForm(formData, btnCrear, action) {
     ? '../php/update_project.php' 
     : '../php/create_project.php';
 
-  // Agregar ID del proyecto si es edición
-  if (editMode.isEditing) {
+  if (editMode.isEditing) {  // Agregar ID del proyecto si es edición
     formData.append('id_proyecto', editMode.projectId);
   }
 
@@ -453,8 +416,7 @@ function submitForm(formData, btnCrear, action) {
       
       showAlert(successMessage, 'success');
       
-      // Redirigir después de 1.5s
-      setTimeout(function() {
+      setTimeout(function() {//redirigir a lista de proyectos
         window.location.href = '../revisarProyectos/';
       }, 1500);
     } else {

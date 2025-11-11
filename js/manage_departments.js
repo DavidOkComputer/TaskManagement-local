@@ -114,14 +114,14 @@ function createDepartmentRow(dept, rowNumber) {
     const tr = document.createElement('tr'); 
     tr.dataset.id = dept.id_departamento; 
 
-    // Display creator's full name instead of ID
+    //mostar el nombre del creador
     const nombreCreador = dept.nombre_creador || 'N/A';
 
     tr.innerHTML = ` 
         <td><h6>${rowNumber}</h6></td> 
         <td><h6>${escapeHtml(dept.nombre)}</h6></td> 
         <td><h6>${escapeHtml(dept.descripcion)}</h6></td> 
-        <td><h6>${escapeHtml(dept.id_creador || 'N/A')}</h6></td> 
+        <td><h6>${escapeHtml(dept.nombre_creador || 'N/A')}</h6></td> 
         <td class="text-center action-buttons"> 
             <button class="btn btn-sm btn-success btn-action" onclick="editDepartment(${dept.id_departamento})" title="Editar"> 
                 <i class="mdi mdi-pencil"></i> Editar 

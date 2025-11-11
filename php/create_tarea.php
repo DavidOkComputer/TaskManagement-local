@@ -1,5 +1,5 @@
 <?php
-// save_task.php - Create new task with proper validation
+//create_tarea.php - creare nueva tarea
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -13,9 +13,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Método de solicitud inválido');
     }
-
-    // Validate required fields
-    $required_fields = [
+    $required_fields = [//validar campos requeridos
         'nombre',
         'descripcion',
         'id_proyecto',
@@ -29,44 +27,36 @@ try {
         }
     }
 
-    // Clean and validate inputs
-    $nombre = trim($_POST['nombre']);
+    $nombre = trim($_POST['nombre']);//limpiar y validar inputs
     $descripcion = trim($_POST['descripcion']);
     $id_proyecto = intval($_POST['id_proyecto']);
     $fecha_cumplimiento = trim($_POST['fecha_vencimiento']);
     $estado = trim($_POST['estado']);
 
-    // Validate field lengths
+    //validar longitud
     if (strlen($nombre) > 100) {
         throw new Exception('El nombre no puede exceder 100 caracteres');
     }
     if (strlen($descripcion) > 250) {
         throw new Exception('La descripción no puede exceder 250 caracteres');
     }
-
-    // Validate status values (matching enum values in database)
     $estados_validos = ['pendiente', 'en proceso', 'vencido', 'completado'];
     if (!in_array($estado, $estados_validos)) {
         throw new Exception('El estado debe ser: pendiente, en proceso, vencido o completado');
     }
-
-    // Validate date format
     if (strtotime($fecha_cumplimiento) === false) {
         throw new Exception('La fecha de vencimiento no es válida');
     }
-
-    // Validate project exists
     if ($id_proyecto <= 0) {
         throw new Exception('El ID del proyecto no es válido');
     }
 
-    // Get database connection
-    $conn = getDBConnection();
+    $conn = getDBConnection();//conexion a abse de datos
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Verify project exists
+    //verificar que existe el proyecto
     $verify_query = "SELECT id_proyecto FROM tbl_proyectos WHERE id_proyecto = ?";
     $verify_stmt = $conn->prepare($verify_query);
     
@@ -83,11 +73,10 @@ try {
     }
     $verify_stmt->close();
 
-    // Get creator ID from session (using hardcoded 1 for now, should use session)
-    // TODO: Replace with session['id_usuario'] when auth is implemented
+    //reemplazar con id de la sesion cuando se implemente
     $id_creador = isset($_SESSION['id_usuario']) ? intval($_SESSION['id_usuario']) : 1;
 
-    // Prepare and execute INSERT statement
+    //preparar y ejecutar el insert
     $sql = "INSERT INTO tbl_tareas (
                 nombre,
                 descripcion,
@@ -105,8 +94,8 @@ try {
 
     $stmt->bind_param(
         "ssiiss",
-        $nombre,                  // s-1
-        $descripcion,             // s-2
+        $nombre,            // s-1
+        $descripcion,      // s-2
         $id_proyecto,             // i-3
         $id_creador,              // i-4
         $fecha_cumplimiento,      // s-5

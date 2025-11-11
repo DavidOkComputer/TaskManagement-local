@@ -78,9 +78,6 @@ function loadDepartamentos() {
     });
 }
 
-/**
- * Cargar objetivo existente para edición
- */
 function cargarObjetivoParaEditar(objectiveId) {
   fetch(`../php/get_objective_by_id.php?id=${objectiveId}`)
     .then(response => {

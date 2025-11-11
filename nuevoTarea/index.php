@@ -237,8 +237,10 @@
                         <div class="form-group row">
                           <label class="col-sm-3 col-form-label">Seleccione el proyecto</label>
                           <div class="col-sm-9">
-                            <select class="form-control" id="projectSelect">
-                              <option value="">Cargando proyectos...</option>
+                            <select class="form-control" 
+                                    id="id_proyecto"
+                                    name="id_proyecto">
+                              <option value="">Seleccione un proyecto</option>
                             </select>
                           </div>
                           <hr>
@@ -296,7 +298,6 @@
   <script src="../js/file-upload.js"></script>
   <script src="../js/dashboard.js"></script>
   <!-- End custom js for this page-->
-  <script src="../js/task-modal.js"></script>
-  <script src="../js/task-assignment.js"></script>
+  <script src="../js/manage_tasks.js"></script>
 </body>
 </html>

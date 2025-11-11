@@ -1,6 +1,5 @@
 <?php
-// get_tasks_by_project.php - Fetch tasks for a specific project
-
+// get_tasks_by_project.php para tener las tareas de un proyecto especifico
 header('Content-Type: application/json');
 require_once 'db_config.php';
 
@@ -16,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    // Validate project ID parameter
+    //validar el id del proyecto
     if (!isset($_GET['id_proyecto']) || empty($_GET['id_proyecto'])) {
         throw new Exception('El ID del proyecto es requerido');
     }
@@ -33,7 +32,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Query to fetch tasks for a specific project
+    // query para tener los proyectos especificos
     $query = "SELECT 
                 t.id_tarea,
                 t.nombre,

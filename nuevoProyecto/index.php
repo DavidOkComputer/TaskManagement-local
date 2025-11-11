@@ -366,8 +366,6 @@
                     </div>
                   </div>
                   <!-- MODAL FOR GROUP PROJECT USER SELECTION -->
-<!-- Add this code BEFORE the closing </form> tag in your HTML -->
-
 <!-- Modal for Group Project User Selection -->
 <div class="modal fade" id="grupalUsuariosModal" tabindex="-1" aria-labelledby="grupalUsuariosLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">

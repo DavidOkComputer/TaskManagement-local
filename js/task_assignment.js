@@ -1,20 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
   
-  // Get elements
-  const projectSelect = document.getElementById('projectSelect');
+  const projectSelect = document.getElementById('id_proyecto');
   const tasksList = document.getElementById('tasksList');
   const tasksLoading = document.getElementById('tasksLoading');
   const addBtn = document.querySelector('.todo-list-add-btn');
 
-  // Load projects on page load
-  loadProjects();
+  cargarProyectos();
 
-  // Event listener for project selection change
+  //listener de event para seleccionar proyecto
   projectSelect.addEventListener('change', function() {
     if (this.value) {
       loadTasks(this.value);
     } else {
-      // Show default message when no project selected
+      //mensaje default cuando no hauy proyectos 
       tasksList.innerHTML = `
         <li class="d-block text-center py-4">
           <p class="text-muted">Seleccione un proyecto para ver sus tareas</p>
@@ -23,9 +21,59 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  /**
-   * Load all active projects from database
-   */
+function loadDepartamentos() {
+  fetch('../php/get_departments.php')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('La respuesta de red no fue ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success && data.departamentos) {
+        const select = document.getElementById('id_departamento');
+        data.departamentos.forEach(dept => {
+          const option = document.createElement('option');
+          option.value = dept.id_departamento;
+          option.textContent = dept.nombre;
+          select.appendChild(option);
+        });
+      } else {
+        showNotification('Error al cargar departamentos', 'warning');
+      }
+    })
+    .catch(error => {
+      console.error('Error al cargar los departamentos:', error);
+      showNotification('Error al cargar departamentos', 'danger');
+    });
+}
+function cargarProyectos() {
+  fetch('../php/get_projects.php')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('La respuesta de red no fue ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success && data.proyectos) {
+        const select = document.getElementById('id_proyecto');
+        data.proyectos.forEach(proyect => {
+          const option = document.createElement('option');
+          option.value = proyect.id_proyecto;
+          option.textContent = proyect.nombre;
+          select.appendChild(option);
+        });
+      } else {
+        showNotification('Error al cargar proyectos', 'warning');
+      }
+    })
+    .catch(error => {
+      console.error('Error al cargar los proyectos:', error);
+      showNotification('Error al cargar proyectos', 'danger');
+    });
+}
+/*
   function loadProjects() {
     fetch('../php/get_projects.php')
       .then(response => response.json())
@@ -48,11 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
         projectSelect.innerHTML = '<option value="">Error al cargar proyectos</option>';
       });
   }
-
-  /**
-   * Load tasks for selected project from database
-   * @param {number} id_proyecto - Project ID
-   */
+*/
   function loadTasks(id_proyecto) {
     tasksLoading.style.display = 'block';
     tasksList.style.display = 'none';
@@ -85,10 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   }
 
-  /**
-   * Render tasks in the list
-   * @param {Array} tasks - Array of task objects from database
-   */
   function renderTasks(tasks) {
     tasksList.innerHTML = '';
 
@@ -97,27 +137,18 @@ document.addEventListener('DOMContentLoaded', function() {
       tasksList.insertAdjacentHTML('beforeend', taskHTML);
     });
 
-    // Add event listeners to checkboxes
-    addCheckboxListeners();
+    addCheckboxListeners();//listener de evento de checkboxes
   }
 
-  /**
-   * Create HTML element for a single task
-   * @param {Object} task - Task object
-   * @param {boolean} isLast - Is this the last task in the list
-   * @returns {string} HTML string
-   */
   function createTaskElement(task, isLast) {
-    // Format date
-    const dateObj = new Date(task.fecha_cumplimiento);
+    const dateObj = new Date(task.fecha_cumplimiento);//formato de fecha
     const formattedDate = dateObj.toLocaleDateString('es-MX', { 
       day: '2-digit', 
       month: 'short', 
       year: 'numeric' 
     });
 
-    // Determine badge class and text based on status
-    let badgeClass = 'badge-opacity-warning';
+    let badgeClass = 'badge-opacity-warning';//color de insignia basado en el estado
     let badgeText = 'Pendiente';
 
     if (task.estado === 'completado') {
@@ -131,8 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
       badgeText = 'Vencido';
     }
 
-    // Check if task is completed
-    const isCompleted = task.estado === 'completado';
+    const isCompleted = task.estado === 'completado';//revisar si la tarea esta terminadoa
     const borderClass = isLast ? 'border-bottom-0' : '';
 
     return `
@@ -154,9 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
   }
 
-  /**
-   * Add event listeners to task checkboxes
-   */
   function addCheckboxListeners() {
     const checkboxes = document.querySelectorAll('.task-checkbox');
     
@@ -165,10 +192,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskId = this.getAttribute('data-task-id');
         const isChecked = this.checked;
         
-        // You can add functionality here to update task status in database
+        //agregar funcionalidad para actualizar el estado de la tarea en bd
         console.log(`Task ${taskId} checked: ${isChecked}`);
-        
-        // Optional: Update the visual state
         const taskLi = this.closest('li');
         if (isChecked) {
           taskLi.style.opacity = '0.6';
@@ -179,19 +204,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Add button event listener
   if (addBtn) {
     addBtn.addEventListener('click', function(e) {
       e.preventDefault();
       
-      // Check if a project is selected
-      if (!projectSelect.value) {
+      if (!projectSelect.value) {//revisar si se ha seleccionado algun proyecto
         alert('Por favor seleccione un proyecto primero');
         return;
       }
       
-      // Show the task modal from task-modal.js
-      const modal = document.getElementById('addTaskModal');
+      const modal = document.getElementById('addTaskModal');//mostrar modal
       if (modal) {
         const taskModal = new bootstrap.Modal(modal);
         taskModal.show();

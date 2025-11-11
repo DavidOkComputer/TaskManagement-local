@@ -1,7 +1,7 @@
 <?php
 /**
  * get_project_users.php
- * Gets all users assigned to a specific project (for group projects)
+ * obtiene todos los usuraios asignados a un proyecto especifico de proyectos grupales
  */
 
 header('Content-Type: application/json');
@@ -21,8 +21,12 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Get users from junction table
-    $sql = "SELECT pu.id_usuario, u.nombre, u.apellido, u.e_mail, u.num_empleado
+    //obtener usuarios de tabla unida
+    $sql = "SELECT pu.id_usuario, 
+                   u.nombre, 
+                   u.apellido, 
+                   u.e_mail, 
+                   u.num_empleado
             FROM tbl_proyecto_usuarios pu
             JOIN tbl_usuarios u ON pu.id_usuario = u.id_usuario
             WHERE pu.id_proyecto = ?

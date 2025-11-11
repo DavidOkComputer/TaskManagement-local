@@ -1,12 +1,5 @@
 <?php
-/**
- * get_project_stats.php - Get project details with task statistics
- * 
- * Returns project information including:
- * - Total tasks count
- * - Completed tasks count
- * - Current progress percentage
- * - Task breakdown by status
+/**get_project_stats.php obtener los detalles de proyecto con estadisticas de tareas
  */
 
 header('Content-Type: application/json');
@@ -25,8 +18,7 @@ try {
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
-
-    // Get project details
+    //obtener detalles delproyecto
     $sql = "SELECT * FROM tbl_proyectos WHERE id_proyecto = ?";
     $stmt = $conn->prepare($sql);
     
@@ -46,7 +38,7 @@ try {
         throw new Exception('Proyecto no encontrado');
     }
 
-    // Get task statistics
+    //obtener estadisticas de las tareas
     $sql_stats = "SELECT 
                     COUNT(*) as total_tasks,
                     SUM(CASE WHEN estado = 'completado' THEN 1 ELSE 0 END) as completed_tasks,
@@ -69,8 +61,7 @@ try {
     $result_stats = $stmt_stats->get_result();
     $stats = $result_stats->fetch_assoc();
 
-    // Add statistics to project
-    $proyecto['estadisticas'] = [
+    $proyecto['estadisticas'] = [//agregar estadisticas al proyecto
         'total_tareas' => (int)$stats['total_tasks'],
         'tareas_completadas' => (int)$stats['completed_tasks'] ?? 0,
         'tareas_en_progreso' => (int)$stats['in_progress_tasks'] ?? 0,
@@ -81,7 +72,7 @@ try {
             : 0
     ];
 
-    // Get list of all tasks for this project (optional, for detailed view)
+    //obtener lista de todas las tareas para el proyecto actual
     $sql_tasks = "SELECT 
                     id_tarea,
                     nombre,

@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
 require_once 'db_config.php';
-//create_project.php - Updated to handle group projects
+//create_project.php - para crear proyectos
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
@@ -18,16 +18,14 @@ try {
         'id_departamento',
         'fecha_creacion',
         'fecha_cumplimiento',
-        'ar',
         'estado',
-        'archivo_adjunto',
         'id_creador',
         'id_tipo_proyecto'
     ];
 
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
-            // AR is optional, skip validation
+            //ar es opcional entonces no lo validamos
             if ($field === 'ar') continue;
             throw new Exception("El campo {$field} es requerido");
         }
@@ -45,7 +43,7 @@ try {
     $id_creador = intval($_POST['id_creador']);
     $id_tipo_proyecto = intval($_POST['id_tipo_proyecto']);
     
-    // Parse usuarios_grupo if it's a group project
+    //insertar usuarios_grupo si es proyecto grupal
     $usuarios_grupo = [];
     if ($id_tipo_proyecto == 1 && isset($_POST['usuarios_grupo'])) {
         $usuarios_grupo = json_decode($_POST['usuarios_grupo'], true);
@@ -54,14 +52,13 @@ try {
         }
     }
 
-    // For individual projects, use id_participante
+    //para proyectos individuales usar id_particiapnte
     $id_participante = 0;
     if ($id_tipo_proyecto == 2 && isset($_POST['id_participante'])) {
         $id_participante = intval($_POST['id_participante']);
     }
 
-    // Validations
-    if (strlen($nombre) > 100) {
+    if (strlen($nombre) > 100) {//validacion
         throw new Exception('El nombre no puede exceder 100 caracteres');
     }
     if (strlen($descripcion) > 200) {
@@ -88,7 +85,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Insert project
+    //insertar proyecto
     $sql = "INSERT INTO tbl_proyectos (
                 nombre,
                 descripcion,
@@ -133,7 +130,7 @@ try {
     $id_proyecto = $stmt->insert_id;
     $stmt->close();
 
-    // If group project, insert users into junction table
+    //si un proyecto grupal insertar usuarios en la tabla usuarios_grupo
     if ($id_tipo_proyecto == 1 && !empty($usuarios_grupo)) {
         $sql_usuarios = "INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)";
         $stmt_usuarios = $conn->prepare($sql_usuarios);

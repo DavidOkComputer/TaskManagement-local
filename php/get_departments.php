@@ -1,5 +1,5 @@
 <?php
-// get_departments.php
+// get_departments.php psra obtener los departamentos
 
 header('Content-Type: application/json');
 
@@ -16,9 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    $query = "SELECT id_departamento, nombre, descripcion, id_creador 
-              FROM tbl_departamentos 
-              ORDER BY nombre ASC";
+    $query = "SELECT 
+                td.id_departamento, 
+                td.nombre, 
+                td.descripcion, 
+                td.id_creador,
+                CONCAT(tu.nombre, ' ', tu.apellido) as nombre_creador
+              FROM tbl_departamentos td
+              LEFT JOIN tbl_usuarios tu ON td.id_creador = tu.id_usuario
+              ORDER BY td.nombre ASC";
+    
     $result = $conn->query($query);
     
     if (!$result) {
