@@ -119,7 +119,7 @@ function createDepartmentRow(dept, rowNumber) {
         <td><h6>${rowNumber}</h6></td> 
         <td><h6>${escapeHtml(dept.nombre)}</h6></td> 
         <td><h6>${escapeHtml(dept.descripcion)}</h6></td> 
-        <td><h6>${escapeHtml(dept.id_creador || 'N/A')}</h6></td> 
+        <td><h6>${escapeHtml(dept.creador || 'N/A')}</h6></td> 
         <td class="text-center action-buttons"> 
             <button class="btn btn-sm btn-success btn-action" onclick="editDepartment(${dept.id_departamento})" title="Editar"> 
                 <i class="mdi mdi-pencil"></i> Editar 
