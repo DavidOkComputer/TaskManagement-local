@@ -296,9 +296,14 @@
                       <div class="form-group row">
                         <label class="col-sm-3 col-form-label">Asignar a <span class="text-danger">*</span></label>
                         <div class="col-sm-9">
-                          <select id="id_participante" name="id_participante" class="form-control" required>
-                            <option value="">Seleccione un empleado</option>
-                          </select>
+                          <div class="input-group">
+                            <select id="id_participante" name="id_participante" class="form-control" required>
+                              <option value="">Seleccione un empleado</option>
+                            </select>
+                            <button type="button" class="btn btn-info" id="btnSeleccionarGrupo" title="Seleccionar múltiples integrantes para proyecto grupal">
+                              <i class="mdi mdi-account-multiple-plus"></i> Grupo
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -467,7 +472,6 @@
   <script src="../js/template.js"></script>
   <!-- endinject -->
   <!-- Custom js for this page-->
-  <script src="../js/file-upload.js"></script>
   <script src="../js/dashboard.js"></script>
   <script src="../js/create_project.js"></script>
   <!-- End custom js for this page-->
