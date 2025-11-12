@@ -300,7 +300,7 @@
                             <select id="id_participante" name="id_participante" class="form-control" required>
                               <option value="">Seleccione un empleado</option>
                             </select>
-                            <button type="button" class="btn btn-info" id="btnSeleccionarGrupo" title="Seleccionar múltiples integrantes para proyecto grupal">
+                            <button type="button" class="btn btn-success" id="btnSeleccionarGrupo" title="Seleccionar múltiples integrantes para proyecto grupal">
                               <i class="mdi mdi-account-multiple-plus"></i> Grupo
                             </button>
                           </div>

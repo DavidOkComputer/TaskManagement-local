@@ -413,7 +413,6 @@ $user_id = 1; //usuario viene de la sesion
   <script src="../js/template.js"></script>
   <!-- endinject -->
   <!-- Custom js for this page-->
-  <script src="../js/file-upload.js"></script>
   <script src="../js/dashboard.js"></script>
   <!-- Custom js for objective form -->
   <script src="../js/objetivo_form.js"></script>

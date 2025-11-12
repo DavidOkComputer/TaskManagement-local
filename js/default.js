@@ -1,45 +1,45 @@
 /**create_proyect.js //javascript para creacion y edicion de proyectos*/
- 
+
 const editMode = {
     isEditing: false,
     projectId: null
 };
- 
+
 // Estado para proyecto grupal
 const grupalState = {
     selectedUsers: [],
     usuariosModal: null
 };
- 
+
 //inicializar pagina al cargar
 document.addEventListener('DOMContentLoaded', function() {
   // Detectar si estamos en modo edición
   const params = new URLSearchParams(window.location.search);
   editMode.projectId = params.get('edit');
   editMode.isEditing = !!editMode.projectId;
- 
+  
   // Cambiar título y botón si estamos editando
   if (editMode.isEditing) {
     document.querySelector('h4.card-title')?.textContent == 'Editar Proyecto';
     document.querySelector('p.card-subtitle')?.textContent == 'Actualiza la información del proyecto';
     document.getElementById('btnCrear').textContent == 'Actualizar';
   }
- 
+  
   cargarDepartamentos();
   loadUsuarios();
   setupFormHandlers();
   setupGrupalHandlers();
- 
+  
   // Si es edición, cargar datos del proyecto
   if (editMode.isEditing) {
     cargarProyectoParaEditar(editMode.projectId);
   }
 });
- 
+
 const app = {
     usuarios: []
 };
- 
+
 function cargarDepartamentos() {
   fetch('../php/get_departments.php')
     .then(response => {
@@ -66,7 +66,7 @@ function cargarDepartamentos() {
       showAlert('Error al cargar departamentos', 'danger');
     });
 }
- 
+
 function loadUsuarios() {
   fetch('../php/get_users.php')
     .then(response => response.json())
@@ -84,52 +84,33 @@ function loadUsuarios() {
       console.error('Error en fetch de usuarios:', error);
     });
 }
- 
-function populateUsuariosSelect(usuarios) {
-  const select = document.getElementById('id_participante');
-  if (!select) return;
- 
-  select.innerHTML = '<option value="0">Sin usuario asignado</option>';
- 
-  usuarios.forEach(usuario => {
-    const option = document.createElement('option');
-    option.value = usuario.id_usuario;
-    option.textContent = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
-    select.appendChild(option);
+
+function setupFormHandlers() {
+  document.getElementById('btnSubirArchivo').addEventListener('click', function() {
+    document.getElementById('archivoInput').click();
+  });
+
+  document.getElementById('archivoInput').addEventListener('change', function(e) {
+    if (e.target.files.length > 0) {
+      document.getElementById('nombreArchivo').value = e.target.files[0].name;
+    }
+  });
+
+  document.getElementById('btnCancelar').addEventListener('click', function() {
+    if (confirm('¿Deseas cancelar?')) {
+      window.location.href = '../revisarProyectos/';
+    }
+  });
+
+  document.getElementById('proyectoForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (editMode.isEditing) {
+      editarProyecto();
+    } else {
+      crearProyecto();
+    }
   });
 }
- 
-function populateGrupalModal(usuarios) {
-  const container = document.getElementById('usuariosListContainer');
-  if (!container) return;
- 
-  container.innerHTML = '';
- 
-  usuarios.forEach(usuario => {
-    const userCheckbox = document.createElement('div');
-    userCheckbox.className = 'form-check mb-3 p-2 border-bottom';
-    userCheckbox.innerHTML = `
-      <input class="form-check-input usuario-checkbox" type="checkbox" value="${usuario.id_usuario}" id="check_${usuario.id_usuario}">
-      <label class="form-check-label w-100" for="check_${usuario.id_usuario}">
-        <strong>${usuario.nombre_completo}</strong>
-        <br>
-        <small class="text-muted">Empleado #${usuario.num_empleado} - ${usuario.e_mail}</small>
-      </label>
-    `;
-    container.appendChild(userCheckbox);
-  });
- 
-  document.querySelectorAll('.usuario-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', updateSelectedCount);
-  });
-}
- 
-function updateSelectedCount() {
-  const checkedCount = document.querySelectorAll('.usuario-checkbox:checked').length;
-  document.getElementById('countSelected').textContent = checkedCount;
-}
- 
-//create_project.js para crear un proyecto
 
 function setupGrupalHandlers() {
   const tipoProyectoRadios = document.querySelectorAll('input[name="id_tipo_proyecto"]');
@@ -168,18 +149,23 @@ function setupGrupalHandlers() {
           grupalState.usuariosModal = new bootstrap.Modal(document.getElementById('grupalUsuariosModal'));
         }
         grupalState.usuariosModal.show();
+        participanteField.disabled = true;// Desactivar/ocultar el campo de participante individual
+        participanteField.value = '0';
         participanteField.disabled = true;
         participanteField.value = '';
       } else { // Individual (value 2)
+        grupalState.selectedUsers = [];// Limpiar selección grupal
         grupalState.selectedUsers = [];
         document.querySelectorAll('.usuario-checkbox').forEach(cb => cb.checked = false);
         updateSelectedCount();
+        participanteField.disabled = false;// Activar campo de participante individual
         participanteField.disabled = false;
       }
     });
   });
 
   const btnConfirmar = document.getElementById('btnConfirmarGrupal');
+  if (btnConfirmar) {
   if (btnConfirmar && !btnConfirmar.hasListener) {
     btnConfirmar.addEventListener('click', function() {
       const selectedCheckboxes = document.querySelectorAll('.usuario-checkbox:checked');
@@ -195,11 +181,12 @@ function setupGrupalHandlers() {
   }
 
   const searchInput = document.getElementById('searchUsuarios');
+  if (searchInput) {
   if (searchInput && !searchInput.hasListener) {
     searchInput.addEventListener('keyup', function() {
       const searchTerm = this.value.toLowerCase();
       const checkboxes = document.querySelectorAll('.usuario-checkbox');
-      
+
       checkboxes.forEach(checkbox => {
         const label = checkbox.closest('.form-check').querySelector('label').textContent.toLowerCase();
         if (label.includes(searchTerm)) {
@@ -212,7 +199,52 @@ function setupGrupalHandlers() {
     searchInput.hasListener = true;
   }
 }
- 
+
+function populateUsuariosSelect(usuarios) {
+  const select = document.getElementById('id_participante');
+  if (!select) return;
+
+  select.innerHTML = '<option value="0">Sin usuario asignado</option>';
+
+  usuarios.forEach(usuario => {
+    const option = document.createElement('option');
+    option.value = usuario.id_usuario;
+    option.textContent = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
+    select.appendChild(option);
+  });
+}
+
+function populateGrupalModal(usuarios) {
+  const container = document.getElementById('usuariosListContainer');
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  usuarios.forEach(usuario => {
+    const userCheckbox = document.createElement('div');
+    userCheckbox.className = 'form-check mb-3 p-2 border-bottom';
+    userCheckbox.innerHTML = `
+      <input class="form-check-input usuario-checkbox" type="checkbox" value="${usuario.id_usuario}" id="check_${usuario.id_usuario}">
+      <label class="form-check-label w-100" for="check_${usuario.id_usuario}">
+        <strong>${usuario.nombre_completo}</strong>
+        <br>
+        <small class="text-muted">Empleado #${usuario.num_empleado} - ${usuario.e_mail}</small>
+      </label>
+    `;
+    container.appendChild(userCheckbox);
+  });
+
+  document.querySelectorAll('.usuario-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', updateSelectedCount);
+  });
+}
+
+function updateSelectedCount() {
+  const checkedCount = document.querySelectorAll('.usuario-checkbox:checked').length;
+  document.getElementById('countSelected').textContent = checkedCount;
+}
+
+
 function cargarProyectoParaEditar(projectId) {
   fetch(`../php/get_project_by_id.php?id=${projectId}`)
     .then(response => {
@@ -224,7 +256,7 @@ function cargarProyectoParaEditar(projectId) {
     .then(data => {
       if (data.success && data.proyecto) {
         const proyecto = data.proyecto;
-       
+        
         document.getElementById('nombre').value = proyecto.nombre || '';
         document.getElementById('descripcion').value = proyecto.descripcion || '';
         document.getElementById('id_departamento').value = proyecto.id_departamento || '';
@@ -234,11 +266,11 @@ function cargarProyectoParaEditar(projectId) {
         document.getElementById('ar').value = proyecto.ar || '';
         document.getElementById('estado').value = proyecto.estado || 'pendiente';
         document.getElementById('id_participante').value = proyecto.id_participante || 0;
-       
+        
         //tipo de proyecto
         const tipoValue = proyecto.id_tipo_proyecto == 1 ? '1' : '2';
         document.querySelector(`input[name="id_tipo_proyecto"][value="${tipoValue}"]`).checked = true;
-       
+        
         // Si es grupal, cargar los usuarios asignados
         if (tipoValue == '1' && proyecto.usuarios_asignados) {
           grupalState.selectedUsers = proyecto.usuarios_asignados.map(u => u.id_usuario);
@@ -249,11 +281,11 @@ function cargarProyectoParaEditar(projectId) {
           });
           updateSelectedCount();
         }
-       
+        
         if (proyecto.archivo_adjunto) {//si existe el archivo adjunto mostrarlo
           document.getElementById('nombreArchivo').value = proyecto.archivo_adjunto.split('/').pop();
         }
-       
+        
         showAlert('Proyecto cargado correctamente', 'success');
       } else {
         showAlert('Error al cargar el proyecto: ' + data.message, 'danger');
@@ -266,40 +298,15 @@ function cargarProyectoParaEditar(projectId) {
       window.location.href = '../revisarProyectos/';
     });
 }
- 
-function setupFormHandlers() {
-  document.getElementById('btnSubirArchivo').addEventListener('click', function() {
-    document.getElementById('archivoInput').click();
-  });
- 
-  document.getElementById('archivoInput').addEventListener('change', function(e) {
-    if (e.target.files.length > 0) {
-      document.getElementById('nombreArchivo').value = e.target.files[0].name;
-    }
-  });
- 
-  document.getElementById('btnCancelar').addEventListener('click', function() {
-    if (confirm('¿Deseas cancelar?')) {
-      window.location.href = '../revisarProyectos/';
-    }
-  });
- 
-  document.getElementById('proyectoForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (editMode.isEditing) {
-      editarProyecto();
-    } else {
-      crearProyecto();
-    }
-  });
-}
- 
+
+
+
 function crearProyecto() {
   const form = document.getElementById('proyectoForm');
   const formData = new FormData(form);
   const archivoInput = document.getElementById('archivoInput');
   const tipoProyecto = document.querySelector('input[name="id_tipo_proyecto"]:checked').value;
- 
+
   if (!form.checkValidity()) {
     showAlert('Por favor, completa todos los campos requeridos', 'danger');
     form.classList.add('was-validated');
@@ -310,11 +317,11 @@ function crearProyecto() {
     showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
     return;
   }
- 
+
   const btnCrear = document.getElementById('btnCrear');
   btnCrear.disabled = true;
   btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creando...';
- 
+
   if (archivoInput.files.length > 0) {
     uploadFile(archivoInput.files[0], function(filePath) {
       if (filePath) {
@@ -338,28 +345,60 @@ function crearProyecto() {
     submitForm(formData, btnCrear, 'create');
   }
 }
- 
+
+function setupCharacterCounters(){
+  const nombreInput = document.getElementById('nombre');
+  const descripcionInput = document.getElementById('descripcion');
+  if(nombreInput){
+    addCharacterCounter(nombreInput,100);
+  }
+  if(descripcionInput){
+    addCharacterCounter(descripcionInput,200);
+  }
+}
+
+function addCharacterCounter(input, maxLength){
+  const counter = document.createElement('small');
+  counter.className = 'form-text text-muted';
+  counter.textContent = `0/${maxLength} caracteres`;
+
+  input.parentElement.appendChild(counter);
+
+  input.addEventListener('input',function(){
+    const length = this.value.length;
+    counter.textContent = `${length}/${maxLength} caracteres`;
+
+    if(length>maxLength){
+      counter.classList.add('text-danger');
+      counter.classList.remove('text-muted');
+    }else{
+      counter.classList.add('text-muted');
+      counter.classList.remove('text-danger');
+    }
+  });
+}
+
 function editarProyecto() {
   const form = document.getElementById('proyectoForm');
   const formData = new FormData(form);
   const archivoInput = document.getElementById('archivoInput');
   const tipoProyecto = document.querySelector('input[name="id_tipo_proyecto"]:checked').value;
- 
+
   if (!form.checkValidity()) {
     showAlert('Por favor, completa todos los campos requeridos', 'danger');
     form.classList.add('was-validated');
     return;
   }
- 
+
   if (tipoProyecto == '1' && grupalState.selectedUsers.length === 0) {
     showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
     return;
   }
- 
+
   const btnCrear = document.getElementById('btnCrear');
   btnCrear.disabled = true;
   btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Actualizando...';
- 
+
   // Si hay archivo nuevo, subirlo
   if (archivoInput.files.length > 0) {
     uploadFile(archivoInput.files[0], function(filePath) {
@@ -388,11 +427,11 @@ function editarProyecto() {
     submitForm(formData, btnCrear, 'edit');
   }
 }
- 
+
 function uploadFile(file, callback) {
   const fileFormData = new FormData();
   fileFormData.append('archivo', file);
- 
+
   fetch('../php/upload_file.php', {
     method: 'POST',
     body: fileFormData
@@ -417,16 +456,16 @@ function uploadFile(file, callback) {
     callback(null);
   });
 }
- 
+
 function submitForm(formData, btnCrear, action) {
-  const endpoint = action === 'edit'
-    ? '../php/update_project.php'
+  const endpoint = action === 'edit' 
+    ? '../php/update_project.php' 
     : '../php/create_project.php';
- 
+
   if (editMode.isEditing) {  // Agregar ID del proyecto si es edición
     formData.append('id_proyecto', editMode.projectId);
   }
- 
+
   fetch(endpoint, {
     method: 'POST',
     body: formData
@@ -439,12 +478,12 @@ function submitForm(formData, btnCrear, action) {
   })
   .then(data => {
     if (data.success) {
-      const successMessage = action === 'edit'
-        ? '¡Proyecto actualizado exitosamente!'
+      const successMessage = action === 'edit' 
+        ? '¡Proyecto actualizado exitosamente!' 
         : '¡Proyecto creado exitosamente!';
-     
+      
       showAlert(successMessage, 'success');
-     
+      
       setTimeout(function() {//redirigir a lista de proyectos
         window.location.href = '../revisarProyectos/';
       }, 1500);
@@ -456,16 +495,16 @@ function submitForm(formData, btnCrear, action) {
   })
   .catch(error => {
     console.error('Error:', error);
-    const errorMsg = action === 'edit'
-      ? 'Error al actualizar el proyecto: '
+    const errorMsg = action === 'edit' 
+      ? 'Error al actualizar el proyecto: ' 
       : 'Error al crear el proyecto: ';
-   
+    
     showAlert(errorMsg + error.message, 'danger');
     btnCrear.disabled = false;
     btnCrear.innerHTML = action === 'edit' ? 'Actualizar' : 'Crear';
   });
 }
- 
+
 function showAlert(message, type) {
   const alertContainer = document.getElementById('alertContainer');
   const alertDiv = document.createElement('div');
@@ -475,10 +514,10 @@ function showAlert(message, type) {
     ${message}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   `;
- 
+  
   alertContainer.innerHTML = ''; //limpiar alertas anteriores
   alertContainer.appendChild(alertDiv);
- 
+
   //auto eliminar despues de 5s
   setTimeout(function() {
     if (alertDiv.parentNode) {
@@ -487,38 +526,5 @@ function showAlert(message, type) {
   }, 5000);
 }
 
-function setupCharacterCounters() {
-    const nombreInput = document.getElementById('nombre');
-    const descripcionInput = document.getElementById('descripcion');
-    
-    if (nombreInput) {
-        addCharacterCounter(nombreInput, 100);
-    }
-    
-    if (descripcionInput) {
-        addCharacterCounter(descripcionInput, 200);
-    }
-}
-
-function addCharacterCounter(input, maxLength) {
-    const counter = document.createElement('small');
-    counter.className = 'form-text text-muted';
-    counter.textContent = `0/${maxLength} caracteres`;
-    
-    input.parentElement.appendChild(counter);
-    
-    input.addEventListener('input', function() {
-        const length = this.value.length;
-        counter.textContent = `${length}/${maxLength} caracteres`;
-        
-        if (length > maxLength) {
-            counter.classList.add('text-danger');
-            counter.classList.remove('text-muted');
-        } else {
-            counter.classList.add('text-muted');
-            counter.classList.remove('text-danger');
-        }
-    });
-}
-
 document.addEventListener('DOMContentLoaded', setupCharacterCounters);
+}}

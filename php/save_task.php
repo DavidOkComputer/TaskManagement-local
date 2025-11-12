@@ -1,9 +1,7 @@
 <?php
-/**
- * save_task.php - Updated to handle all task fields and recalculate project progress
- * 
- * Saves new task and automatically updates project progress based on completed tasks
- */
+/*
+ * save_task.php 
+ * guardar tareaes y actualiza la barra de progreso basado en las tareas completadas=*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');
@@ -17,15 +15,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // Validate and sanitize inputs
+    //validar y limpiar los inputs
     $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
     $descripcion = isset($_POST['descripcion']) ? trim($_POST['descripcion']) : '';
     $id_proyecto = isset($_POST['id_proyecto']) ? intval($_POST['id_proyecto']) : 0;
-    $fecha_vencimiento = isset($_POST['fecha_vencimiento']) ? trim($_POST['fecha_vencimiento']) : '';
+    $fecha_cumplimiento = isset($_POST['fecha_cumplimiento']) ? trim($_POST['fecha_cumplimiento']) : '';
     $estado = isset($_POST['estado']) ? trim($_POST['estado']) : 'pendiente';
     $id_creador = isset($_POST['id_creador']) ? intval($_POST['id_creador']) : 1; // Default to user 1 if not provided
 
-    // Validations
+    //validaciones 
     if (empty($nombre)) {
         throw new Exception('El nombre de la tarea es requerido');
     }
@@ -46,14 +44,14 @@ try {
         throw new Exception('La descripción no puede exceder 250 caracteres');
     }
 
-    // Validate date if provided
-    if (!empty($fecha_vencimiento)) {
-        if (strtotime($fecha_vencimiento) === false) {
-            throw new Exception('La fecha de vencimiento no es válida');
+    //validar informacion
+    if (!empty($fecha_cumplimiento)) {
+        if (strtotime($fecha_cumplimiento) === false) {
+            throw new Exception('La fecha de cumplimiento no es válida');
         }
     }
 
-    // Validate estado
+    //validar el estado
     $estados_validos = ['pendiente', 'en-progreso', 'en proceso', 'completado'];
     $estado = strtolower($estado);
     if (!in_array($estado, $estados_validos)) {
@@ -65,7 +63,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Verify project exists
+    //verificar que el proyecto existe
     $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_proyectos WHERE id_proyecto = ?");
     $stmt->bind_param("i", $id_proyecto);
     $stmt->execute();
@@ -76,7 +74,7 @@ try {
     }
     $stmt->close();
 
-    // Insert task - Include all fields
+    //insertar tarea
     $sql = "INSERT INTO tbl_tareas (
                 nombre, 
                 descripcion, 
@@ -98,7 +96,7 @@ try {
         $descripcion,
         $id_proyecto,
         $id_creador,
-        $fecha_vencimiento,
+        $fecha_cumplimiento,
         $estado
     );
 
@@ -109,7 +107,7 @@ try {
     $task_id = $stmt->insert_id;
     $stmt->close();
 
-    // Recalculate and update project progress
+    //recalcular y actualizar el progreso del proyecto
     recalculateProjectProgress($conn, $id_proyecto);
 
     echo json_encode([
@@ -127,15 +125,9 @@ try {
     ]);
 }
 
-/**
- * Recalculate project progress based on completed tasks
- * 
- * @param mysqli $conn Database connection
- * @param int $id_proyecto Project ID
- */
 function recalculateProjectProgress($conn, $id_proyecto) {
     try {
-        // Get total tasks count
+        //obtener el conteo total de tareas
         $stmt = $conn->prepare("SELECT COUNT(*) as total FROM tbl_tareas WHERE id_proyecto = ?");
         $stmt->bind_param("i", $id_proyecto);
         $stmt->execute();
@@ -144,11 +136,11 @@ function recalculateProjectProgress($conn, $id_proyecto) {
         $total_tasks = (int)$row['total'];
         $stmt->close();
 
-        // If no tasks, set progress to 0
+        //  sino hay tareas el progreso es 0
         if ($total_tasks === 0) {
             $progress = 0;
         } else {
-            // Get completed tasks count
+            //obtener el conteo completo de tareas
             $stmt = $conn->prepare("SELECT COUNT(*) as completadas FROM tbl_tareas WHERE id_proyecto = ? AND estado = 'completado'");
             $stmt->bind_param("i", $id_proyecto);
             $stmt->execute();
@@ -157,11 +149,11 @@ function recalculateProjectProgress($conn, $id_proyecto) {
             $completed_tasks = (int)$row['completadas'];
             $stmt->close();
 
-            // Calculate progress percentage
+            //calcular el porcentaje de progreso
             $progress = round(($completed_tasks / $total_tasks) * 100);
         }
 
-        // Update project progress and status based on progress
+        //actualizar progreso de proyecto y estatus basado en progreso
         $nuevo_estado = determineProjectStatus($progress, $id_proyecto, $conn);
 
         $stmt = $conn->prepare("UPDATE tbl_proyectos SET progreso = ?, estado = ? WHERE id_proyecto = ?");
@@ -176,17 +168,10 @@ function recalculateProjectProgress($conn, $id_proyecto) {
     }
 }
 
-/**
- * Determine project status based on progress and deadline
- * 
- * @param int $progress Progress percentage (0-100)
- * @param int $id_proyecto Project ID
- * @param mysqli $conn Database connection
- * @return string Project status
- */
+//determinar el estado del progreso basado en la fecha de entrea
 function determineProjectStatus($progress, $id_proyecto, $conn) {
     try {
-        // Get project due date
+        //obtener fecha de entrega de proyecto
         $stmt = $conn->prepare("SELECT fecha_cumplimiento FROM tbl_proyectos WHERE id_proyecto = ?");
         $stmt->bind_param("i", $id_proyecto);
         $stmt->execute();
@@ -194,25 +179,23 @@ function determineProjectStatus($progress, $id_proyecto, $conn) {
         $row = $result->fetch_assoc();
         $stmt->close();
 
-        $fecha_vencimiento = strtotime($row['fecha_cumplimiento']);
+        $fecha_cumplimiento = strtotime($row['fecha_cumplimiento']);
         $hoy = time();
 
-        // If deadline passed and not completed, mark as expired
-        if ($hoy > $fecha_vencimiento && $progress < 100) {
+        //si la fecha de entrega paso y no se ha completado marcar como vencido
+        if ($hoy > $fecha_cumplimiento && $progress < 100) {
             return 'vencido';
         }
 
-        // If 100% complete, mark as completed
         if ($progress == 100) {
             return 'completado';
         }
 
-        // If has progress but not complete, mark as in progress
         if ($progress > 0) {
             return 'en proceso';
         }
 
-        // Default to pending
+        // Default en pendiente
         return 'pendiente';
 
     } catch (Exception $e) {

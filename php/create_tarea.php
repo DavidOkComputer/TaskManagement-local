@@ -30,7 +30,7 @@ try {
     $nombre = trim($_POST['nombre']);//limpiar y validar inputs
     $descripcion = trim($_POST['descripcion']);
     $id_proyecto = intval($_POST['id_proyecto']);
-    $fecha_cumplimiento = trim($_POST['fecha_vencimiento']);
+    $fecha_cumplimiento = trim($_POST['fecha_cumplimiento']);
     $estado = trim($_POST['estado']);
 
     //validar longitud
@@ -45,7 +45,7 @@ try {
         throw new Exception('El estado debe ser: pendiente, en proceso, vencido o completado');
     }
     if (strtotime($fecha_cumplimiento) === false) {
-        throw new Exception('La fecha de vencimiento no es válida');
+        throw new Exception('La fecha de cumplimiento no es válida');
     }
     if ($id_proyecto <= 0) {
         throw new Exception('El ID del proyecto no es válido');

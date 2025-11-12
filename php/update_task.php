@@ -1,23 +1,12 @@
 <?php
-/**
- * update_task.php
- * Updates an existing task with new information
- * 
- * Expected POST parameters:
- * - id_tarea: Task ID to update
- * - nombre: Task name
- * - descripcion: Task description
- * - id_proyecto: Project ID
- * - fecha_vencimiento: Due date
- * - estado: Task status
- */
+/*update_task.php actualiza una tarea existente con nueva informacion*/
 
 header('Content-Type: application/json');
 
-// Include database connection
-require_once('db_connection.php');
-
-// Check if request method is POST
+//incluir conexion a base de datos
+require_once('db_config.php');
+$conn = getDBConnection();
+//revisar si el metodo solicitado es post
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
         'success' => false,
@@ -26,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Validate required fields
+//validar campos requeridos
 $required_fields = ['id_tarea', 'nombre', 'descripcion', 'id_proyecto', 'estado'];
 $missing_fields = [];
 
@@ -44,17 +33,17 @@ if (!empty($missing_fields)) {
     exit;
 }
 
-// Get and sanitize input data
+//obtener y limpiar informacion de input
 $id_tarea = intval($_POST['id_tarea']);
 $nombre = trim($_POST['nombre']);
 $descripcion = trim($_POST['descripcion']);
 $id_proyecto = intval($_POST['id_proyecto']);
-$fecha_vencimiento = isset($_POST['fecha_vencimiento']) && !empty($_POST['fecha_vencimiento']) 
-    ? $_POST['fecha_vencimiento'] 
+$fecha_cumplimiento = isset($_POST['fecha_cumplimiento']) && !empty($_POST['fecha_cumplimiento']) 
+    ? $_POST['fecha_cumplimiento'] 
     : null;
 $estado = trim($_POST['estado']);
 
-// Validate status
+//validar estado
 $valid_statuses = ['pendiente', 'en proceso', 'en-progreso', 'completado', 'vencido'];
 if (!in_array($estado, $valid_statuses)) {
     echo json_encode([
@@ -64,14 +53,14 @@ if (!in_array($estado, $valid_statuses)) {
     exit;
 }
 
-// Normalize status (convert 'en-progreso' to 'en proceso')
+//normalizar estado
 if ($estado === 'en-progreso') {
     $estado = 'en proceso';
 }
 
 try {
-    // Check if task exists
-    $check_stmt = $conn->prepare("SELECT id_tarea FROM tareas WHERE id_tarea = ?");
+    //revisar si la tarea existe
+    $check_stmt = $conn->prepare("SELECT id_tarea FROM tbl_tareas WHERE id_tarea = ?");
     $check_stmt->bind_param("i", $id_tarea);
     $check_stmt->execute();
     $check_result = $check_stmt->get_result();
@@ -86,8 +75,8 @@ try {
     }
     $check_stmt->close();
     
-    // Check if project exists
-    $project_stmt = $conn->prepare("SELECT id_proyecto FROM proyectos WHERE id_proyecto = ?");
+    //revisar si el proyecto existe
+    $project_stmt = $conn->prepare("SELECT id_proyecto FROM tbl_proyectos WHERE id_proyecto = ?");
     $project_stmt->bind_param("i", $id_proyecto);
     $project_stmt->execute();
     $project_result = $project_stmt->get_result();
@@ -102,35 +91,33 @@ try {
     }
     $project_stmt->close();
     
-    // Prepare update statement
-    if ($fecha_vencimiento !== null) {
+    //preparar actualizacion
+    if ($fecha_cumplimiento !== null) {
         $stmt = $conn->prepare(
-            "UPDATE tareas 
+            "UPDATE tbl_tareas 
              SET nombre = ?, 
                  descripcion = ?, 
                  id_proyecto = ?, 
-                 fecha_vencimiento = ?, 
-                 estado = ?,
-                 fecha_actualizacion = NOW()
+                 fecha_cumplimiento = ?, 
+                 estado = ?
              WHERE id_tarea = ?"
         );
         $stmt->bind_param("ssissi", 
             $nombre, 
             $descripcion, 
             $id_proyecto, 
-            $fecha_vencimiento, 
+            $fecha_cumplimiento, 
             $estado, 
             $id_tarea
         );
     } else {
         $stmt = $conn->prepare(
-            "UPDATE tareas 
+            "UPDATE tbl_tareas 
              SET nombre = ?, 
                  descripcion = ?, 
                  id_proyecto = ?, 
-                 fecha_vencimiento = NULL, 
-                 estado = ?,
-                 fecha_actualizacion = NOW()
+                 fecha_cumplimiento = NULL, 
+                 estado = ?
              WHERE id_tarea = ?"
         );
         $stmt->bind_param("ssisi", 
@@ -142,7 +129,7 @@ try {
         );
     }
     
-    // Execute update
+    //ejecutar actualizacion
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {
             echo json_encode([
@@ -151,7 +138,7 @@ try {
                 'task_id' => $id_tarea
             ]);
         } else {
-            // No rows affected - data might be the same
+            //sin filas afectadas, losdatos pueden ser los mismos
             echo json_encode([
                 'success' => true,
                 'message' => 'No se realizaron cambios (los datos son iguales)',
@@ -172,6 +159,5 @@ try {
     ]);
 }
 
-// Close database connection
 $conn->close();
 ?>

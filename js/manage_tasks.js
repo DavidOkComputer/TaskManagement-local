@@ -1,35 +1,15 @@
-/**
- * task-management.js - Consolidated Task Management System
- * 
- * Features:
- * - Load and display projects
- * - Load and display tasks by project
- * - Create new tasks via modal
- * - Update task status with automatic badge updates
- * - Automatic project progress calculation
- * - Consistent behavior for all tasks (new and existing)
- */
+/*task-management.js - manejo de tareas, creacion y actualizacion*/
 
 document.addEventListener('DOMContentLoaded', function() {
     
-    // ============================================
-    // ELEMENT REFERENCES
-    // ============================================
     const projectSelect = document.getElementById('id_proyecto');
     const tasksList = document.getElementById('tasksList');
     const tasksLoading = document.getElementById('tasksLoading');
     const addBtn = document.querySelector('.todo-list-add-btn');
     
-    let currentProjectId = null; // Track currently selected project
+    let currentProjectId = null; //seguir el proyecto seleccionado actualmente
     
-    // ============================================
-    // CUSTOM DIALOG SYSTEM
-    // ============================================
     createCustomDialogSystem();
-    
-    // ============================================
-    // MODAL CREATION AND INITIALIZATION
-    // ============================================
     createTaskModal();
     
     function createTaskModal() {
@@ -88,18 +68,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.body.insertAdjacentHTML('beforeend', modalHTML);
         
-        // Initialize modal event listeners
         initializeModalEventListeners();
     }
     
-    // ============================================
-    // CUSTOM DIALOG SYSTEM
-    // ============================================
-    
-    /**
-     * Create custom dialog system for alerts and confirmations
-     * Replaces browser's alert() and confirm() with styled modals
-     */
     function createCustomDialogSystem() {
         const dialogHTML = `
             <!-- Custom Alert Dialog -->
@@ -149,62 +120,30 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.insertAdjacentHTML('beforeend', dialogHTML);
     }
     
-    /**
-     * Show custom alert dialog
-     * @param {string} message - Message to display
-     * @param {string} title - Optional title (default: "Información")
-     * @param {string} type - Optional type for icon (info, warning, error, success)
-     */
-    function showAlert(message, title = 'Información', type = 'info') {
-        const modal = document.getElementById('customAlertModal');
-        const titleElement = document.getElementById('alertTitle');
-        const messageElement = document.getElementById('alertMessage');
-        const headerElement = modal.querySelector('.modal-header');
-        const iconElement = modal.querySelector('.modal-title i');
+    //mostrar dialogo de alrta de la app y no navegador
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alertContainer');
+        const alertDiv = document.createElement('div');
         
-        // Set title and message
-        titleElement.textContent = title;
-        messageElement.textContent = message;
+        //agreagar clases de una en una
+        alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show');
+        alertDiv.setAttribute('role', 'alert');
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
         
-        // Reset header classes
-        headerElement.className = 'modal-header';
+        alertContainer.innerHTML = '';
+        alertContainer.appendChild(alertDiv);
         
-        // Set icon and color based on type
-        const iconMap = {
-            'info': {
-                icon: 'mdi-information-outline',
-                class: 'bg-info text-white'
-            },
-            'warning': {
-                icon: 'mdi-alert-outline',
-                class: 'bg-warning text-white'
-            },
-            'error': {
-                icon: 'mdi-close-circle-outline',
-                class: 'bg-danger text-white'
-            },
-            'success': {
-                icon: 'mdi-check-circle-outline',
-                class: 'bg-success text-white'
+        setTimeout(function() {
+            if (alertDiv.parentNode) {
+            alertDiv.remove();
             }
-        };
-        
-        const config = iconMap[type] || iconMap['info'];
-        iconElement.className = `mdi ${config.icon} me-2`;
-        headerElement.classList.add(config.class);
-        
-        // Show modal
-        const alertModal = new bootstrap.Modal(modal);
-        alertModal.show();
+        }, 5000);
     }
-    
-    /**
-     * Show custom confirm dialog
-     * @param {string} message - Message to display
-     * @param {Function} onConfirm - Callback function when user confirms
-     * @param {string} title - Optional title (default: "Confirmar acción")
-     * @param {Object} options - Optional configuration {confirmText, cancelText, type}
-     */
+
+    // mostrar dialogo de confiracion de la app y no buscador
     function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) {
         const modal = document.getElementById('customConfirmModal');
         const titleElement = document.getElementById('confirmTitle');
@@ -214,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const confirmBtn = document.getElementById('confirmOkBtn');
         const cancelBtn = document.getElementById('confirmCancelBtn');
         
-        // Set default options
+        //opciones default
         const config = {
             confirmText: 'Aceptar',
             cancelText: 'Cancelar',
@@ -222,18 +161,17 @@ document.addEventListener('DOMContentLoaded', function() {
             ...options
         };
         
-        // Set title and message
+        //titulo y mensaje
         titleElement.textContent = title;
         messageElement.textContent = message;
         
-        // Set button texts
+        //cambiar el texto de los botones
         confirmBtn.textContent = config.confirmText;
         cancelBtn.textContent = config.cancelText;
         
-        // Reset header classes
+        //clases del header
         headerElement.className = 'modal-header';
         
-        // Set icon and color based on type
         const iconMap = {
             'info': {
                 icon: 'mdi-information-outline',
@@ -261,17 +199,17 @@ document.addEventListener('DOMContentLoaded', function() {
         iconElement.className = `mdi ${typeConfig.icon} me-2`;
         headerElement.classList.add(typeConfig.class);
         
-        // Update confirm button style
+        //actualizar el estilo del boton confirmar
         confirmBtn.className = `btn ${typeConfig.btnClass}`;
         
-        // Remove old event listeners by cloning and replacing
+        //eliminar listeners anteriores clonando y remplazando
         const newConfirmBtn = confirmBtn.cloneNode(true);
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
         
         const newCancelBtn = cancelBtn.cloneNode(true);
         cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
         
-        // Add new event listeners
+        //agregar nuevo event listener
         newConfirmBtn.addEventListener('click', function() {
             const confirmModal = bootstrap.Modal.getInstance(modal);
             confirmModal.hide();
@@ -280,23 +218,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Show modal
+        //mostrar modal
         const confirmModal = new bootstrap.Modal(modal);
         confirmModal.show();
     }
-    
-    // ============================================
-    // INITIAL LOAD
-    // ============================================
+
     loadProjects();
     
-    // ============================================
-    // PROJECT MANAGEMENT
-    // ============================================
-    
-    /**
-     * Load all projects and populate the main dropdown
-     */
+    // cargar proyectos y mostrarlos en la lista dropdown
     function loadProjects() {
         fetch('../php/get_projects.php')
             .then(response => {
@@ -318,13 +247,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    /**
-     * Populate a select element with projects
-     * @param {HTMLElement} selectElement - The select element to populate
-     * @param {Array} projects - Array of project objects
-     */
+    //popular el elemento con proyectos
     function populateProjectSelect(selectElement, projects) {
-        // Keep the default option
+        //mantener la opcion default
         selectElement.innerHTML = '<option value="">Seleccione un proyecto</option>';
         
         projects.forEach(project => {
@@ -335,9 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    /**
-     * Event listener for project selection change
-     */
+    //cambio de proyecto
     projectSelect.addEventListener('change', function() {
         if (this.value) {
             currentProjectId = this.value;
@@ -347,15 +270,8 @@ document.addEventListener('DOMContentLoaded', function() {
             showDefaultMessage();
         }
     });
-    
-    // ============================================
-    // TASK MANAGEMENT
-    // ============================================
-    
-    /**
-     * Load tasks for a specific project
-     * @param {string|number} projectId - The project ID
-     */
+
+    //cargar tareas de un proyecto especifico
     function loadTasks(projectId) {
         tasksLoading.style.display = 'block';
         tasksList.style.display = 'none';
@@ -380,10 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    /**
-     * Render tasks in the list
-     * @param {Array} tasks - Array of task objects
-     */
+    //cargar tareas en la lista
     function renderTasks(tasks) {
         tasksList.innerHTML = '';
         
@@ -393,18 +306,13 @@ document.addEventListener('DOMContentLoaded', function() {
             tasksList.insertAdjacentHTML('beforeend', taskElement);
         });
         
-        // Attach event listeners to all checkboxes and edit buttons
+        //agregar event listeners a todas las checkboxes y botones de edicion
         attachTaskListeners();
     }
     
-    /**
-     * Create HTML for a single task element
-     * @param {Object} task - Task object
-     * @param {boolean} isLast - Whether this is the last task in the list
-     * @returns {string} HTML string for the task
-     */
+    //crear un html para un solo elemento de tarea
     function createTaskElement(task, isLast = false) {
-        // Format date
+        //formato de fecha
         const dateObj = new Date(task.fecha_cumplimiento);
         const formattedDate = dateObj.toLocaleDateString('es-MX', {
             day: '2-digit',
@@ -412,10 +320,10 @@ document.addEventListener('DOMContentLoaded', function() {
             year: 'numeric'
         });
         
-        // Get badge styling based on status
+        //estilo de la insignia basado en estatus
         const badgeInfo = getTaskBadgeInfo(task.estado);
         
-        // Check if task is completed
+        //revisar si la tarea es completada
         const isCompleted = task.estado === 'completado';
         const borderClass = isLast ? 'border-bottom-0' : '';
         
@@ -449,12 +357,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </li>
         `;
     }
-    
-    /**
-     * Get badge class and text based on task status
-     * @param {string} status - Task status
-     * @returns {Object} Object with class and text properties
-     */
+
+    //obtener la clase y texto de la insigniaa basado en el estado de la tarea
     function getTaskBadgeInfo(status) {
         const statusMap = {
             'completado': {
@@ -482,11 +386,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return statusMap[status] || statusMap['pendiente'];
     }
     
-    /**
-     * Escape HTML to prevent XSS attacks
-     * @param {string} text - Text to escape
-     * @returns {string} Escaped text
-     */
     function escapeHtml(text) {
         const map = {
             '&': '&amp;',
@@ -497,52 +396,43 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         return text.replace(/[&<>"']/g, m => map[m]);
     }
-    
-    /**
-     * Attach event listeners to all task checkboxes and edit buttons
-     */
+
+    //agregar event listeners a todas las checkboxes y botones de edicion
     function attachTaskListeners() {
-        // Attach checkbox listeners
         const checkboxes = document.querySelectorAll('.task-checkbox');
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', handleTaskStatusChange);
         });
         
-        // Attach edit button listeners
         const editButtons = document.querySelectorAll('.task-edit-btn');
         editButtons.forEach(button => {
             button.addEventListener('click', handleEditTask);
         });
     }
     
-    /**
-     * Handle task status change when checkbox is clicked
-     * CHECKED = completado (Task is complete)
-     * UNCHECKED = pendiente (Task is still pending)
-     * @param {Event} event - The change event
-     */
+    //manejo de cambio de estado cuando se hace clic en la checkbox 
     function handleTaskStatusChange(event) {
         const checkbox = event.target;
         const taskId = checkbox.getAttribute('data-task-id');
         const isChecked = checkbox.checked;
         
-        // Checked = completado, Unchecked = pendiente
+        //Checado = completado, sin checar = pendiente 
         const newStatus = isChecked ? 'completado' : 'pendiente';
         
-        // Get the task list item
+        //obtener el item de la lista de tareas
         const taskLi = checkbox.closest('li');
         
-        // Show loading state
+        //mostrar estado de carga
         taskLi.style.opacity = '0.6';
         taskLi.style.pointerEvents = 'none';
         checkbox.disabled = true;
         
-        // Prepare data for update
+        //preparar info para la actualizacion
         const updateData = new FormData();
         updateData.append('id_tarea', taskId);
         updateData.append('estado', newStatus);
         
-        // Send update to server
+        //enviar actualizacion al servidor
         fetch('../php/update_task_status.php', {
             method: 'POST',
             body: updateData
@@ -550,7 +440,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update badge
+                //actualizar insignia
                 const badge = taskLi.querySelector('.task-badge');
                 const badgeInfo = getTaskBadgeInfo(newStatus);
                 
@@ -559,7 +449,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     badge.textContent = badgeInfo.text;
                 }
                 
-                // Restore normal state
+                //devolver a estado normal
                 taskLi.style.opacity = '1';
                 taskLi.style.pointerEvents = 'auto';
                 checkbox.disabled = false;
@@ -567,7 +457,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const statusMessage = isChecked ? 'Tarea marcada como completada' : 'Tarea marcada como pendiente';
                 showNotification(statusMessage, 'success');
             } else {
-                // Revert checkbox on error
+                //regresar checkbox a estado original si hay error
                 checkbox.checked = !isChecked;
                 taskLi.style.opacity = '1';
                 taskLi.style.pointerEvents = 'auto';
@@ -579,7 +469,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error updating task:', error);
             
-            // Revert checkbox on error
             checkbox.checked = !isChecked;
             taskLi.style.opacity = '1';
             taskLi.style.pointerEvents = 'auto';
@@ -588,17 +477,13 @@ document.addEventListener('DOMContentLoaded', function() {
             showNotification('Error al conectar con el servidor', 'danger');
         });
     }
-    
-    /**
-     * Handle edit task button click
-     * Opens the modal in edit mode with task data pre-filled
-     * @param {Event} event - The click event
-     */
+
+    //manejo de boton de editar tarea
     function handleEditTask(event) {
         event.preventDefault();
         const button = event.currentTarget;
         
-        // Get task data from button attributes
+        //obtener atributos del boton
         const taskId = button.getAttribute('data-task-id');
         const taskName = button.getAttribute('data-task-name');
         const taskDescription = button.getAttribute('data-task-description');
@@ -606,48 +491,41 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskStatus = button.getAttribute('data-task-status');
         const taskProject = button.getAttribute('data-task-project');
         
-        // Populate modal with task data
+        //llenar el modal con la info de la tarea
         document.getElementById('taskName').value = taskName;
         document.getElementById('taskDescription').value = taskDescription;
         document.getElementById('taskDate').value = taskDate;
         document.getElementById('taskStatus').value = taskStatus;
         
-        // Store task ID for update
+        //guardar id de tarea para actualizar
         const form = document.getElementById('addTaskForm');
         form.setAttribute('data-task-id', taskId);
         form.setAttribute('data-mode', 'edit');
         
-        // Change modal title
+        //cambiar el titulo del modal
         document.getElementById('addTaskModalLabel').textContent = 'Editar Tarea';
         document.querySelector('#saveTaskBtn .btn-text').textContent = 'Actualizar Tarea';
         
-        // Load projects and pre-select the task's project
+        //cargar proyecto y preseleccionar el proyecto de la tarea
         loadProjectsForModal(() => {
             document.getElementById('taskProject').value = taskProject;
         });
         
-        // Show modal
+        //mostrar modal
         const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
         modal.show();
     }
     
-    // ============================================
-    // ADD TASK MODAL FUNCTIONALITY
-    // ============================================
-    
-    /**
-     * Initialize modal event listeners
-     */
     function initializeModalEventListeners() {
         const modal = document.getElementById('addTaskModal');
         const saveBtn = document.getElementById('saveTaskBtn');
         const form = document.getElementById('addTaskForm');
         
-        // Load projects when modal is shown
+        // cargar proyectos cuando se muestra el modal
         modal.addEventListener('show.bs.modal', function() {
             const mode = form.getAttribute('data-mode');
             
-            // If not in edit mode, load projects and pre-select current project
+            //si no se esta en modo de edicion cargar proyectos y preselccionar proyecto actual
             if (mode !== 'edit') {
                 loadProjectsForModal(() => {
                     if (currentProjectId) {
@@ -657,28 +535,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Clear form and reset modal when hidden
+        //limpiar el form y reiniciar modal cuando se esconde
         modal.addEventListener('hidden.bs.modal', function() {
             form.reset();
             form.removeAttribute('data-task-id');
             form.removeAttribute('data-mode');
             document.getElementById('taskMessage').style.display = 'none';
             
-            // Reset modal title and button text
+            //reiniciar titulo del modal y texto del botn
             document.getElementById('addTaskModalLabel').textContent = 'Agregar Nueva Tarea';
             document.querySelector('#saveTaskBtn .btn-text').textContent = 'Guardar Tarea';
         });
         
-        // Save button click handler
         if (saveBtn) {
             saveBtn.addEventListener('click', handleSaveTask);
         }
     }
     
-    /**
-     * Load projects for the modal dropdown
-     * @param {Function} callback - Optional callback to run after projects are loaded
-     */
+    //cargar proyectos para el dropdown del modal
     function loadProjectsForModal(callback) {
         fetch('../php/get_projects.php')
             .then(response => response.json())
@@ -688,7 +562,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success && data.proyectos) {
                     populateProjectSelect(modalProjectSelect, data.proyectos);
                     
-                    // Run callback if provided
                     if (callback && typeof callback === 'function') {
                         callback();
                     }
@@ -702,34 +575,31 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    /**
-     * Handle save task button click
-     * Handles both creating new tasks and updating existing ones
-     */
+    //maneja crear una nueva tarea y actualizar las que ya existen
     function handleSaveTask() {
         const form = document.getElementById('addTaskForm');
         
-        // Validate form
+        //validar form
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
         
-        // Get form values
+        //obtener valores del form
         const taskName = document.getElementById('taskName').value;
         const taskDescription = document.getElementById('taskDescription').value;
         const taskProject = document.getElementById('taskProject').value;
         const taskDate = document.getElementById('taskDate').value;
         const taskStatus = document.getElementById('taskStatus').value;
         
-        // Check if in edit mode
+        //revisar si esta en modo de edicion
         const mode = form.getAttribute('data-mode');
         const taskId = form.getAttribute('data-task-id');
         const isEditMode = mode === 'edit' && taskId;
         
         setModalLoading(true);
         
-        // Prepare data
+        //preparar info
         const formData = new FormData();
         formData.append('nombre', taskName);
         formData.append('descripcion', taskDescription);
@@ -738,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('estado', taskStatus);
         
         if (isEditMode) {
-            // Edit mode - update existing task
+            //modo de edicion, actualizar tarea existente
             formData.append('id_tarea', taskId);
             
             fetch('../php/update_task.php', {
@@ -752,20 +622,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showModalMessage('Tarea actualizada exitosamente', 'success');
                     
-                    // Update the task in the list if it belongs to current project
+                    //actualizar la tarea en la lista si pertenece al pryecto actual
                     if (currentProjectId && taskProject == currentProjectId) {
                         updateTaskInList(taskId, taskName, taskDescription, taskDate, taskStatus);
                     } else if (currentProjectId) {
-                        // Task was moved to different project, remove from current list
+                        //si la tarea fue movida a un proyecto diferente se elimina de esta lista
                         removeTaskFromList(taskId);
                     }
                     
-                    // If current project is empty and we moved the task away, reload
+                    //si el proyecto actual esta vacia y se mueve la tarea a otro, recargar
                     if (currentProjectId && taskProject != currentProjectId) {
                         loadTasks(currentProjectId);
                     }
                     
-                    // Reset form and close modal after brief delay
                     setTimeout(() => {
                         form.reset();
                         const modal = bootstrap.Modal.getInstance(document.getElementById('addTaskModal'));
@@ -781,8 +650,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showModalMessage('Error al conectar con el servidor', 'danger');
             });
         } else {
-            // Create mode - new task
-            formData.append('id_creador', 1); // TODO: Replace with actual user ID
+            //modo crear, nueva tarea
+            formData.append('id_creador', 1); //remplazar con id de la sesion
             
             fetch('../php/save_task.php', {
                 method: 'POST',
@@ -795,12 +664,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showModalMessage('Tarea guardada exitosamente', 'success');
                     
-                    // If the new task belongs to the currently selected project, add it to the list
+                    //si la nueva tarea pertenece al proyecto seleccionado agregarlo a la lista
                     if (currentProjectId && taskProject == currentProjectId) {
                         addTaskToList(data.task_id, taskName, taskDescription, taskDate, taskStatus, taskProject);
                     }
                     
-                    // Reset form and close modal after brief delay
                     setTimeout(() => {
                         form.reset();
                         const modal = bootstrap.Modal.getInstance(document.getElementById('addTaskModal'));
@@ -818,23 +686,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    /**
-     * Add a newly created task to the current task list
-     * @param {string|number} taskId - Task ID
-     * @param {string} taskName - Task name
-     * @param {string} taskDescription - Task description
-     * @param {string} taskDate - Task due date
-     * @param {string} taskStatus - Task status
-     * @param {string|number} taskProject - Project ID
-     */
+    //agregar nueva tarea creada a la lista actual
     function addTaskToList(taskId, taskName, taskDescription, taskDate, taskStatus, taskProject) {
-        // Remove "no tasks" message if it exists
+        //quitar el mensaje de no hay tareas si es que existe
         const noTasksMessage = tasksList.querySelector('.text-center');
         if (noTasksMessage) {
             tasksList.innerHTML = '';
         }
         
-        // Format date
         let formattedDate = 'Sin fecha';
         if (taskDate) {
             const dateObj = new Date(taskDate);
@@ -844,11 +703,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 year: 'numeric'
             });
         }
-        
-        // Get badge info
         const badgeInfo = getTaskBadgeInfo(taskStatus);
         
-        // Create task HTML
         const newTaskHTML = `
             <li class="d-block" data-task-id="${taskId}">
                 <div class="form-check w-100">
@@ -879,10 +735,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </li>
         `;
         
-        // Add to list
         tasksList.insertAdjacentHTML('beforeend', newTaskHTML);
         
-        // Attach event listeners to the new task
+        //agregar event listener a nueva tarea
         const newTaskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
         if (newTaskLi) {
             const checkbox = newTaskLi.querySelector('.task-checkbox');
@@ -897,19 +752,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    /**
-     * Update an existing task in the list
-     * @param {string|number} taskId - Task ID
-     * @param {string} taskName - Task name
-     * @param {string} taskDescription - Task description
-     * @param {string} taskDate - Task due date
-     * @param {string} taskStatus - Task status
-     */
+    //actualizar una tarea en la lista
     function updateTaskInList(taskId, taskName, taskDescription, taskDate, taskStatus) {
         const taskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
         if (!taskLi) return;
         
-        // Format date
         let formattedDate = 'Sin fecha';
         if (taskDate) {
             const dateObj = new Date(taskDate);
@@ -920,18 +767,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Get badge info
+        //info de la insignia
         const badgeInfo = getTaskBadgeInfo(taskStatus);
         
-        // Update task name
+        //actualizar nombre de la tarea
         const label = taskLi.querySelector('.form-check-label');
         const checkbox = taskLi.querySelector('.task-checkbox');
         if (label && checkbox) {
-            // Preserve the checkbox and update the label text
+            //quedarse con la checkbox y actualizar el label
             const isChecked = taskStatus === 'completado';
             checkbox.checked = isChecked;
             
-            // Update the label content (keeping checkbox intact)
+            //actualizar el contenido del label sin cambiar checkbox
             label.childNodes.forEach(node => {
                 if (node.nodeType === Node.TEXT_NODE) {
                     node.textContent = taskName;
@@ -939,26 +786,26 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Update date
+        //actualizar fecha 
         const dateDiv = taskLi.querySelector('.text-small');
         if (dateDiv) {
             dateDiv.textContent = formattedDate;
         }
         
-        // Update badge
+        //actualizar insignia
         const badge = taskLi.querySelector('.task-badge');
         if (badge) {
             badge.className = `badge ${badgeInfo.class} me-3 task-badge`;
             badge.textContent = badgeInfo.text;
         }
         
-        // Update description
+        //actualizar descripcion
         const descDiv = taskLi.querySelector('.text-muted.small');
         if (descDiv) {
             descDiv.textContent = taskDescription;
         }
         
-        // Update edit button data attributes
+        //actualizar boron de edicion
         const editBtn = taskLi.querySelector('.task-edit-btn');
         if (editBtn) {
             editBtn.setAttribute('data-task-name', escapeHtml(taskName));
@@ -970,26 +817,20 @@ document.addEventListener('DOMContentLoaded', function() {
         showNotification('Tarea actualizada en la lista', 'success');
     }
     
-    /**
-     * Remove a task from the list
-     * @param {string|number} taskId - Task ID to remove
-     */
+    //quitar una tarea de la lista
     function removeTaskFromList(taskId) {
         const taskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
         if (taskLi) {
             taskLi.remove();
             
-            // Check if list is now empty
+            // revisar si la lista esta vacia
             if (tasksList.children.length === 0) {
                 showNoTasksMessage();
             }
         }
     }
     
-    /**
-     * Set loading state for modal save button
-     * @param {boolean} isLoading - Whether to show loading state
-     */
+    //asignar estado de carga
     function setModalLoading(isLoading) {
         const saveBtn = document.getElementById('saveTaskBtn');
         const btnText = saveBtn.querySelector('.btn-text');
@@ -1006,37 +847,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // ============================================
-    // ADD TASK BUTTON
-    // ============================================
-    
     if (addBtn) {
         addBtn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Check if a project is selected
+            //revisar si el proyecto esta seleccionado
             if (!currentProjectId) {
                 showAlert(
                     'Por favor seleccione un proyecto primero',
-                    'Proyecto requerido',
                     'warning'
                 );
                 return;
             }
             
-            // Show modal
             const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
             modal.show();
         });
     }
-    
-    // ============================================
-    // UI HELPER FUNCTIONS
-    // ============================================
-    
-    /**
-     * Show default message when no project is selected
-     */
+    //mostrar mensaje default cuando no hay ningun proyecto seleccionado
     function showDefaultMessage() {
         tasksList.innerHTML = `
             <li class="d-block text-center py-4">
@@ -1045,9 +873,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
     
-    /**
-     * Show message when project has no tasks
-     */
+    //mostrar mensaje cuando el proyecto no tiene tareas
     function showNoTasksMessage() {
         tasksList.innerHTML = `
             <li class="d-block text-center py-4">
@@ -1055,10 +881,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </li>
         `;
     }
-    
-    /**
-     * Show error message when loading tasks fails
-     */
+     
     function showErrorMessage() {
         tasksList.innerHTML = `
             <li class="d-block text-center py-4">
@@ -1067,18 +890,11 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
     
-    /**
-     * Show notification message (for task operations)
-     * @param {string} message - Message to display
-     * @param {string} type - Bootstrap alert type (success, danger, warning, info)
-     */
     function showNotification(message, type) {
-        // You can implement a toast notification system here
-        // For now, just log to console
+        // agregar notificacion de tipo tostada
         console.log(`[${type.toUpperCase()}] ${message}`);
         
-        // Optional: Create a simple toast notification
-        // This is a basic implementation - you can enhance it
+        // mejorar notificacion
         const toast = document.createElement('div');
         toast.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
         toast.style.zIndex = '9999';
@@ -1091,11 +907,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    /**
-     * Show message in the modal
-     * @param {string} message - Message to display
-     * @param {string} type - Bootstrap alert type
-     */
+    //mostrar mensaje en el modal
     function showModalMessage(message, type) {
         const messageDiv = document.getElementById('taskMessage');
         messageDiv.className = `alert alert-${type}`;

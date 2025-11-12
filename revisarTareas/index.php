@@ -229,8 +229,10 @@
           <div class="col-12 grid-margin">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">Asignación de tareas para proyectos</h4>
-                  <p class="card-description">Asigne las tareas a desarrollar dentro del proyecto</p>
+                  <div id="alertContainer">
+                    <h4 class="card-title">Asignación de tareas para proyectos</h4>
+                    <p class="card-description">Asigne las tareas a desarrollar dentro del proyecto</p>
+                  </div>
                   <hr>
                   <div class="row">
                       <div class="col-bg-12">
