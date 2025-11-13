@@ -1,52 +1,28 @@
-/**
- * Proyectos Pendientes - Dynamic List Manager
- * 
- * Purpose: Handles the dynamic loading and display of user's pending projects
- * Shows only projects with estado = 'pendiente'
- * Functions:
- * - Fetch pending projects from API
- * - Populate table with project data
- * - Handle loading and error states
- * - Format dates and progress display
- * - Sort by due date (earliest first)
- * 
- * Requires: jQuery (already included in template)
- */
+/*Proyectos Pendientes */
 
 $(document).ready(function() {
-    // Initialize the pending projects list on page load
     loadProyectosPendientes();
     
-    // Optional: Refresh pending projects every 30 seconds for real-time updates
-    setInterval(loadProyectosPendientes, 30000);
+    setInterval(loadProyectosPendientes, 30000);//refrescar proyectos pendientes cada 30s de maner automatica
 });
 
-/**
- * Load pending projects from API endpoint
- * Fetches all pending projects related to logged-in user
- */
 function loadProyectosPendientes() {
-    // Show loading state
     showLoadingState();
     
-    // AJAX request to fetch pending projects
-    $.ajax({
-        url: '../api_get_proyectos_pendientes.php', // Path to pending projects API endpoint
+    $.ajax({//obtener proyectos pendientes
+        url: '../api_get_proyectos_pendientes.php',
         type: 'GET',
         dataType: 'json',
-        timeout: 10000, // 10 second timeout
+        timeout: 10000, // 10 s
         success: function(response) {
             if (response.success) {
-                // Populate table with pending projects
-                populateProyectosPendientesTable(response.data);
+                populateProyectosPendientesTable(response.data);//llenado de tabla
                 hideLoadingState();
             } else {
-                // Handle API error response
                 showError('Error: ' + response.message);
             }
         },
         error: function(xhr, status, error) {
-            // Handle AJAX request errors
             console.error('Error loading pending projects:', error);
             
             let errorMessage = 'Error al cargar proyectos pendientes';
@@ -64,18 +40,12 @@ function loadProyectosPendientes() {
     });
 }
 
-/**
- * Populate the pending projects table with data
- * @param {Array} proyectos - Array of pending project objects from API
- */
 function populateProyectosPendientesTable(proyectos) {
     const tbody = $('table.select-table tbody');
     
-    // Clear existing rows
-    tbody.empty();
+    tbody.empty();//limpiar registros existentes
     
-    // Check if there are pending projects
-    if (!proyectos || proyectos.length === 0) {
+    if (!proyectos || proyectos.length === 0) {//revisar si hay proyecto pendientes
         tbody.html(`
             <tr>
                 <td colspan="5" class="text-center py-4">
@@ -86,33 +56,23 @@ function populateProyectosPendientesTable(proyectos) {
         return;
     }
     
-    // Iterate through each pending project and create table rows
-    proyectos.forEach(function(proyecto) {
+    proyectos.forEach(function(proyecto) {//iteracion entrecada proyecto y crear los registros de la tabla
         const row = createProyectoPendienteRow(proyecto);
         tbody.append(row);
     });
     
-    // Update pending project count in header
     updateProyectoPendienteCount(proyectos.length);
 }
 
-/**
- * Create a table row for a single pending project
- * @param {Object} proyecto - Project data object
- * @returns {jQuery} - jQuery object containing the table row
- */
 function createProyectoPendienteRow(proyecto) {
-    // Format dates using JavaScript Date object
-    const fechaCumplimiento = formatDate(proyecto.fecha_cumplimiento);
+    const fechaCumplimiento = formatDate(proyecto.fecha_cumplimiento);//formato de fecha
     
-    // Check if project is overdue (fecha_cumplimiento has passed)
-    const isOverdue = isDateOverdue(proyecto.fecha_cumplimiento);
+    const isOverdue = isDateOverdue(proyecto.fecha_cumplimiento);//revisar si el proyecto esta vencido
     const overdueClass = isOverdue ? 'table-danger' : '';
     
-    // Generate unique IDs for dynamic elements
-    const progressBarId = 'progress-' + proyecto.id_proyecto;
+    const progressBarId = 'progress-' + proyecto.id_proyecto;//ids dinamicas para los elementos
     
-    // Create the row HTML
+    //HTML
     const row = $(`
         <tr data-proyecto-id="${proyecto.id_proyecto}" class="${overdueClass}">
             <!-- Checkbox column -->
@@ -177,10 +137,8 @@ function createProyectoPendienteRow(proyecto) {
         </tr>
     `);
     
-    // Add click event to row for viewing project details (optional)
-    row.on('click', function(e) {
-        // Don't trigger on checkbox click
-        if (e.target.type !== 'checkbox') {
+    row.on('click', function(e) {//ver detalles del proyecto
+        if (e.target.type !== 'checkbox') {// no activar al hacer clic en checkbox
             viewProyectoPendienteDetails(proyecto.id_proyecto);
         }
     });
@@ -188,26 +146,16 @@ function createProyectoPendienteRow(proyecto) {
     return row;
 }
 
-/**
- * Check if a date is overdue (in the past)
- * @param {String} dateString - Date string from database
- * @returns {Boolean} - True if date is in the past
- */
 function isDateOverdue(dateString) {
     if (!dateString) return false;
     
     const date = new Date(dateString);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    today.setHours(0, 0, 0, 0); //reiniciar dia
     
     return date < today;
 }
 
-/**
- * Format date to readable format (DD/MM/YYYY)
- * @param {String} dateString - Date string from database
- * @returns {String} - Formatted date
- */
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     
@@ -221,13 +169,8 @@ function formatDate(dateString) {
     });
 }
 
-/**
- * Update the pending project count displayed in the card header
- * @param {Number} count - Number of pending projects
- */
 function updateProyectoPendienteCount(count) {
-    // Find and update the subtitle that shows pending project count
-    const subtitle = $('p.card-subtitle-dash');
+    const subtitle = $('p.card-subtitle-dash');//encontrar y actualizar el subtitulo de conteo de proyectos
     if (subtitle.length) {
         const plural = count === 1 ? 'proyecto' : 'proyectos';
         const text = count === 0 
@@ -237,9 +180,6 @@ function updateProyectoPendienteCount(count) {
     }
 }
 
-/**
- * Show loading state in the table
- */
 function showLoadingState() {
     const tbody = $('table.select-table tbody');
     tbody.html(`
@@ -254,17 +194,9 @@ function showLoadingState() {
     `);
 }
 
-/**
- * Hide loading state
- */
 function hideLoadingState() {
-    // Loading state is replaced by actual content in populateProyectosPendientesTable
 }
 
-/**
- * Show error message in table
- * @param {String} message - Error message to display
- */
 function showError(message) {
     const tbody = $('table.select-table tbody');
     tbody.html(`
@@ -280,20 +212,11 @@ function showError(message) {
     `);
 }
 
-/**
- * Navigate to pending project details (placeholder for future functionality)
- * @param {Number} proyectoId - Project ID
- */
 function viewProyectoPendienteDetails(proyectoId) {
-    // This can be extended to navigate to a project details page
     console.log('Viewing pending project details:', proyectoId);
     // window.location.href = '../proyectoDetalle/?id=' + proyectoId;
 }
 
-/**
- * Get selected pending projects (from checkboxes)
- * @returns {Array} - Array of selected project IDs
- */
 function getSelectedProyectosPendientes() {
     const selected = [];
     $('input.proyecto-checkbox:checked').each(function() {
@@ -302,10 +225,6 @@ function getSelectedProyectosPendientes() {
     return selected;
 }
 
-/**
- * Handle bulk actions on selected pending projects
- * @param {String} action - Action to perform (e.g., 'start', 'delete')
- */
 function bulkActionProyectosPendientes(action) {
     const selected = getSelectedProyectosPendientes();
     
@@ -315,6 +234,5 @@ function bulkActionProyectosPendientes(action) {
     }
     
     console.log('Performing action:', action, 'on pending projects:', selected);
-    // Implement bulk action logic here
-    // Example: Start multiple pending projects
+    //se puede agregar opcion de acciones masivas como iniciar varios proyectos pendientes
 }

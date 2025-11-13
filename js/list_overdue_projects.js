@@ -1,54 +1,31 @@
-/**
- * Proyectos Vencidos - Dynamic List Manager
- * 
- * Purpose: Handles the dynamic loading and display of user's overdue projects
- * Shows only projects with estado = 'vencido' (overdue/expired)
- * Functions:
- * - Fetch overdue projects from API
- * - Populate table with project data
- * - Handle loading and error states
- * - Format dates and progress display
- * - Show days overdue
- * - Sort by days overdue (most urgent first)
- * 
- * Requires: jQuery (already included in template)
- */
+/*lista de Proyectos Vencidos*/
 
 $(document).ready(function() {
-    // Initialize the overdue projects list on page load
     loadProyectosVencidos();
-    
-    // Optional: Refresh overdue projects every 30 seconds for real-time updates
+    //refrescar los proyectos vencidos de manera automatica
     setInterval(loadProyectosVencidos, 30000);
 });
 
-/**
- * Load overdue projects from API endpoint
- * Fetches all overdue projects related to logged-in user
- */
 function loadProyectosVencidos() {
-    // Show loading state
     showLoadingState();
     
-    // AJAX request to fetch overdue projects
-    $.ajax({
-        url: '../api_get_proyectos_vencidos.php', // Path to overdue projects API endpoint
+    
+    $.ajax({//ajax para refrescar los proyectos vencidos
+        url: '../api_get_proyectos_vencidos.php',
         type: 'GET',
         dataType: 'json',
-        timeout: 10000, // 10 second timeout
+        timeout: 10000, // 10segundos
         success: function(response) {
             if (response.success) {
-                // Populate table with overdue projects
+                //llenar la tabla
                 populateProyectosVencidosTable(response.data);
                 hideLoadingState();
             } else {
-                // Handle API error response
                 showError('Error: ' + response.message);
             }
         },
         error: function(xhr, status, error) {
-            // Handle AJAX request errors
-            console.error('Error loading overdue projects:', error);
+            console.error('Error al cargar los proyectos vencidos:', error);
             
             let errorMessage = 'Error al cargar proyectos vencidos';
             
@@ -65,17 +42,13 @@ function loadProyectosVencidos() {
     });
 }
 
-/**
- * Populate the overdue projects table with data
- * @param {Array} proyectos - Array of overdue project objects from API
- */
 function populateProyectosVencidosTable(proyectos) {
     const tbody = $('table.select-table tbody');
     
-    // Clear existing rows
+    //limpiar filas existentes
     tbody.empty();
     
-    // Check if there are overdue projects
+    //revisar si hay proyectos vencidos
     if (!proyectos || proyectos.length === 0) {
         tbody.html(`
             <tr>
@@ -87,33 +60,23 @@ function populateProyectosVencidosTable(proyectos) {
         return;
     }
     
-    // Sort by days overdue (most overdue first)
+    //hacer sort por dias de vencido, los mas vencidos priemero
     proyectos.sort((a, b) => b.dias_vencidos - a.dias_vencidos);
     
-    // Iterate through each overdue project and create table rows
-    proyectos.forEach(function(proyecto) {
+    proyectos.forEach(function(proyecto) {//iteracion de proyectos
         const row = createProyectoVencidoRow(proyecto);
         tbody.append(row);
     });
     
-    // Update overdue project count in header
-    updateProyectoVencidoCount(proyectos.length);
+    updateProyectoVencidoCount(proyectos.length);//actualizar contador
 }
 
-/**
- * Create a table row for a single overdue project
- * @param {Object} proyecto - Project data object
- * @returns {jQuery} - jQuery object containing the table row
- */
 function createProyectoVencidoRow(proyecto) {
-    // Format dates using JavaScript Date object
-    const fechaCumplimiento = formatDate(proyecto.fecha_cumplimiento);
+    const fechaCumplimiento = formatDate(proyecto.fecha_cumplimiento); //formato de fecha
     
-    // Generate unique IDs for dynamic elements
-    const progressBarId = 'progress-' + proyecto.id_proyecto;
+    const progressBarId = 'progress-' + proyecto.id_proyecto; //generar id para elementos dinamicos
     
-    // Create urgency indicator based on days overdue
-    let urgencyClass = 'text-danger';
+    let urgencyClass = 'text-danger';//indicador de urgencia basado en los dias de vencido
     let urgencyText = 'CRÍTICO';
     if (proyecto.dias_vencidos > 30) {
         urgencyClass = 'text-danger fw-bold';
@@ -129,7 +92,7 @@ function createProyectoVencidoRow(proyecto) {
         urgencyText = proyecto.dias_vencidos + ' días vencido';
     }
     
-    // Create the row HTML
+    //HTML
     const row = $(`
         <tr data-proyecto-id="${proyecto.id_proyecto}" class="table-danger">
             <!-- Checkbox column -->
@@ -199,10 +162,8 @@ function createProyectoVencidoRow(proyecto) {
         </tr>
     `);
     
-    // Add click event to row for viewing project details (optional)
     row.on('click', function(e) {
-        // Don't trigger on checkbox click
-        if (e.target.type !== 'checkbox') {
+        if (e.target.type !== 'checkbox') { //no activar en checkbox clic
             viewProyectoVencidoDetails(proyecto.id_proyecto);
         }
     });
@@ -210,11 +171,6 @@ function createProyectoVencidoRow(proyecto) {
     return row;
 }
 
-/**
- * Format date to readable format (DD/MM/YYYY)
- * @param {String} dateString - Date string from database
- * @returns {String} - Formatted date
- */
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     
@@ -228,13 +184,8 @@ function formatDate(dateString) {
     });
 }
 
-/**
- * Update the overdue project count displayed in the card header
- * @param {Number} count - Number of overdue projects
- */
 function updateProyectoVencidoCount(count) {
-    // Find and update the subtitle that shows overdue project count
-    const subtitle = $('p.card-subtitle-dash');
+    const subtitle = $('p.card-subtitle-dash');//buscar y actualizar subtitulo que muestre el conteo de proyectos
     if (subtitle.length) {
         const plural = count === 1 ? 'proyecto' : 'proyectos';
         const text = count === 0 
@@ -244,9 +195,6 @@ function updateProyectoVencidoCount(count) {
     }
 }
 
-/**
- * Show loading state in the table
- */
 function showLoadingState() {
     const tbody = $('table.select-table tbody');
     tbody.html(`
@@ -261,17 +209,9 @@ function showLoadingState() {
     `);
 }
 
-/**
- * Hide loading state
- */
 function hideLoadingState() {
-    // Loading state is replaced by actual content in populateProyectosVencidosTable
 }
 
-/**
- * Show error message in table
- * @param {String} message - Error message to display
- */
 function showError(message) {
     const tbody = $('table.select-table tbody');
     tbody.html(`
@@ -287,20 +227,12 @@ function showError(message) {
     `);
 }
 
-/**
- * Navigate to overdue project details (placeholder for future functionality)
- * @param {Number} proyectoId - Project ID
- */
 function viewProyectoVencidoDetails(proyectoId) {
-    // This can be extended to navigate to a project details page
+    
     console.log('Viewing overdue project details:', proyectoId);
     // window.location.href = '../proyectoDetalle/?id=' + proyectoId;
 }
 
-/**
- * Get selected overdue projects (from checkboxes)
- * @returns {Array} - Array of selected project IDs
- */
 function getSelectedProyectosVencidos() {
     const selected = [];
     $('input.proyecto-checkbox:checked').each(function() {
@@ -309,10 +241,6 @@ function getSelectedProyectosVencidos() {
     return selected;
 }
 
-/**
- * Handle bulk actions on selected overdue projects
- * @param {String} action - Action to perform (e.g., 'extend', 'archive')
- */
 function bulkActionProyectosVencidos(action) {
     const selected = getSelectedProyectosVencidos();
     
@@ -323,5 +251,5 @@ function bulkActionProyectosVencidos(action) {
     
     console.log('Performing action:', action, 'on overdue projects:', selected);
     // Implement bulk action logic here
-    // Example: Extend deadline for multiple overdue projects
+    //se puede implementar acciones masivas aqui, como extender la fecha de vencimiento de varios proyectos
 }

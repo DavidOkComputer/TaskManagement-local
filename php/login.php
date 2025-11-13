@@ -108,7 +108,7 @@ try {
         $_SESSION['logged_in'] = true;
         $_SESSION['login_time'] = time();
         
-        sendResponse(true, 'Inicio de sesión exitoso', 'adminDashboard.php');
+        sendResponse(true, 'Inicio de sesión exitoso', '/taskManagement/adminDashboard');
         
     } else {
         // Contraseña incorrecta

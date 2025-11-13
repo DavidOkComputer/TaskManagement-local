@@ -1,3 +1,8 @@
+const Config = { 
+    API_ENDPOINTS: {  
+        DELETE: '../php/delete_users.php' 
+    } 
+}; 
 
 let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
 
@@ -42,6 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('%cSistema inicializado correctamente', 'color: #34b0aa; font-weight: bold;');
     console.log('%cConsola abierta: Presiona F12 para ver logs detallados', 'color: #17a2b8; font-style: italic;');
 });
+
+createCustomDialogSystem();
 
 function loadUsuarios() {
     const tableBody = document.getElementById('usuariosTableBody');
@@ -131,7 +138,7 @@ function renderUsuariosTable(usuarios) {
                     <button type="button" class="btn btn-sm btn-success btn-edit" data-user-id="${usuario.id_usuario}" data-nombre="${escapeHtml(usuario.nombre)}" data-apellido="${escapeHtml(usuario.apellido)}" data-usuario="${escapeHtml(usuario.usuario)}" data-email="${escapeHtml(usuario.e_mail)}" data-depart="${usuario.id_departamento}">
                         <i class="mdi mdi-pencil"></i> Editar
                     </button>
-                    <button type="button" class="btn btn-sm btn-danger btn-delete" data-user-id="${usuario.id_usuario}" data-nombre="${escapeHtml(nombreCompleto)}">
+                    <button type="button" class="btn btn-sm btn-danger btn-delete" data-user-id="${usuario.id_usuario}" data-nombre="${escapeHtml(nombreCompleto)}" onclick="confirmDelete(${usuario.id_usuario}, '${escapeHtml(usuario.nombre)}')">
                         <i class="mdi mdi-delete"></i> Eliminar
                     </button>
                 </td>
@@ -225,15 +232,6 @@ function attachButtonListeners() {
             const email = this.getAttribute('data-email');
             const depart = this.getAttribute('data-depart');
             openEditModal(userId, nombre, apellido, usuario, email, depart);
-        });
-    });
-    
-    const deleteButtons = document.querySelectorAll('.btn-delete');//eliminar listeners de botones
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.getAttribute('data-user-id');
-            const nombre = this.getAttribute('data-nombre');        
-            deleteUsuario(userId, nombre);
         });
     });
 }
@@ -340,51 +338,77 @@ function handleSaveUserChanges(event) {
     });
 }
 
-function deleteUsuario(userId, userName) {
-    logAction('Iniciando proceso de eliminación', { userId: userId, userName: userName });
-    
-    if (confirm(`¿Estás seguro de que deseas eliminar a ${userName}? Esta acción no se puede deshacer.`)) {
-        logAction('Eliminación confirmada por usuario', { userId: userId, userName: userName });
-        
-        const data = {
-            id_usuario: parseInt(userId)
-        };
-        
-        showInfo('Eliminando usuario...');
-        
-        fetch('../php/delete_users.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(responseData => {
-            if (responseData.success) {
-                logAction('Usuario eliminado exitosamente', { userId: userId, userName: userName });
-                showSuccess(`Usuario "${userName}" eliminado exitosamente`);
-                loadUsuarios(); // Recargar la tabla
-            } else {
-                const errorMsg = responseData.message || responseData.error || 'Error desconocido';
-                logAction('Error en eliminación', { userId: userId, error: errorMsg });
-                showError('Error al eliminar usuario: ' + errorMsg);
-            }
-        })
-        .catch(error => {
-            console.error('Error de conexión en deleteUsuario:', error);
-            showError('Error de conexión: ' + error.message, error);
-        });
-    } else {
-        logAction('Eliminación cancelada por usuario', { userId: userId, userName: userName });
-        console.log('Usuario canceló la eliminación');
-    }
+function confirmDelete(id, nombre) { 
+    showConfirm(
+        `¿Está seguro de que desea eliminar el usuario "${escapeHtml(nombre)}"?\n\nEsta acción no se puede deshacer.`,
+        function() {
+            deleteUser(id);
+        },
+        'Confirmar eliminación',
+        {
+            type: 'danger',
+            confirmText: 'Eliminar',
+            cancelText: 'Cancelar'
+        }
+    );
+} 
+
+function deleteUser(id) {
+    //se envia json en ves de data
+    fetch(Config.API_ENDPOINTS.DELETE, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ id_usuario: id }) 
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert(data.message || 'Usuario eliminado exitosamente');
+            allUsuarios = allUsuarios.filter(u => u.id_usuario != id); 
+            renderUsuariosTable(allUsuarios); 
+        } else {
+            showErrorAlert(data.message || 'Error al eliminar el usuario');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorAlert('Error al conectar con el servidor');
+    });
 }
+
+function showSuccessAlert(message) { 
+    showAlert(message, 'success'); 
+} 
+
+function showErrorAlert(message) { 
+    showAlert(message, 'danger'); 
+} 
+
+function showAlert(message, type) { 
+    const alertDiv = document.getElementById('alertMessage'); 
+    if (!alertDiv) return; 
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger'; 
+    const icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'; 
+    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`; 
+    alertDiv.innerHTML = ` 
+        <i class="mdi ${icon} me-2"></i> 
+        ${message} 
+        <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button> 
+    `; 
+    alertDiv.style.display = 'block'; 
+
+    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
+
+    setTimeout(() => { 
+        if (alertDiv.style.display !== 'none') { 
+            alertDiv.style.display = 'none'; 
+        } 
+    }, 5000); 
+}
+
+
 
 function showSuccess(message, data = null) {
     const timestamp = new Date().toLocaleTimeString();
@@ -597,3 +621,134 @@ function validateEditForm() {
         errors: errors
     };
 }
+
+function createCustomDialogSystem() {
+    const dialogHTML = `
+        <!-- Custom Alert Dialog -->
+        <div class="modal fade" id="customAlertModal" tabindex="-1" role="dialog" aria-labelledby="customAlertLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="customAlertLabel">
+                            <i class="mdi mdi-information-outline me-2"></i>
+                            <span id="alertTitle">Información</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="alertMessage" class="mb-0"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Custom Confirm Dialog -->
+        <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog" aria-labelledby="customConfirmLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="customConfirmLabel">
+                            <i class="mdi mdi-help-circle-outline me-2"></i>
+                            <span id="confirmTitle">Confirmar acción</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmMessage" class="mb-0"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="confirmCancelBtn">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="confirmOkBtn">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', dialogHTML);
+}
+
+// mostrar dialogo de confirmacion de la app y no navegador
+function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) {
+    const modal = document.getElementById('customConfirmModal');
+    const titleElement = document.getElementById('confirmTitle');
+    const messageElement = document.getElementById('confirmMessage');
+    const headerElement = modal.querySelector('.modal-header');
+    const iconElement = modal.querySelector('.modal-title i');
+    const confirmBtn = document.getElementById('confirmOkBtn');
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+    
+    //opciones default
+    const config = {
+        confirmText: 'Aceptar',
+        cancelText: 'Cancelar',
+        type: 'warning',
+        ...options
+    };
+    
+    //titulo y mensaje
+    titleElement.textContent = title;
+    messageElement.innerHTML = message.replace(/\n/g, '<br>'); // Preserve line breaks
+    
+    //cambiar el texto de los botones
+    confirmBtn.textContent = config.confirmText;
+    cancelBtn.textContent = config.cancelText;
+    
+    //clases del header
+    headerElement.className = 'modal-header';
+    
+    const iconMap = {
+        'info': {
+            icon: 'mdi-information-outline',
+            class: 'bg-info text-white',
+            btnClass: 'btn-info'
+        },
+        'warning': {
+            icon: 'mdi-alert-outline',
+            class: 'bg-warning text-white',
+            btnClass: 'btn-warning'
+        },
+        'danger': {
+            icon: 'mdi-alert-octagon-outline',
+            class: 'bg-danger text-white',
+            btnClass: 'btn-danger'
+        },
+        'success': {
+            icon: 'mdi-check-circle-outline',
+            class: 'bg-success text-white',
+            btnClass: 'btn-success'
+        }
+    };
+    
+    const typeConfig = iconMap[config.type] || iconMap['warning'];
+    iconElement.className = `mdi ${typeConfig.icon} me-2`;
+    headerElement.classList.add(...typeConfig.class.split(' '));
+    
+    //actualizar el estilo del boton confirmar
+    confirmBtn.className = `btn ${typeConfig.btnClass}`;
+    
+    //eliminar listeners anteriores clonando y remplazando
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    //agregar nuevo event listener
+    newConfirmBtn.addEventListener('click', function() {
+        const confirmModal = bootstrap.Modal.getInstance(modal);
+        confirmModal.hide();
+        if (onConfirm && typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    });
+    
+    //mostrar modal
+    const confirmModal = new bootstrap.Modal(modal);
+    confirmModal.show();
+}
+
+window.confirmDelete = confirmDelete;

@@ -96,7 +96,6 @@ function loadusers() {
         }); 
 } 
 
-
 function displayDepartments(departamentos) { 
     const tableBody = document.getElementById('departamentosTableBody'); 
     if (!tableBody) return; 
@@ -454,7 +453,7 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     
     const typeConfig = iconMap[config.type] || iconMap['warning'];
     iconElement.className = `mdi ${typeConfig.icon} me-2`;
-    headerElement.classList.add(typeConfig.class);
+    headerElement.classList.add(...typeConfig.class.split(' '));
     
     //actualizar el estilo del boton confirmar
     confirmBtn.className = `btn ${typeConfig.btnClass}`;

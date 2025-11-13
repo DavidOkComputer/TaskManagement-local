@@ -50,9 +50,16 @@
         </ul>
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <form class="search-form" action="#">
+            <form class="search-form" 
+                  action="#"
+                  id="search-form">
               <i class="icon-search"></i>
-              <input type="search" class="form-control" placeholder="Buscar usuario" title="Search here">
+              <input type="search" 
+                     class="form-control" 
+                     placeholder="Buscar objetivo" 
+                     title="Search here"
+                     class="form-control"
+                     id="searchInput">
             </form>
           </li>
           <li class="nav-item dropdown">
@@ -228,51 +235,61 @@
         </ul>
       </nav>
       <!-- partial -->
+      <div class="main-panel">
+      <div class="content-wrapper">
+      <div
+              id="alertMessage" 
+              class="alert"
+              style="display:none;"
+              role="alert">
+            </div>
       <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="d-sm-flex justify-content-between align-items-start">
-                                  <div>
-                                    <h4 class="card-title card-title-dash">Gestion de objetivos</h4>
-                                   <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los objetivos</p>
-                                  </div>
-                                  <div>
-                                    <a href="../nuevoObjetivo">
-                                    <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i>Crear nuevo objetivo</button>
-                                    </a>
-                                  </div>
-                                </div>
-                                <div class="table-responsive  mt-1">
-                                  <table class="table select-table">
-                                    <thead>
-                                      <tr>
-                                        <th>#</th>
-                                        <th>Titulo</th>
-                                        <th>Descripcion</th>
-                                        <th>Área</th>
-                                        <th>Fecha de entrega</th>
-                                        <th>Progreso</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td colspan="9" class="text-center">
-                                          <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Cargando...</span>
-                                          </div>
-                                          <p class="mt-2">Cargando proyectos...</p>
-                                        </td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
+        <div class="col-12 grid-margin stretch-card">
+          <div class="card card-rounded">
+            <div class="card-body">
+              <div class="d-sm-flex justify-content-between align-items-start">
+                <div>
+                  <h4 class="card-title card-title-dash">Gestion de objetivos</h4>
+                    <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los objetivos</p>
+                </div>
+                <div>
+                  <a href="../nuevoObjetivo">
+                    <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i>Crear nuevo objetivo</button>
+                  </a>
+                </div>
+              </div>
+              <div class="table-responsive  mt-3" id="tableContainer">
+                <table class="table select-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Titulo</th>
+                      <th>Descripcion</th>
+                      <th>Área</th>
+                      <th>Fecha de entrega</th>
+                      <th>Progreso</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                    <tbody id="objetivosTableBody">
+                      <tr>
+                        <td colspan="9" class="text-center">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
                           </div>
-                        </div>
+                          <p class="mt-2">Cargando objetivos...</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
       <!-- main-panel ends -->
     </div>
         <!-- content-wrapper ends --> 

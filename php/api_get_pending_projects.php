@@ -1,26 +1,10 @@
 <?php
-/**
- * API Endpoint: Get Pending Projects
- * 
- * Purpose: Fetches only pending projects related to the authenticated user
- * A user can see pending projects where they are:
- * 1. The creator (id_creador)
- * 2. An assigned participant (through tbl_proyecto_usuarios)
- * AND the project status is 'pendiente'
- * 
- * Security: 
- * - Requires active session
- * - Uses prepared statements to prevent SQL injection
- * - Returns only authorized data
- * 
- * Returns: JSON response with pending projects array or error message
- */
+/*API Endpoint: obtener proyectos pendientes*/
 
-// Start session and require authentication check
 session_start();
 header('Content-Type: application/json');
 
-// Check if user is authenticated
+//revisar autenticacion
 if (!isset($_SESSION['id_usuario'])) {
     http_response_code(401);
     echo json_encode([
@@ -30,17 +14,15 @@ if (!isset($_SESSION['id_usuario'])) {
     exit;
 }
 
-// Include database connection
-require_once('php/conexion.php');
+//conexion a base de datos
+require_once('db_config.php');
 
 $id_usuario = $_SESSION['id_usuario'];
 $proyectos = [];
 $error = null;
 
 try {
-    // Query to get all PENDING projects where user is creator or participant
-    // Includes project details with status and progress information
-    // WHERE estado = 'pendiente' filters only pending projects
+    //query para obtener todos los proyectos pendientes
     $query = "
         SELECT DISTINCT
             p.id_proyecto,
@@ -67,27 +49,22 @@ try {
         ORDER BY p.fecha_cumplimiento ASC, p.fecha_creacion DESC
     ";
     
-    // Prepare statement with proper error handling
     $stmt = $conexion->prepare($query);
     
     if (!$stmt) {
         throw new Exception('Error preparando consulta: ' . $conexion->error);
     }
     
-    // Bind parameters (i = integer type)
     $stmt->bind_param('ii', $id_usuario, $id_usuario);
     
-    // Execute query
     if (!$stmt->execute()) {
         throw new Exception('Error ejecutando consulta: ' . $stmt->error);
     }
     
-    // Get results
     $result = $stmt->get_result();
     
-    // Format results into array
+    //darle formato a los resultados
     while ($proyecto = $result->fetch_assoc()) {
-        // Map Spanish status to readable format
         $estado_display = match($proyecto['estado']) {
             'pendiente' => 'Pendiente',
             'en proceso' => 'En Progreso',
@@ -96,7 +73,7 @@ try {
             default => $proyecto['estado']
         };
         
-        // Map status to badge color/style
+        //estado de la insignia
         $estado_style = match($proyecto['estado']) {
             'pendiente' => 'badge-danger',
             'en proceso' => 'badge-warning',
@@ -105,7 +82,7 @@ try {
             default => 'badge-secondary'
         };
         
-        // Map status to progress bar color
+        //color de la barra de progreso
         $progreso_color = match($proyecto['estado']) {
             'pendiente' => 'bg-danger',
             'en proceso' => 'bg-warning',
@@ -132,7 +109,6 @@ try {
     
     $stmt->close();
     
-    // Return successful response
     echo json_encode([
         'success' => true,
         'data' => $proyectos,
@@ -140,7 +116,6 @@ try {
     ]);
     
 } catch (Exception $e) {
-    // Handle errors
     error_log('Error en api_get_proyectos_pendientes.php: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode([

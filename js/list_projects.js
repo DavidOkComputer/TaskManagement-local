@@ -1,51 +1,28 @@
-/**
- * Proyectos Totales - Dynamic List Manager
- * 
- * Purpose: Handles the dynamic loading and display of user's projects
- * Functions:
- * - Fetch projects from API
- * - Populate table with project data
- * - Handle loading and error states
- * - Format dates and progress display
- * 
- * Requires: jQuery (already included in template)
- */
+/*listar Proyectos Totales*/
 
 $(document).ready(function() {
-    // Initialize the projects list on page load
     loadProyectos();
-    
-    // Optional: Refresh projects every 30 seconds for real-time updates
-    setInterval(loadProyectos, 30000);
+    setInterval(loadProyectos, 30000);//actualizar cada 30s
 });
 
-/**
- * Load projects from API endpoint
- * Fetches all projects related to logged-in user
- */
 function loadProyectos() {
-    // Show loading state
     showLoadingState();
     
-    // AJAX request to fetch projects
-    $.ajax({
-        url: '../api_get_proyectos.php', // Path to API endpoint
+    $.ajax({//obtener los proyectos
+        url: '../php/api_get_projects.php', 
         type: 'GET',
         dataType: 'json',
-        timeout: 10000, // 10 second timeout
+        timeout: 10000, // 10s
         success: function(response) {
             if (response.success) {
-                // Populate table with projects
-                populateProyectosTable(response.data);
+                populateProyectosTable(response.data);//agregar proyectos a la tabla
                 hideLoadingState();
             } else {
-                // Handle API error response
                 showError('Error: ' + response.message);
             }
         },
         error: function(xhr, status, error) {
-            // Handle AJAX request errors
-            console.error('Error loading projects:', error);
+            console.error('Error al cargar los proyectos.:', error);
             
             let errorMessage = 'Error al cargar proyectos';
             
@@ -62,18 +39,12 @@ function loadProyectos() {
     });
 }
 
-/**
- * Populate the projects table with data
- * @param {Array} proyectos - Array of project objects from API
- */
 function populateProyectosTable(proyectos) {
     const tbody = $('table.select-table tbody');
     
-    // Clear existing rows (except if we want to keep a "no data" message)
-    tbody.empty();
+    tbody.empty();//limpiar filas existentes menos si quiere dejar el mensaje de no hay informacion
     
-    // Check if there are projects
-    if (!proyectos || proyectos.length === 0) {
+    if (!proyectos || proyectos.length === 0) {//revisar si hay proyectos
         tbody.html(`
             <tr>
                 <td colspan="5" class="text-center py-4">
@@ -84,29 +55,20 @@ function populateProyectosTable(proyectos) {
         return;
     }
     
-    // Iterate through each project and create table rows
-    proyectos.forEach(function(proyecto) {
+    proyectos.forEach(function(proyecto) {//iteracion a traves de los proyectos y crear las filas de la tabla
         const row = createProyectoRow(proyecto);
         tbody.append(row);
     });
     
-    // Update project count in header
-    updateProyectoCount(proyectos.length);
+    updateProyectoCount(proyectos.length);//actualizar contador de protectos
 }
 
-/**
- * Create a table row for a single project
- * @param {Object} proyecto - Project data object
- * @returns {jQuery} - jQuery object containing the table row
- */
 function createProyectoRow(proyecto) {
-    // Format dates using JavaScript Date object
     const fechaCumplimiento = formatDate(proyecto.fecha_cumplimiento);
     
-    // Generate unique IDs for dynamic elements
-    const progressBarId = 'progress-' + proyecto.id_proyecto;
+    const progressBarId = 'progress-' + proyecto.id_proyecto;//id s unicos para los elementos 
     
-    // Create the row HTML
+    //HTML
     const row = $(`
         <tr data-proyecto-id="${proyecto.id_proyecto}">
             <!-- Checkbox column -->
@@ -168,9 +130,7 @@ function createProyectoRow(proyecto) {
         </tr>
     `);
     
-    // Add click event to row for viewing project details (optional)
     row.on('click', function(e) {
-        // Don't trigger on checkbox click
         if (e.target.type !== 'checkbox') {
             viewProyectoDetails(proyecto.id_proyecto);
         }
@@ -179,20 +139,10 @@ function createProyectoRow(proyecto) {
     return row;
 }
 
-/**
- * Convert badge style class to readable class name
- * @param {String} estado_style - The style class (e.g., 'badge-success')
- * @returns {String} - The style name without 'badge-' prefix
- */
 function getEstadoClass(estado_style) {
     return estado_style.replace('badge-', '');
 }
 
-/**
- * Format date to readable format (DD/MM/YYYY)
- * @param {String} dateString - Date string from database
- * @returns {String} - Formatted date
- */
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     
@@ -206,22 +156,14 @@ function formatDate(dateString) {
     });
 }
 
-/**
- * Update the project count displayed in the card header
- * @param {Number} count - Number of projects
- */
 function updateProyectoCount(count) {
-    // Find and update the subtitle that shows project count
-    const subtitle = $('p.card-subtitle-dash');
+    const subtitle = $('p.card-subtitle-dash');//actualizar contador
     if (subtitle.length) {
         const plural = count === 1 ? 'proyecto' : 'proyectos';
         subtitle.text('Tienes ' + count + ' ' + plural);
     }
 }
 
-/**
- * Show loading state in the table
- */
 function showLoadingState() {
     const tbody = $('table.select-table tbody');
     tbody.html(`
@@ -236,17 +178,9 @@ function showLoadingState() {
     `);
 }
 
-/**
- * Hide loading state
- */
 function hideLoadingState() {
-    // Loading state is replaced by actual content in populateProyectosTable
 }
 
-/**
- * Show error message in table
- * @param {String} message - Error message to display
- */
 function showError(message) {
     const tbody = $('table.select-table tbody');
     tbody.html(`
@@ -262,20 +196,10 @@ function showError(message) {
     `);
 }
 
-/**
- * Navigate to project details (placeholder for future functionality)
- * @param {Number} proyectoId - Project ID
- */
 function viewProyectoDetails(proyectoId) {
-    // This can be extended to navigate to a project details page
     console.log('Viewing project details:', proyectoId);
-    // window.location.href = '../proyectoDetalle/?id=' + proyectoId;
 }
 
-/**
- * Get selected projects (from checkboxes)
- * @returns {Array} - Array of selected project IDs
- */
 function getSelectedProyectos() {
     const selected = [];
     $('input.proyecto-checkbox:checked').each(function() {
@@ -284,10 +208,6 @@ function getSelectedProyectos() {
     return selected;
 }
 
-/**
- * Handle bulk actions on selected projects
- * @param {String} action - Action to perform (e.g., 'delete', 'archive')
- */
 function bulkActionProyectos(action) {
     const selected = getSelectedProyectos();
     
@@ -297,5 +217,5 @@ function bulkActionProyectos(action) {
     }
     
     console.log('Performing action:', action, 'on projects:', selected);
-    // Implement bulk action logic here
+
 }

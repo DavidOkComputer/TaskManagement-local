@@ -50,9 +50,17 @@
         </ul>
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <form class="search-form" action="#">
+            <form 
+                  class="search-form" 
+                  action="#"
+                  id="search-form">
               <i class="icon-search"></i>
-              <input type="search" class="form-control" placeholder="Buscar proyecto" title="Search here">
+              <input
+                    type="search" 
+                    class="form-control" 
+                    placeholder="Buscar proyecto" 
+                    title="Search here"
+                    id="searchInput">
             </form>
           </li>
           <li class="nav-item dropdown">
@@ -226,6 +234,12 @@
       <!-- partial -->
       <div class="main-panel">
         <div class="content-wrapper">
+          <div 
+              id="alertMessage" 
+              class="alert"
+              style="display:none;"
+              role="alert">
+          </div>
           <div class="row flex-grow">
             <div class="col-12 grid-margin stretch-card">
               <div class="card card-rounded">
@@ -256,8 +270,8 @@
                           <th>Acciones</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        <!-- Projects will be loaded here dynamically -->
+                      <tbody id="proyectosTableBody">
+                        <!--proyectos cargados automaticamente-->
                         <tr>
                           <td colspan="9" class="text-center">
                             <div class="spinner-border text-primary" role="status">
