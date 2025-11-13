@@ -474,6 +474,8 @@
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/create_project.js"></script>
+  <!-- Custom Dialog System (add this before create_project.js) -->
+  <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

@@ -292,10 +292,20 @@ function setupFormHandlers() {
     }
   });
  
+  // UPDATED: Use custom modal instead of browser confirm()
   document.getElementById('btnCancelar').addEventListener('click', function() {
-    if (confirm('¿Deseas cancelar?')) {
-      window.location.href = '../revisarProyectos/';
-    }
+    showConfirm(
+      '¿Estás seguro de que deseas cancelar? Los cambios no guardados se perderán.',
+      function() {
+        window.location.href = '../revisarProyectos/';
+      },
+      'Cancelar cambios',
+      {
+        type: 'warning',
+        confirmText: 'Sí, cancelar',
+        cancelText: 'Volver al formulario'
+      }
+    );
   });
  
   document.getElementById('proyectoForm').addEventListener('submit', function(e) {

@@ -1,10 +1,12 @@
 const Config = { 
     API_ENDPOINTS: {  
-        DELETE: '../php/delete_users.php' 
+        DELETE: '../php/delete_users.php',
+        GET_DEPARTMENTS: '../php/get_departments.php'
     } 
 }; 
 
 let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
+let allDepartamentos = []; //guardar todos los departamentos
 
 document.addEventListener('DOMContentLoaded', function() {
     // inicializar
@@ -18,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     logAction('Página cargada - Inicializando sistema');
     
+    loadDepartamentos(); // Cargar departamentos para el dropdown
     loadUsuarios();//cargar usuarios al cargar la pagina
     
     const searchInput = document.getElementById('searchUser');//funcionalidad de buscar
@@ -49,6 +52,68 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 createCustomDialogSystem();
+
+// Cargar departamentos para el dropdown
+function loadDepartamentos() {
+    logAction('Cargando departamentos del servidor');
+    
+    fetch(Config.API_ENDPOINTS.GET_DEPARTMENTS, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success && data.departamentos) {
+            allDepartamentos = data.departamentos;
+            logAction('Departamentos cargados exitosamente', { 
+                cantidad: data.departamentos.length,
+                departamentos: data.departamentos.map(d => ({ id: d.id_departamento, nombre: d.nombre }))
+            });
+            console.log('Departamentos disponibles:', allDepartamentos);
+            populateDepartamentosDropdown();
+        } else {
+            const errorMsg = data.message || 'Error desconocido';
+            logAction('Error al cargar departamentos', { error: errorMsg });
+            showError('Error al cargar departamentos: ' + errorMsg);
+        }
+    })
+    .catch(error => {
+        console.error('Error de conexión en loadDepartamentos:', error);
+        showError('Error de conexión: ' + error.message, error);
+    });
+}
+
+// Poblar el dropdown de departamentos
+function populateDepartamentosDropdown() {
+    const dropdown = document.getElementById('editDepartamento');
+    if (!dropdown) {
+        console.warn('Dropdown de departamentos no encontrado');
+        return;
+    }
+    
+    // Limpiar opciones excepto la primera
+    dropdown.innerHTML = '<option value="">-- Seleccionar departamento --</option>';
+    
+    // Agregar departamentos
+    allDepartamentos.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept.id_departamento;
+        option.textContent = dept.nombre;
+        option.dataset.nombre = dept.nombre;
+        dropdown.appendChild(option);
+    });
+    
+    logAction('Dropdown de departamentos poblado', { 
+        cantidad: allDepartamentos.length 
+    });
+}
 
 function loadUsuarios() {
     const tableBody = document.getElementById('usuariosTableBody');
@@ -165,13 +230,8 @@ function getRolBadge(roleId) {
 }
 
 function getDepartamentoName(deptId) {
-    const deptMap = {
-        1: 'Departamento de TI',
-        2: 'Recursos Humanos',
-        3: 'Ventas',
-        4: 'Operaciones'
-    };
-    return deptMap[deptId] || 'Departamento ' + deptId;
+    const dept = allDepartamentos.find(d => d.id_departamento === deptId);
+    return dept ? dept.nombre : 'Departamento ' + deptId;
 }
 
 function getSuperiorName(superiorId) {
@@ -261,14 +321,24 @@ function openEditModal(userId, nombre, apellido, usuario, email, departId) {
         nombre: nombre,
         apellido: apellido,
         usuario: usuario,
-        email: email
+        email: email,
+        departId: departId
     });
     document.getElementById('editUserId').value = userId;
     document.getElementById('editNombre').value = nombre;
     document.getElementById('editApellido').value = apellido;
     document.getElementById('editUsuario').value = usuario;
     document.getElementById('editEmail').value = email;
-    document.getElementById('editDepartamento').value = getDepartamentoName(departId);    
+    
+    // Establecer el valor del dropdown
+    const departmentDropdown = document.getElementById('editDepartamento');
+    departmentDropdown.value = departId;
+    
+    logAction('Departamento seleccionado en dropdown', { 
+        departId: departId,
+        departName: getDepartamentoName(departId)
+    });
+    
     const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
     modal.show();
 }
@@ -293,13 +363,15 @@ function handleSaveUserChanges(event) {
     const apellido = document.getElementById('editApellido').value.trim();
     const usuario = document.getElementById('editUsuario').value.trim();
     const email = document.getElementById('editEmail').value.trim();
+    const id_departamento = parseInt(document.getElementById('editDepartamento').value);
     
     const data = {
         id_usuario: parseInt(userId),
         nombre: nombre,
         apellido: apellido,
         usuario: usuario,
-        e_mail: email
+        e_mail: email,
+        id_departamento: id_departamento
     };
 
     logAction('Enviando datos al servidor', data);
@@ -573,12 +645,20 @@ function validateTextField(value, fieldName = 'Campo', minLength = 1) {
     return { isValid: true, message: '' };
 }
 
+function validateDepartment(departmentId) {
+    if (!departmentId || departmentId === '') {
+        return { isValid: false, message: 'Departamento es requerido' };
+    }
+    return { isValid: true, message: '' };
+}
+
 function validateEditForm() {
     const errors = [];
     const nombre = document.getElementById('editNombre').value;
     const apellido = document.getElementById('editApellido').value;
     const usuario = document.getElementById('editUsuario').value;
     const email = document.getElementById('editEmail').value;
+    const departamento = document.getElementById('editDepartamento').value;
 
     console.group('Validando formulario de edición');
 
@@ -612,6 +692,15 @@ function validateEditForm() {
         console.warn('Email inválido:', emailValid.message);
     } else {
         console.log('Email válido:', email);
+    }
+
+    // Validar departamento
+    const deptValid = validateDepartment(departamento);
+    if (!deptValid.isValid) {
+        errors.push(deptValid.message);
+        console.warn('Departamento inválido:', deptValid.message);
+    } else {
+        console.log('Departamento válido:', departamento);
     }
 
     console.groupEnd();

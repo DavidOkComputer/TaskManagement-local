@@ -255,18 +255,45 @@
                       </a>
                     </div>
                   </div>
+                  <!-- Rows Per Page Selector -->
+                  <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
+                    <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
+                    <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">
+                      <option value="5">5</option>
+                      <option value="10" selected>10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                    </select>
+                  </div>
+
                   <div class="table-responsive mt-3">
                     <table class="table select-table">
                       <thead>
                         <tr>
-                          <th>#</th>
-                          <th>Título</th>
-                          <th>Descripción</th>
-                          <th>Área</th>
-                          <th>Fecha de entrega</th>
-                          <th>Progreso</th>
-                          <th>Estado</th>
-                          <th>Asignado a</th>
+                          <th class="sortable-header" data-sort="id_proyecto" style="cursor: pointer; user-select: none;">
+                            # <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
+                            Título <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="descripcion" style="cursor: pointer; user-select: none;">
+                            Descripción <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="area" style="cursor: pointer; user-select: none;">
+                            Área <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor: pointer; user-select: none;">
+                            Fecha de entrega <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="progreso" style="cursor: pointer; user-select: none;">
+                            Progreso <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="estado" style="cursor: pointer; user-select: none;">
+                            Estado <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="participante" style="cursor: pointer; user-select: none;">
+                            Asignado a <i class="mdi mdi-sort-variant"></i>
+                          </th>
                           <th>Acciones</th>
                         </tr>
                       </thead>
@@ -282,6 +309,11 @@
                         </tr>
                       </tbody>
                     </table>
+                  </div>
+
+                  <!-- Pagination Controls -->
+                  <div class="pagination-container mt-4">
+                    <!-- Pagination info and buttons are dynamically inserted here -->
                   </div>
                 </div>
               </div>

@@ -10,12 +10,22 @@ const Config = {
 
 }; 
 
-let allProjects = []; 
+let allProjects = [];
+let currentSortColumn = null;
+let sortDirection = 'asc';
+let filteredProjects = [];
+
+// Pagination variables
+let currentPage = 1;
+let rowsPerPage = 10;
+let totalPages = 0;
 
 document.addEventListener('DOMContentLoaded', function() { 
     createCustomDialogSystem(); 
     setupSearch(); 
-    cargarProyectos(); // cargar proyectos cuando carga la pagina
+    setupSorting();
+    setupPagination(); // Initialize pagination
+    cargarProyectos();
 }); 
 
 function cargarProyectos() { 
@@ -25,7 +35,6 @@ function cargarProyectos() {
         return; 
     } 
 
-    //mostrar estado de carga 
     tableBody.innerHTML = ` 
         <tr> 
             <td colspan="9" class="text-center"> 
@@ -45,9 +54,11 @@ function cargarProyectos() {
             return response.json(); 
         }) 
         .then(data => { 
-            console.log('Informacion recivida:', data); //debug
+            console.log('Informacion recivida:', data);
             if (data.success && data.proyectos) { 
-                allProjects = data.proyectos; //almacenar para funcion de buscar
+                allProjects = data.proyectos;
+                filteredProjects = [...allProjects];
+                currentPage = 1; // Reset to first page on load
                 displayProjects(data.proyectos); 
             } else { 
                 tableBody.innerHTML = ` 
@@ -69,20 +80,248 @@ function cargarProyectos() {
                 </tr> 
             `; 
         }); 
-} 
+}
+
+// ===== SORTING FUNCTIONS =====
+
+function setupSorting() {
+    const headers = document.querySelectorAll('th.sortable-header');
+    headers.forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.dataset.sort;
+            
+            if (currentSortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            updateSortIndicators();
+            currentPage = 1; // Reset to first page when sorting
+            const sorted = sortProjects(filteredProjects, column, sortDirection);
+            displayProjects(sorted);
+        });
+    });
+}
+
+function updateSortIndicators() {
+    const headers = document.querySelectorAll('th.sortable-header');
+    headers.forEach(header => {
+        const icon = header.querySelector('i');
+        if (header.dataset.sort === currentSortColumn) {
+            icon.className = sortDirection === 'asc' 
+                ? 'mdi mdi-sort-ascending' 
+                : 'mdi mdi-sort-descending';
+            header.style.fontWeight = 'bold';
+            header.style.color = '#007bff';
+        } else {
+            icon.className = 'mdi mdi-sort-variant';
+            header.style.fontWeight = 'normal';
+            header.style.color = 'inherit';
+        }
+    });
+}
+
+function sortProjects(projects, column, direction) {
+    const sorted = [...projects];
+    
+    sorted.sort((a, b) => {
+        let valueA = a[column];
+        let valueB = b[column];
+        
+        if (valueA === null || valueA === undefined) valueA = '';
+        if (valueB === null || valueB === undefined) valueB = '';
+        
+        if (column === 'progreso' || column === 'id_proyecto') {
+            valueA = parseInt(valueA) || 0;
+            valueB = parseInt(valueB) || 0;
+        } else if (column === 'fecha_cumplimiento') {
+            valueA = new Date(valueA).getTime() || 0;
+            valueB = new Date(valueB).getTime() || 0;
+        } else {
+            valueA = String(valueA).toLowerCase();
+            valueB = String(valueB).toLowerCase();
+        }
+        
+        if (valueA < valueB) return direction === 'asc' ? -1 : 1;
+        if (valueA > valueB) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+    
+    return sorted;
+}
+
+// ===== PAGINATION FUNCTIONS =====
+
+function setupPagination() {
+    const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
+    if (rowsPerPageSelect) {
+        rowsPerPageSelect.addEventListener('change', function() {
+            rowsPerPage = parseInt(this.value);
+            currentPage = 1; // Reset to first page when changing rows per page
+            displayProjects(filteredProjects);
+        });
+    }
+}
+
+function calculatePages(projects) {
+    return Math.ceil(projects.length / rowsPerPage);
+}
+
+function getPaginatedProjects(projects) {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return projects.slice(startIndex, endIndex);
+}
+
+function changePage(pageNumber) {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+        currentPage = pageNumber;
+        displayProjects(filteredProjects);
+    }
+}
+
+function updatePaginationControls() {
+    const paginationContainer = document.querySelector('.pagination-container');
+    if (!paginationContainer) return;
+
+    // Clear existing pagination
+    paginationContainer.innerHTML = '';
+
+    // Create pagination info text
+    const infoText = document.createElement('div');
+    infoText.className = 'pagination-info';
+    const startItem = ((currentPage - 1) * rowsPerPage) + 1;
+    const endItem = Math.min(currentPage * rowsPerPage, filteredProjects.length);
+    infoText.innerHTML = `
+        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredProjects.length}</strong> proyectos</p>
+    `;
+    paginationContainer.appendChild(infoText);
+
+    // Create pagination buttons container
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'pagination-buttons';
+
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn btn-sm btn-outline-primary';
+    prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener('click', () => changePage(currentPage - 1));
+    buttonContainer.appendChild(prevBtn);
+
+    // Page numbers
+    const pageButtonsContainer = document.createElement('div');
+    pageButtonsContainer.className = 'page-buttons';
+
+    // Calculate which pages to show
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    // Adjust if near the beginning or end
+    if (currentPage <= 3) {
+        endPage = Math.min(totalPages, 5);
+    }
+    if (currentPage > totalPages - 3) {
+        startPage = Math.max(1, totalPages - 4);
+    }
+
+    // First page button
+    if (startPage > 1) {
+        const firstBtn = document.createElement('button');
+        firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
+        firstBtn.textContent = '1';
+        firstBtn.addEventListener('click', () => changePage(1));
+        pageButtonsContainer.appendChild(firstBtn);
+
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            pageButtonsContainer.appendChild(ellipsis);
+        }
+    }
+
+    // Page numbers
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', () => changePage(i));
+        pageButtonsContainer.appendChild(pageBtn);
+    }
+
+    // Last page button
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            pageButtonsContainer.appendChild(ellipsis);
+        }
+
+        const lastBtn = document.createElement('button');
+        lastBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
+        lastBtn.textContent = totalPages;
+        lastBtn.addEventListener('click', () => changePage(totalPages));
+        pageButtonsContainer.appendChild(lastBtn);
+    }
+
+    buttonContainer.appendChild(pageButtonsContainer);
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-sm btn-outline-primary';
+    nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener('click', () => changePage(currentPage + 1));
+    buttonContainer.appendChild(nextBtn);
+
+    paginationContainer.appendChild(buttonContainer);
+}
 
 function displayProjects(proyectos) { 
     const tableBody = document.querySelector('#proyectosTableBody'); 
-    if(!tableBody) return; 
+    if(!tableBody) return;
+
+    // Calculate pagination
+    totalPages = calculatePages(proyectos);
+    if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+    }
+
+    // Get paginated projects
+    const paginatedProjects = getPaginatedProjects(proyectos);
+
     tableBody.innerHTML = ''; 
     if(!proyectos || proyectos.length === 0) { 
         displayEmptyState(); 
+        updatePaginationControls();
         return; 
-    } 
-    proyectos.forEach((project, index) => { 
-        const row = createProjectRow(project, index + 1); 
+    }
+    
+    if (paginatedProjects.length === 0) {
+        tableBody.innerHTML = `
+            <tr> 
+                <td colspan="9" class="text-center empty-state"> 
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+                    <h5 class="mt-3">No se encontraron resultados en esta página</h5> 
+                </td> 
+            </tr> 
+        `;
+        updatePaginationControls();
+        return;
+    }
+
+    paginatedProjects.forEach((project, index) => { 
+        const actualIndex = ((currentPage - 1) * rowsPerPage) + index + 1;
+        const row = createProjectRow(project, actualIndex); 
         tableBody.appendChild(row); 
-    }); 
+    });
+
+    // Update pagination controls
+    updatePaginationControls();
 } 
 
 function createProjectRow(proyecto, index) { 
@@ -125,8 +364,6 @@ function createProjectRow(proyecto, index) {
     `;
     return row; 
 } 
-
- 
 
 function createProgressBar(progress) { 
     const progressValue = parseInt(progress) || 0; 
@@ -173,9 +410,11 @@ function displayEmptyState() {
     `; 
 } 
 
+// ===== SEARCH FUNCTIONS =====
+
 function setupSearch() { 
     const searchInput = document.getElementById('searchInput'); 
-    const searchForm = document.getElementById('searchForm'); 
+    const searchForm = document.getElementById('search-form'); 
     if (!searchInput) { 
         console.warn('Search input not found'); 
         return; 
@@ -197,7 +436,12 @@ function setupSearch() {
 function performSearch(query) {
     const normalizedQuery = query.toLowerCase().trim(); 
     if (normalizedQuery === '') { 
-        displayProjects(allProjects); 
+        filteredProjects = [...allProjects];
+        currentPage = 1; // Reset to first page when clearing search
+        const sorted = currentSortColumn 
+            ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+            : filteredProjects;
+        displayProjects(sorted);
         return; 
     } 
     const filtered = allProjects.filter(project => { 
@@ -205,9 +449,17 @@ function performSearch(query) {
                (project.descripcion && project.descripcion.toLowerCase().includes(normalizedQuery)) ||  
                (project.area && project.area.toLowerCase().includes(normalizedQuery)) || 
                (project.participante && project.participante.toLowerCase().includes(normalizedQuery)); 
-    }); 
-    displayProjects(filtered); 
-    if (filtered.length === 0) { 
+    });
+    
+    filteredProjects = filtered;
+    currentPage = 1; // Reset to first page when searching
+    
+    const sorted = currentSortColumn
+        ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+        : filteredProjects;
+    
+    displayProjects(sorted);
+    if (sorted.length === 0) { 
         const tableBody = document.querySelector('#proyectosTableBody'); 
         tableBody.innerHTML = ` 
             <tr> 
@@ -252,8 +504,6 @@ function confirmDelete(id, nombre) {
     ); 
 } 
 
- 
-
 function deleteProject(id) { 
 
     fetch(Config.API_ENDPOINTS.DELETE, { 
@@ -278,9 +528,19 @@ function deleteProject(id) {
 
             showSuccessAlert(data.message || 'Proyecto eliminado exitosamente'); 
 
-            allProjects = allProjects.filter(u => u.id_proyecto != id); 
-
-            displayProjects(allProjects); 
+            allProjects = allProjects.filter(u => u.id_proyecto != id);
+            filteredProjects = filteredProjects.filter(u => u.id_proyecto != id);
+            
+            // Recalculate pages after deletion
+            totalPages = calculatePages(filteredProjects);
+            if (currentPage > totalPages && totalPages > 0) {
+                currentPage = totalPages;
+            }
+            
+            const sorted = currentSortColumn
+                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+                : filteredProjects;
+            displayProjects(sorted); 
 
         } else { 
 
@@ -300,23 +560,17 @@ function deleteProject(id) {
 
 } 
 
- 
-
 function showSuccessAlert(message) { 
 
     showAlert(message, 'success'); 
 
 } 
 
- 
-
 function showErrorAlert(message) { 
 
     showAlert(message, 'danger'); 
 
 } 
-
- 
 
 function showAlert(message, type) { 
 
@@ -370,8 +624,6 @@ function showAlert(message, type) {
 
 } 
 
- 
-
 function escapeHtml(text) { 
 
     const map = { 
@@ -391,8 +643,6 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, function(m) { return map[m]; }); 
 
 } 
-
- 
 
 function createCustomDialogSystem() { 
 
@@ -447,8 +697,6 @@ function createCustomDialogSystem() {
     document.body.insertAdjacentHTML('beforeend', dialogHTML); 
 
 } 
-
- 
 
 function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) { 
 
@@ -548,6 +796,8 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     confirmModal.show(); 
 
 } 
-// hacer las funciones globalmente disponibles
+
+// Make functions globally available
 window.confirmDelete = confirmDelete; 
-window.editarProyecto = editarProyecto; 
+window.editarProyecto = editarProyecto;
+window.changePage = changePage;

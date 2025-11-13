@@ -1,5 +1,5 @@
 <?php
-// update_user.php
+// update_users.php
 header('Content-Type: application/json');
 require_once('db_config.php');
 
@@ -30,6 +30,7 @@ $nombre = trim($data['nombre']);
 $apellido = trim($data['apellido']);
 $usuario = trim($data['usuario']);
 $e_mail = trim($data['e_mail']);
+$id_departamento = isset($data['id_departamento']) ? intval($data['id_departamento']) : null;
 
 // Validate email format
 if (!filter_var($e_mail, FILTER_VALIDATE_EMAIL)) {
@@ -70,14 +71,39 @@ try {
     }
     $check_email->close();
     
-    // Update user
-    $update_stmt = $conn->prepare("UPDATE tbl_usuarios SET nombre = ?, apellido = ?, usuario = ?, e_mail = ? WHERE id_usuario = ?");
-    
-    if (!$update_stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
+    // Validate department if provided
+    if ($id_departamento) {
+        $check_dept = $conn->prepare("SELECT id_departamento FROM tbl_departamentos WHERE id_departamento = ?");
+        $check_dept->bind_param("i", $id_departamento);
+        $check_dept->execute();
+        $dept_result = $check_dept->get_result();
+        
+        if ($dept_result->num_rows === 0) {
+            echo json_encode(['success' => false, 'error' => 'Departamento no válido']);
+            $check_dept->close();
+            exit;
+        }
+        $check_dept->close();
     }
     
-    $update_stmt->bind_param("ssssi", $nombre, $apellido, $usuario, $e_mail, $id_usuario);
+    // Update user with department
+    if ($id_departamento) {
+        $update_stmt = $conn->prepare("UPDATE tbl_usuarios SET nombre = ?, apellido = ?, usuario = ?, e_mail = ?, id_departamento = ? WHERE id_usuario = ?");
+        
+        if (!$update_stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+        
+        $update_stmt->bind_param("ssssii", $nombre, $apellido, $usuario, $e_mail, $id_departamento, $id_usuario);
+    } else {
+        $update_stmt = $conn->prepare("UPDATE tbl_usuarios SET nombre = ?, apellido = ?, usuario = ?, e_mail = ? WHERE id_usuario = ?");
+        
+        if (!$update_stmt) {
+            throw new Exception("Prepare failed: " . $conn->error);
+        }
+        
+        $update_stmt->bind_param("ssssi", $nombre, $apellido, $usuario, $e_mail, $id_usuario);
+    }
     
     if ($update_stmt->execute()) {
         if ($update_stmt->affected_rows > 0) {
@@ -89,7 +115,8 @@ try {
                     'nombre' => $nombre,
                     'apellido' => $apellido,
                     'usuario' => $usuario,
-                    'e_mail' => $e_mail
+                    'e_mail' => $e_mail,
+                    'id_departamento' => $id_departamento
                 ]
             ]);
         } else {

@@ -270,7 +270,7 @@
 </div>
 <!-- container-scroller -->
 
-<!-- Edit User Modal -->
+<!-- Edit User Modal - UPDATED VERSION -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -299,7 +299,9 @@
           </div>
           <div class="mb-3">
             <label for="editDepartamento" class="form-label">Departamento</label>
-            <input type="text" class="form-control" id="editDepartamento">
+            <select class="form-control" id="editDepartamento" required>
+              <option value="">-- Seleccionar departamento --</option>
+            </select>
           </div>
         </form>
       </div>
@@ -310,7 +312,6 @@
     </div>
   </div>
 </div>
-
   <!-- plugins:js -->
   <script src="../vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
