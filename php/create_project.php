@@ -7,6 +7,13 @@ ini_set('display_errors', 0);
 
 $response = ['success' => false, 'message' => ''];
 
+function formatDateTimeForDB($datetime_string) {
+    if (strpos($datetime_string, 'T') !== false) {//si tiene T es para el input de tiempo local
+        return str_replace('T', ' ', $datetime_string) . ':00';
+    }
+    return $datetime_string;// si ya esta en formato MySQL devolver como es 
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Método de solicitud inválido');
@@ -34,8 +41,8 @@ try {
     $nombre = trim($_POST['nombre']);
     $descripcion = trim($_POST['descripcion']);
     $id_departamento = intval($_POST['id_departamento']);
-    $fecha_creacion = trim($_POST['fecha_creacion']);
-    $fecha_cumplimiento = trim($_POST['fecha_cumplimiento']);
+    $fecha_creacion = formatDateTimeForDB(trim($_POST['fecha_creacion']));
+    $fecha_cumplimiento = formatDateTimeForDB(trim($_POST['fecha_cumplimiento']));
     $progreso = isset($_POST['progreso']) ? intval($_POST['progreso']) : 0;
     $ar = isset($_POST['ar']) ? intval($_POST['ar']) : 0;
     $estado = trim($_POST['estado']);
@@ -83,6 +90,18 @@ try {
     $conn = getDBConnection();
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
+    }
+
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}/', $fecha_creacion)) {
+        throw new Exception('La fecha de creación debe tener formato válido (YYYY-MM-DD HH:MM:SS)');
+    }
+    
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}/', $fecha_cumplimiento)) {
+        throw new Exception('La fecha de cumplimiento debe tener formato válido (YYYY-MM-DD)');
+    }
+    //validar que la fecha de entrega sea posterior o igual a la fecha de inicio
+    if (strtotime($fecha_cumplimiento) < strtotime($fecha_creacion)) {
+        throw new Exception('La fecha de entrega debe ser posterior o igual a la fecha de inicio');
     }
 
     //insertar proyecto

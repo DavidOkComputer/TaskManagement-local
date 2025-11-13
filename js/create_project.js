@@ -214,57 +214,71 @@ function setupGrupalHandlers() {
 }
  
 function cargarProyectoParaEditar(projectId) {
-  fetch(`../php/get_project_by_id.php?id=${projectId}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('La respuesta de red no fue ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.success && data.proyecto) {
-        const proyecto = data.proyecto;
-       
-        document.getElementById('nombre').value = proyecto.nombre || '';
-        document.getElementById('descripcion').value = proyecto.descripcion || '';
-        document.getElementById('id_departamento').value = proyecto.id_departamento || '';
-        document.getElementById('fecha_creacion').value = proyecto.fecha_inicio || '';
-        document.getElementById('fecha_cumplimiento').value = proyecto.fecha_cumplimiento || '';
-        document.getElementById('progreso').value = proyecto.progreso || 0;
-        document.getElementById('ar').value = proyecto.ar || '';
-        document.getElementById('estado').value = proyecto.estado || 'pendiente';
-        document.getElementById('id_participante').value = proyecto.id_participante || 0;
-       
-        //tipo de proyecto
-        const tipoValue = proyecto.id_tipo_proyecto == 1 ? '1' : '2';
-        document.querySelector(`input[name="id_tipo_proyecto"][value="${tipoValue}"]`).checked = true;
-       
-        // Si es grupal, cargar los usuarios asignados
-        if (tipoValue == '1' && proyecto.usuarios_asignados) {
-          grupalState.selectedUsers = proyecto.usuarios_asignados.map(u => u.id_usuario);
-          //checar checkboxes cuando carga modal
-          grupalState.selectedUsers.forEach(userId => {
-            const checkbox = document.querySelector(`#check_${userId}`);
-            if (checkbox) checkbox.checked = true;
-          });
-          updateSelectedCount();
-        }
-       
-        if (proyecto.archivo_adjunto) {//si existe el archivo adjunto mostrarlo
-          document.getElementById('nombreArchivo').value = proyecto.archivo_adjunto.split('/').pop();
-        }
-       
-        showAlert('Proyecto cargado correctamente', 'success');
-      } else {
-        showAlert('Error al cargar el proyecto: ' + data.message, 'danger');
-        window.location.href = '../revisarProyectos/';
-      }
-    })
-    .catch(error => {
-      console.error('Error al cargar proyecto:', error);
-      showAlert('Error al cargar el proyecto: ' + error.message, 'danger');
-      window.location.href = '../revisarProyectos/';
-    });
+    fetch(`../php/get_project_by_id.php?id=${projectId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('La respuesta de red no fue ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.proyecto) {
+                const proyecto = data.proyecto;
+                
+                document.getElementById('nombre').value = proyecto.nombre || '';
+                document.getElementById('descripcion').value = proyecto.descripcion || '';
+                document.getElementById('id_departamento').value = proyecto.id_departamento || '';
+                
+                //convertir datetime de sql a formato local
+                if (proyecto.fecha_inicio) {
+                    //Convertir "2024-11-13 14:30:00" a "2024-11-13T14:30"
+                    const fechaInicio = proyecto.fecha_inicio.replace(' ', 'T').substring(0, 16);
+                    document.getElementById('fecha_creacion').value = fechaInicio;
+                }
+                
+                // For date input, extract just the date part
+                if (proyecto.fecha_cumplimiento) {
+                    // Extract "2024-11-13" from "2024-11-13 14:30:00" or "2024-11-13"
+                    const fechaCumplimiento = proyecto.fecha_cumplimiento.split(' ')[0];
+                    document.getElementById('fecha_cumplimiento').value = fechaCumplimiento;
+                }
+                
+                document.getElementById('progreso').value = proyecto.progreso || 0;
+                document.getElementById('ar').value = proyecto.ar || '';
+                document.getElementById('estado').value = proyecto.estado || 'pendiente';
+                document.getElementById('id_participante').value = proyecto.id_participante || 0;
+ 
+                //tipo de proyecto
+                const tipoValue = proyecto.id_tipo_proyecto == 1 ? '1' : '2';
+                document.querySelector(`input[name="id_tipo_proyecto"][value="${tipoValue}"]`).checked = true;
+ 
+                // Si es grupal, cargar los usuarios asignados
+                if (tipoValue == '1' && proyecto.usuarios_asignados) {
+                    grupalState.selectedUsers = proyecto.usuarios_asignados.map(u => u.id_usuario);
+                    
+                    //checar checkboxes cuando carga modal
+                    grupalState.selectedUsers.forEach(userId => {
+                        const checkbox = document.querySelector(`#check_${userId}`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                    updateSelectedCount();
+                }
+ 
+                if (proyecto.archivo_adjunto) {//si existe el archivo adjunto mostrarlo
+                    document.getElementById('nombreArchivo').value = proyecto.archivo_adjunto.split('/').pop();
+                }
+                
+                showAlert('Proyecto cargado correctamente', 'success');
+            } else {
+                showAlert('Error al cargar el proyecto: ' + data.message, 'danger');
+                window.location.href = '../revisarProyectos/';
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar proyecto:', error);
+            showAlert('Error al cargar el proyecto: ' + error.message, 'danger');
+            window.location.href = '../revisarProyectos/';
+        });
 }
  
 function setupFormHandlers() {
