@@ -1,5 +1,6 @@
 <?php
-/*update_task.php actualiza una tarea existente con nueva informacion*/
+/*update_task.php actualiza una tarea existente con nueva informacion
+FIXED: Corrected POST key from 'fecha_cumplimiento' to 'fecha_vencimiento' to match JavaScript*/
 
 header('Content-Type: application/json');
 
@@ -38,8 +39,9 @@ $id_tarea = intval($_POST['id_tarea']);
 $nombre = trim($_POST['nombre']);
 $descripcion = trim($_POST['descripcion']);
 $id_proyecto = intval($_POST['id_proyecto']);
-$fecha_cumplimiento = isset($_POST['fecha_cumplimiento']) && !empty($_POST['fecha_cumplimiento']) 
-    ? $_POST['fecha_cumplimiento'] 
+// FIXED: Changed from 'fecha_cumplimiento' to 'fecha_vencimiento' to match JavaScript
+$fecha_cumplimiento = isset($_POST['fecha_vencimiento']) && !empty($_POST['fecha_vencimiento']) 
+    ? $_POST['fecha_vencimiento'] 
     : null;
 $estado = trim($_POST['estado']);
 
@@ -93,6 +95,7 @@ try {
     
     //preparar actualizacion
     if ($fecha_cumplimiento !== null) {
+        // FIXED: bind_param types are correct here - "ssissi"
         $stmt = $conn->prepare(
             "UPDATE tbl_tareas 
              SET nombre = ?, 
@@ -111,6 +114,7 @@ try {
             $id_tarea
         );
     } else {
+        // FIXED: bind_param types are correct here - "ssisi"
         $stmt = $conn->prepare(
             "UPDATE tbl_tareas 
              SET nombre = ?, 

@@ -1,7 +1,9 @@
 <?php
 /*
  * save_task.php 
- * guardar tareaes y actualiza la barra de progreso basado en las tareas completadas=*/
+ * guardar tareaes y actualiza la barra de progreso basado en las tareas completadas
+ * FIXED: Corrected bind_param types and POST key for fecha_cumplimiento
+ */
 
 header('Content-Type: application/json');
 require_once('db_config.php');
@@ -19,7 +21,8 @@ try {
     $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
     $descripcion = isset($_POST['descripcion']) ? trim($_POST['descripcion']) : '';
     $id_proyecto = isset($_POST['id_proyecto']) ? intval($_POST['id_proyecto']) : 0;
-    $fecha_cumplimiento = isset($_POST['fecha_cumplimiento']) ? trim($_POST['fecha_cumplimiento']) : '';
+    // FIXED: Changed from 'fecha_cumplimiento' to 'fecha_vencimiento' to match JavaScript
+    $fecha_cumplimiento = isset($_POST['fecha_vencimiento']) ? trim($_POST['fecha_vencimiento']) : '';
     $estado = isset($_POST['estado']) ? trim($_POST['estado']) : 'pendiente';
     $id_creador = isset($_POST['id_creador']) ? intval($_POST['id_creador']) : 1; // Default to user 1 if not provided
 
@@ -90,8 +93,15 @@ try {
         throw new Exception("Error al preparar la consulta: " . $conn->error);
     }
 
+    // FIXED: Changed from "ssiiis" to "ssiiss"
+    // s - nombre
+    // s - descripcion
+    // i - id_proyecto
+    // i - id_creador
+    // s - fecha_cumplimiento (WAS: i - WRONG!)
+    // s - estado
     $stmt->bind_param(
-        "ssiiis",
+        "ssiiss",
         $nombre,
         $descripcion,
         $id_proyecto,

@@ -43,14 +43,14 @@ function loadDepartments() {
                 allDepartments = data.departamentos; 
                 displayDepartments(allDepartments); 
             } else { 
-                showError(data.message || 'Error al cargar departamentos'); 
+                showErrorAlert(data.message || 'Error al cargar departamentos'); 
                 displayEmptyState(); 
             } 
         }) 
 
         .catch(error => { 
             console.error('Error:', error); 
-            showError('Error al conectar con el servidor'); 
+            showErrorAlert('Error al conectar con el servidor'); 
             displayEmptyState(); 
         }) 
 
@@ -78,14 +78,14 @@ function loadusers() {
                 allDepartments = data.departamentos; 
                 displayDepartments(allDepartments); 
             } else { 
-                showError(data.message || 'Error al cargar usurios'); 
+                showErrorAlert(data.message || 'Error al cargar usurios'); 
                 displayEmptyState(); 
             } 
         }) 
 
         .catch(error => { 
             console.error('Error:', error); 
-            showError('Error al conectar con el servidor'); 
+            showErrorAlert('Error al conectar con el servidor'); 
             displayEmptyState(); 
         }) 
 
@@ -210,7 +210,7 @@ function setupEditModal() {
 function editDepartment(id) { 
     const dept = allDepartments.find(d => d.id_departamento == id);
     if (!dept) { 
-        showError('Departamento no encontrado'); 
+        showErrorAlert('Departamento no encontrado'); 
         return; 
     } 
 
@@ -248,19 +248,19 @@ function updateDepartment() {
     .then(response => response.json()) 
     .then(data => { 
         if (data.success) { 
-            showSuccess(data.message || 'Departamento actualizado exitosamente'); 
+            showSuccessAlert(data.message || 'Departamento actualizado exitosamente'); 
             if (editModal) { 
                 editModal.hide(); 
             } 
             loadDepartments(); 
         } else { 
-            showError(data.message || 'Error al actualizar departamento'); 
+            showErrorAlert(data.message || 'Error al actualizar departamento'); 
         } 
     }) 
 
     .catch(error => { 
         console.error('Error:', error); 
-        showError('Error al conectar con el servidor'); 
+        showErrorAlert('Error al conectar con el servidor'); 
     }) 
 
     .finally(() => { 
@@ -270,9 +270,18 @@ function updateDepartment() {
 } 
 
 function confirmDelete(id, nombre) { 
-    if (confirm(`¿Está seguro de que desea eliminar el departamento "${nombre}"?\n\nEsta acción no se puede deshacer.`)) { 
-        deleteDepartment(id); 
-    } 
+    showConfirm(
+        `¿Está seguro de que desea eliminar el departamento "${escapeHtml(nombre)}"?\n\nEsta acción no se puede deshacer.`,
+        function() {
+            deleteDepartment(id);
+        },
+        'Confirmar eliminación',
+        {
+            type: 'danger',
+            confirmText: 'Eliminar',
+            cancelText: 'Cancelar'
+        }
+    );
 } 
 
 function deleteDepartment(id) { 
@@ -287,28 +296,29 @@ function deleteDepartment(id) {
     .then(response => response.json()) 
     .then(data => { 
         if (data.success) { 
-            showSuccess(data.message || 'Departamento eliminado exitosamente'); 
+            showSuccessAlert(data.message || 'Departamento eliminado exitosamente'); 
             allDepartments = allDepartments.filter(d => d.id_departamento != id);
             displayDepartments(allDepartments); 
         } else { 
-            showError(data.message || 'Error al eliminar departamento'); 
+            showErrorAlert(data.message || 'Error al eliminar departamento'); 
         } 
     }) 
 
     .catch(error => { 
         console.error('Error:', error); 
-        showError('Error al conectar con el servidor'); 
+        showErrorAlert('Error al conectar con el servidor'); 
     }); 
 } 
-function showSuccess(message) { 
-    showAlert('success', message); 
+
+function showSuccessAlert(message) { 
+    showAlert(message, 'success'); 
 } 
 
-function showError(message) { 
-    showAlert('danger', message); 
+function showErrorAlert(message) { 
+    showAlert(message, 'danger'); 
 } 
 
-function showAlert(type, message) { 
+function showAlert(message, type) { 
     const alertDiv = document.getElementById('alertMessage'); 
     if (!alertDiv) return; 
     const alertClass = type === 'success' ? 'alert-success' : 'alert-danger'; 
@@ -342,156 +352,133 @@ function escapeHtml(text) {
 } 
 
 function createCustomDialogSystem() {
-        const dialogHTML = `
-            <!-- Custom Alert Dialog -->
-            <div class="modal fade" id="customAlertModal" tabindex="-1" role="dialog" aria-labelledby="customAlertLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="customAlertLabel">
-                                <i class="mdi mdi-information-outline me-2"></i>
-                                <span id="alertTitle">Información</span>
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p id="alertMessage" class="mb-0"></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
-                        </div>
+    const dialogHTML = `
+        <!-- Custom Alert Dialog -->
+        <div class="modal fade" id="customAlertModal" tabindex="-1" role="dialog" aria-labelledby="customAlertLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="customAlertLabel">
+                            <i class="mdi mdi-information-outline me-2"></i>
+                            <span id="alertTitle">Información</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="alertMessage" class="mb-0"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
                     </div>
                 </div>
             </div>
-            
-            <!-- Custom Confirm Dialog -->
-            <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog" aria-labelledby="customConfirmLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="customConfirmLabel">
-                                <i class="mdi mdi-help-circle-outline me-2"></i>
-                                <span id="confirmTitle">Confirmar acción</span>
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p id="confirmMessage" class="mb-0"></p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="confirmCancelBtn">Cancelar</button>
-                            <button type="button" class="btn btn-primary" id="confirmOkBtn">Aceptar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        </div>
         
-        document.body.insertAdjacentHTML('beforeend', dialogHTML);
-    }
+        <!-- Custom Confirm Dialog -->
+        <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog" aria-labelledby="customConfirmLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="customConfirmLabel">
+                            <i class="mdi mdi-help-circle-outline me-2"></i>
+                            <span id="confirmTitle">Confirmar acción</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmMessage" class="mb-0"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="confirmCancelBtn">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="confirmOkBtn">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
     
-    //mostrar dialogo de alrta de la app y no navegador
-    function showAlert(message, type) {
-        const alertContainer = document.getElementById('alertContainer');
-        const alertDiv = document.createElement('div');
-        
-        //agreagar clases de una en una
-        alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show');
-        alertDiv.setAttribute('role', 'alert');
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        
-        alertContainer.innerHTML = '';
-        alertContainer.appendChild(alertDiv);
-        
-        setTimeout(function() {
-            if (alertDiv.parentNode) {
-            alertDiv.remove();
-            }
-        }, 5000);
-    }
+    document.body.insertAdjacentHTML('beforeend', dialogHTML);
+}
 
-    // mostrar dialogo de confiracion de la app y no buscador
-    function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) {
-        const modal = document.getElementById('customConfirmModal');
-        const titleElement = document.getElementById('confirmTitle');
-        const messageElement = document.getElementById('confirmMessage');
-        const headerElement = modal.querySelector('.modal-header');
-        const iconElement = modal.querySelector('.modal-title i');
-        const confirmBtn = document.getElementById('confirmOkBtn');
-        const cancelBtn = document.getElementById('confirmCancelBtn');
-        
-        //opciones default
-        const config = {
-            confirmText: 'Aceptar',
-            cancelText: 'Cancelar',
-            type: 'warning',
-            ...options
-        };
-        
-        //titulo y mensaje
-        titleElement.textContent = title;
-        messageElement.textContent = message;
-        
-        //cambiar el texto de los botones
-        confirmBtn.textContent = config.confirmText;
-        cancelBtn.textContent = config.cancelText;
-        
-        //clases del header
-        headerElement.className = 'modal-header';
-        
-        const iconMap = {
-            'info': {
-                icon: 'mdi-information-outline',
-                class: 'bg-info text-white',
-                btnClass: 'btn-info'
-            },
-            'warning': {
-                icon: 'mdi-alert-outline',
-                class: 'bg-warning text-white',
-                btnClass: 'btn-warning'
-            },
-            'danger': {
-                icon: 'mdi-alert-octagon-outline',
-                class: 'bg-danger text-white',
-                btnClass: 'btn-danger'
-            },
-            'success': {
-                icon: 'mdi-check-circle-outline',
-                class: 'bg-success text-white',
-                btnClass: 'btn-success'
-            }
-        };
-        
-        const typeConfig = iconMap[config.type] || iconMap['warning'];
-        iconElement.className = `mdi ${typeConfig.icon} me-2`;
-        headerElement.classList.add(typeConfig.class);
-        
-        //actualizar el estilo del boton confirmar
-        confirmBtn.className = `btn ${typeConfig.btnClass}`;
-        
-        //eliminar listeners anteriores clonando y remplazando
-        const newConfirmBtn = confirmBtn.cloneNode(true);
-        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-        
-        const newCancelBtn = cancelBtn.cloneNode(true);
-        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-        
-        //agregar nuevo event listener
-        newConfirmBtn.addEventListener('click', function() {
-            const confirmModal = bootstrap.Modal.getInstance(modal);
-            confirmModal.hide();
-            if (onConfirm && typeof onConfirm === 'function') {
-                onConfirm();
-            }
-        });
-        
-        //mostrar modal
-        const confirmModal = new bootstrap.Modal(modal);
-        confirmModal.show();
-    }
+// mostrar dialogo de confirmacion de la app y no navegador
+function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) {
+    const modal = document.getElementById('customConfirmModal');
+    const titleElement = document.getElementById('confirmTitle');
+    const messageElement = document.getElementById('confirmMessage');
+    const headerElement = modal.querySelector('.modal-header');
+    const iconElement = modal.querySelector('.modal-title i');
+    const confirmBtn = document.getElementById('confirmOkBtn');
+    const cancelBtn = document.getElementById('confirmCancelBtn');
+    
+    //opciones default
+    const config = {
+        confirmText: 'Aceptar',
+        cancelText: 'Cancelar',
+        type: 'warning',
+        ...options
+    };
+    
+    //titulo y mensaje
+    titleElement.textContent = title;
+    messageElement.innerHTML = message.replace(/\n/g, '<br>'); // Preserve line breaks
+    
+    //cambiar el texto de los botones
+    confirmBtn.textContent = config.confirmText;
+    cancelBtn.textContent = config.cancelText;
+    
+    //clases del header
+    headerElement.className = 'modal-header';
+    
+    const iconMap = {
+        'info': {
+            icon: 'mdi-information-outline',
+            class: 'bg-info text-white',
+            btnClass: 'btn-info'
+        },
+        'warning': {
+            icon: 'mdi-alert-outline',
+            class: 'bg-warning text-white',
+            btnClass: 'btn-warning'
+        },
+        'danger': {
+            icon: 'mdi-alert-octagon-outline',
+            class: 'bg-danger text-white',
+            btnClass: 'btn-danger'
+        },
+        'success': {
+            icon: 'mdi-check-circle-outline',
+            class: 'bg-success text-white',
+            btnClass: 'btn-success'
+        }
+    };
+    
+    const typeConfig = iconMap[config.type] || iconMap['warning'];
+    iconElement.className = `mdi ${typeConfig.icon} me-2`;
+    headerElement.classList.add(typeConfig.class);
+    
+    //actualizar el estilo del boton confirmar
+    confirmBtn.className = `btn ${typeConfig.btnClass}`;
+    
+    //eliminar listeners anteriores clonando y remplazando
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    //agregar nuevo event listener
+    newConfirmBtn.addEventListener('click', function() {
+        const confirmModal = bootstrap.Modal.getInstance(modal);
+        confirmModal.hide();
+        if (onConfirm && typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    });
+    
+    //mostrar modal
+    const confirmModal = new bootstrap.Modal(modal);
+    confirmModal.show();
+}
 
 window.editDepartment = editDepartment; 
 window.confirmDelete = confirmDelete;
