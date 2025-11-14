@@ -780,7 +780,7 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     
     //titulo y mensaje
     titleElement.textContent = title;
-    messageElement.innerHTML = message.replace(/\n/g, '<br>'); // Preserve line breaks
+    messageElement.innerHTML = message.replace(/\n/g, '<br>'); 
     
     //cambiar el texto de los botones
     confirmBtn.textContent = config.confirmText;

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $data = json_decode(file_get_contents('php://input'), true);
 
-// Validate required fields
+//validar campos requeridos
 if (!isset($data['id_usuario']) || !isset($data['nombre']) || !isset($data['apellido']) || 
     !isset($data['usuario']) || !isset($data['e_mail'])) {
     echo json_encode(['success' => false, 'error' => 'Datos incompletos']);
@@ -32,20 +32,20 @@ $usuario = trim($data['usuario']);
 $e_mail = trim($data['e_mail']);
 $id_departamento = isset($data['id_departamento']) ? intval($data['id_departamento']) : null;
 
-// Validate email format
+//validar formato email
 if (!filter_var($e_mail, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['success' => false, 'error' => 'Formato de email inválido']);
     exit;
 }
 
-// Validate empty fields
+//validar campos vacios
 if (empty($nombre) || empty($apellido) || empty($usuario) || empty($e_mail)) {
     echo json_encode(['success' => false, 'error' => 'Los campos no pueden estar vacíos']);
     exit;
 }
 
 try {
-    // Check if username is already taken by another user
+    //revisar si el nombre de usuario ya esta tomado por otro usuario
     $check_stmt = $conn->prepare("SELECT id_usuario FROM tbl_usuarios WHERE usuario = ? AND id_usuario != ?");
     $check_stmt->bind_param("si", $usuario, $id_usuario);
     $check_stmt->execute();
@@ -58,7 +58,7 @@ try {
     }
     $check_stmt->close();
     
-    // Check if email is already taken by another user
+    //revisar si el email ya esta registrado por otro usuario
     $check_email = $conn->prepare("SELECT id_usuario FROM tbl_usuarios WHERE e_mail = ? AND id_usuario != ?");
     $check_email->bind_param("si", $e_mail, $id_usuario);
     $check_email->execute();
@@ -71,7 +71,7 @@ try {
     }
     $check_email->close();
     
-    // Validate department if provided
+    //validar el departamento si se ingresa
     if ($id_departamento) {
         $check_dept = $conn->prepare("SELECT id_departamento FROM tbl_departamentos WHERE id_departamento = ?");
         $check_dept->bind_param("i", $id_departamento);
@@ -86,7 +86,7 @@ try {
         $check_dept->close();
     }
     
-    // Update user with department
+    //actualizar usuario con departamento
     if ($id_departamento) {
         $update_stmt = $conn->prepare("UPDATE tbl_usuarios SET nombre = ?, apellido = ?, usuario = ?, e_mail = ?, id_departamento = ? WHERE id_usuario = ?");
         

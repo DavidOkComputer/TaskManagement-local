@@ -56,7 +56,7 @@
               <i class="icon-search"></i>
               <input type="search" 
                      class="form-control" 
-                     placeholder="Buscar objetivo" 
+                     placeholder="Buscar objetivos..." 
                      title="Search here"
                      class="form-control"
                      id="searchInput">
@@ -258,17 +258,40 @@
                   </a>
                 </div>
               </div>
-              <div class="table-responsive  mt-3" id="tableContainer">
+              <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
+                <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
+                  <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                  </select>
+              </div>
+              <div class="table-responsive  mt-3" id="tableContainer">  
                 <table class="table select-table">
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Titulo</th>
-                      <th>Descripcion</th>
-                      <th>Área</th>
-                      <th>Fecha de entrega</th>
-                      <th>Progreso</th>
-                      <th>Estado</th>
+                      <th class="sortable-header" data-sort="id_objetivo" style="cursor:pointer; user-select:none;">
+                        # <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="nombre" style="cursor:pointer; user-select:none;">
+                        Titulo <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="descripcion" style="cursor:pointer; user-select: none;">
+                        Descripcion <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="area" style="cursor:pointer; user-select: none;">
+                        Área <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor:pointer; user-select: none">
+                        Fecha de entrega <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="progreso" style="cursor:pointer; user-select:none;">
+                        Progreso <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="estado" style="cursor:pointer; uesr-select:none;">
+                        Estado <i class="mdi mdi-sort-variant"></i>
+                      </th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -284,6 +307,7 @@
                     </tbody>
                 </table>
               </div>
+              <div class="pagination-container mt-4"></div> 
             </div>
           </div>
         </div>
@@ -314,6 +338,8 @@
   <script src="../js/settings.js"></script>
   <script src="../js/todolist.js"></script>
   <!-- endinject -->
+   
+   <script src="../js/custom_dialogs.js"></script>
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>

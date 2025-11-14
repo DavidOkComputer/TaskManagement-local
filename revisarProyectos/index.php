@@ -348,6 +348,7 @@
   <!-- End custom js for this page-->
   
   <!-- Load projects script -->
+  <script src="../js/custom_dialogs.js"></script>
   <script src="../js/manage_projects.js"></script>
 </body>
 </html>

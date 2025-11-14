@@ -1,13 +1,9 @@
 /**manage projects maneja la carga y muestra todos los proyectos de la tabla con botones de accion*/ 
 
 const Config = { 
-
     API_ENDPOINTS: { 
-
         DELETE: '../php/delete_project.php' 
-
     } 
-
 }; 
 
 let allProjects = [];
@@ -15,16 +11,15 @@ let currentSortColumn = null;
 let sortDirection = 'asc';
 let filteredProjects = [];
 
-// Pagination variables
+//variables de paginacion
 let currentPage = 1;
 let rowsPerPage = 10;
 let totalPages = 0;
 
 document.addEventListener('DOMContentLoaded', function() { 
-    createCustomDialogSystem(); 
     setupSearch(); 
     setupSorting();
-    setupPagination(); // Initialize pagination
+    setupPagination(); // inicializar paginacion
     cargarProyectos();
 }); 
 
@@ -34,7 +29,6 @@ function cargarProyectos() {
         console.error('El elemento de cuerpo de tabla no fue encontrado'); 
         return; 
     } 
-
     tableBody.innerHTML = ` 
         <tr> 
             <td colspan="9" class="text-center"> 
@@ -58,7 +52,7 @@ function cargarProyectos() {
             if (data.success && data.proyectos) { 
                 allProjects = data.proyectos;
                 filteredProjects = [...allProjects];
-                currentPage = 1; // Reset to first page on load
+                currentPage = 1; // Reiniciar a la primera pagina al cargar
                 displayProjects(data.proyectos); 
             } else { 
                 tableBody.innerHTML = ` 
@@ -82,8 +76,6 @@ function cargarProyectos() {
         }); 
 }
 
-// ===== SORTING FUNCTIONS =====
-
 function setupSorting() {
     const headers = document.querySelectorAll('th.sortable-header');
     headers.forEach(header => {
@@ -98,7 +90,7 @@ function setupSorting() {
             }
             
             updateSortIndicators();
-            currentPage = 1; // Reset to first page when sorting
+            currentPage = 1; //reiniciar a la primera pagina al hacer sort
             const sorted = sortProjects(filteredProjects, column, sortDirection);
             displayProjects(sorted);
         });
@@ -148,18 +140,15 @@ function sortProjects(projects, column, direction) {
         if (valueA > valueB) return direction === 'asc' ? 1 : -1;
         return 0;
     });
-    
     return sorted;
 }
-
-// ===== PAGINATION FUNCTIONS =====
 
 function setupPagination() {
     const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
     if (rowsPerPageSelect) {
         rowsPerPageSelect.addEventListener('change', function() {
             rowsPerPage = parseInt(this.value);
-            currentPage = 1; // Reset to first page when changing rows per page
+            currentPage = 1; //reiniciar a primera pagina cuano cambien registros por pagina
             displayProjects(filteredProjects);
         });
     }
@@ -186,10 +175,10 @@ function updatePaginationControls() {
     const paginationContainer = document.querySelector('.pagination-container');
     if (!paginationContainer) return;
 
-    // Clear existing pagination
+    //limpiar paginacion existente
     paginationContainer.innerHTML = '';
 
-    // Create pagination info text
+    //crear texto de info de paginacion
     const infoText = document.createElement('div');
     infoText.className = 'pagination-info';
     const startItem = ((currentPage - 1) * rowsPerPage) + 1;
@@ -199,11 +188,11 @@ function updatePaginationControls() {
     `;
     paginationContainer.appendChild(infoText);
 
-    // Create pagination buttons container
+    //crear contenedores de botones de paginacion 
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'pagination-buttons';
 
-    // Previous button
+    //boton anterior
     const prevBtn = document.createElement('button');
     prevBtn.className = 'btn btn-sm btn-outline-primary';
     prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
@@ -211,15 +200,15 @@ function updatePaginationControls() {
     prevBtn.addEventListener('click', () => changePage(currentPage - 1));
     buttonContainer.appendChild(prevBtn);
 
-    // Page numbers
+    //numero de paginas
     const pageButtonsContainer = document.createElement('div');
     pageButtonsContainer.className = 'page-buttons';
 
-    // Calculate which pages to show
+    //calcular que paginas mostrar
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, currentPage + 2);
 
-    // Adjust if near the beginning or end
+    //ajustar si esta cerca del principio o final
     if (currentPage <= 3) {
         endPage = Math.min(totalPages, 5);
     }
@@ -227,7 +216,7 @@ function updatePaginationControls() {
         startPage = Math.max(1, totalPages - 4);
     }
 
-    // First page button
+    //primera pagina de boton
     if (startPage > 1) {
         const firstBtn = document.createElement('button');
         firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
@@ -243,7 +232,7 @@ function updatePaginationControls() {
         }
     }
 
-    // Page numbers
+    //numero de paginas
     for (let i = startPage; i <= endPage; i++) {
         const pageBtn = document.createElement('button');
         pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
@@ -252,7 +241,7 @@ function updatePaginationControls() {
         pageButtonsContainer.appendChild(pageBtn);
     }
 
-    // Last page button
+    //ultimo boton de pagina
     if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
             const ellipsis = document.createElement('span');
@@ -270,7 +259,7 @@ function updatePaginationControls() {
 
     buttonContainer.appendChild(pageButtonsContainer);
 
-    // Next button
+    //boton siguiente
     const nextBtn = document.createElement('button');
     nextBtn.className = 'btn btn-sm btn-outline-primary';
     nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
@@ -285,13 +274,13 @@ function displayProjects(proyectos) {
     const tableBody = document.querySelector('#proyectosTableBody'); 
     if(!tableBody) return;
 
-    // Calculate pagination
+    //calcular paginacion
     totalPages = calculatePages(proyectos);
     if (currentPage > totalPages && totalPages > 0) {
         currentPage = totalPages;
     }
 
-    // Get paginated projects
+    //obtener proyectos paginados
     const paginatedProjects = getPaginatedProjects(proyectos);
 
     tableBody.innerHTML = ''; 
@@ -320,7 +309,7 @@ function displayProjects(proyectos) {
         tableBody.appendChild(row); 
     });
 
-    // Update pagination controls
+    //actualizar controles de paginacion
     updatePaginationControls();
 } 
 
@@ -410,8 +399,6 @@ function displayEmptyState() {
     `; 
 } 
 
-// ===== SEARCH FUNCTIONS =====
-
 function setupSearch() { 
     const searchInput = document.getElementById('searchInput'); 
     const searchForm = document.getElementById('search-form'); 
@@ -437,7 +424,7 @@ function performSearch(query) {
     const normalizedQuery = query.toLowerCase().trim(); 
     if (normalizedQuery === '') { 
         filteredProjects = [...allProjects];
-        currentPage = 1; // Reset to first page when clearing search
+        currentPage = 1; //reiniciar a la primer pagina cuando se limpie la busqueda
         const sorted = currentSortColumn 
             ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
             : filteredProjects;
@@ -452,7 +439,7 @@ function performSearch(query) {
     });
     
     filteredProjects = filtered;
-    currentPage = 1; // Reset to first page when searching
+    currentPage = 1; //reiniciar a primer pagina cuando se busca
     
     const sorted = currentSortColumn
         ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
@@ -505,289 +492,125 @@ function confirmDelete(id, nombre) {
 } 
 
 function deleteProject(id) { 
-
     fetch(Config.API_ENDPOINTS.DELETE, { 
-
         method: 'POST', 
-
         headers: { 
-
             'Content-Type': 'application/json' 
-
         }, 
-
         body: JSON.stringify({ id_proyecto: id }) 
-
     }) 
 
     .then(response => response.json()) 
-
     .then(data => { 
-
         if (data.success) { 
-
             showSuccessAlert(data.message || 'Proyecto eliminado exitosamente'); 
-
             allProjects = allProjects.filter(u => u.id_proyecto != id);
             filteredProjects = filteredProjects.filter(u => u.id_proyecto != id);
-            
-            // Recalculate pages after deletion
+            //recalcular paginas despues de eliminar
             totalPages = calculatePages(filteredProjects);
             if (currentPage > totalPages && totalPages > 0) {
                 currentPage = totalPages;
             }
-            
             const sorted = currentSortColumn
                 ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
                 : filteredProjects;
             displayProjects(sorted); 
-
         } else { 
-
             showErrorAlert(data.message || 'Error al eliminar el proyecto'); 
-
         } 
-
     }) 
-
     .catch(error => { 
-
         console.error('Error:', error); 
-
         showErrorAlert('Error al conectar con el servidor'); 
-
     }); 
-
-} 
+}
 
 function showSuccessAlert(message) { 
-
     showAlert(message, 'success'); 
-
 } 
 
 function showErrorAlert(message) { 
-
     showAlert(message, 'danger'); 
-
 } 
 
 function showAlert(message, type) { 
-
     const alertDiv = document.getElementById('alertMessage'); 
-
     if (!alertDiv) { 
-
         console.warn('Alert div not found'); 
-
         return; 
-
     } 
-
      
-
     const alertClass = type === 'success' ? 'alert-success' : 'alert-danger'; 
-
     const icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'; 
-
-     
-
     alertDiv.className = `alert ${alertClass} alert-dismissible fade show`; 
-
     alertDiv.innerHTML = ` 
-
         <i class="mdi ${icon} me-2"></i> 
-
         ${message} 
-
         <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button> 
-
     `; 
 
     alertDiv.style.display = 'block'; 
-
-     
-
     alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
 
-     
-
     setTimeout(() => { 
-
         if (alertDiv.style.display !== 'none') { 
-
             alertDiv.style.display = 'none'; 
-
         } 
-
     }, 5000); 
-
 } 
 
 function escapeHtml(text) { 
-
     const map = { 
-
         '&': '&amp;', 
-
         '<': '&lt;', 
-
         '>': '&gt;', 
-
         '"': '&quot;', 
-
         "'": '&#039;' 
-
     }; 
-
     return String(text).replace(/[&<>"']/g, function(m) { return map[m]; }); 
-
 } 
-
-function createCustomDialogSystem() { 
-
-    const dialogHTML = ` 
-
-        <!-- Custom Confirm Dialog --> 
-
-        <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog" aria-labelledby="customConfirmLabel" aria-hidden="true"> 
-
-            <div class="modal-dialog modal-dialog-centered" role="document"> 
-
-                <div class="modal-content"> 
-
-                    <div class="modal-header"> 
-
-                        <h5 class="modal-title" id="customConfirmLabel"> 
-
-                            <i class="mdi mdi-help-circle-outline me-2"></i> 
-
-                            <span id="confirmTitle">Confirmar acción</span> 
-
-                        </h5> 
-
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> 
-
-                    </div> 
-
-                    <div class="modal-body"> 
-
-                        <p id="confirmMessage" class="mb-0"></p> 
-
-                    </div> 
-
-                    <div class="modal-footer"> 
-
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="confirmCancelBtn">Cancelar</button> 
-
-                        <button type="button" class="btn btn-primary" id="confirmOkBtn">Aceptar</button> 
-
-                    </div> 
-
-                </div> 
-
-            </div> 
-
-        </div> 
-
-    `; 
-
-     
-
-    document.body.insertAdjacentHTML('beforeend', dialogHTML); 
-
-} 
+ 
 
 function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) { 
-
     const modal = document.getElementById('customConfirmModal'); 
-
     const titleElement = document.getElementById('confirmTitle'); 
-
     const messageElement = document.getElementById('confirmMessage'); 
-
     const headerElement = modal.querySelector('.modal-header'); 
-
     const iconElement = modal.querySelector('.modal-title i'); 
-
     const confirmBtn = document.getElementById('confirmOkBtn'); 
-
     const cancelBtn = document.getElementById('confirmCancelBtn'); 
 
-     
-
     const config = { 
-
         confirmText: 'Aceptar', 
-
         cancelText: 'Cancelar', 
-
         type: 'warning', 
-
         ...options 
-
     }; 
-
-     
 
     titleElement.textContent = title; 
-
     messageElement.innerHTML = message.replace(/\n/g, '<br>'); 
-
-     
-
     confirmBtn.textContent = config.confirmText; 
-
     cancelBtn.textContent = config.cancelText; 
-
-     
-
     headerElement.className = 'modal-header'; 
 
-     
-
     const iconMap = { 
-
         'info': { icon: 'mdi-information-outline', class: 'bg-info text-white', btnClass: 'btn-info' }, 
-
         'warning': { icon: 'mdi-alert-outline', class: 'bg-warning text-white', btnClass: 'btn-warning' }, 
-
         'danger': { icon: 'mdi-alert-octagon-outline', class: 'bg-danger text-white', btnClass: 'btn-danger' }, 
-
         'success': { icon: 'mdi-check-circle-outline', class: 'bg-success text-white', btnClass: 'btn-success' } 
-
     }; 
 
-     
-
     const typeConfig = iconMap[config.type] || iconMap['warning']; 
-
     iconElement.className = `mdi ${typeConfig.icon} me-2`; 
-
     headerElement.classList.add(...typeConfig.class.split(' ')); 
-
-     
-
     confirmBtn.className = `btn ${typeConfig.btnClass}`; 
-
-     
-
     const newConfirmBtn = confirmBtn.cloneNode(true); 
-
     confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); 
-
     const newCancelBtn = cancelBtn.cloneNode(true); 
-
     cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn); 
-
-     
-
     newConfirmBtn.addEventListener('click', function() { 
-
         const confirmModal = bootstrap.Modal.getInstance(modal); 
-
         confirmModal.hide(); 
-
         if (onConfirm && typeof onConfirm === 'function') { 
             onConfirm(); 
         } 
@@ -797,7 +620,8 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 
 } 
 
-// Make functions globally available
+//hacer funciones globalmente disponibles
 window.confirmDelete = confirmDelete; 
 window.editarProyecto = editarProyecto;
 window.changePage = changePage;
+window.showConfirm = showConfirm;

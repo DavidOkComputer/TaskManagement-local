@@ -292,7 +292,7 @@ function setupFormHandlers() {
     }
   });
  
-  // UPDATED: Use custom modal instead of browser confirm()
+  //usar dialogo de la app en vez de navegador
   document.getElementById('btnCancelar').addEventListener('click', function() {
     showConfirm(
       '¿Estás seguro de que deseas cancelar? Los cambios no guardados se perderán.',

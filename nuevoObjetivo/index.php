@@ -410,6 +410,7 @@ $user_id = 1; //usuario viene de la sesion
   <script src="../vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
   <!-- inject:js -->
+   <script src="../js/custom_dialogs.js"></script>
   <script src="../js/template.js"></script>
   <!-- endinject -->
   <!-- Custom js for this page-->
