@@ -170,7 +170,9 @@ function changePage(pageNumber) {
 function updatePaginationControls() { 
     const paginationContainer = document.querySelector('.pagination-container'); 
     if (!paginationContainer) return; 
-    paginationContainer.innerHTML = '';
+
+    paginationContainer.innerHTML = '';//para limpiar la paginacion existente
+
     // Crear texto de info de paginación 
     const infoText = document.createElement('div'); 
     infoText.className = 'pagination-info'; 
@@ -184,6 +186,7 @@ function updatePaginationControls() {
     // Crear contenedor de botones de paginación 
     const buttonContainer = document.createElement('div'); 
     buttonContainer.className = 'pagination-buttons'; 
+
     // Botón anterior 
     const prevBtn = document.createElement('button'); 
     prevBtn.className = 'btn btn-sm btn-outline-primary'; 
@@ -195,21 +198,25 @@ function updatePaginationControls() {
     // Números de páginas 
     const pageButtonsContainer = document.createElement('div'); 
     pageButtonsContainer.className = 'page-buttons'; 
+
+    //calcular que paginas se mostrar
     let startPage = Math.max(1, currentPage - 2); 
-    let endPage = Math.min(totalPages, currentPage + 2); 
-    if (currentPage <= 3) { 
+    let endPage = Math.min(totalPages, currentPage + 2);
+    
+    if (currentPage <= 3) {//ajustar si esta cerca del principio o final 
         endPage = Math.min(totalPages, 5); 
     } 
     if (currentPage > totalPages - 3) { 
         startPage = Math.max(1, totalPages - 4); 
     } 
-    // Primera página 
-    if (startPage > 1) { 
+
+    if (startPage > 1) { //boton de primera pagina
         const firstBtn = document.createElement('button'); 
         firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn'; 
         firstBtn.textContent = '1'; 
         firstBtn.addEventListener('click', () => changePage(1)); 
         pageButtonsContainer.appendChild(firstBtn); 
+        
         if (startPage > 2) { 
             const ellipsis = document.createElement('span'); 
             ellipsis.className = 'pagination-ellipsis'; 
@@ -217,6 +224,7 @@ function updatePaginationControls() {
             pageButtonsContainer.appendChild(ellipsis); 
         } 
     } 
+
     // Números de páginas 
     for (let i = startPage; i <= endPage; i++) { 
         const pageBtn = document.createElement('button'); 
@@ -225,14 +233,15 @@ function updatePaginationControls() {
         pageBtn.addEventListener('click', () => changePage(i)); 
         pageButtonsContainer.appendChild(pageBtn); 
     } 
-    // Última página 
-    if (endPage < totalPages) { 
+
+    if (endPage < totalPages) { //boton de ultima pagina
         if (endPage < totalPages - 1) { 
             const ellipsis = document.createElement('span'); 
             ellipsis.className = 'pagination-ellipsis'; 
             ellipsis.textContent = '...'; 
             pageButtonsContainer.appendChild(ellipsis); 
         } 
+
         const lastBtn = document.createElement('button'); 
         lastBtn.className = 'btn btn-sm btn-outline-secondary page-btn'; 
         lastBtn.textContent = totalPages; 
@@ -241,6 +250,7 @@ function updatePaginationControls() {
     } 
 
     buttonContainer.appendChild(pageButtonsContainer); 
+
     // Botón siguiente
     const nextBtn = document.createElement('button'); 
     nextBtn.className = 'btn btn-sm btn-outline-primary'; 
@@ -254,6 +264,7 @@ function updatePaginationControls() {
 function displayObjectives(objetivos) { 
     const tableBody = document.querySelector('#objetivosTableBody'); 
     if(!tableBody) return; 
+
     // Calcular paginación 
     totalPages = calculatePages(objetivos); 
     if (currentPage > totalPages && totalPages > 0) { 
@@ -262,6 +273,7 @@ function displayObjectives(objetivos) {
 
     // Obtener objetivos paginados 
     const paginatedObjectives = getPaginatedObjectives(objetivos); 
+    
     tableBody.innerHTML = ''; 
     if(!objetivos || objetivos.length === 0) { 
         displayEmptyState();
@@ -287,14 +299,14 @@ function displayObjectives(objetivos) {
         const row = createObjectiveRow(objective, actualIndex); 
         tableBody.appendChild(row); 
     }); 
-
- 
-
-    updatePaginationControls(); 
+    updatePaginationControls(); //actualizar controles de pagina
 } 
 
 function createObjectiveRow(objetivo, index) { 
     const row = document.createElement('tr'); 
+    const statusColor = getStatusColor(objetivo.estado);
+    const statusBadge =   `<span class="badge badge-${statusColor}">${objetivo.estado || 'N/A'}</span>`;
+    const progressBar = createProgressBar(objetivo.progreso || 0);
     const actionsButtons = ` 
         <div class="action-buttons"> 
             <button class="btn btn-sm btn-success btn-action"  
@@ -330,6 +342,35 @@ function createObjectiveRow(objetivo, index) {
         </td> 
     `; 
     return row; 
+} 
+
+function createProgressBar(progress) { 
+    const progressValue = parseInt(progress) || 0; 
+    const progressClass = progressValue >= 75 ? 'bg-success' :  
+                         progressValue >= 50 ? 'bg-info' :  
+                         progressValue >= 25 ? 'bg-warning' : 'bg-danger'; 
+    return ` 
+        <div class="progress" style="height: 20px;"> 
+            <div class="progress-bar ${progressClass}"  
+                 role="progressbar"  
+                 style="width: ${progressValue}%;"  
+                 aria-valuenow="${progressValue}"  
+                 aria-valuemin="0"  
+                 aria-valuemax="100"> 
+                ${progressValue}% 
+            </div> 
+        </div> 
+    `; 
+}
+
+function getStatusColor(estado) { 
+    const colorMap = { 
+        'pendiente': 'warning', 
+        'en proceso': 'primary', 
+        'vencido': 'danger', 
+        'completado': 'success' 
+    }; 
+    return colorMap[estado?.toLowerCase()] || 'warning'; 
 } 
 
 function displayEmptyState() { 

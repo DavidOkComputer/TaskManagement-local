@@ -216,8 +216,7 @@ function updatePaginationControls() {
         startPage = Math.max(1, totalPages - 4);
     }
 
-    //primera pagina de boton
-    if (startPage > 1) {
+    if (startPage > 1) {//boton de primera pagina
         const firstBtn = document.createElement('button');
         firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
         firstBtn.textContent = '1';
@@ -241,8 +240,7 @@ function updatePaginationControls() {
         pageButtonsContainer.appendChild(pageBtn);
     }
 
-    //ultimo boton de pagina
-    if (endPage < totalPages) {
+    if (endPage < totalPages) {//boton de ultima pagina
         if (endPage < totalPages - 1) {
             const ellipsis = document.createElement('span');
             ellipsis.className = 'pagination-ellipsis';
