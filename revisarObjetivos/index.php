@@ -289,9 +289,10 @@
                       <th class="sortable-header" data-sort="progreso" style="cursor:pointer; user-select:none;">
                         Progreso <i class="mdi mdi-sort-variant"></i>
                       </th>
-                      <th class="sortable-header" data-sort="estado" style="cursor:pointer; uesr-select:none;">
+                      <th class="sortable-header" data-sort="estado" style="cursor:pointer; user-select:none;">
                         Estado <i class="mdi mdi-sort-variant"></i>
                       </th>
+                      <th>Archivo</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>

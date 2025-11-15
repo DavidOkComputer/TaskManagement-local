@@ -1,4 +1,4 @@
-// configuracion, js para manejo de info de departamentos 
+// Configuracion, js para manejo de info de departamentos 
 const Config = { 
     API_ENDPOINTS: { 
         LIST: '../php/get_departments.php', 
@@ -7,10 +7,17 @@ const Config = {
         DELETE: '../php/delete_department.php' 
     } 
 }; 
-//estadi 
+
 let allDepartments = []; 
+let filteredDepartments = [];
 let editModal = null; 
 
+// Pagination and sorting variables
+let currentSortColumn = null;
+let sortDirection = 'asc';
+let currentPage = 1;
+let rowsPerPage = 10;
+let totalPages = 0;
 
 document.addEventListener('DOMContentLoaded', function() { 
     initializePage();
@@ -22,7 +29,9 @@ function initializePage() {
     loadDepartments(); 
     setupSearch(); 
     setupEditModal(); 
-    setupEditForm(); 
+    setupEditForm();
+    setupSorting();
+    setupPagination();
     console.log('Department Management initialized'); 
 } 
 
@@ -40,7 +49,9 @@ function loadDepartments() {
 
         .then(data => { 
             if (data.success) { 
-                allDepartments = data.departamentos; 
+                allDepartments = data.departamentos;
+                filteredDepartments = [...allDepartments];
+                currentPage = 1; // Reset to first page
                 displayDepartments(allDepartments); 
             } else { 
                 showErrorAlert(data.message || 'Error al cargar departamentos'); 
@@ -61,69 +72,253 @@ function loadDepartments() {
         }); 
 } 
 
-function loadusers() { 
-    const tableBody = document.getElementById('departamentosTableBody'); 
-    const loadingRow = document.getElementById('loadingRow'); 
+function setupSorting() {
+    const headers = document.querySelectorAll('th.sortable-header');
+    headers.forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.dataset.sort;
+            
+            if (currentSortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            updateSortIndicators();
+            currentPage = 1; // Reset to first page when sorting
+            const sorted = sortDepartments(filteredDepartments, column, sortDirection);
+            displayDepartments(sorted);
+        });
+    });
+}
 
-    fetch(Config.API_ENDPOINTS.LISTUSERS) 
-        .then(response => { 
-            if (!response.ok) { 
-                throw new Error('Error al cargar usuarios'); 
-            } 
-            return response.json(); 
-        }) 
+function updateSortIndicators() {
+    const headers = document.querySelectorAll('th.sortable-header');
+    headers.forEach(header => {
+        const icon = header.querySelector('i');
+        if (header.dataset.sort === currentSortColumn) {
+            icon.className = sortDirection === 'asc' 
+                ? 'mdi mdi-sort-ascending' 
+                : 'mdi mdi-sort-descending';
+            header.style.fontWeight = 'bold';
+            header.style.color = '#007bff';
+        } else {
+            icon.className = 'mdi mdi-sort-variant';
+            header.style.fontWeight = 'normal';
+            header.style.color = 'inherit';
+        }
+    });
+}
 
-        .then(data => { 
-            if (data.success) { 
-                allDepartments = data.departamentos; 
-                displayDepartments(allDepartments); 
-            } else { 
-                showErrorAlert(data.message || 'Error al cargar usurios'); 
-                displayEmptyState(); 
-            } 
-        }) 
+function sortDepartments(departments, column, direction) {
+    const sorted = [...departments];
+    
+    sorted.sort((a, b) => {
+        let valueA = a[column];
+        let valueB = b[column];
+        
+        if (valueA === null || valueA === undefined) valueA = '';
+        if (valueB === null || valueB === undefined) valueB = '';
+        
+        if (column === 'id_departamento') {
+            valueA = parseInt(valueA) || 0;
+            valueB = parseInt(valueB) || 0;
+        } else {
+            valueA = String(valueA).toLowerCase();
+            valueB = String(valueB).toLowerCase();
+        }
+        
+        if (valueA < valueB) return direction === 'asc' ? -1 : 1;
+        if (valueA > valueB) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+    return sorted;
+}
 
-        .catch(error => { 
-            console.error('Error:', error); 
-            showErrorAlert('Error al conectar con el servidor'); 
-            displayEmptyState(); 
-        }) 
+function setupPagination() {
+    const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
+    if (rowsPerPageSelect) {
+        rowsPerPageSelect.addEventListener('change', function() {
+            rowsPerPage = parseInt(this.value);
+            currentPage = 1; // Reset to first page when changing rows per page
+            displayDepartments(filteredDepartments);
+        });
+    }
+}
 
-        .finally(() => { 
-            if (loadingRow) { 
-                loadingRow.remove(); 
-            } 
-        }); 
-} 
+function calculatePages(departments) {
+    return Math.ceil(departments.length / rowsPerPage);
+}
+
+function getPaginatedDepartments(departments) {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return departments.slice(startIndex, endIndex);
+}
+
+function changePage(pageNumber) {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+        currentPage = pageNumber;
+        displayDepartments(filteredDepartments);
+    }
+}
+
+function updatePaginationControls() {
+    const paginationContainer = document.querySelector('.pagination-container');
+    if (!paginationContainer) return;
+
+    // Clear existing pagination
+    paginationContainer.innerHTML = '';
+
+    // Create pagination info text
+    const infoText = document.createElement('div');
+    infoText.className = 'pagination-info';
+    const startItem = ((currentPage - 1) * rowsPerPage) + 1;
+    const endItem = Math.min(currentPage * rowsPerPage, filteredDepartments.length);
+    infoText.innerHTML = `
+        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredDepartments.length}</strong> departamentos</p>
+    `;
+    paginationContainer.appendChild(infoText);
+
+    // Create button container
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'pagination-buttons';
+
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn btn-sm btn-outline-primary';
+    prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener('click', () => changePage(currentPage - 1));
+    buttonContainer.appendChild(prevBtn);
+
+    // Page buttons container
+    const pageButtonsContainer = document.createElement('div');
+    pageButtonsContainer.className = 'page-buttons';
+
+    // Calculate which pages to show
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    // Adjust if near beginning or end
+    if (currentPage <= 3) {
+        endPage = Math.min(totalPages, 5);
+    }
+    if (currentPage > totalPages - 3) {
+        startPage = Math.max(1, totalPages - 4);
+    }
+
+    // First page button
+    if (startPage > 1) {
+        const firstBtn = document.createElement('button');
+        firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
+        firstBtn.textContent = '1';
+        firstBtn.addEventListener('click', () => changePage(1));
+        pageButtonsContainer.appendChild(firstBtn);
+
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            pageButtonsContainer.appendChild(ellipsis);
+        }
+    }
+
+    // Page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', () => changePage(i));
+        pageButtonsContainer.appendChild(pageBtn);
+    }
+
+    // Last page button
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            pageButtonsContainer.appendChild(ellipsis);
+        }
+
+        const lastBtn = document.createElement('button');
+        lastBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
+        lastBtn.textContent = totalPages;
+        lastBtn.addEventListener('click', () => changePage(totalPages));
+        pageButtonsContainer.appendChild(lastBtn);
+    }
+
+    buttonContainer.appendChild(pageButtonsContainer);
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-sm btn-outline-primary';
+    nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener('click', () => changePage(currentPage + 1));
+    buttonContainer.appendChild(nextBtn);
+
+    paginationContainer.appendChild(buttonContainer);
+}
 
 function displayDepartments(departamentos) { 
     const tableBody = document.getElementById('departamentosTableBody'); 
-    if (!tableBody) return; 
+    if (!tableBody) return;
+
+    // Calculate pagination
+    totalPages = calculatePages(departamentos);
+    if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+    }
+
+    // Get paginated departments
+    const paginatedDepts = getPaginatedDepartments(departamentos);
+
     tableBody.innerHTML = ''; 
 
-    if (departamentos.length === 0) { 
+    if (!departamentos || departamentos.length === 0) { 
         displayEmptyState(); 
+        updatePaginationControls();
         return; 
-    } 
+    }
 
-    departamentos.forEach((dept, index) => { 
-        const row = createDepartmentRow(dept, index + 1); 
+    if (paginatedDepts.length === 0) {
+        tableBody.innerHTML = `
+            <tr> 
+                <td colspan="5" class="text-center empty-state"> 
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+                    <h5 class="mt-3">No se encontraron resultados en esta página</h5> 
+                </td> 
+            </tr> 
+        `;
+        updatePaginationControls();
+        return;
+    }
+
+    paginatedDepts.forEach((dept, index) => { 
+        const actualIndex = ((currentPage - 1) * rowsPerPage) + index + 1;
+        const row = createDepartmentRow(dept, actualIndex); 
         tableBody.appendChild(row); 
-    }); 
+    });
+
+    // Update pagination controls
+    updatePaginationControls();
 } 
 
 function createDepartmentRow(dept, rowNumber) { 
     const tr = document.createElement('tr'); 
     tr.dataset.id = dept.id_departamento; 
 
-    //mostar el nombre del creador
+    // Show creator name
     const nombreCreador = dept.nombre_creador || 'N/A';
 
     tr.innerHTML = ` 
         <td><h6>${rowNumber}</h6></td> 
         <td><h6>${escapeHtml(dept.nombre)}</h6></td> 
-        <td><h6>${escapeHtml(dept.descripcion)}</h6></td> 
-        <td><h6>${escapeHtml(dept.nombre_creador || 'N/A')}</h6></td> 
+        <td><h6>${truncateText(dept.descripcion, 40)}</h6></td> 
+        <td><h6>${escapeHtml(nombreCreador)}</h6></td> 
         <td class="text-center action-buttons"> 
             <button class="btn btn-sm btn-success btn-action" onclick="editDepartment(${dept.id_departamento})" title="Editar"> 
                 <i class="mdi mdi-pencil"></i> Editar 
@@ -151,6 +346,7 @@ function displayEmptyState() {
         </tr> 
     `; 
 } 
+
 function setupSearch() { 
     const searchInput = document.getElementById('searchInput'); 
     const searchForm = document.getElementById('searchForm'); 
@@ -174,7 +370,12 @@ function setupSearch() {
 function performSearch(query) { 
     const normalizedQuery = query.toLowerCase().trim(); 
     if (normalizedQuery === '') { 
-        displayDepartments(allDepartments); 
+        filteredDepartments = [...allDepartments];
+        currentPage = 1; // Reset to first page when clearing search
+        const sorted = currentSortColumn 
+            ? sortDepartments(filteredDepartments, currentSortColumn, sortDirection)
+            : filteredDepartments;
+        displayDepartments(sorted);
         return; 
     } 
 
@@ -183,15 +384,23 @@ function performSearch(query) {
                dept.descripcion.toLowerCase().includes(normalizedQuery) ||
                (dept.nombre_creador && dept.nombre_creador.toLowerCase().includes(normalizedQuery));
     });
-    displayDepartments(filtered); 
 
-    if (filtered.length === 0) { 
+    filteredDepartments = filtered;
+    currentPage = 1; // Reset to first page when searching
+
+    const sorted = currentSortColumn
+        ? sortDepartments(filteredDepartments, currentSortColumn, sortDirection)
+        : filteredDepartments;
+
+    displayDepartments(sorted);
+
+    if (sorted.length === 0) { 
         const tableBody = document.getElementById('departamentosTableBody'); 
         tableBody.innerHTML = ` 
             <tr> 
-                <td colspan="5" class="empty-state"> 
-                    <i class="mdi mdi-magnify"></i> 
-                    <h5>No se encontraron resultados</h5> 
+                <td colspan="5" class="text-center empty-state"> 
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+                    <h5 class="mt-3">No se encontraron resultados</h5> 
                     <p>No hay departamentos que coincidan con "${escapeHtml(query)}"</p> 
                 </td> 
             </tr> 
@@ -297,7 +506,16 @@ function deleteDepartment(id) {
         if (data.success) { 
             showSuccessAlert(data.message || 'Departamento eliminado exitosamente'); 
             allDepartments = allDepartments.filter(d => d.id_departamento != id);
-            displayDepartments(allDepartments); 
+            filteredDepartments = filteredDepartments.filter(d => d.id_departamento != id);
+            // Recalculate pages after deletion
+            totalPages = calculatePages(filteredDepartments);
+            if (currentPage > totalPages && totalPages > 0) {
+                currentPage = totalPages;
+            }
+            const sorted = currentSortColumn
+                ? sortDepartments(filteredDepartments, currentSortColumn, sortDirection)
+                : filteredDepartments;
+            displayDepartments(sorted);
         } else { 
             showErrorAlert(data.message || 'Error al eliminar departamento'); 
         } 
@@ -338,6 +556,11 @@ function showAlert(message, type) {
         } 
     }, 5000); 
 } 
+
+function truncateText(text, length) { 
+    if (!text) return '-'; 
+    return text.length > length ? text.substring(0, length) + '...' : text; 
+}
 
 function escapeHtml(text) { 
     const map = { 
@@ -399,7 +622,7 @@ function createCustomDialogSystem() {
     document.body.insertAdjacentHTML('beforeend', dialogHTML);
 }
 
-// mostrar dialogo de confirmacion de la app y no navegador
+// Show custom confirmation dialog (app-based, not browser-based)
 function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) {
     const modal = document.getElementById('customConfirmModal');
     const titleElement = document.getElementById('confirmTitle');
@@ -409,7 +632,7 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     const confirmBtn = document.getElementById('confirmOkBtn');
     const cancelBtn = document.getElementById('confirmCancelBtn');
     
-    //opciones default
+    // Default options
     const config = {
         confirmText: 'Aceptar',
         cancelText: 'Cancelar',
@@ -417,15 +640,15 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         ...options
     };
     
-    //titulo y mensaje
+    // Set title and message
     titleElement.textContent = title;
     messageElement.innerHTML = message.replace(/\n/g, '<br>'); // Preserve line breaks
     
-    //cambiar el texto de los botones
+    // Change button text
     confirmBtn.textContent = config.confirmText;
     cancelBtn.textContent = config.cancelText;
     
-    //clases del header
+    // Reset header classes
     headerElement.className = 'modal-header';
     
     const iconMap = {
@@ -455,17 +678,17 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     iconElement.className = `mdi ${typeConfig.icon} me-2`;
     headerElement.classList.add(...typeConfig.class.split(' '));
     
-    //actualizar el estilo del boton confirmar
+    // Update confirm button style
     confirmBtn.className = `btn ${typeConfig.btnClass}`;
     
-    //eliminar listeners anteriores clonando y remplazando
+    // Remove old listeners by cloning and replacing
     const newConfirmBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
     
     const newCancelBtn = cancelBtn.cloneNode(true);
     cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
     
-    //agregar nuevo event listener
+    // Add new event listener
     newConfirmBtn.addEventListener('click', function() {
         const confirmModal = bootstrap.Modal.getInstance(modal);
         confirmModal.hide();
@@ -474,10 +697,11 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         }
     });
     
-    //mostrar modal
+    // Show modal
     const confirmModal = new bootstrap.Modal(modal);
     confirmModal.show();
 }
 
 window.editDepartment = editDepartment; 
 window.confirmDelete = confirmDelete;
+window.changePage = changePage;

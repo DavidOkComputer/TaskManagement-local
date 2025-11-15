@@ -1,4 +1,3 @@
-
 /**manage_objectives.js - Maneja la carga y muestra todos los objetivos de la tabla con botones de acción*/ 
 const Config = { 
     API_ENDPOINTS: { 
@@ -33,7 +32,7 @@ function cargarObjetivos() {
 
     tableBody.innerHTML = ` 
         <tr> 
-            <td colspan="8" class="text-center"> 
+            <td colspan="9" class="text-center"> 
                 <div class="spinner-border text-primary" role="status"> 
                     <span class="visually-hidden">Cargando...</span> 
                 </div> 
@@ -58,7 +57,7 @@ function cargarObjetivos() {
             } else { 
                 tableBody.innerHTML = ` 
                     <tr> 
-                        <td colspan="8" class="text-center text-danger"> 
+                        <td colspan="9" class="text-center text-danger"> 
                             <p class="mt-3">Error al cargar objetivos: ${data.message || 'Error desconocido'}</p> 
                         </td> 
                     </tr> 
@@ -70,7 +69,7 @@ function cargarObjetivos() {
             console.error('Error cargando objetivos:', error); 
             tableBody.innerHTML = ` 
                 <tr> 
-                    <td colspan="8" class="text-center text-danger"> 
+                    <td colspan="9" class="text-center text-danger"> 
                         <p class="mt-3">Error al cargar los objetivos: ${error.message}</p> 
                     </td> 
                 </tr> 
@@ -128,6 +127,9 @@ function sortObjectives(objectives, column, direction) {
         } else if (column === 'fecha_cumplimiento') { 
             valueA = new Date(valueA).getTime() || 0; 
             valueB = new Date(valueB).getTime() || 0; 
+        } else if (column === 'progreso') { 
+            valueA = parseInt(valueA) || 0; 
+            valueB = parseInt(valueB) || 0; 
         } else { 
             valueA = String(valueA).toLowerCase(); 
             valueB = String(valueB).toLowerCase(); 
@@ -272,7 +274,7 @@ function displayObjectives(objetivos) {
     if (paginatedObjectives.length === 0) { 
         tableBody.innerHTML = ` 
             <tr> 
-                <td colspan="8" class="text-center empty-state"> 
+                <td colspan="9" class="text-center empty-state"> 
                     <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
                     <h5 class="mt-3">No se encontraron resultados en esta página</h5> 
                 </td> 
@@ -315,15 +317,27 @@ function createObjectiveRow(objetivo, index) {
                <i class="mdi mdi-file-document"></i> 
            </a>` 
         : '-'; 
+    
+    const progressCell = objetivo.progreso != null 
+        ? `<div class="progress" style="height: 20px;">
+               <div class="progress-bar" role="progressbar" style="width: ${objetivo.progreso}%;" aria-valuenow="${objetivo.progreso}" aria-valuemin="0" aria-valuemax="100">
+                   ${objetivo.progreso}%
+               </div>
+           </div>`
+        : '-';
+    
+    const statusBadge = getStatusBadge(objetivo.estado);
+    
     row.innerHTML = ` 
         <td>${index}</td> 
         <td> 
             <strong>${truncateText(objetivo.nombre, 30)}</strong> 
         </td> 
         <td>${truncateText(objetivo.descripcion, 40)}</td> 
-        <td>${objetivo.departamento || '-'}</td> 
+        <td>${objetivo.area || '-'}</td> 
         <td>${formatDate(objetivo.fecha_cumplimiento)}</td> 
-        <td>${objetivo.ar || '-'}</td> 
+        <td>${progressCell}</td> 
+        <td>${statusBadge}</td> 
         <td class="text-center">${fileLink}</td> 
         <td> 
             ${actionsButtons} 
@@ -332,11 +346,26 @@ function createObjectiveRow(objetivo, index) {
     return row; 
 } 
 
+function getStatusBadge(estado) {
+    if (!estado) return '-';
+    
+    const statusMap = {
+        'pendiente': { class: 'badge bg-warning', text: 'Pendiente' },
+        'en_progreso': { class: 'badge bg-info', text: 'En Progreso' },
+        'completado': { class: 'badge bg-success', text: 'Completado' },
+        'cancelado': { class: 'badge bg-danger', text: 'Cancelado' },
+        'pausado': { class: 'badge bg-secondary', text: 'Pausado' }
+    };
+    
+    const status = statusMap[estado] || { class: 'badge bg-secondary', text: estado };
+    return `<span class="${status.class}">${status.text}</span>`;
+}
+
 function displayEmptyState() { 
     const tableBody = document.querySelector('#objetivosTableBody'); 
     tableBody.innerHTML = ` 
         <tr> 
-            <td colspan="8" class="text-center empty-state"> 
+            <td colspan="9" class="text-center empty-state"> 
                 <i class="mdi mdi-folder-open" style="font-size: 48px; color: #ccc;"></i> 
                 <h5 class="mt-3">No hay objetivos registrados</h5> 
                 <p>Comienza creando un nuevo objetivo</p> 
@@ -383,8 +412,8 @@ function performSearch(query) {
     const filtered = allObjectives.filter(objective => { 
         return objective.nombre.toLowerCase().includes(normalizedQuery) || 
                (objective.descripcion && objective.descripcion.toLowerCase().includes(normalizedQuery)) || 
-               (objective.departamento && objective.departamento.toLowerCase().includes(normalizedQuery)) || 
-               (objective.ar && objective.ar.toLowerCase().includes(normalizedQuery)); 
+               (objective.area && objective.area.toLowerCase().includes(normalizedQuery)) || 
+               (objective.estado && objective.estado.toLowerCase().includes(normalizedQuery)); 
     }); 
     filteredObjectives = filtered; 
     currentPage = 1; 
@@ -396,7 +425,7 @@ function performSearch(query) {
         const tableBody = document.querySelector('#objetivosTableBody'); 
         tableBody.innerHTML = ` 
             <tr> 
-                <td colspan="8" class="text-center empty-state"> 
+                <td colspan="9" class="text-center empty-state"> 
                     <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
                     <h5 class="mt-3">No se encontraron resultados</h5> 
                     <p>No hay objetivos que coincidan con "${escapeHtml(query)}"</p> 

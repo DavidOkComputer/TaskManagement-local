@@ -6,7 +6,15 @@ const Config = {
 }; 
 
 let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
+let filteredUsuarios = []; // NEW - filtered results
 let allDepartamentos = []; //guardar todos los departamentos
+
+// Pagination and sorting variables - NEW
+let currentSortColumn = null;
+let sortDirection = 'asc';
+let currentPage = 1;
+let rowsPerPage = 10;
+let totalPages = 0;
 
 document.addEventListener('DOMContentLoaded', function() {
     // inicializar
@@ -46,6 +54,10 @@ document.addEventListener('DOMContentLoaded', function() {
         saveUserChanges.addEventListener('click', handleSaveUserChanges);
         console.log('Botón "Guardar Cambios" inicializado');
     }
+
+    // NEW - Initialize sorting and pagination
+    setupSorting();
+    setupPagination();
     
     console.log('%cSistema inicializado correctamente', 'color: #34b0aa; font-weight: bold;');
     console.log('%cConsola abierta: Presiona F12 para ver logs detallados', 'color: #17a2b8; font-style: italic;');
@@ -135,12 +147,14 @@ function loadUsuarios() {
     .then(data => {
         if (data.success && data.usuarios) {
             allUsuarios = data.usuarios;
+            filteredUsuarios = [...allUsuarios]; // NEW - initialize filtered
+            currentPage = 1; // NEW - reset to first page
             logAction('Usuarios cargados exitosamente', { 
                 cantidad: data.usuarios.length,
                 usuarios: data.usuarios.map(u => ({ id: u.id_usuario, nombre: u.nombre + ' ' + u.apellido }))
             });
             console.table(data.usuarios); //mostrar formato d etabla
-            renderUsuariosTable(allUsuarios);
+            displayUsuarios(allUsuarios); // NEW - use displayUsuarios instead of renderUsuariosTable
             showSuccess(`Se cargaron ${data.usuarios.length} usuarios`);
         } else {
             const errorMsg = data.message || 'Error desconocido';
@@ -156,65 +170,319 @@ function loadUsuarios() {
     });
 }
 
-function renderUsuariosTable(usuarios) {
-    const tableBody = document.getElementById('usuariosTableBody');
+// NEW - Sorting functions
+function setupSorting() {
+    const headers = document.querySelectorAll('th.sortable-header');
+    headers.forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.dataset.sort;
+            
+            if (currentSortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            updateSortIndicators();
+            currentPage = 1; // Reset to first page when sorting
+            const sorted = sortUsuarios(filteredUsuarios, column, sortDirection);
+            displayUsuarios(sorted);
+        });
+    });
+}
+
+function updateSortIndicators() {
+    const headers = document.querySelectorAll('th.sortable-header');
+    headers.forEach(header => {
+        const icon = header.querySelector('i');
+        if (header.dataset.sort === currentSortColumn) {
+            icon.className = sortDirection === 'asc' 
+                ? 'mdi mdi-sort-ascending' 
+                : 'mdi mdi-sort-descending';
+            header.style.fontWeight = 'bold';
+            header.style.color = '#007bff';
+        } else {
+            icon.className = 'mdi mdi-sort-variant';
+            header.style.fontWeight = 'normal';
+            header.style.color = 'inherit';
+        }
+    });
+}
+
+function sortUsuarios(usuarios, column, direction) {
+    const sorted = [...usuarios];
     
+    sorted.sort((a, b) => {
+        let valueA, valueB;
+        
+        // Handle relationship lookups
+        if (column === 'departamento') {
+            valueA = getDepartamentoName(a.id_departamento);
+            valueB = getDepartamentoName(b.id_departamento);
+        } else if (column === 'superior') {
+            valueA = getSuperiorName(a.id_superior);
+            valueB = getSuperiorName(b.id_superior);
+        } else if (column === 'nombre') {
+            valueA = `${a.nombre} ${a.apellido}`;
+            valueB = `${b.nombre} ${b.apellido}`;
+        } else if (column === 'rol') {
+            valueA = getRolText(a.id_rol);
+            valueB = getRolText(b.id_rol);
+        } else {
+            valueA = a[column];
+            valueB = b[column];
+        }
+        
+        if (valueA === null || valueA === undefined) valueA = '';
+        if (valueB === null || valueB === undefined) valueB = '';
+        
+        // Convert to strings for comparison
+        valueA = String(valueA).toLowerCase();
+        valueB = String(valueB).toLowerCase();
+        
+        if (valueA < valueB) return direction === 'asc' ? -1 : 1;
+        if (valueA > valueB) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+    return sorted;
+}
+
+function getRolText(roleId) {
+    const rolMap = {
+        1: 'Administrador',
+        2: 'Gerente',
+        3: 'Usuario',
+        4: 'Practicante'
+    };
+    return rolMap[roleId] || 'Sin rol';
+}
+
+// NEW - Pagination functions
+function setupPagination() {
+    const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
+    if (rowsPerPageSelect) {
+        rowsPerPageSelect.addEventListener('change', function() {
+            rowsPerPage = parseInt(this.value);
+            currentPage = 1; // Reset to first page when changing rows per page
+            displayUsuarios(filteredUsuarios);
+        });
+    }
+}
+
+function calculatePages(usuarios) {
+    return Math.ceil(usuarios.length / rowsPerPage);
+}
+
+function getPaginatedUsuarios(usuarios) {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return usuarios.slice(startIndex, endIndex);
+}
+
+function changePage(pageNumber) {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+        currentPage = pageNumber;
+        displayUsuarios(filteredUsuarios);
+    }
+}
+
+function updatePaginationControls() {
+    const paginationContainer = document.querySelector('.pagination-container');
+    if (!paginationContainer) return;
+
+    // Clear existing pagination
+    paginationContainer.innerHTML = '';
+
+    // Create pagination info text
+    const infoText = document.createElement('div');
+    infoText.className = 'pagination-info';
+    const startItem = ((currentPage - 1) * rowsPerPage) + 1;
+    const endItem = Math.min(currentPage * rowsPerPage, filteredUsuarios.length);
+    infoText.innerHTML = `
+        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredUsuarios.length}</strong> empleados</p>
+    `;
+    paginationContainer.appendChild(infoText);
+
+    // Create button container
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'pagination-buttons';
+
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn btn-sm btn-outline-primary';
+    prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener('click', () => changePage(currentPage - 1));
+    buttonContainer.appendChild(prevBtn);
+
+    // Page buttons container
+    const pageButtonsContainer = document.createElement('div');
+    pageButtonsContainer.className = 'page-buttons';
+
+    // Calculate which pages to show
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    // Adjust if near beginning or end
+    if (currentPage <= 3) {
+        endPage = Math.min(totalPages, 5);
+    }
+    if (currentPage > totalPages - 3) {
+        startPage = Math.max(1, totalPages - 4);
+    }
+
+    // First page button
+    if (startPage > 1) {
+        const firstBtn = document.createElement('button');
+        firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
+        firstBtn.textContent = '1';
+        firstBtn.addEventListener('click', () => changePage(1));
+        pageButtonsContainer.appendChild(firstBtn);
+
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            pageButtonsContainer.appendChild(ellipsis);
+        }
+    }
+
+    // Page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', () => changePage(i));
+        pageButtonsContainer.appendChild(pageBtn);
+    }
+
+    // Last page button
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            pageButtonsContainer.appendChild(ellipsis);
+        }
+
+        const lastBtn = document.createElement('button');
+        lastBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
+        lastBtn.textContent = totalPages;
+        lastBtn.addEventListener('click', () => changePage(totalPages));
+        pageButtonsContainer.appendChild(lastBtn);
+    }
+
+    buttonContainer.appendChild(pageButtonsContainer);
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-sm btn-outline-primary';
+    nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener('click', () => changePage(currentPage + 1));
+    buttonContainer.appendChild(nextBtn);
+
+    paginationContainer.appendChild(buttonContainer);
+}
+
+// NEW - Display function that handles pagination
+function displayUsuarios(usuarios) {
+    const tableBody = document.getElementById('usuariosTableBody');
+    if (!tableBody) return;
+
+    // Calculate pagination
+    totalPages = calculatePages(usuarios);
+    if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+    }
+
+    // Get paginated usuarios
+    const paginatedUsuarios = getPaginatedUsuarios(usuarios);
+
+    tableBody.innerHTML = '';
+
     if (!usuarios || usuarios.length === 0) {
         tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No hay usuarios registrados</td></tr>';
+        updatePaginationControls();
         return;
     }
-    
-    let html = '';
-    
-    usuarios.forEach(usuario => {
-        const rolBadge = getRolBadge(usuario.id_rol);
-        const nombreCompleto = `${usuario.nombre} ${usuario.apellido}`;
-        
-        html += `
-            <tr>
-                <td>
-                    <div class="form-check form-check-flat mt-0">
-                        <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input usuario-checkbox" data-user-id="${usuario.id_usuario}" aria-checked="false">
-                            <i class="input-helper"></i>
-                        </label>
-                    </div>
-                </td>
-                <td>
-                    <div class="d-flex">
-                        <img src="../images/faces/face1.jpg" alt="" class="me-2">
-                        <div>
-                            <h6>${escapeHtml(nombreCompleto)}</h6>
-                            <p>${usuario.num_empleado}</p>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <h6>${getDepartamentoName(usuario.id_departamento)}</h6>
-                    <p>${escapeHtml(usuario.usuario)}</p>
-                </td>
-                <td>
-                    <h6>${getSuperiorName(usuario.id_superior)}</h6>
-                </td>
-                <td>
-                    ${rolBadge}
-                </td>
-                <td class="action-buttons">
-                    <button type="button" class="btn btn-sm btn-success btn-edit" data-user-id="${usuario.id_usuario}" data-nombre="${escapeHtml(usuario.nombre)}" data-apellido="${escapeHtml(usuario.apellido)}" data-usuario="${escapeHtml(usuario.usuario)}" data-email="${escapeHtml(usuario.e_mail)}" data-depart="${usuario.id_departamento}">
-                        <i class="mdi mdi-pencil"></i> Editar
-                    </button>
-                    <button type="button" class="btn btn-sm btn-danger btn-delete" data-user-id="${usuario.id_usuario}" data-nombre="${escapeHtml(nombreCompleto)}" onclick="confirmDelete(${usuario.id_usuario}, '${escapeHtml(usuario.nombre)}')">
-                        <i class="mdi mdi-delete"></i> Eliminar
-                    </button>
-                </td>
-            </tr>
+
+    if (paginatedUsuarios.length === 0) {
+        tableBody.innerHTML = `
+            <tr> 
+                <td colspan="6" class="text-center empty-state"> 
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+                    <h5 class="mt-3">No se encontraron resultados en esta página</h5> 
+                </td> 
+            </tr> 
         `;
+        updatePaginationControls();
+        return;
+    }
+
+    // Render paginated usuarios
+    paginatedUsuarios.forEach(usuario => {
+        const row = createUsuarioRow(usuario);
+        tableBody.appendChild(row);
     });
-    
-    tableBody.innerHTML = html;
-    
-    attachCheckboxListeners();//volver a unir listeners de eventos a los checkboxes y botones
+
+    // Attach event listeners to checkboxes and buttons
+    attachCheckboxListeners();
     attachButtonListeners();
+
+    // Update pagination controls
+    updatePaginationControls();
+}
+
+function createUsuarioRow(usuario) {
+    const tr = document.createElement('tr');
+    const rolBadge = getRolBadge(usuario.id_rol);
+    const nombreCompleto = `${usuario.nombre} ${usuario.apellido}`;
+    
+    tr.innerHTML = `
+        <td>
+            <div class="form-check form-check-flat mt-0">
+                <label class="form-check-label">
+                    <input type="checkbox" class="form-check-input usuario-checkbox" data-user-id="${usuario.id_usuario}" aria-checked="false">
+                    <i class="input-helper"></i>
+                </label>
+            </div>
+        </td>
+        <td>
+            <div class="d-flex">
+                <img src="../images/faces/face1.jpg" alt="" class="me-2">
+                <div>
+                    <h6>${escapeHtml(nombreCompleto)}</h6>
+                    <p>${usuario.num_empleado}</p>
+                </div>
+            </div>
+        </td>
+        <td>
+            <h6>${getDepartamentoName(usuario.id_departamento)}</h6>
+            <p>${escapeHtml(usuario.usuario)}</p>
+        </td>
+        <td>
+            <h6>${getSuperiorName(usuario.id_superior)}</h6>
+        </td>
+        <td>
+            ${rolBadge}
+        </td>
+        <td class="action-buttons">
+            <button type="button" class="btn btn-sm btn-success btn-edit" data-user-id="${usuario.id_usuario}" data-nombre="${escapeHtml(usuario.nombre)}" data-apellido="${escapeHtml(usuario.apellido)}" data-usuario="${escapeHtml(usuario.usuario)}" data-email="${escapeHtml(usuario.e_mail)}" data-depart="${usuario.id_departamento}">
+                <i class="mdi mdi-pencil"></i> Editar
+            </button>
+            <button type="button" class="btn btn-sm btn-danger btn-delete" data-user-id="${usuario.id_usuario}" data-nombre="${escapeHtml(nombreCompleto)}" onclick="confirmDelete(${usuario.id_usuario}, '${escapeHtml(usuario.nombre)}')">
+                <i class="mdi mdi-delete"></i> Eliminar
+            </button>
+        </td>
+    `;
+    return tr;
+}
+
+// UPDATED - renderUsuariosTable is now just a wrapper for compatibility
+function renderUsuariosTable(usuarios) {
+    displayUsuarios(usuarios);
 }
 
 function getRolBadge(roleId) {
@@ -245,7 +513,12 @@ function filterUsuarios() {
     const searchInput = document.getElementById('searchUser').value.toLowerCase();
     
     if (!searchInput.trim()) {
-        renderUsuariosTable(allUsuarios);
+        filteredUsuarios = [...allUsuarios]; // NEW
+        currentPage = 1; // NEW - Reset to first page
+        const sorted = currentSortColumn  // NEW - Maintain sort
+            ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
+            : filteredUsuarios;
+        displayUsuarios(sorted);
         logAction('Búsqueda cancelada', { resultados: allUsuarios.length });
         return;
     }
@@ -271,7 +544,15 @@ function filterUsuarios() {
     
     console.log(`Búsqueda: "${searchInput}" - ${filtered.length} resultados de ${allUsuarios.length}`);
     
-    renderUsuariosTable(filtered);
+    filteredUsuarios = filtered; // NEW - Update filtered
+    currentPage = 1; // NEW - Reset to first page
+    
+    // NEW - Maintain sort if active
+    const sorted = currentSortColumn
+        ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
+        : filteredUsuarios;
+    
+    displayUsuarios(sorted);
 }
 
 function attachCheckboxListeners() {
@@ -438,8 +719,20 @@ function deleteUser(id) {
     .then(data => {
         if (data.success) {
             showSuccessAlert(data.message || 'Usuario eliminado exitosamente');
-            allUsuarios = allUsuarios.filter(u => u.id_usuario != id); 
-            renderUsuariosTable(allUsuarios); 
+            allUsuarios = allUsuarios.filter(u => u.id_usuario != id);
+            filteredUsuarios = filteredUsuarios.filter(u => u.id_usuario != id); // NEW
+            
+            // NEW - Recalculate pages after deletion
+            totalPages = calculatePages(filteredUsuarios);
+            if (currentPage > totalPages && totalPages > 0) {
+                currentPage = totalPages;
+            }
+            
+            // NEW - Maintain sort
+            const sorted = currentSortColumn
+                ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
+                : filteredUsuarios;
+            displayUsuarios(sorted);
         } else {
             showErrorAlert(data.message || 'Error al eliminar el usuario');
         }
@@ -841,3 +1134,4 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 }
 
 window.confirmDelete = confirmDelete;
+window.changePage = changePage;
