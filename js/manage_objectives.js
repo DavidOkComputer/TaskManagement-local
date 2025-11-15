@@ -307,7 +307,6 @@ function displayObjectives(objetivos) {
 function createObjectiveRow(objetivo, index) { 
     const row = document.createElement('tr'); 
     const statusColor = getStatusColor(objetivo.estado);
-    const statusBadge =   `<span class="badge badge-${statusColor}">${objetivo.estado || 'N/A'}</span>`;
     const progressBar = createProgressBar(objetivo.progreso || 0);
     const actionsButtons = ` 
         <div class="action-buttons"> 
@@ -338,7 +337,6 @@ function createObjectiveRow(objetivo, index) {
            </div>`
         : '-';
     
-    const statusBadge = getStatusBadge(objetivo.estado);
     
     row.innerHTML = ` 
         <td>${index}</td> 
@@ -346,16 +344,45 @@ function createObjectiveRow(objetivo, index) {
             <strong>${truncateText(objetivo.nombre, 30)}</strong> 
         </td> 
         <td>${truncateText(objetivo.descripcion, 40)}</td> 
-        <td>${objetivo.area || '-'}</td> 
+        <td>${objetivo.area}</td> 
         <td>${formatDate(objetivo.fecha_cumplimiento)}</td> 
         <td>${progressCell}</td> 
-        <td>${statusBadge}</td> 
+        <td>${`<span class="badge badge-${statusColor}">${objetivo.estado || 'N/A'}</span>`}</td> 
         <td class="text-center">${fileLink}</td> 
         <td> 
             ${actionsButtons} 
         </td> 
     `; 
     return row; 
+} 
+
+function getStatusColor(estado) { 
+    const colorMap = { 
+        'pendiente': 'warning', 
+        'en proceso': 'primary', 
+        'vencido': 'danger', 
+        'completado': 'success' 
+    }; 
+    return colorMap[estado?.toLowerCase()] || 'warning'; 
+} 
+
+function createProgressBar(progress) { 
+    const progressValue = parseInt(progress) || 0; 
+    const progressClass = progressValue >= 75 ? 'bg-success' :  
+                         progressValue >= 50 ? 'bg-info' :  
+                         progressValue >= 25 ? 'bg-warning' : 'bg-danger'; 
+    return ` 
+        <div class="progress" style="height: 20px;"> 
+            <div class="progress-bar ${progressClass}"  
+                 role="progressbar"  
+                 style="width: ${progressValue}%;"  
+                 aria-valuenow="${progressValue}"  
+                 aria-valuemin="0"  
+                 aria-valuemax="100"> 
+                ${progressValue}% 
+            </div> 
+        </div> 
+    `; 
 } 
 
 function displayEmptyState() { 
