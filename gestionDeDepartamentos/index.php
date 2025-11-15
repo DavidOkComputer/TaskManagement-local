@@ -249,15 +249,35 @@ $user_id = 1;
                                     </div> 
                                     <!-- Alert Messages --> 
                                     <div id="alertMessage" style="display: none; margin-top: 20px;"></div> 
+                                    
+                                    <!-- Rows Per Page Selector -->
+                                    <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
+                                        <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
+                                        <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">
+                                            <option value="5">5</option>
+                                            <option value="10" selected>10</option>
+                                            <option value="15">15</option>
+                                            <option value="20">20</option>
+                                        </select>
+                                    </div>
+                                    
                                     <!-- Table Container --> 
                                     <div class="table-responsive mt-3"> 
                                         <table class="table select-table" id="departamentosTable"> 
                                             <thead> 
                                                 <tr> 
-                                                    <th>#</th> 
-                                                    <th>Nombre</th> 
-                                                    <th>Descripción</th> 
-                                                    <th>Registrado por</th> 
+                                                    <th class="sortable-header" data-sort="id_departamento" style="cursor: pointer; user-select: none;">
+                                                        # <i class="mdi mdi-sort-variant"></i>
+                                                    </th> 
+                                                    <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
+                                                        Nombre <i class="mdi mdi-sort-variant"></i>
+                                                    </th> 
+                                                    <th class="sortable-header" data-sort="descripcion" style="cursor: pointer; user-select: none;">
+                                                        Descripción <i class="mdi mdi-sort-variant"></i>
+                                                    </th> 
+                                                    <th class="sortable-header" data-sort="nombre_creador" style="cursor: pointer; user-select: none;">
+                                                        Registrado por <i class="mdi mdi-sort-variant"></i>
+                                                    </th> 
                                                     <th class="text-center">Acciones</th> 
                                                 </tr> 
                                             </thead> 
@@ -273,6 +293,11 @@ $user_id = 1;
                                                 </tr> 
                                             </tbody> 
                                         </table> 
+                                    </div>
+
+                                    <!-- Pagination Controls -->
+                                    <div class="pagination-container mt-4">
+                                        <!-- Pagination info and buttons are dynamically inserted here -->
                                     </div> 
                                 </div> 
                             </div> 

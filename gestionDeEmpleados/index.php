@@ -229,6 +229,17 @@
                   </a>
                 </div>
               </div>
+              <!-- Rows Per Page Selector - NEW -->
+              <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
+                <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
+                <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">
+                  <option value="5">5</option>
+                  <option value="10" selected>10</option>
+                  <option value="15">15</option>
+                  <option value="20">20</option>
+                </select>
+              </div>
+
               <div class="table-responsive mt-1">
                 <table class="table select-table">
                   <thead>
@@ -239,10 +250,18 @@
                             <input type="checkbox" class="form-check-input" id="selectAllCheckbox" aria-checked="false"><i class="input-helper"></i></label>
                         </div>
                       </th>
-                      <th>Nombre</th>
-                      <th>Departamento</th>
-                      <th>Superior</th>
-                      <th>Rol</th>
+                      <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
+                        Nombre <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="departamento" style="cursor: pointer; user-select: none;">
+                        Departamento <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="superior" style="cursor: pointer; user-select: none;">
+                        Superior <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="rol" style="cursor: pointer; user-select: none;">
+                        Rol <i class="mdi mdi-sort-variant"></i>
+                      </th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -257,6 +276,11 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+
+              <!-- Pagination Controls - NEW -->
+              <div class="pagination-container mt-4">
+                <!-- Pagination info and buttons are dynamically inserted here -->
               </div>
             </div>
           </div>

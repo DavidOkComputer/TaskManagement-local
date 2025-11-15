@@ -1,5 +1,5 @@
 <?php
-// obtener_proyectos.php
+// get_objectives.php
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -22,6 +22,7 @@ try {
                 p.fecha_cumplimiento,
                 p.progreso,
                 p.estado,
+                p.archivo_adjunto,
                 d.nombre as area
               FROM tbl_objetivos p
               LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento
@@ -33,24 +34,25 @@ try {
         throw new Exception("Error en la consulta: " . $conn->error);
     }
     
-    $proyectos = [];
+    $objetivos = [];
     
     while ($row = $result->fetch_assoc()) {
-        $proyectos[] = [
+        $objetivos[] = [
             'id_objetivo' => (int)$row['id_objetivo'],
             'nombre' => $row['nombre'],
             'descripcion' => $row['descripcion'],
             'area' => $row['area'] ?? 'Sin asignar',
             'fecha_cumplimiento' => $row['fecha_cumplimiento'],
             'progreso' => (int)$row['progreso'],
-            'estado' => $row['estado']
+            'estado' => $row['estado'],
+            'archivo_adjunto' => $row['archivo_adjunto'] ?? null
         ];
     }
     
     echo json_encode([
         'success' => true,
-        'objetivos' => $proyectos,
-        'total' => count($proyectos)
+        'objetivos' => $objetivos,
+        'total' => count($objetivos)
     ]);
     
     $result->free();
@@ -58,8 +60,8 @@ try {
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Error al cargar proyectos: ' . $e->getMessage(),
-        'proyectos' => []
+        'message' => 'Error al cargar objetivos: ' . $e->getMessage(),
+        'objetivos' => []
     ]);
 }
 
