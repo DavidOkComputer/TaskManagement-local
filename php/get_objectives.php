@@ -20,7 +20,6 @@ try {
                 p.nombre,
                 p.descripcion,
                 p.fecha_cumplimiento,
-                p.progreso,
                 p.estado,
                 p.archivo_adjunto,
                 d.nombre as area
@@ -43,7 +42,6 @@ try {
             'descripcion' => $row['descripcion'],
             'area' => $row['area'] ?? 'Sin asignar',
             'fecha_cumplimiento' => $row['fecha_cumplimiento'],
-            'progreso' => (int)$row['progreso'],
             'estado' => $row['estado'],
             'archivo_adjunto' => $row['archivo_adjunto'] ?? null
         ];

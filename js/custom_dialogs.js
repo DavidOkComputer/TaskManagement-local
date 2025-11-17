@@ -1,7 +1,50 @@
-/** * custom_dialogs.js - Shared custom dialog system *
- * */
-function createCustomDialogSystem() {
-     // Check if modal already exists to prevent duplicates revisar si el modal ya existe para prevendir duplicados
+/**  custom_dialogs.js - dialogo personalizado compartido para el sistema*/
+
+/**
+ * Initialize custom dialogs by injecting modal HTML into the DOM
+ * This ensures all modals are available before any dialogs are triggered
+ */
+function initializeCustomDialogs() {
+    // Check if modal already exists
+    if (document.getElementById('customConfirmModal')) {
+        return;
+    }
+
+    // Create modal HTML
+    const modalHTML = `
+        <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="confirmTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-white">
+                        <h5 class="modal-title" id="confirmTitle">
+                            <i class="mdi mdi-alert-outline me-2"></i>Confirmar acción
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmMessage">¿Está seguro de que desea continuar con esta acción?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="confirmCancelBtn" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-warning" id="confirmOkBtn">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Inject modal into DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// Initialize dialogs when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCustomDialogs);
+} else {
+    initializeCustomDialogs();
+}
+
+function createCustomDialogSystem() {//revisar si el modal ya existe para prevendir duplicados
      if (document.getElementById('customConfirmModal')) { 
         return; 
         } 

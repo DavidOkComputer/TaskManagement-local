@@ -229,7 +229,7 @@
                   </a>
                 </div>
               </div>
-              <!-- Rows Per Page Selector - NEW -->
+              <!-- Rows Per Page Selector-->
               <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
                 <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
                 <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">

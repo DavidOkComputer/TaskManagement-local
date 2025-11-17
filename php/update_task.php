@@ -1,167 +1,245 @@
 <?php
-/*update_task.php actualiza una tarea existente con nueva informacion
-FIXED: Corrected POST key from 'fecha_cumplimiento' to 'fecha_vencimiento' to match JavaScript*/
+/*update_task.php - actualizar tareas incluyendo asignacion de usuario*/
 
 header('Content-Type: application/json');
-
-//incluir conexion a base de datos
 require_once('db_config.php');
-$conn = getDBConnection();
-//revisar si el metodo solicitado es post
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
         'success' => false,
-        'message' => 'Método de solicitud inválido'
+        'message' => 'Método no permitido'
     ]);
     exit;
-}
-
-//validar campos requeridos
-$required_fields = ['id_tarea', 'nombre', 'descripcion', 'id_proyecto', 'estado'];
-$missing_fields = [];
-
-foreach ($required_fields as $field) {
-    if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
-        $missing_fields[] = $field;
-    }
-}
-
-if (!empty($missing_fields)) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Campos requeridos faltantes: ' . implode(', ', $missing_fields)
-    ]);
-    exit;
-}
-
-//obtener y limpiar informacion de input
-$id_tarea = intval($_POST['id_tarea']);
-$nombre = trim($_POST['nombre']);
-$descripcion = trim($_POST['descripcion']);
-$id_proyecto = intval($_POST['id_proyecto']);
-// FIXED: Changed from 'fecha_cumplimiento' to 'fecha_vencimiento' to match JavaScript
-$fecha_cumplimiento = isset($_POST['fecha_vencimiento']) && !empty($_POST['fecha_vencimiento']) 
-    ? $_POST['fecha_vencimiento'] 
-    : null;
-$estado = trim($_POST['estado']);
-
-//validar estado
-$valid_statuses = ['pendiente', 'en proceso', 'en-progreso', 'completado', 'vencido'];
-if (!in_array($estado, $valid_statuses)) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Estado de tarea inválido'
-    ]);
-    exit;
-}
-
-//normalizar estado
-if ($estado === 'en-progreso') {
-    $estado = 'en proceso';
 }
 
 try {
-    //revisar si la tarea existe
-    $check_stmt = $conn->prepare("SELECT id_tarea FROM tbl_tareas WHERE id_tarea = ?");
-    $check_stmt->bind_param("i", $id_tarea);
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
-    
-    if ($check_result->num_rows === 0) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Tarea no encontrada'
-        ]);
-        $check_stmt->close();
-        exit;
+    //validar y limpiar los inputs
+    $id_tarea = isset($_POST['id_tarea']) ? intval($_POST['id_tarea']) : 0;
+    $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
+    $descripcion = isset($_POST['descripcion']) ? trim($_POST['descripcion']) : '';
+    $id_proyecto = isset($_POST['id_proyecto']) ? intval($_POST['id_proyecto']) : 0;
+    $fecha_cumplimiento = isset($_POST['fecha_vencimiento']) ? trim($_POST['fecha_vencimiento']) : '';
+    $estado = isset($_POST['estado']) ? trim($_POST['estado']) : 'pendiente';
+    $id_participante = isset($_POST['id_participante']) && !empty($_POST['id_participante']) ? intval($_POST['id_participante']) : null;
+
+    //validaciones
+    if ($id_tarea <= 0) {
+        throw new Exception('El ID de la tarea no es válido');
     }
-    $check_stmt->close();
-    
-    //revisar si el proyecto existe
-    $project_stmt = $conn->prepare("SELECT id_proyecto FROM tbl_proyectos WHERE id_proyecto = ?");
-    $project_stmt->bind_param("i", $id_proyecto);
-    $project_stmt->execute();
-    $project_result = $project_stmt->get_result();
-    
-    if ($project_result->num_rows === 0) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Proyecto no encontrado'
-        ]);
-        $project_stmt->close();
-        exit;
+
+    if (empty($nombre)) {
+        throw new Exception('El nombre de la tarea es requerido');
     }
-    $project_stmt->close();
-    
-    //preparar actualizacion
-    if ($fecha_cumplimiento !== null) {
-        // FIXED: bind_param types are correct here - "ssissi"
-        $stmt = $conn->prepare(
-            "UPDATE tbl_tareas 
-             SET nombre = ?, 
-                 descripcion = ?, 
-                 id_proyecto = ?, 
-                 fecha_cumplimiento = ?, 
-                 estado = ?
-             WHERE id_tarea = ?"
-        );
-        $stmt->bind_param("ssissi", 
-            $nombre, 
-            $descripcion, 
-            $id_proyecto, 
-            $fecha_cumplimiento, 
-            $estado, 
-            $id_tarea
-        );
-    } else {
-        // FIXED: bind_param types are correct here - "ssisi"
-        $stmt = $conn->prepare(
-            "UPDATE tbl_tareas 
-             SET nombre = ?, 
-                 descripcion = ?, 
-                 id_proyecto = ?, 
-                 fecha_cumplimiento = NULL, 
-                 estado = ?
-             WHERE id_tarea = ?"
-        );
-        $stmt->bind_param("ssisi", 
-            $nombre, 
-            $descripcion, 
-            $id_proyecto, 
-            $estado, 
-            $id_tarea
-        );
+
+    if (empty($descripcion)) {
+        throw new Exception('La descripción es requerida');
     }
-    
-    //ejecutar actualizacion
-    if ($stmt->execute()) {
-        if ($stmt->affected_rows > 0) {
-            echo json_encode([
-                'success' => true,
-                'message' => 'Tarea actualizada exitosamente',
-                'task_id' => $id_tarea
-            ]);
-        } else {
-            //sin filas afectadas, losdatos pueden ser los mismos
-            echo json_encode([
-                'success' => true,
-                'message' => 'No se realizaron cambios (los datos son iguales)',
-                'task_id' => $id_tarea
-            ]);
+
+    if ($id_proyecto <= 0) {
+        throw new Exception('Debe seleccionar un proyecto válido');
+    }
+
+    if (strlen($nombre) > 100) {
+        throw new Exception('El nombre no puede exceder 100 caracteres');
+    }
+
+    if (strlen($descripcion) > 250) {
+        throw new Exception('La descripción no puede exceder 250 caracteres');
+    }
+
+    //validar fecha
+    if (!empty($fecha_cumplimiento)) {
+        if (strtotime($fecha_cumplimiento) === false) {
+            throw new Exception('La fecha de cumplimiento no es válida');
         }
-    } else {
-        throw new Exception('Error al ejecutar la actualización: ' . $stmt->error);
+    }
+
+    //validar el estado
+    $estados_validos = ['pendiente', 'en-progreso', 'en proceso', 'completado'];
+    $estado = strtolower($estado);
+    if (!in_array($estado, $estados_validos)) {
+        throw new Exception('El estado de la tarea no es válido');
+    }
+
+    //validar id_participante si se proporciona
+    if ($id_participante !== null && $id_participante <= 0) {
+        $id_participante = null;
+    }
+
+    $conn = getDBConnection();
+    if (!$conn) {
+        throw new Exception('Error de conexión a la base de datos');
+    }
+
+    //verificar que la tarea existe
+    $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_tareas WHERE id_tarea = ?");
+    $stmt->bind_param("i", $id_tarea);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        throw new Exception('La tarea especificada no existe');
     }
     
+    $row = $result->fetch_assoc();
+    $old_id_proyecto = $row['id_proyecto'];
     $stmt->close();
+
+    //verificar que el proyecto existe
+    $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_proyectos WHERE id_proyecto = ?");
+    $stmt->bind_param("i", $id_proyecto);
+    $stmt->execute();
+    $result = $stmt->get_result();
     
+    if ($result->num_rows === 0) {
+        throw new Exception('El proyecto especificado no existe');
+    }
+    $stmt->close();
+
+    //verificar que el participante existe si se asigna uno
+    if ($id_participante !== null) {
+        $stmt = $conn->prepare("SELECT id_usuario FROM tbl_usuarios WHERE id_usuario = ?");
+        $stmt->bind_param("i", $id_participante);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            throw new Exception('El usuario especificado no existe');
+        }
+        $stmt->close();
+    }
+
+    //actualizar tarea con id_participante
+    $sql = "UPDATE tbl_tareas SET 
+                nombre = ?,
+                descripcion = ?,
+                id_proyecto = ?,
+                fecha_cumplimiento = ?,
+                estado = ?,
+                id_participante = ?
+            WHERE id_tarea = ?";
+
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        throw new Exception("Error al preparar la consulta: " . $conn->error);
+    }
+
+    // Bind parameters: s=string, i=integer
+    $stmt->bind_param(
+        "ssiisii",
+        $nombre,
+        $descripcion,
+        $id_proyecto,
+        $fecha_cumplimiento,
+        $estado,
+        $id_participante,
+        $id_tarea
+    );
+
+    if (!$stmt->execute()) {
+        throw new Exception("Error al ejecutar la consulta: " . $stmt->error);
+    }
+
+    $stmt->close();
+
+    //recalcular progreso si la tarea cambio de proyecto o si cambio el estado
+    recalculateProjectProgress($conn, $old_id_proyecto);
+    if ($old_id_proyecto != $id_proyecto) {
+        recalculateProjectProgress($conn, $id_proyecto);
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Tarea actualizada exitosamente'
+    ]);
+
+    $conn->close();
+
 } catch (Exception $e) {
-    error_log('Error updating task: ' . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => 'Error al actualizar la tarea: ' . $e->getMessage()
     ]);
+    error_log('update_task.php Error: ' . $e->getMessage());
 }
 
-$conn->close();
+function recalculateProjectProgress($conn, $id_proyecto) {
+    try {
+        //obtener el conteo total de tareas
+        $stmt = $conn->prepare("SELECT COUNT(*) as total FROM tbl_tareas WHERE id_proyecto = ?");
+        $stmt->bind_param("i", $id_proyecto);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $total_tasks = (int)$row['total'];
+        $stmt->close();
+
+        //si no hay tareas el progreso es 0
+        if ($total_tasks === 0) {
+            $progress = 0;
+        } else {
+            //obtener el conteo de tareas completadas
+            $stmt = $conn->prepare("SELECT COUNT(*) as completadas FROM tbl_tareas WHERE id_proyecto = ? AND estado = 'completado'");
+            $stmt->bind_param("i", $id_proyecto);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            $completed_tasks = (int)$row['completadas'];
+            $stmt->close();
+
+            //calcular el porcentaje de progreso
+            $progress = round(($completed_tasks / $total_tasks) * 100);
+        }
+
+        //actualizar progreso de proyecto y estatus basado en progreso
+        $nuevo_estado = determineProjectStatus($progress, $id_proyecto, $conn);
+
+        $stmt = $conn->prepare("UPDATE tbl_proyectos SET progreso = ?, estado = ? WHERE id_proyecto = ?");
+        $stmt->bind_param("isi", $progress, $nuevo_estado, $id_proyecto);
+        $stmt->execute();
+        $stmt->close();
+
+        error_log("Progreso del proyecto $id_proyecto actualizado a: $progress% - Estado: $nuevo_estado");
+
+    } catch (Exception $e) {
+        error_log("Error recalculando progreso del proyecto: " . $e->getMessage());
+    }
+}
+
+//determinar el estado del progreso basado en la fecha de entrega
+function determineProjectStatus($progress, $id_proyecto, $conn) {
+    try {
+        //obtener fecha de entrega de proyecto
+        $stmt = $conn->prepare("SELECT fecha_cumplimiento FROM tbl_proyectos WHERE id_proyecto = ?");
+        $stmt->bind_param("i", $id_proyecto);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+
+        $fecha_cumplimiento = strtotime($row['fecha_cumplimiento']);
+        $hoy = time();
+
+        //si la fecha de entrega paso y no se ha completado marcar como vencido
+        if ($hoy > $fecha_cumplimiento && $progress < 100) {
+            return 'vencido';
+        }
+
+        if ($progress == 100) {
+            return 'completado';
+        }
+
+        if ($progress > 0) {
+            return 'en proceso';
+        }
+
+        // Default en pendiente
+        return 'pendiente';
+
+    } catch (Exception $e) {
+        error_log("Error determinando estado del proyecto: " . $e->getMessage());
+        return 'pendiente';
+    }
+}
 ?>

@@ -286,13 +286,9 @@
                       <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor:pointer; user-select: none">
                         Fecha de entrega <i class="mdi mdi-sort-variant"></i>
                       </th>
-                      <th class="sortable-header" data-sort="progreso" style="cursor:pointer; user-select:none;">
-                        Progreso <i class="mdi mdi-sort-variant"></i>
-                      </th>
                       <th class="sortable-header" data-sort="estado" style="cursor:pointer; user-select:none;">
                         Estado <i class="mdi mdi-sort-variant"></i>
                       </th>
-                      <th>Archivo</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
@@ -341,6 +337,7 @@
   <!-- endinject -->
    
    <script src="../js/custom_dialogs.js"></script>
+   <script src="../js/custom_dialog.js"></script>
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>

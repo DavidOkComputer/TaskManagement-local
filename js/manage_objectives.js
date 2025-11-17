@@ -2,7 +2,8 @@
 const Config = { 
     API_ENDPOINTS: { 
         DELETE: '../php/delete_objective.php', 
-        GET_ALL: '../php/get_objectives.php' 
+        GET_ALL: '../php/get_objectives.php',
+        UPDATE_STATUS: '../php/update_objective_status.php'
     } 
 }; 
 
@@ -17,6 +18,11 @@ let rowsPerPage = 10;
 let totalPages = 0; 
 
 document.addEventListener('DOMContentLoaded', function() { 
+    // Initialize the custom dialog system (create modal if it doesn't exist)
+    if (typeof createCustomDialogSystem === 'function') {
+        createCustomDialogSystem();
+    }
+    
     setupSearch(); 
     setupSorting(); 
     setupPagination(); 
@@ -127,9 +133,6 @@ function sortObjectives(objectives, column, direction) {
         } else if (column === 'fecha_cumplimiento') { 
             valueA = new Date(valueA).getTime() || 0; 
             valueB = new Date(valueB).getTime() || 0; 
-        } else if (column === 'progreso') { 
-            valueA = parseInt(valueA) || 0; 
-            valueB = parseInt(valueB) || 0; 
         } else { 
             valueA = String(valueA).toLowerCase(); 
             valueB = String(valueB).toLowerCase(); 
@@ -307,9 +310,19 @@ function displayObjectives(objetivos) {
 function createObjectiveRow(objetivo, index) { 
     const row = document.createElement('tr'); 
     const statusColor = getStatusColor(objetivo.estado);
-    const progressBar = createProgressBar(objetivo.progreso || 0);
+    const isCompleted = objetivo.estado === 'completado';
+    const nextState = isCompleted ? 'pendiente' : 'completado';
+    const buttonClass = isCompleted ? 'btn-secondary' : 'btn-info';
+    const buttonIcon = isCompleted ? 'mdi-undo-variant' : 'mdi-check-circle-outline';
+    const buttonTitle = isCompleted ? 'Marcar como pendiente' : 'Marcar como completado';
+    
     const actionsButtons = ` 
         <div class="action-buttons"> 
+            <button class="btn btn-sm ${buttonClass} btn-action"  
+                    onclick="toggleObjectiveCompletion(${objetivo.id_objetivo}, '${nextState}')"  
+                    title="${buttonTitle}"> 
+                <i class="mdi ${buttonIcon}"></i> 
+            </button>
             <button class="btn btn-sm btn-success btn-action"  
                     onclick="editarObjetivo(${objetivo.id_objetivo})"  
                     title="Editar"> 
@@ -322,20 +335,6 @@ function createObjectiveRow(objetivo, index) {
             </button> 
         </div> 
     `; 
-
-    const fileLink = objetivo.archivo_adjunto  
-        ? `<a href="../${objetivo.archivo_adjunto}" target="_blank" title="Ver archivo"> 
-               <i class="mdi mdi-file-document"></i> 
-           </a>` 
-        : '-'; 
-    
-    const progressCell = objetivo.progreso != null 
-        ? `<div class="progress" style="height: 20px;">
-               <div class="progress-bar" role="progressbar" style="width: ${objetivo.progreso}%;" aria-valuenow="${objetivo.progreso}" aria-valuemin="0" aria-valuemax="100">
-                   ${objetivo.progreso}%
-               </div>
-           </div>`
-        : '-';
     
     
     row.innerHTML = ` 
@@ -346,9 +345,7 @@ function createObjectiveRow(objetivo, index) {
         <td>${truncateText(objetivo.descripcion, 40)}</td> 
         <td>${objetivo.area}</td> 
         <td>${formatDate(objetivo.fecha_cumplimiento)}</td> 
-        <td>${progressCell}</td> 
         <td>${`<span class="badge badge-${statusColor}">${objetivo.estado || 'N/A'}</span>`}</td> 
-        <td class="text-center">${fileLink}</td> 
         <td> 
             ${actionsButtons} 
         </td> 
@@ -364,25 +361,6 @@ function getStatusColor(estado) {
         'completado': 'success' 
     }; 
     return colorMap[estado?.toLowerCase()] || 'warning'; 
-} 
-
-function createProgressBar(progress) { 
-    const progressValue = parseInt(progress) || 0; 
-    const progressClass = progressValue >= 75 ? 'bg-success' :  
-                         progressValue >= 50 ? 'bg-info' :  
-                         progressValue >= 25 ? 'bg-warning' : 'bg-danger'; 
-    return ` 
-        <div class="progress" style="height: 20px;"> 
-            <div class="progress-bar ${progressClass}"  
-                 role="progressbar"  
-                 style="width: ${progressValue}%;"  
-                 aria-valuenow="${progressValue}"  
-                 aria-valuemin="0"  
-                 aria-valuemax="100"> 
-                ${progressValue}% 
-            </div> 
-        </div> 
-    `; 
 } 
 
 function displayEmptyState() { 
@@ -473,7 +451,74 @@ function formatDate(dateString) {
 
 function editarObjetivo(idObjetivo) { 
     window.location.href = `../nuevoObjetivo/?edit=${idObjetivo}`; 
-} 
+}
+
+function toggleObjectiveCompletion(idObjetivo, nuevoEstado) {
+    const objetivo = allObjectives.find(obj => obj.id_objetivo === idObjetivo);
+    if (!objetivo) return;
+
+    const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';
+    const confirmMessage = nuevoEstado === 'completado' 
+        ? `¿Marcar el objetivo "${escapeHtml(objetivo.nombre)}" como completado?`
+        : `¿Marcar el objetivo "${escapeHtml(objetivo.nombre)}" como pendiente?`;
+
+    showConfirm(
+        confirmMessage,
+        function() {
+            updateObjectiveStatus(idObjetivo, nuevoEstado);
+        },
+        `Cambiar estado a ${statusText}`,
+        {
+            type: nuevoEstado === 'completado' ? 'success' : 'info',
+            confirmText: 'Confirmar',
+            cancelText: 'Cancelar'
+        }
+    );
+}
+
+function updateObjectiveStatus(idObjetivo, nuevoEstado) {
+    fetch(Config.API_ENDPOINTS.UPDATE_STATUS, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id_objetivo: idObjetivo,
+            estado: nuevoEstado
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update local data
+            const objective = allObjectives.find(obj => obj.id_objetivo === idObjetivo);
+            if (objective) {
+                objective.estado = nuevoEstado;
+            }
+            
+            const filteredObjective = filteredObjectives.find(obj => obj.id_objetivo === idObjetivo);
+            if (filteredObjective) {
+                filteredObjective.estado = nuevoEstado;
+            }
+
+            // Show success message
+            const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';
+            showSuccessAlert(`Objetivo marcado como ${statusText}`);
+            
+            // Refresh display
+            const sorted = currentSortColumn
+                ? sortObjectives(filteredObjectives, currentSortColumn, sortDirection)
+                : filteredObjectives;
+            displayObjectives(sorted);
+        } else {
+            showErrorAlert(data.message || 'Error al actualizar el estado del objetivo');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorAlert('Error al conectar con el servidor');
+    });
+}
 
 function confirmDelete(id, nombre) { 
     showConfirm( 
@@ -566,7 +611,23 @@ function escapeHtml(text) {
 } 
 
 function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) { 
-    const modal = document.getElementById('customConfirmModal'); 
+    // Ensure custom dialog system is initialized
+    if (typeof createCustomDialogSystem === 'function') {
+        createCustomDialogSystem();
+    }
+    
+    const modal = document.getElementById('customConfirmModal');
+    
+    // Safety check: if modal still doesn't exist, show alert instead
+    if (!modal) {
+        console.error('ERROR: Modal element #customConfirmModal not found');
+        const confirmAction = confirm(title + '\n\n' + message);
+        if (confirmAction && onConfirm && typeof onConfirm === 'function') {
+            onConfirm();
+        }
+        return;
+    }
+    
     const titleElement = document.getElementById('confirmTitle'); 
     const messageElement = document.getElementById('confirmMessage'); 
     const headerElement = modal.querySelector('.modal-header'); 
@@ -616,3 +677,5 @@ window.confirmDelete = confirmDelete;
 window.editarObjetivo = editarObjetivo; 
 window.changePage = changePage; 
 window.showConfirm = showConfirm;
+window.toggleObjectiveCompletion = toggleObjectiveCompletion;
+window.updateObjectiveStatus = updateObjectiveStatus;

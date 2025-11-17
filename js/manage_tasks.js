@@ -1,4 +1,4 @@
-/*task-management.js - manejo de tareas, creacion y actualizacion*/
+/*task-management.js - manejo de tareas, creacion, actualizacion y asignacion de usuarios*/
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -8,9 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const addBtn = document.querySelector('.todo-list-add-btn');
     
     let currentProjectId = null; //seguir el proyecto seleccionado actualmente
+    let currentUserId = 1; //id del usuario actual - remplazar con sesion real
     
     createCustomDialogSystem();
     createTaskModal();
+    loadUsers(); //cargar usuarios para dropdown
     
     function createTaskModal() {
         const modalHTML = `
@@ -49,6 +51,12 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <option value="pendiente">Pendiente</option>
                                         <option value="en proceso">En Progreso</option>
                                         <option value="completado">Completado</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="taskAssignee" class="form-label">Asignar a</label>
+                                    <select class="form-control" id="taskAssignee">
+                                        <option value="">Sin asignar</option>
                                     </select>
                                 </div>
                             </form>
@@ -247,6 +255,39 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
+    // cargar usuarios para el dropdown
+    function loadUsers() {
+        fetch('../php/get_users.php')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error cargando usuarios');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.usuarios) {
+                    populateUserSelect(document.getElementById('taskAssignee'), data.usuarios);
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar usuarios:', error);
+            });
+    }
+    
+    //popular el dropdown de usuarios con nombre completo y numero de empleado
+    function populateUserSelect(selectElement, users) {
+        //mantener la opcion default
+        selectElement.innerHTML = '<option value="">Sin asignar</option>';
+        
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id_usuario;
+            //mostrar: Nombre Apellido (#NumEmpleado)
+            option.textContent = `${user.nombre} ${user.apellido} (#${user.num_empleado})`;
+            selectElement.appendChild(option);
+        });
+    }
+    
     //popular el elemento con proyectos
     function populateProjectSelect(selectElement, projects) {
         //mantener la opcion default
@@ -327,6 +368,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const isCompleted = task.estado === 'completado';
         const borderClass = isLast ? 'border-bottom-0' : '';
         
+        //mostrar el participante asignado si existe
+        const assigneeDisplay = task.participante ? ` <small class="text-muted">(Asignado a: ${escapeHtml(task.participante)})</small>` : '';
+        
         return `
             <li class="d-block ${borderClass}" data-task-id="${task.id_tarea}">
                 <div class="form-check w-100">
@@ -334,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <input class="checkbox task-checkbox" type="checkbox" 
                                ${isCompleted ? 'checked' : ''} 
                                data-task-id="${task.id_tarea}">
-                        ${task.nombre}
+                        ${task.nombre}${assigneeDisplay}
                         <i class="input-helper rounded"></i>
                     </label>
                     <div class="d-flex mt-2 align-items-center">
@@ -348,6 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 data-task-date="${task.fecha_cumplimiento}"
                                 data-task-status="${task.estado}"
                                 data-task-project="${task.id_proyecto}"
+                                data-task-assignee="${task.id_participante || ''}"
                                 title="Editar tarea">
                             <i class="mdi mdi-pencil"></i>
                         </button>
@@ -490,6 +535,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskDate = button.getAttribute('data-task-date');
         const taskStatus = button.getAttribute('data-task-status');
         const taskProject = button.getAttribute('data-task-project');
+        const taskAssignee = button.getAttribute('data-task-assignee');
         
         //llenar el modal con la info de la tarea
         document.getElementById('taskName').value = taskName;
@@ -509,6 +555,11 @@ document.addEventListener('DOMContentLoaded', function() {
         //cargar proyecto y preseleccionar el proyecto de la tarea
         loadProjectsForModal(() => {
             document.getElementById('taskProject').value = taskProject;
+            
+            //preseleccionar el usuario asignado
+            if (taskAssignee) {
+                document.getElementById('taskAssignee').value = taskAssignee;
+            }
         });
         
         //mostrar modal
@@ -531,6 +582,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (currentProjectId) {
                         document.getElementById('taskProject').value = currentProjectId;
                     }
+                    //preseleccionar el usuario actual por defecto
+                    document.getElementById('taskAssignee').value = currentUserId;
                 });
             }
         });
@@ -591,6 +644,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskProject = document.getElementById('taskProject').value;
         const taskDate = document.getElementById('taskDate').value;
         const taskStatus = document.getElementById('taskStatus').value;
+        const taskAssignee = document.getElementById('taskAssignee').value;
         
         //revisar si esta en modo de edicion
         const mode = form.getAttribute('data-mode');
@@ -606,6 +660,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('id_proyecto', taskProject);
         formData.append('fecha_vencimiento', taskDate);
         formData.append('estado', taskStatus);
+        formData.append('id_participante', taskAssignee || null);
         
         if (isEditMode) {
             //modo de edicion, actualizar tarea existente
@@ -624,7 +679,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     //actualizar la tarea en la lista si pertenece al pryecto actual
                     if (currentProjectId && taskProject == currentProjectId) {
-                        updateTaskInList(taskId, taskName, taskDescription, taskDate, taskStatus);
+                        updateTaskInList(taskId, taskName, taskDescription, taskDate, taskStatus, taskAssignee);
                     } else if (currentProjectId) {
                         //si la tarea fue movida a un proyecto diferente se elimina de esta lista
                         removeTaskFromList(taskId);
@@ -651,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             //modo crear, nueva tarea
-            formData.append('id_creador', 1); //remplazar con id de la sesion
+            formData.append('id_creador', currentUserId); //usar el id del usuario actual
             
             fetch('../php/save_task.php', {
                 method: 'POST',
@@ -666,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     //si la nueva tarea pertenece al proyecto seleccionado agregarlo a la lista
                     if (currentProjectId && taskProject == currentProjectId) {
-                        addTaskToList(data.task_id, taskName, taskDescription, taskDate, taskStatus, taskProject);
+                        addTaskToList(data.task_id, taskName, taskDescription, taskDate, taskStatus, taskProject, taskAssignee);
                     }
                     
                     setTimeout(() => {
@@ -687,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     //agregar nueva tarea creada a la lista actual
-    function addTaskToList(taskId, taskName, taskDescription, taskDate, taskStatus, taskProject) {
+    function addTaskToList(taskId, taskName, taskDescription, taskDate, taskStatus, taskProject, taskAssignee) {
         //quitar el mensaje de no hay tareas si es que existe
         const noTasksMessage = tasksList.querySelector('.text-center');
         if (noTasksMessage) {
@@ -726,6 +781,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 data-task-date="${taskDate}"
                                 data-task-status="${taskStatus}"
                                 data-task-project="${taskProject}"
+                                data-task-assignee="${taskAssignee || ''}"
                                 title="Editar tarea">
                             <i class="mdi mdi-pencil"></i>
                         </button>
@@ -753,7 +809,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     //actualizar una tarea en la lista
-    function updateTaskInList(taskId, taskName, taskDescription, taskDate, taskStatus) {
+    function updateTaskInList(taskId, taskName, taskDescription, taskDate, taskStatus, taskAssignee) {
         const taskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
         if (!taskLi) return;
         
@@ -812,6 +868,7 @@ document.addEventListener('DOMContentLoaded', function() {
             editBtn.setAttribute('data-task-description', escapeHtml(taskDescription));
             editBtn.setAttribute('data-task-date', taskDate);
             editBtn.setAttribute('data-task-status', taskStatus);
+            editBtn.setAttribute('data-task-assignee', taskAssignee || '');
         }
         
         showNotification('Tarea actualizada en la lista', 'success');

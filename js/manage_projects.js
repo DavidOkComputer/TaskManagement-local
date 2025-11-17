@@ -2,7 +2,8 @@
 
 const Config = { 
     API_ENDPOINTS: { 
-        DELETE: '../php/delete_project.php' 
+        DELETE: '../php/delete_project.php',
+        GET_PROJECT_USERS: '../php/get_project_user.php'
     } 
 }; 
 
@@ -16,10 +17,18 @@ let currentPage = 1;
 let rowsPerPage = 10;
 let totalPages = 0;
 
+// Variables para modal de usuarios
+let projectUsersData = [];
+let currentUsersPage = 1;
+let usersRowsPerPage = 10;
+let totalUsersPages = 0;
+
 document.addEventListener('DOMContentLoaded', function() { 
+    initializeCustomDialogs();
     setupSearch(); 
     setupSorting();
-    setupPagination(); // inicializar paginacion
+    setupPagination(); 
+    createProjectUsersModal();
     cargarProyectos();
 }); 
 
@@ -318,6 +327,11 @@ function createProjectRow(proyecto, index) {
     const progressBar = createProgressBar(proyecto.progreso || 0); 
     const actionsButtons = ` 
         <div class="action-buttons"> 
+            <button class="btn btn-sm btn-info btn-action"  
+                    onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
+                    title="Ver usuarios asignados"> 
+                <i class="mdi mdi-account-multiple"></i> 
+            </button>
             <button class="btn btn-sm btn-success btn-action"  
                     onclick="editarProyecto(${proyecto.id_proyecto})"  
                     title="Editar"> 
@@ -523,6 +537,300 @@ function deleteProject(id) {
     }); 
 }
 
+// ============= MODAL DE USUARIOS DEL PROYECTO =============
+
+function createProjectUsersModal() {
+    const modalHTML = `
+        <div class="modal fade" id="projectUsersModal" tabindex="-1" role="dialog" aria-labelledby="projectUsersModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="projectUsersModalLabel">
+                            <i class="mdi mdi-account-multiple me-2"></i>
+                            Usuarios asignados al proyecto
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="projectUsersSearch" placeholder="Buscar usuario por nombre, email o empleado...">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nombre Completo</th>
+                                        <th>Email</th>
+                                        <th>Número de Empleado</th>
+                                        <th>Progreso en Proyecto</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="projectUsersTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Cargando...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="pagination-container mt-3"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+/**
+ * Helper function to create user progress bar
+ */
+function createUserProgressBar(progress) {
+    const progressValue = parseInt(progress) || 0;
+    const progressClass = progressValue >= 75 ? 'bg-success' :
+                         progressValue >= 50 ? 'bg-info' :
+                         progressValue >= 25 ? 'bg-warning' : 'bg-danger';
+    
+    return `
+        <div class="d-flex align-items-center gap-2">
+            <div class="progress flex-grow-1" style="height: 20px; min-width: 100px;">
+                <div class="progress-bar ${progressClass}"
+                     role="progressbar"
+                     style="width: ${progressValue}%;"
+                     aria-valuenow="${progressValue}"
+                     aria-valuemin="0"
+                     aria-valuemax="100">
+                    ${progressValue.toFixed(1)}%
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * View project users - opens modal with assigned users and their progress
+ */
+function viewProjectUsers(projectId, projectName) {
+    console.log('Cargando usuarios del proyecto:', projectId, projectName);
+    
+    const modal = new bootstrap.Modal(document.getElementById('projectUsersModal'));
+    document.getElementById('projectUsersModalLabel').textContent = `Usuarios asignados a: ${projectName}`;
+    
+    // Reset variables
+    projectUsersData = [];
+    currentUsersPage = 1;
+    
+    // Clear search
+    document.getElementById('projectUsersSearch').value = '';
+    
+    // Load users
+    loadProjectUsers(projectId);
+    
+    modal.show();
+}
+
+function loadProjectUsers(projectId) {
+    const tableBody = document.getElementById('projectUsersTableBody');
+    
+    fetch(`${Config.API_ENDPOINTS.GET_PROJECT_USERS}?id=${projectId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta de red');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos de usuarios del proyecto:', data);
+            
+            if (data.success && data.usuarios) {
+                projectUsersData = data.usuarios;
+                displayProjectUsers(projectUsersData);
+                
+                // Setup search for users
+                const searchInput = document.getElementById('projectUsersSearch');
+                if (searchInput) {
+                    searchInput.removeEventListener('input', handleProjectUsersSearch);
+                    searchInput.addEventListener('input', handleProjectUsersSearch);
+                }
+            } else {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            <i class="mdi mdi-account-off" style="font-size: 48px; color: #ccc;"></i>
+                            <h5 class="mt-3">No hay usuarios asignados a este proyecto</h5>
+                        </td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando usuarios del proyecto:', error);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-danger">
+                        Error al cargar usuarios: ${error.message}
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+function handleProjectUsersSearch(event) {
+    const query = event.target.value.toLowerCase().trim();
+    
+    if (query === '') {
+        displayProjectUsers(projectUsersData);
+        return;
+    }
+    
+    const filtered = projectUsersData.filter(user => {
+        return user.nombre_completo.toLowerCase().includes(query) ||
+               user.e_mail.toLowerCase().includes(query) ||
+               user.num_empleado.toString().includes(query);
+    });
+    
+    displayProjectUsers(filtered);
+}
+
+function displayProjectUsers(users) {
+    const tableBody = document.getElementById('projectUsersTableBody');
+    
+    if (!users || users.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center text-muted">
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i>
+                    <h5 class="mt-3">No se encontraron usuarios</h5>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Calculate pagination for users
+    totalUsersPages = Math.ceil(users.length / usersRowsPerPage);
+    if (currentUsersPage > totalUsersPages && totalUsersPages > 0) {
+        currentUsersPage = totalUsersPages;
+    }
+    
+    const startIndex = (currentUsersPage - 1) * usersRowsPerPage;
+    const endIndex = startIndex + usersRowsPerPage;
+    const paginatedUsers = users.slice(startIndex, endIndex);
+    
+    tableBody.innerHTML = '';
+    
+    paginatedUsers.forEach((user, index) => {
+        const rowNumber = startIndex + index + 1;
+        const row = document.createElement('tr');
+        const progressBar = createUserProgressBar(user.progreso_porcentaje || 0);
+        
+        row.innerHTML = `
+            <td>${rowNumber}</td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="avatar avatar-sm me-2">
+                        <img src="../images/faces/face1.jpg" alt="avatar" class="rounded-circle">
+                    </div>
+                    <div>
+                        <strong>${escapeHtml(user.nombre_completo)}</strong>
+                    </div>
+                </div>
+            </td>
+            <td>${escapeHtml(user.e_mail)}</td>
+            <td>${user.num_empleado}</td>
+            <td>
+                ${progressBar}
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+    
+    updateProjectUsersPagination(users.length);
+}
+
+function updateProjectUsersPagination(totalUsers) {
+    const paginationContainer = document.querySelector('#projectUsersModal .pagination-container');
+    if (!paginationContainer) return;
+    
+    paginationContainer.innerHTML = '';
+    
+    // Info text
+    const infoText = document.createElement('div');
+    infoText.className = 'pagination-info text-center mb-3';
+    const startItem = ((currentUsersPage - 1) * usersRowsPerPage) + 1;
+    const endItem = Math.min(currentUsersPage * usersRowsPerPage, totalUsers);
+    infoText.innerHTML = `
+        <p class="mb-0">Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${totalUsers}</strong> usuarios</p>
+    `;
+    paginationContainer.appendChild(infoText);
+    
+    // Only show buttons if there are multiple pages
+    if (totalUsersPages <= 1) {
+        return;
+    }
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'pagination-buttons d-flex justify-content-center gap-2';
+    
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn btn-sm btn-outline-primary';
+    prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
+    prevBtn.disabled = currentUsersPage === 1;
+    prevBtn.addEventListener('click', () => {
+        if (currentUsersPage > 1) {
+            currentUsersPage--;
+            const filtered = document.getElementById('projectUsersSearch').value.toLowerCase().trim();
+            if (filtered) {
+                const filteredUsers = projectUsersData.filter(user => 
+                    user.nombre_completo.toLowerCase().includes(filtered) ||
+                    user.e_mail.toLowerCase().includes(filtered) ||
+                    user.num_empleado.toString().includes(filtered)
+                );
+                displayProjectUsers(filteredUsers);
+            } else {
+                displayProjectUsers(projectUsersData);
+            }
+        }
+    });
+    buttonContainer.appendChild(prevBtn);
+    
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-sm btn-outline-primary';
+    nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
+    nextBtn.disabled = currentUsersPage === totalUsersPages;
+    nextBtn.addEventListener('click', () => {
+        if (currentUsersPage < totalUsersPages) {
+            currentUsersPage++;
+            const filtered = document.getElementById('projectUsersSearch').value.toLowerCase().trim();
+            if (filtered) {
+                const filteredUsers = projectUsersData.filter(user => 
+                    user.nombre_completo.toLowerCase().includes(filtered) ||
+                    user.e_mail.toLowerCase().includes(filtered) ||
+                    user.num_empleado.toString().includes(filtered)
+                );
+                displayProjectUsers(filteredUsers);
+            } else {
+                displayProjectUsers(projectUsersData);
+            }
+        }
+    });
+    buttonContainer.appendChild(nextBtn);
+    
+    paginationContainer.appendChild(buttonContainer);
+}
+
 function showSuccessAlert(message) { 
     showAlert(message, 'success'); 
 } 
@@ -568,58 +876,119 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, function(m) { return map[m]; }); 
 } 
  
-
 function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) { 
-    const modal = document.getElementById('customConfirmModal'); 
-    const titleElement = document.getElementById('confirmTitle'); 
-    const messageElement = document.getElementById('confirmMessage'); 
+    const modal = document.getElementById('customConfirmModal');
+    
+    if (!modal) {
+        console.error('Modal #customConfirmModal not found in DOM');
+        return;
+    }
+
+    // Query elements fresh every time
+    const titleElement = modal.querySelector('#confirmTitle'); 
+    const messageElement = modal.querySelector('#confirmMessage'); 
     const headerElement = modal.querySelector('.modal-header'); 
-    const iconElement = modal.querySelector('.modal-title i'); 
-    const confirmBtn = document.getElementById('confirmOkBtn'); 
-    const cancelBtn = document.getElementById('confirmCancelBtn'); 
+    const confirmBtn = modal.querySelector('#confirmOkBtn'); 
+    const cancelBtn = modal.querySelector('#confirmCancelBtn');
+
+    // Validate all critical elements exist
+    if (!titleElement || !messageElement || !headerElement || !confirmBtn) {
+        console.error('Critical modal elements not found');
+        console.log({
+            titleElement,
+            messageElement,
+            headerElement,
+            confirmBtn
+        });
+        return;
+    }
 
     const config = { 
         confirmText: 'Aceptar', 
         cancelText: 'Cancelar', 
         type: 'warning', 
         ...options 
-    }; 
+    };
 
+    // Update text content
     titleElement.textContent = title; 
     messageElement.innerHTML = message.replace(/\n/g, '<br>'); 
     confirmBtn.textContent = config.confirmText; 
-    cancelBtn.textContent = config.cancelText; 
-    headerElement.className = 'modal-header'; 
+    if (cancelBtn) {
+        cancelBtn.textContent = config.cancelText;
+    }
+
+    // Reset header classes
+    headerElement.className = 'modal-header';
 
     const iconMap = { 
         'info': { icon: 'mdi-information-outline', class: 'bg-info text-white', btnClass: 'btn-info' }, 
         'warning': { icon: 'mdi-alert-outline', class: 'bg-warning text-white', btnClass: 'btn-warning' }, 
         'danger': { icon: 'mdi-alert-octagon-outline', class: 'bg-danger text-white', btnClass: 'btn-danger' }, 
         'success': { icon: 'mdi-check-circle-outline', class: 'bg-success text-white', btnClass: 'btn-success' } 
-    }; 
+    };
 
-    const typeConfig = iconMap[config.type] || iconMap['warning']; 
-    iconElement.className = `mdi ${typeConfig.icon} me-2`; 
-    headerElement.classList.add(...typeConfig.class.split(' ')); 
-    confirmBtn.className = `btn ${typeConfig.btnClass}`; 
-    const newConfirmBtn = confirmBtn.cloneNode(true); 
-    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); 
-    const newCancelBtn = cancelBtn.cloneNode(true); 
-    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn); 
-    newConfirmBtn.addEventListener('click', function() { 
-        const confirmModal = bootstrap.Modal.getInstance(modal); 
-        confirmModal.hide(); 
+    const typeConfig = iconMap[config.type] || iconMap['warning'];
+    
+    // Update icon
+    let iconElement = modal.querySelector('.modal-title i');
+    if (!iconElement) {
+        // Create icon if it doesn't exist
+        iconElement = document.createElement('i');
+        titleElement.insertBefore(iconElement, titleElement.firstChild);
+    }
+    iconElement.className = `mdi ${typeConfig.icon} me-2`;
+    
+    // Update header styles
+    headerElement.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success', 'text-white');
+    headerElement.classList.add(...typeConfig.class.split(' '));
+    
+    // Update button style
+    confirmBtn.className = `btn ${typeConfig.btnClass}`;
+
+    // Remove all old event listeners from confirm button
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+    // Add single click handler
+    newConfirmBtn.addEventListener('click', function(e) { 
+        e.preventDefault();
+        e.stopPropagation();
+        
+        try {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        } catch (err) {
+            console.error('Error hiding modal:', err);
+        }
+        
         if (onConfirm && typeof onConfirm === 'function') { 
-            onConfirm(); 
-        } 
-    }); 
-    const confirmModal = new bootstrap.Modal(modal); 
-    confirmModal.show(); 
+            onConfirm();
+        }
+    }, { once: true }); // Use 'once' option to auto-remove after firing
 
-} 
+    // Get or create modal instance
+    let modalInstance = bootstrap.Modal.getInstance(modal);
+    if (modalInstance) {
+        modalInstance.dispose();
+    }
+    
+    try {
+        const confirmModal = new bootstrap.Modal(modal, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        confirmModal.show();
+    } catch (err) {
+        console.error('Error showing modal:', err);
+    }
+}
 
 //hacer funciones globalmente disponibles
 window.confirmDelete = confirmDelete; 
 window.editarProyecto = editarProyecto;
 window.changePage = changePage;
 window.showConfirm = showConfirm;
+window.viewProjectUsers = viewProjectUsers;

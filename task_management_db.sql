@@ -343,6 +343,11 @@ ALTER TABLE `tbl_proyecto_usuarios`
   ADD CONSTRAINT `tbl_proyecto_usuarios_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `tbl_usuarios` (`id_usuario`) ON DELETE CASCADE;
 COMMIT;
 
+-- Add these columns to tbl_tareas if they don't exist
+
+-- Make id_proyecto nullable (optional, depending on your current setup)
+-- ALTER TABLE tbl_tareas MODIFY id_proyecto INT NULL;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

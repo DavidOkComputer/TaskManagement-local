@@ -1,5 +1,5 @@
 <?php
-/*save_task.php guardar tareaes y actualiza la barra de progreso basado en las tareas completadas*/
+/*save_task.php - guardar tareas e incorporar asignacion de usuario*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');
@@ -19,7 +19,8 @@ try {
     $id_proyecto = isset($_POST['id_proyecto']) ? intval($_POST['id_proyecto']) : 0;
     $fecha_cumplimiento = isset($_POST['fecha_vencimiento']) ? trim($_POST['fecha_vencimiento']) : '';
     $estado = isset($_POST['estado']) ? trim($_POST['estado']) : 'pendiente';
-    $id_creador = isset($_POST['id_creador']) ? intval($_POST['id_creador']) : 1; // Default to user 1 if not provided
+    $id_creador = isset($_POST['id_creador']) ? intval($_POST['id_creador']) : 1;
+    $id_participante = isset($_POST['id_participante']) && !empty($_POST['id_participante']) ? intval($_POST['id_participante']) : null;
 
     //validaciones 
     if (empty($nombre)) {
@@ -42,7 +43,7 @@ try {
         throw new Exception('La descripción no puede exceder 250 caracteres');
     }
 
-    //validar informacion
+    //validar fecha
     if (!empty($fecha_cumplimiento)) {
         if (strtotime($fecha_cumplimiento) === false) {
             throw new Exception('La fecha de cumplimiento no es válida');
@@ -54,6 +55,11 @@ try {
     $estado = strtolower($estado);
     if (!in_array($estado, $estados_validos)) {
         throw new Exception('El estado de la tarea no es válido');
+    }
+
+    //validar id_participante si se proporciona
+    if ($id_participante !== null && $id_participante <= 0) {
+        $id_participante = null;
     }
 
     $conn = getDBConnection();
@@ -72,15 +78,29 @@ try {
     }
     $stmt->close();
 
-    //insertar tarea
+    //verificar que el participante existe si se asigna uno
+    if ($id_participante !== null) {
+        $stmt = $conn->prepare("SELECT id_usuario FROM tbl_usuarios WHERE id_usuario = ?");
+        $stmt->bind_param("i", $id_participante);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            throw new Exception('El usuario especificado no existe');
+        }
+        $stmt->close();
+    }
+
+    //insertar tarea con id_participante
     $sql = "INSERT INTO tbl_tareas (
                 nombre, 
                 descripcion, 
                 id_proyecto, 
                 id_creador, 
                 fecha_cumplimiento, 
-                estado
-            ) VALUES (?, ?, ?, ?, ?, ?)";
+                estado,
+                id_participante
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
 
@@ -88,20 +108,16 @@ try {
         throw new Exception("Error al preparar la consulta: " . $conn->error);
     }
 
-    // s - nombre
-    // s - descripcion
-    // i - id_proyecto
-    // i - id_creador
-    // s - fecha_cumplimiento (WAS: i - WRONG!)
-    // s - estado
+    // Bind parameters: s=string, i=integer
     $stmt->bind_param(
-        "ssiiss",
+        "ssiissi",
         $nombre,
         $descripcion,
         $id_proyecto,
         $id_creador,
         $fecha_cumplimiento,
-        $estado
+        $estado,
+        $id_participante
     );
 
     if (!$stmt->execute()) {
@@ -140,11 +156,11 @@ function recalculateProjectProgress($conn, $id_proyecto) {
         $total_tasks = (int)$row['total'];
         $stmt->close();
 
-        //  sino hay tareas el progreso es 0
+        //si no hay tareas el progreso es 0
         if ($total_tasks === 0) {
             $progress = 0;
         } else {
-            //obtener el conteo completo de tareas
+            //obtener el conteo de tareas completadas
             $stmt = $conn->prepare("SELECT COUNT(*) as completadas FROM tbl_tareas WHERE id_proyecto = ? AND estado = 'completado'");
             $stmt->bind_param("i", $id_proyecto);
             $stmt->execute();
@@ -172,7 +188,7 @@ function recalculateProjectProgress($conn, $id_proyecto) {
     }
 }
 
-//determinar el estado del progreso basado en la fecha de entrea
+//determinar el estado del progreso basado en la fecha de entrega
 function determineProjectStatus($progress, $id_proyecto, $conn) {
     try {
         //obtener fecha de entrega de proyecto

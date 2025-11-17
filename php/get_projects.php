@@ -1,5 +1,5 @@
 <?php
-// obtener_proyectos.php
+// get_projects.php - MODIFIED to use id_tipo_proyecto
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -22,6 +22,7 @@ try {
                 p.fecha_cumplimiento,
                 p.progreso,
                 p.estado,
+                p.id_tipo_proyecto,
                 d.nombre as area,
                 u.nombre as participante_nombre,
                 u.apellido as participante_apellido,
@@ -40,6 +41,16 @@ try {
     $proyectos = [];
     
     while ($row = $result->fetch_assoc()) {
+        // Determine participante display text based on project type
+        // id_tipo_proyecto = 1 is group project, 2 is individual project
+        if ((int)$row['id_tipo_proyecto'] === 1) {
+            $participante_text = 'Grupo';
+        } elseif ($row['participante_nombre']) {
+            $participante_text = $row['participante_nombre'] . ' ' . $row['participante_apellido'];
+        } else {
+            $participante_text = 'Sin asignar';
+        }
+        
         $proyectos[] = [
             'id_proyecto' => (int)$row['id_proyecto'],
             'nombre' => $row['nombre'],
@@ -48,8 +59,9 @@ try {
             'fecha_cumplimiento' => $row['fecha_cumplimiento'],
             'progreso' => (int)$row['progreso'],
             'estado' => $row['estado'],
-            'participante' => ($row['participante_nombre'] ? $row['participante_nombre'] . ' ' . $row['participante_apellido'] : 'Sin asignar'),
-            'id_participante' => (int)$row['id_participante']
+            'participante' => $participante_text,
+            'id_participante' => (int)$row['id_participante'],
+            'id_tipo_proyecto' => (int)$row['id_tipo_proyecto']
         ];
     }
     

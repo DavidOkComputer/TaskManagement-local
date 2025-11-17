@@ -1,13 +1,9 @@
-/**
- * custom_dialogs.js - Shared custom dialog system
- * Use this in any page by including it before your page-specific JS
- */
+/**custom_dialogs.js - dialogo personalizado de la app*/
 
 function createCustomDialogSystem() {
-    // Check if modal already exists to prevent duplicates
     if (document.getElementById('customConfirmModal')) {
         return;
-    }
+    }//prevenir duplicados
 
     const dialogHTML = `
         <!-- Custom Confirm Dialog -->
@@ -36,8 +32,7 @@ function createCustomDialogSystem() {
     document.body.insertAdjacentHTML('beforeend', dialogHTML);
 }
 
-function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) {
-    // Initialize dialog if it doesn't exist
+function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) {//inicializar dialogo
     if (!document.getElementById('customConfirmModal')) {
         createCustomDialogSystem();
     }
@@ -78,13 +73,11 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 
     confirmBtn.className = `btn ${typeConfig.btnClass}`;
 
-    // Clone buttons to remove old event listeners
     const newConfirmBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
     const newCancelBtn = cancelBtn.cloneNode(true);
     cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
 
-    // Add new event listeners
     newConfirmBtn.addEventListener('click', function() {
         const confirmModal = bootstrap.Modal.getInstance(modal);
         confirmModal.hide();
@@ -97,6 +90,5 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     confirmModal.show();
 }
 
-// Make functions globally available
 window.showConfirm = showConfirm;
 window.createCustomDialogSystem = createCustomDialogSystem;

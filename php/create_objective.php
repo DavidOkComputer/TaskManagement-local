@@ -96,12 +96,11 @@ try {
                 descripcion, 
                 id_departamento, 
                 fecha_cumplimiento, 
-                progreso, 
                 estado, 
                 ar, 
                 archivo_adjunto, 
                 id_creador
-            ) VALUES (?, ?, ?, ?, 0, 'pendiente', ?, ?, ?)";
+            ) VALUES (?, ?, ?, ?, 'pendiente', ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
     

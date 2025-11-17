@@ -6,10 +6,9 @@ const Config = {
 }; 
 
 let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
-let filteredUsuarios = []; // NEW - filtered results
+let filteredUsuarios = [];
 let allDepartamentos = []; //guardar todos los departamentos
 
-// Pagination and sorting variables - NEW
 let currentSortColumn = null;
 let sortDirection = 'asc';
 let currentPage = 1;
@@ -55,7 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Botón "Guardar Cambios" inicializado');
     }
 
-    // NEW - Initialize sorting and pagination
     setupSorting();
     setupPagination();
     
@@ -147,14 +145,14 @@ function loadUsuarios() {
     .then(data => {
         if (data.success && data.usuarios) {
             allUsuarios = data.usuarios;
-            filteredUsuarios = [...allUsuarios]; // NEW - initialize filtered
-            currentPage = 1; // NEW - reset to first page
+            filteredUsuarios = [...allUsuarios]; 
+            currentPage = 1;
             logAction('Usuarios cargados exitosamente', { 
                 cantidad: data.usuarios.length,
                 usuarios: data.usuarios.map(u => ({ id: u.id_usuario, nombre: u.nombre + ' ' + u.apellido }))
             });
             console.table(data.usuarios); //mostrar formato d etabla
-            displayUsuarios(allUsuarios); // NEW - use displayUsuarios instead of renderUsuariosTable
+            displayUsuarios(allUsuarios); 
             showSuccess(`Se cargaron ${data.usuarios.length} usuarios`);
         } else {
             const errorMsg = data.message || 'Error desconocido';
@@ -170,7 +168,6 @@ function loadUsuarios() {
     });
 }
 
-// NEW - Sorting functions
 function setupSorting() {
     const headers = document.querySelectorAll('th.sortable-header');
     headers.forEach(header => {
@@ -185,7 +182,7 @@ function setupSorting() {
             }
             
             updateSortIndicators();
-            currentPage = 1; // Reset to first page when sorting
+            currentPage = 1; 
             const sorted = sortUsuarios(filteredUsuarios, column, sortDirection);
             displayUsuarios(sorted);
         });
@@ -216,7 +213,6 @@ function sortUsuarios(usuarios, column, direction) {
     sorted.sort((a, b) => {
         let valueA, valueB;
         
-        // Handle relationship lookups
         if (column === 'departamento') {
             valueA = getDepartamentoName(a.id_departamento);
             valueB = getDepartamentoName(b.id_departamento);
@@ -237,7 +233,6 @@ function sortUsuarios(usuarios, column, direction) {
         if (valueA === null || valueA === undefined) valueA = '';
         if (valueB === null || valueB === undefined) valueB = '';
         
-        // Convert to strings for comparison
         valueA = String(valueA).toLowerCase();
         valueB = String(valueB).toLowerCase();
         
@@ -258,7 +253,6 @@ function getRolText(roleId) {
     return rolMap[roleId] || 'Sin rol';
 }
 
-// NEW - Pagination functions
 function setupPagination() {
     const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
     if (rowsPerPageSelect) {
@@ -386,18 +380,16 @@ function updatePaginationControls() {
     paginationContainer.appendChild(buttonContainer);
 }
 
-// NEW - Display function that handles pagination
 function displayUsuarios(usuarios) {
     const tableBody = document.getElementById('usuariosTableBody');
     if (!tableBody) return;
 
-    // Calculate pagination
     totalPages = calculatePages(usuarios);
     if (currentPage > totalPages && totalPages > 0) {
         currentPage = totalPages;
     }
 
-    // Get paginated usuarios
+
     const paginatedUsuarios = getPaginatedUsuarios(usuarios);
 
     tableBody.innerHTML = '';
@@ -421,17 +413,14 @@ function displayUsuarios(usuarios) {
         return;
     }
 
-    // Render paginated usuarios
     paginatedUsuarios.forEach(usuario => {
         const row = createUsuarioRow(usuario);
         tableBody.appendChild(row);
     });
 
-    // Attach event listeners to checkboxes and buttons
     attachCheckboxListeners();
     attachButtonListeners();
 
-    // Update pagination controls
     updatePaginationControls();
 }
 
@@ -480,7 +469,6 @@ function createUsuarioRow(usuario) {
     return tr;
 }
 
-// UPDATED - renderUsuariosTable is now just a wrapper for compatibility
 function renderUsuariosTable(usuarios) {
     displayUsuarios(usuarios);
 }
@@ -513,9 +501,9 @@ function filterUsuarios() {
     const searchInput = document.getElementById('searchUser').value.toLowerCase();
     
     if (!searchInput.trim()) {
-        filteredUsuarios = [...allUsuarios]; // NEW
-        currentPage = 1; // NEW - Reset to first page
-        const sorted = currentSortColumn  // NEW - Maintain sort
+        filteredUsuarios = [...allUsuarios]; 
+        currentPage = 1; 
+        const sorted = currentSortColumn
             ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
             : filteredUsuarios;
         displayUsuarios(sorted);
@@ -544,10 +532,9 @@ function filterUsuarios() {
     
     console.log(`Búsqueda: "${searchInput}" - ${filtered.length} resultados de ${allUsuarios.length}`);
     
-    filteredUsuarios = filtered; // NEW - Update filtered
-    currentPage = 1; // NEW - Reset to first page
+    filteredUsuarios = filtered; 
+    currentPage = 1; 
     
-    // NEW - Maintain sort if active
     const sorted = currentSortColumn
         ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
         : filteredUsuarios;
@@ -720,15 +707,13 @@ function deleteUser(id) {
         if (data.success) {
             showSuccessAlert(data.message || 'Usuario eliminado exitosamente');
             allUsuarios = allUsuarios.filter(u => u.id_usuario != id);
-            filteredUsuarios = filteredUsuarios.filter(u => u.id_usuario != id); // NEW
+            filteredUsuarios = filteredUsuarios.filter(u => u.id_usuario != id);
             
-            // NEW - Recalculate pages after deletion
             totalPages = calculatePages(filteredUsuarios);
             if (currentPage > totalPages && totalPages > 0) {
                 currentPage = totalPages;
             }
             
-            // NEW - Maintain sort
             const sorted = currentSortColumn
                 ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
                 : filteredUsuarios;
