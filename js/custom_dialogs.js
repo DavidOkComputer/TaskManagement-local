@@ -1,16 +1,10 @@
 /**  custom_dialogs.js - dialogo personalizado compartido para el sistema*/
-
-/**
- * Initialize custom dialogs by injecting modal HTML into the DOM
- * This ensures all modals are available before any dialogs are triggered
- */
 function initializeCustomDialogs() {
-    // Check if modal already exists
-    if (document.getElementById('customConfirmModal')) {
+    if (document.getElementById('customConfirmModal')) {//revisar si ya existe el modal
         return;
     }
 
-    // Create modal HTML
+    // Crear modal HTML
     const modalHTML = `
         <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="confirmTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -33,12 +27,11 @@ function initializeCustomDialogs() {
         </div>
     `;
 
-    // Inject modal into DOM
+    //insertar modal en el dom
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
-// Initialize dialogs when DOM is ready
-if (document.readyState === 'loading') {
+if (document.readyState === 'loading') {//iicializar dialogos cuando el DOM esta listo
     document.addEventListener('DOMContentLoaded', initializeCustomDialogs);
 } else {
     initializeCustomDialogs();

@@ -537,8 +537,6 @@ function deleteProject(id) {
     }); 
 }
 
-// ============= MODAL DE USUARIOS DEL PROYECTO =============
-
 function createProjectUsersModal() {
     const modalHTML = `
         <div class="modal fade" id="projectUsersModal" tabindex="-1" role="dialog" aria-labelledby="projectUsersModalLabel" aria-hidden="true">
@@ -592,9 +590,6 @@ function createProjectUsersModal() {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
-/**
- * Helper function to create user progress bar
- */
 function createUserProgressBar(progress) {
     const progressValue = parseInt(progress) || 0;
     const progressClass = progressValue >= 75 ? 'bg-success' :
@@ -617,23 +612,17 @@ function createUserProgressBar(progress) {
     `;
 }
 
-/**
- * View project users - opens modal with assigned users and their progress
- */
 function viewProjectUsers(projectId, projectName) {
     console.log('Cargando usuarios del proyecto:', projectId, projectName);
     
     const modal = new bootstrap.Modal(document.getElementById('projectUsersModal'));
     document.getElementById('projectUsersModalLabel').textContent = `Usuarios asignados a: ${projectName}`;
     
-    // Reset variables
-    projectUsersData = [];
+    projectUsersData = [];//reiniciar variables
     currentUsersPage = 1;
     
-    // Clear search
-    document.getElementById('projectUsersSearch').value = '';
+    document.getElementById('projectUsersSearch').value = '';//limpiar busqueda
     
-    // Load users
     loadProjectUsers(projectId);
     
     modal.show();
@@ -656,8 +645,7 @@ function loadProjectUsers(projectId) {
                 projectUsersData = data.usuarios;
                 displayProjectUsers(projectUsersData);
                 
-                // Setup search for users
-                const searchInput = document.getElementById('projectUsersSearch');
+                const searchInput = document.getElementById('projectUsersSearch');//setup de busqueda de usuarios
                 if (searchInput) {
                     searchInput.removeEventListener('input', handleProjectUsersSearch);
                     searchInput.addEventListener('input', handleProjectUsersSearch);
@@ -764,8 +752,7 @@ function updateProjectUsersPagination(totalUsers) {
     
     paginationContainer.innerHTML = '';
     
-    // Info text
-    const infoText = document.createElement('div');
+    const infoText = document.createElement('div');//texto de informacion
     infoText.className = 'pagination-info text-center mb-3';
     const startItem = ((currentUsersPage - 1) * usersRowsPerPage) + 1;
     const endItem = Math.min(currentUsersPage * usersRowsPerPage, totalUsers);
@@ -774,16 +761,14 @@ function updateProjectUsersPagination(totalUsers) {
     `;
     paginationContainer.appendChild(infoText);
     
-    // Only show buttons if there are multiple pages
-    if (totalUsersPages <= 1) {
+    if (totalUsersPages <= 1) {//solo mostrar botones cuando hay varias paginas
         return;
     }
     
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'pagination-buttons d-flex justify-content-center gap-2';
     
-    // Previous button
-    const prevBtn = document.createElement('button');
+    const prevBtn = document.createElement('button');//boton previo
     prevBtn.className = 'btn btn-sm btn-outline-primary';
     prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
     prevBtn.disabled = currentUsersPage === 1;
@@ -805,8 +790,7 @@ function updateProjectUsersPagination(totalUsers) {
     });
     buttonContainer.appendChild(prevBtn);
     
-    // Next button
-    const nextBtn = document.createElement('button');
+    const nextBtn = document.createElement('button');//boton siguiente
     nextBtn.className = 'btn btn-sm btn-outline-primary';
     nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
     nextBtn.disabled = currentUsersPage === totalUsersPages;
@@ -884,15 +868,13 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         return;
     }
 
-    // Query elements fresh every time
     const titleElement = modal.querySelector('#confirmTitle'); 
     const messageElement = modal.querySelector('#confirmMessage'); 
     const headerElement = modal.querySelector('.modal-header'); 
     const confirmBtn = modal.querySelector('#confirmOkBtn'); 
     const cancelBtn = modal.querySelector('#confirmCancelBtn');
 
-    // Validate all critical elements exist
-    if (!titleElement || !messageElement || !headerElement || !confirmBtn) {
+    if (!titleElement || !messageElement || !headerElement || !confirmBtn) {//validar todos los elementos
         console.error('Critical modal elements not found');
         console.log({
             titleElement,
@@ -910,16 +892,14 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         ...options 
     };
 
-    // Update text content
-    titleElement.textContent = title; 
+    titleElement.textContent = title; //actualizar contenido de texto
     messageElement.innerHTML = message.replace(/\n/g, '<br>'); 
     confirmBtn.textContent = config.confirmText; 
     if (cancelBtn) {
         cancelBtn.textContent = config.cancelText;
     }
 
-    // Reset header classes
-    headerElement.className = 'modal-header';
+    headerElement.className = 'modal-header';//reiniciar manejo de clase
 
     const iconMap = { 
         'info': { icon: 'mdi-information-outline', class: 'bg-info text-white', btnClass: 'btn-info' }, 
@@ -930,27 +910,21 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 
     const typeConfig = iconMap[config.type] || iconMap['warning'];
     
-    // Update icon
-    let iconElement = modal.querySelector('.modal-title i');
+    let iconElement = modal.querySelector('.modal-title i');//actualizar icono
     if (!iconElement) {
-        // Create icon if it doesn't exist
-        iconElement = document.createElement('i');
+        iconElement = document.createElement('i');//si no existe, crear el icono
         titleElement.insertBefore(iconElement, titleElement.firstChild);
     }
     iconElement.className = `mdi ${typeConfig.icon} me-2`;
     
-    // Update header styles
-    headerElement.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success', 'text-white');
+    headerElement.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success', 'text-white');//actualizar estilos
     headerElement.classList.add(...typeConfig.class.split(' '));
     
-    // Update button style
     confirmBtn.className = `btn ${typeConfig.btnClass}`;
 
-    // Remove all old event listeners from confirm button
     const newConfirmBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
-    // Add single click handler
     newConfirmBtn.addEventListener('click', function(e) { 
         e.preventDefault();
         e.stopPropagation();
@@ -967,10 +941,9 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         if (onConfirm && typeof onConfirm === 'function') { 
             onConfirm();
         }
-    }, { once: true }); // Use 'once' option to auto-remove after firing
+    }, { once: true }); //opcion de una vez para remover despues 
 
-    // Get or create modal instance
-    let modalInstance = bootstrap.Modal.getInstance(modal);
+    let modalInstance = bootstrap.Modal.getInstance(modal);//obtener o crear la instancia del modal
     if (modalInstance) {
         modalInstance.dispose();
     }

@@ -8,7 +8,7 @@ const Config = {
 let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
 let filteredUsuarios = [];
 let allDepartamentos = []; //guardar todos los departamentos
-
+let allUsersData=[];//guardat todos los usuarios con su informacion de proyecto
 let currentSortColumn = null;
 let sortDirection = 'asc';
 let currentPage = 1;
@@ -213,7 +213,7 @@ function sortUsuarios(usuarios, column, direction) {
     sorted.sort((a, b) => {
         let valueA, valueB;
         
-        if (column === 'departamento') {
+        if (column === 'departamento') {    
             valueA = getDepartamentoName(a.id_departamento);
             valueB = getDepartamentoName(b.id_departamento);
         } else if (column === 'superior') {
@@ -258,7 +258,7 @@ function setupPagination() {
     if (rowsPerPageSelect) {
         rowsPerPageSelect.addEventListener('change', function() {
             rowsPerPage = parseInt(this.value);
-            currentPage = 1; // Reset to first page when changing rows per page
+            currentPage = 1; //reiniciar a la primer pagina cuando cargan las filas por pagina
             displayUsuarios(filteredUsuarios);
         });
     }
@@ -285,11 +285,9 @@ function updatePaginationControls() {
     const paginationContainer = document.querySelector('.pagination-container');
     if (!paginationContainer) return;
 
-    // Clear existing pagination
-    paginationContainer.innerHTML = '';
+    paginationContainer.innerHTML = '';// limpiar paginacion existente
 
-    // Create pagination info text
-    const infoText = document.createElement('div');
+    const infoText = document.createElement('div');// crear texto de info de paginacion
     infoText.className = 'pagination-info';
     const startItem = ((currentPage - 1) * rowsPerPage) + 1;
     const endItem = Math.min(currentPage * rowsPerPage, filteredUsuarios.length);
@@ -298,36 +296,30 @@ function updatePaginationControls() {
     `;
     paginationContainer.appendChild(infoText);
 
-    // Create button container
-    const buttonContainer = document.createElement('div');
+    const buttonContainer = document.createElement('div'); //crear contenedor de boton
     buttonContainer.className = 'pagination-buttons';
 
-    // Previous button
-    const prevBtn = document.createElement('button');
+    const prevBtn = document.createElement('button'); //boton d eanterior
     prevBtn.className = 'btn btn-sm btn-outline-primary';
     prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
     prevBtn.disabled = currentPage === 1;
     prevBtn.addEventListener('click', () => changePage(currentPage - 1));
     buttonContainer.appendChild(prevBtn);
 
-    // Page buttons container
-    const pageButtonsContainer = document.createElement('div');
+    const pageButtonsContainer = document.createElement('div');//contenedor de botones de pagina
     pageButtonsContainer.className = 'page-buttons';
 
-    // Calculate which pages to show
-    let startPage = Math.max(1, currentPage - 2);
+    let startPage = Math.max(1, currentPage - 2);//calcular que pagina mostrar
     let endPage = Math.min(totalPages, currentPage + 2);
 
-    // Adjust if near beginning or end
-    if (currentPage <= 3) {
+    if (currentPage <= 3) {//ajustar dependiendo de si esta al principio o al fin
         endPage = Math.min(totalPages, 5);
     }
     if (currentPage > totalPages - 3) {
         startPage = Math.max(1, totalPages - 4);
     }
 
-    // First page button
-    if (startPage > 1) {
+    if (startPage > 1) {//boton de primer pagina
         const firstBtn = document.createElement('button');
         firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
         firstBtn.textContent = '1';
@@ -342,8 +334,7 @@ function updatePaginationControls() {
         }
     }
 
-    // Page number buttons
-    for (let i = startPage; i <= endPage; i++) {
+    for (let i = startPage; i <= endPage; i++) {//botones de numero d epaginas
         const pageBtn = document.createElement('button');
         pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
         pageBtn.textContent = i;
@@ -351,8 +342,7 @@ function updatePaginationControls() {
         pageButtonsContainer.appendChild(pageBtn);
     }
 
-    // Last page button
-    if (endPage < totalPages) {
+    if (endPage < totalPages) {//boton de ultima pagina
         if (endPage < totalPages - 1) {
             const ellipsis = document.createElement('span');
             ellipsis.className = 'pagination-ellipsis';
@@ -369,8 +359,7 @@ function updatePaginationControls() {
 
     buttonContainer.appendChild(pageButtonsContainer);
 
-    // Next button
-    const nextBtn = document.createElement('button');
+    const nextBtn = document.createElement('button');//proximo boton
     nextBtn.className = 'btn btn-sm btn-outline-primary';
     nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
     nextBtn.disabled = currentPage === totalPages;
@@ -380,47 +369,188 @@ function updatePaginationControls() {
     paginationContainer.appendChild(buttonContainer);
 }
 
-function displayUsuarios(usuarios) {
+async function fetchUserProjects(userId) { 
+    try { 
+        const response = await fetch(`../php/get_user_projects.php?id_usuario=${userId}`); 
+        const data = await response.json(); 
+        if (data.success) { 
+            return data.proyectos; 
+        } else { 
+            throw new Error(data.message || 'Error al cargar proyectos'); 
+        } 
+    } catch (error) { 
+        console.error('Error fetching user projects:', error); 
+        return [];
+    } 
+} 
+
+async function calculateUserProgress(userId) { 
+    const projects = await fetchUserProjects(userId); 
+    if (projects.length === 0) { 
+        return { 
+            avgProgress: 0, 
+            totalProjects: 0, 
+            totalTasks: 0, 
+            completedTasks: 0 
+        }; 
+    } 
+    let totalProgress = 0; 
+    let totalTasks = 0; 
+    let completedTasks = 0; 
+    projects.forEach(project => { 
+        totalProgress += project.progreso; 
+        totalTasks += project.tareas_totales; 
+        completedTasks += project.tareas_completadas; 
+    }); 
+    return { 
+        avgProgress: projects.length > 0 ? totalProgress / projects.length : 0, 
+        totalProjects: projects.length, 
+        totalTasks: totalTasks, 
+        completedTasks: completedTasks 
+    }; 
+} 
+
+async function showUserProjects(userId, userName, userEmail) { 
+    const modal = new bootstrap.Modal(document.getElementById('viewProjectsModal')); 
+    document.getElementById('employeeName').textContent = userName; //informacion de empleado
+    document.getElementById('employeeEmail').textContent = userEmail; 
+    document.getElementById('projectsLoading').style.display = 'block'; //mostrar estado de carga
+    document.getElementById('projectsContainer').style.display = 'none'; 
+    document.getElementById('noProjects').style.display = 'none'; 
+    modal.show(); 
+    const projects = await fetchUserProjects(userId); //obtener proyectos
+    document.getElementById('projectsLoading').style.display = 'none'; //ocular carga
+    if (projects.length === 0) { 
+        document.getElementById('noProjects').style.display = 'block'; 
+        return; 
+    } 
+
+    //mostrar contendor de proyectos
+    document.getElementById('projectsContainer').style.display = 'block'; 
+
+    let totalTasks = 0; //calcular y mostrar resumen de estadisticas 
+    let completedTasks = 0; 
+    let totalProgress = 0; 
+    projects.forEach(project => { 
+        totalTasks += project.tareas_totales; 
+        completedTasks += project.tareas_completadas; 
+        totalProgress += project.progreso; 
+    }); 
+
+    const avgProgress = projects.length > 0 ? totalProgress / projects.length : 0; 
+    document.getElementById('totalProjects').textContent = projects.length; 
+    document.getElementById('totalTasks').textContent = totalTasks; 
+    document.getElementById('avgProgress').textContent = avgProgress.toFixed(1) + '%'; 
+    const projectsList = document.getElementById('projectsList'); //construir lista de proyectos
+    projectsList.innerHTML = projects.map(project => ` 
+        <div class="card mb-3"> 
+            <div class="card-body"> 
+                <div class="d-flex justify-content-between align-items-start mb-2"> 
+                    <div> 
+                        <h6 class="mb-1 fw-bold">${escapeHtml(project.nombre)}</h6> 
+                        <p class="text-muted mb-2 small">${escapeHtml(project.descripcion || 'Sin descripción')}</p> 
+                    </div> 
+                    <span class="badge ${getStatusBadgeClass(project.estado)}">${project.estado}</span> 
+                </div> 
+                <div class="row mb-2"> 
+                    <div class="col-6"> 
+                        <small class="text-muted"> 
+                            <i class="mdi mdi-view-grid"></i> Área: ${escapeHtml(project.area || 'N/A')} 
+                        </small> 
+                    </div> 
+                    <div class="col-6"> 
+                        <small class="text-muted"> 
+                            <i class="mdi mdi-calendar"></i> ${formatDate(project.fecha_cumplimiento)} 
+                        </small> 
+                    </div> 
+                </div> 
+                <div class="mb-2"> 
+                    <div class="d-flex justify-content-between mb-1"> 
+                        <small class="text-muted">Progreso: ${project.progreso_porcentaje}%</small> 
+                        <small class="text-muted">${project.tareas_completadas}/${project.tareas_totales} tareas</small> 
+                    </div> 
+                    <div class="progress" style="height: 10px;"> 
+                        <div class="progress-bar ${getProgressBarClass(project.progreso)}"  
+                             role="progressbar"  
+                             style="width: ${project.progreso}%" 
+                             aria-valuenow="${project.progreso}"  
+                             aria-valuemin="0"  
+                             aria-valuemax="100"> 
+                        </div> 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+    `).join(''); 
+} 
+
+function getStatusBadgeClass(status) { 
+    const statusMap = { 
+        'pendiente': 'bg-warning', 
+        'en_progreso': 'bg-info', 
+        'completado': 'bg-success', 
+        'cancelado': 'bg-danger' 
+    }; 
+    return statusMap[status] || 'bg-secondary'; 
+} 
+
+function getProgressBarClass(progress) { 
+    if (progress >= 75) return 'bg-success'; 
+    if (progress >= 50) return 'bg-info'; 
+    if (progress >= 25) return 'bg-warning'; 
+    return 'bg-danger'; 
+} 
+
+function formatDate(dateString) { 
+    if (!dateString) return 'N/A'; 
+    const date = new Date(dateString); 
+    return date.toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }); 
+} 
+
+async function displayUsuarios(usuarios) {
     const tableBody = document.getElementById('usuariosTableBody');
     if (!tableBody) return;
-
+ 
     totalPages = calculatePages(usuarios);
     if (currentPage > totalPages && totalPages > 0) {
         currentPage = totalPages;
     }
-
-
+ 
     const paginatedUsuarios = getPaginatedUsuarios(usuarios);
-
-    tableBody.innerHTML = '';
-
+ 
     if (!usuarios || usuarios.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No hay usuarios registrados</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No hay usuarios registrados</td></tr>';
         updatePaginationControls();
         return;
     }
-
+ 
     if (paginatedUsuarios.length === 0) {
         tableBody.innerHTML = `
-            <tr> 
-                <td colspan="6" class="text-center empty-state"> 
-                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
-                    <h5 class="mt-3">No se encontraron resultados en esta página</h5> 
-                </td> 
-            </tr> 
+            <tr>
+                <td colspan="7" class="text-center empty-state">
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i>
+                    <h5 class="mt-3">No se encontraron resultados en esta página</h5>
+                </td>
+            </tr>
         `;
         updatePaginationControls();
         return;
     }
-
-    paginatedUsuarios.forEach(usuario => {
+ 
+    // Calculate progress for all paginated users
+    const usersWithProgress = await Promise.all(paginatedUsuarios.map(async usuario => {
+        const progress = await calculateUserProgress(usuario.id_usuario);
+        return { ...usuario, ...progress };
+    }));
+ 
+    tableBody.innerHTML = '';
+    usersWithProgress.forEach(usuario => {
         const row = createUsuarioRow(usuario);
         tableBody.appendChild(row);
     });
-
+ 
     attachCheckboxListeners();
     attachButtonListeners();
-
     updatePaginationControls();
 }
 
@@ -431,25 +561,17 @@ function createUsuarioRow(usuario) {
     
     tr.innerHTML = `
         <td>
-            <div class="form-check form-check-flat mt-0">
-                <label class="form-check-label">
-                    <input type="checkbox" class="form-check-input usuario-checkbox" data-user-id="${usuario.id_usuario}" aria-checked="false">
-                    <i class="input-helper"></i>
-                </label>
-            </div>
-        </td>
-        <td>
-            <div class="d-flex">
-                <img src="../images/faces/face1.jpg" alt="" class="me-2">
+            <div class="d-flex align-items-center">
+                <img src="../images/faces/face1.jpg" alt="image" class="me-3 rounded-circle" style="width: 40px; height: 40px;">
                 <div>
-                    <h6>${escapeHtml(nombreCompleto)}</h6>
-                    <p>${usuario.num_empleado}</p>
+                    <h6 class="mb-0">${escapeHtml(nombreCompleto)}</h6>
+                    <small class="text-muted">${escapeHtml(usuario.e_mail)}</small>
                 </div>
             </div>
         </td>
         <td>
             <h6>${getDepartamentoName(usuario.id_departamento)}</h6>
-            <p>${escapeHtml(usuario.usuario)}</p>
+            <p class="text-muted mb-0">${escapeHtml(usuario.usuario)}</p>
         </td>
         <td>
             <h6>${getSuperiorName(usuario.id_superior)}</h6>
@@ -457,17 +579,137 @@ function createUsuarioRow(usuario) {
         <td>
             ${rolBadge}
         </td>
+        <td>
+            <div class="d-flex flex-column">
+                <div class="d-flex justify-content-between mb-1">
+                    <small>${usuario.avgProgress ? usuario.avgProgress.toFixed(1) : '0.0'}%</small>
+                    <small>${usuario.totalProjects || 0} proyecto${usuario.totalProjects !== 1 ? 's' : ''}</small>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar ${getProgressBarClass(usuario.avgProgress || 0)}"
+                         role="progressbar"
+                         style="width: ${usuario.avgProgress || 0}%"
+                         aria-valuenow="${usuario.avgProgress || 0}"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+        </td>
         <td class="action-buttons">
-            <button type="button" class="btn btn-sm btn-success btn-edit" data-user-id="${usuario.id_usuario}" data-nombre="${escapeHtml(usuario.nombre)}" data-apellido="${escapeHtml(usuario.apellido)}" data-usuario="${escapeHtml(usuario.usuario)}" data-email="${escapeHtml(usuario.e_mail)}" data-depart="${usuario.id_departamento}">
-                <i class="mdi mdi-pencil"></i> Editar
-            </button>
-            <button type="button" class="btn btn-sm btn-danger btn-delete" data-user-id="${usuario.id_usuario}" data-nombre="${escapeHtml(nombreCompleto)}" onclick="confirmDelete(${usuario.id_usuario}, '${escapeHtml(usuario.nombre)}')">
-                <i class="mdi mdi-delete"></i> Eliminar
-            </button>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-info btn-view-projects"
+                        data-user-id="${usuario.id_usuario}"
+                        data-nombre="${escapeHtml(nombreCompleto)}"
+                        data-email="${escapeHtml(usuario.e_mail)}"
+                        title="Ver proyectos">
+                    <i class="mdi mdi-folder-account"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-success btn-edit"
+                        data-user-id="${usuario.id_usuario}"
+                        data-nombre="${escapeHtml(usuario.nombre)}"
+                        data-apellido="${escapeHtml(usuario.apellido)}"
+                        data-usuario="${escapeHtml(usuario.usuario)}"
+                        data-email="${escapeHtml(usuario.e_mail)}"
+                        data-depart="${usuario.id_departamento}">
+                    <i class="mdi mdi-pencil"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-danger btn-delete"
+                        data-user-id="${usuario.id_usuario}"
+                        data-nombre="${escapeHtml(nombreCompleto)}">
+                    <i class="mdi mdi-delete"></i>
+                </button>
+            </div>
         </td>
     `;
+ 
     return tr;
 }
+
+/*
+async function renderUsers(users) { 
+    const tbody = document.getElementById('usuariosTableBody'); 
+    if (!users || users.length === 0) { 
+        tbody.innerHTML = ` 
+            <tr> 
+                <td colspan="7" class="text-center"> 
+                    <p class="text-muted my-3">No se encontraron usuarios</p> 
+                </td> 
+            </tr> 
+        `; 
+        return; 
+    } 
+
+    const usersWithProgress = await Promise.all(users.map(async user => { //calcular el progreso para todos los usuarios
+        const progress = await calculateUserProgress(user.id_usuario); 
+        return { ...user, ...progress }; 
+    })); 
+
+    tbody.innerHTML = usersWithProgress.map(user => ` 
+        <tr> 
+            <td> 
+                <div class="form-check form-check-flat mt-0"> 
+                    <label class="form-check-label"> 
+                        <input type="checkbox" class="form-check-input" value="${user.id_usuario}"><i class="input-helper"></i> 
+                    </label> 
+                </div> 
+            </td> 
+            <td> 
+                <div class="d-flex align-items-center"> 
+                    <img src="../images/faces/face1.jpg" alt="image" class="me-3 rounded-circle" style="width: 40px; height: 40px;"> 
+                    <div> 
+                        <h6 class="mb-0">${escapeHtml(user.nombre)} ${escapeHtml(user.apellido)}</h6> 
+                        <small class="text-muted">${escapeHtml(user.e_mail)}</small> 
+                    </div> 
+                </div> 
+            </td> 
+            <td>${escapeHtml(user.departamento || 'N/A')}</td> 
+            <td>${escapeHtml(user.superior || 'N/A')}</td> 
+            <td> 
+                <span class="badge badge-opacity-${getRoleBadgeColor(user.rol)}">${escapeHtml(user.rol || 'N/A')}</span> 
+            </td> 
+            <td> 
+                <div class="d-flex flex-column"> 
+                    <div class="d-flex justify-content-between mb-1"> 
+                        <small>${user.avgProgress.toFixed(1)}%</small> 
+                        <small>${user.totalProjects} proyectos</small> 
+                    </div> 
+                    <div class="progress" style="height: 8px;"> 
+                        <div class="progress-bar ${getProgressBarClass(user.avgProgress)}"  
+                             role="progressbar"  
+                             style="width: ${user.avgProgress}%" 
+                             aria-valuenow="${user.avgProgress}"  
+                             aria-valuemin="0"  
+                             aria-valuemax="100"> 
+                        </div> 
+                    </div> 
+                </div> 
+            </td> 
+            <td> 
+                <div class="btn-group" role="group"> 
+                    <button type="button"  
+                            class="btn btn-sm btn-info"  
+                            onclick="showUserProjects(${user.id_usuario}, '${escapeHtml(user.nombre)} ${escapeHtml(user.apellido)}', '${escapeHtml(user.e_mail)}')" 
+                            title="Ver proyectos"> 
+                        <i class="mdi mdi-folder-account"></i> 
+                    </button> 
+                    <button type="button"  
+                            class="btn btn-sm btn-primary"  
+                            onclick="editUser(${user.id_usuario})" 
+                            title="Editar"> 
+                        <i class="mdi mdi-pencil"></i> 
+                    </button> 
+                    <button type="button"  
+                            class="btn btn-sm btn-danger"  
+                            onclick="deleteUser(${user.id_usuario})" 
+                            title="Eliminar"> 
+                        <i class="mdi mdi-delete"></i> 
+                    </button> 
+                </div> 
+            </td> 
+        </tr> 
+    `).join(''); 
+} */
 
 function renderUsuariosTable(usuarios) {
     displayUsuarios(usuarios);
@@ -531,14 +773,11 @@ function filterUsuarios() {
     });
     
     console.log(`Búsqueda: "${searchInput}" - ${filtered.length} resultados de ${allUsuarios.length}`);
-    
     filteredUsuarios = filtered; 
     currentPage = 1; 
-    
     const sorted = currentSortColumn
         ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
         : filteredUsuarios;
-    
     displayUsuarios(sorted);
 }
 
@@ -550,7 +789,7 @@ function attachCheckboxListeners() {
 }
 
 function attachButtonListeners() {
-    const editButtons = document.querySelectorAll('.btn-edit');//editar listeners de botones
+    const editButtons = document.querySelectorAll('.btn-edit');//editar listener de botones
     editButtons.forEach(button => {
         button.addEventListener('click', function() {
             const userId = this.getAttribute('data-user-id');
@@ -560,6 +799,25 @@ function attachButtonListeners() {
             const email = this.getAttribute('data-email');
             const depart = this.getAttribute('data-depart');
             openEditModal(userId, nombre, apellido, usuario, email, depart);
+        });
+    });
+ 
+    const deleteButtons = document.querySelectorAll('.btn-delete');//eliminar listeners de botones
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const nombre = this.getAttribute('data-nombre');
+            confirmDelete(userId, nombre);
+        });
+    });
+ 
+    const viewProjectsButtons = document.querySelectorAll('.btn-view-projects');//ver listeners de botones de proyecto
+    viewProjectsButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const nombre = this.getAttribute('data-nombre');
+            const email = this.getAttribute('data-email');
+            showUserProjects(userId, nombre, email);
         });
     });
 }
@@ -880,7 +1138,7 @@ function escapeHtml(text) {
         '"': '&quot;',
         "'": '&#039;'
     };
-    return text.replace(/[&<>"']/g, m => map[m]);
+    return String(text).replace(/[&<>"']/g, function(m) { return map[m]; }); 
 }
 
 function logAction(action, details = {}) {

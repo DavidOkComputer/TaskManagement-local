@@ -18,9 +18,8 @@ let rowsPerPage = 10;
 let totalPages = 0; 
 
 document.addEventListener('DOMContentLoaded', function() { 
-    // Initialize the custom dialog system (create modal if it doesn't exist)
-    if (typeof createCustomDialogSystem === 'function') {
-        createCustomDialogSystem();
+    if (typeof createCustomDialogSystem === 'function') {//inicializar el sistema de dialogo de la app
+        createCustomDialogSystem();//crear el modal si no existe aun
     }
     
     setupSearch(); 
@@ -490,8 +489,7 @@ function updateObjectiveStatus(idObjetivo, nuevoEstado) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Update local data
-            const objective = allObjectives.find(obj => obj.id_objetivo === idObjetivo);
+            const objective = allObjectives.find(obj => obj.id_objetivo === idObjetivo);//actualizar info local
             if (objective) {
                 objective.estado = nuevoEstado;
             }
@@ -501,12 +499,10 @@ function updateObjectiveStatus(idObjetivo, nuevoEstado) {
                 filteredObjective.estado = nuevoEstado;
             }
 
-            // Show success message
-            const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';
+            const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';//mensaje de exito
             showSuccessAlert(`Objetivo marcado como ${statusText}`);
             
-            // Refresh display
-            const sorted = currentSortColumn
+            const sorted = currentSortColumn//actualizar el display
                 ? sortObjectives(filteredObjectives, currentSortColumn, sortDirection)
                 : filteredObjectives;
             displayObjectives(sorted);
@@ -611,15 +607,13 @@ function escapeHtml(text) {
 } 
 
 function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) { 
-    // Ensure custom dialog system is initialized
-    if (typeof createCustomDialogSystem === 'function') {
+    if (typeof createCustomDialogSystem === 'function') {//revisar que esta inicializado el sistema de dialogo
         createCustomDialogSystem();
     }
     
     const modal = document.getElementById('customConfirmModal');
     
-    // Safety check: if modal still doesn't exist, show alert instead
-    if (!modal) {
+    if (!modal) {//si aun no existe el modal en este punto,mostrar alerta
         console.error('ERROR: Modal element #customConfirmModal not found');
         const confirmAction = confirm(title + '\n\n' + message);
         if (confirmAction && onConfirm && typeof onConfirm === 'function') {

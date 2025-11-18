@@ -41,8 +41,8 @@ try {
     $proyectos = [];
     
     while ($row = $result->fetch_assoc()) {
-        // Determine participante display text based on project type
-        // id_tipo_proyecto = 1 is group project, 2 is individual project
+        //saber que tipo de participante mostrar basado en el tipo de projecto
+        // id_tipo_proyecto = 1 grupo, 2 individual 
         if ((int)$row['id_tipo_proyecto'] === 1) {
             $participante_text = 'Grupo';
         } elseif ($row['participante_nombre']) {

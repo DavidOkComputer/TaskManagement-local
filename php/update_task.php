@@ -22,47 +22,37 @@ try {
     $estado = isset($_POST['estado']) ? trim($_POST['estado']) : 'pendiente';
     $id_participante = isset($_POST['id_participante']) && !empty($_POST['id_participante']) ? intval($_POST['id_participante']) : null;
 
-    //validaciones
-    if ($id_tarea <= 0) {
+    if ($id_tarea <= 0) {//validaciones
         throw new Exception('El ID de la tarea no es válido');
     }
-
     if (empty($nombre)) {
         throw new Exception('El nombre de la tarea es requerido');
     }
-
     if (empty($descripcion)) {
         throw new Exception('La descripción es requerida');
     }
-
     if ($id_proyecto <= 0) {
         throw new Exception('Debe seleccionar un proyecto válido');
     }
-
     if (strlen($nombre) > 100) {
         throw new Exception('El nombre no puede exceder 100 caracteres');
     }
-
     if (strlen($descripcion) > 250) {
         throw new Exception('La descripción no puede exceder 250 caracteres');
     }
-
-    //validar fecha
-    if (!empty($fecha_cumplimiento)) {
+    if (!empty($fecha_cumplimiento)) {//validar la fecha
         if (strtotime($fecha_cumplimiento) === false) {
             throw new Exception('La fecha de cumplimiento no es válida');
         }
     }
 
-    //validar el estado
-    $estados_validos = ['pendiente', 'en-progreso', 'en proceso', 'completado'];
+    $estados_validos = ['pendiente', 'en-progreso', 'en proceso', 'completado'];//validar estado
     $estado = strtolower($estado);
     if (!in_array($estado, $estados_validos)) {
         throw new Exception('El estado de la tarea no es válido');
     }
 
-    //validar id_participante si se proporciona
-    if ($id_participante !== null && $id_participante <= 0) {
+    if ($id_participante !== null && $id_participante <= 0) {//validar id_participante si se proporciona
         $id_participante = null;
     }
 
@@ -71,8 +61,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    //verificar que la tarea existe
-    $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_tareas WHERE id_tarea = ?");
+    $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_tareas WHERE id_tarea = ?");//verificar que la tarea existe
     $stmt->bind_param("i", $id_tarea);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -85,8 +74,7 @@ try {
     $old_id_proyecto = $row['id_proyecto'];
     $stmt->close();
 
-    //verificar que el proyecto existe
-    $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_proyectos WHERE id_proyecto = ?");
+    $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_proyectos WHERE id_proyecto = ?");//verificar que el proyecto existe
     $stmt->bind_param("i", $id_proyecto);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -125,7 +113,6 @@ try {
         throw new Exception("Error al preparar la consulta: " . $conn->error);
     }
 
-    // Bind parameters: s=string, i=integer
     $stmt->bind_param(
         "ssiisii",
         $nombre,

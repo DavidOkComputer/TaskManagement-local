@@ -244,12 +244,6 @@
                 <table class="table select-table">
                   <thead>
                     <tr>
-                      <th>
-                        <div class="form-check form-check-flat mt-0">
-                          <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" id="selectAllCheckbox" aria-checked="false"><i class="input-helper"></i></label>
-                        </div>
-                      </th>
                       <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
                         Nombre <i class="mdi mdi-sort-variant"></i>
                       </th>
@@ -261,6 +255,9 @@
                       </th>
                       <th class="sortable-header" data-sort="rol" style="cursor: pointer; user-select: none;">
                         Rol <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="progreso" style="cursos:pointer; user-select:none;">
+                        Progreso <i class="mdi mdi-sort-variant"></i>
                       </th>
                       <th>Acciones</th>
                     </tr>

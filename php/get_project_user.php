@@ -1,9 +1,5 @@
 <?php
-/**
- * get_project_users.php (OPTIMIZED VERSION)
- * obtiene todos los usuarios asignados a un proyecto especifico con su progreso calculado
- * usando una sola query con agregación en lugar de múltiples consultas por usuario
- */
+/** get_project_users.php obtiene todos los usuarios asignados a un proyecto especifico con su progreso calculado*/
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -22,10 +18,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    /**
-     * OPTIMIZED QUERY - Single query with JOIN and aggregation
-     * This is much more efficient than N+1 queries
-     */
+    //query optimizada - solo una query con join y agregacion
     $sql = "SELECT 
                 pu.id_usuario,
                 u.nombre,

@@ -37,8 +37,19 @@ try {
         $result = $stmt->get_result();
     } else {
         //sin filtro, obtener todos los usuarios activos
-        $query = "SELECT id_usuario, nombre, apellido, num_empleado 
-                  FROM tbl_usuarios 
+        $query = "SELECT u.id_usuario, 
+                         u.nombre, 
+                         u.apellido, 
+                         u.usuario,
+                         u.num_empleado, 
+                         u.acceso, 
+                         u.id_departamento, 
+                         u.id_rol, 
+                         u.id_superior, 
+                         u.e_mail,
+                         d.nombre as area
+                  FROM tbl_usuarios u
+                  LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
                   ORDER BY apellido ASC, nombre ASC";
         $result = $conn->query($query);
     }
@@ -54,9 +65,16 @@ try {
             'id_usuario' => (int)$row['id_usuario'],
             'nombre' => $row['nombre'],
             'apellido' => $row['apellido'],
+            'usuario'=> $row['usuario'],
             'num_empleado' => (int)$row['num_empleado'],
             'nombre_completo' => $row['nombre'] . ' ' . $row['apellido'],
-            'nombre_empleado' => $row['nombre'] . ' ' . $row['apellido'] . ' (#' . $row['num_empleado'] . ')'
+            'nombre_empleado' => $row['nombre'] . ' ' . $row['apellido'] . ' (#' . $row['num_empleado'] . ')',
+            'acceso' => $row['acceso'],
+            'id_departamento'=> (int)$row['id_departamento'],
+            'id_superior'=> (int)$row['id_superior'],
+            'id_rol'=> (int)$row['id_rol'],
+            'e_mail'=> $row['e_mail'],
+            'area'=> $row['area']
         ];
     }
     
