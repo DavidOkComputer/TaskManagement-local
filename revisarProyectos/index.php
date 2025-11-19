@@ -1,5 +1,6 @@
 <?php
 /*require_once('php/check_auth.php');*/
+/*revisar proyectos*/ 
 ?>
 <!DOCTYPE html>
 <html lang="en">

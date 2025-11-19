@@ -1,5 +1,5 @@
 <?php
-// get_projects.php - MODIFIED to use id_tipo_proyecto
+// get_projects.php 
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
