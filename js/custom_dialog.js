@@ -1,4 +1,4 @@
-/**custom_dialogs.js - dialogo personalizado de la app*/
+/**custom_dialog.js - dialogo personalizado de la app*/
 
 function createCustomDialogSystem() {
     if (document.getElementById('customConfirmModal')) {

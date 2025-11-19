@@ -1,7 +1,8 @@
 const Config = { 
     API_ENDPOINTS: {  
         DELETE: '../php/delete_users.php',
-        GET_DEPARTMENTS: '../php/get_departments.php'
+        GET_DEPARTMENTS: '../php/get_departments.php',
+        GET_USERS: '../php/get_users.php'
     } 
 }; 
 
@@ -9,11 +10,16 @@ let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
 let filteredUsuarios = [];
 let allDepartamentos = []; //guardar todos los departamentos
 let allUsersData=[];//guardat todos los usuarios con su informacion de proyecto
+let usersProgressCache=[];
 let currentSortColumn = null;
 let sortDirection = 'asc';
 let currentPage = 1;
 let rowsPerPage = 10;
 let totalPages = 0;
+let projectUsersData = [];
+//variables de refresco automatico
+let autoRefreshInterval = null;
+let currentUserIdForProject = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // inicializar
@@ -29,7 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     loadDepartamentos(); // Cargar departamentos para el dropdown
     loadUsuarios();//cargar usuarios al cargar la pagina
-    
+    startAutoRefresh();//iniciar refresco de usuarios y progreso cada minuto
+
     const searchInput = document.getElementById('searchUser');//funcionalidad de buscar
     if (searchInput) {
         searchInput.addEventListener('input', filterUsuarios);
@@ -62,6 +69,62 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 createCustomDialogSystem();
+
+function startAutoRefresh(){
+    if(autoRefreshInterval){//para limpiar el intervalo
+        cleaninterval(autoRefreshInterval);
+    }
+    autoRefreshInterval = setInterval(() => {//configuracion para refrescar cada minuto
+        console.log('Auto-refresh: Actualizando datos de usuarios...');
+        refreshUserData();
+        if(currentUserIdForProject){
+            refreshUserProjectData();
+        }
+    }, 60000);
+}
+
+function stopAutoRefresh(){
+    if(autoRefreshInterval){
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        console.log('Auto-refresh detenido');
+    }
+}
+
+function refreshUserData(){
+    fetch('../php/get_users.php')
+    .then(response =>{
+        if(!response.ok){
+            throw new Error('La respuesta de red no fue ok');
+        }
+        return response.json();
+    })
+    .then(data =>{
+        if(data.success && data.usuarios){
+            //guardar el estado actual de la busqueda
+            const searchInput = document.getElementById('searchInput');
+            const currentSearchQuery = searchInput ? searchInput.value:'';
+            allUsuarios = data.usuarios;//actualizar los datos
+            if(currentSearchQuery.trim()!==''){//reaplicar los filtros de busqueda si existen
+                performSearch(currentSearchQuery);
+            } else{
+                filteredUsuarios = [...allUsuarios];
+            }if(currentSortColumn){//reaplicar ordenamiento si existe
+                filteredUsuarios = sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection);
+            }
+            const newTotalPages = calculatePages(filteredUsuarios);//actualizar la vista manteniendo la pagina actual si es posible
+            if(currentPage > newTotalPages && newTotalPages > 0){
+                currentPage = newTotalPages;
+            }
+            displayUsuarios(filteredUsuarios);
+            console.log('Datos de proyectos actualizados exitosamente');
+        }
+    })
+    .catch(error =>{
+        console.error('Error al refrescar usuarios:', error);
+        //no mostrar alerta para no interrumpir al usuario
+    });
+}
 
 // Cargar departamentos para el dropdown
 function loadDepartamentos() {
@@ -125,48 +188,56 @@ function populateDepartamentosDropdown() {
     });
 }
 
-function loadUsuarios() {
-    const tableBody = document.getElementById('usuariosTableBody');
-    
-    logAction('Cargando usuarios del servidor');
-    
-    fetch('../php/get_users.php', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success && data.usuarios) {
-            allUsuarios = data.usuarios;
-            filteredUsuarios = [...allUsuarios]; 
-            currentPage = 1;
-            logAction('Usuarios cargados exitosamente', { 
-                cantidad: data.usuarios.length,
-                usuarios: data.usuarios.map(u => ({ id: u.id_usuario, nombre: u.nombre + ' ' + u.apellido }))
-            });
-            console.table(data.usuarios); //mostrar formato d etabla
-            displayUsuarios(allUsuarios); 
-            showSuccess(`Se cargaron ${data.usuarios.length} usuarios`);
-        } else {
-            const errorMsg = data.message || 'Error desconocido';
-            logAction('Error al cargar usuarios', { error: errorMsg });
-            showError('Error al cargar usuarios: ' + errorMsg);
-            tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error al cargar usuarios</td></tr>';
-        }
-    })
-    .catch(error => {
-        console.error('Error de conexión en loadUsuarios:', error);
-        showError('Error de conexión: ' + error.message, error);
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error de conexión</td></tr>';
-    });
-}
+async function loadUsuarios() { 
+    const tableBody = document.getElementById('usuariosTableBody'); 
+    logAction('Cargando usuarios del servidor'); 
+    try { 
+        const response = await fetch('../php/get_users.php', { 
+            method: 'GET', 
+            headers: { 
+                'Content-Type': 'application/json' 
+            } 
+        }); 
+
+        if (!response.ok) { 
+            throw new Error(`HTTP error! status: ${response.status}`); 
+        } 
+        const data = await response.json(); 
+        if (data.success && data.usuarios) { 
+            allUsuarios = data.usuarios; 
+            // Calcular progreso para TODOS los usuarios 
+            logAction('Calculando progreso de todos los usuarios...'); 
+            showInfo('Calculando progreso de usuarios...'); 
+            const usersWithProgress = await Promise.all( 
+                allUsuarios.map(async usuario => { 
+                    const progress = await calculateUserProgress(usuario.id_usuario); 
+                    // Guardar en cache 
+                    usersProgressCache[usuario.id_usuario] = progress; 
+                    return { ...usuario, ...progress }; 
+                }) 
+            ); 
+            allUsuarios = usersWithProgress; 
+            filteredUsuarios = [...allUsuarios];  
+            currentPage = 1; 
+            logAction('Usuarios cargados exitosamente', {  
+                cantidad: data.usuarios.length, 
+                usuarios: data.usuarios.map(u => ({ id: u.id_usuario, nombre: u.nombre + ' ' + u.apellido })) 
+            }); 
+            console.table(data.usuarios); 
+            displayUsuarios(allUsuarios);  
+            showSuccess(`Se cargaron ${data.usuarios.length} usuarios`); 
+        } else { 
+            const errorMsg = data.message || 'Error desconocido'; 
+            logAction('Error al cargar usuarios', { error: errorMsg }); 
+            showError('Error al cargar usuarios: ' + errorMsg); 
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error al cargar usuarios</td></tr>'; 
+        } 
+    } catch (error) { 
+        console.error('Error de conexión en loadUsuarios:', error); 
+        showError('Error de conexión: ' + error.message, error); 
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error de conexión</td></tr>'; 
+    } 
+} 
 
 function setupSorting() {
     const headers = document.querySelectorAll('th.sortable-header');
@@ -207,41 +278,48 @@ function updateSortIndicators() {
     });
 }
 
-function sortUsuarios(usuarios, column, direction) {
-    const sorted = [...usuarios];
-    
-    sorted.sort((a, b) => {
-        let valueA, valueB;
-        
-        if (column === 'departamento') {    
-            valueA = getDepartamentoName(a.id_departamento);
-            valueB = getDepartamentoName(b.id_departamento);
-        } else if (column === 'superior') {
-            valueA = getSuperiorName(a.id_superior);
-            valueB = getSuperiorName(b.id_superior);
-        } else if (column === 'nombre') {
-            valueA = `${a.nombre} ${a.apellido}`;
-            valueB = `${b.nombre} ${b.apellido}`;
-        } else if (column === 'rol') {
-            valueA = getRolText(a.id_rol);
-            valueB = getRolText(b.id_rol);
-        } else {
-            valueA = a[column];
-            valueB = b[column];
-        }
-        
-        if (valueA === null || valueA === undefined) valueA = '';
-        if (valueB === null || valueB === undefined) valueB = '';
-        
-        valueA = String(valueA).toLowerCase();
-        valueB = String(valueB).toLowerCase();
-        
-        if (valueA < valueB) return direction === 'asc' ? -1 : 1;
-        if (valueA > valueB) return direction === 'asc' ? 1 : -1;
-        return 0;
-    });
-    return sorted;
-}
+function sortUsuarios(usuarios, column, direction) { 
+    const sorted = [...usuarios]; 
+    sorted.sort((a, b) => { 
+        let valueA, valueB; 
+        if (column === 'departamento') {     
+            valueA = getDepartamentoName(a.id_departamento); 
+            valueB = getDepartamentoName(b.id_departamento); 
+        } else if (column === 'superior') { 
+            valueA = getSuperiorName(a.id_superior); 
+            valueB = getSuperiorName(b.id_superior); 
+        } else if (column === 'nombre') { 
+            valueA = `${a.nombre} ${a.apellido}`; 
+            valueB = `${b.nombre} ${b.apellido}`; 
+        } else if (column === 'rol') { 
+
+            valueA = getRolText(a.id_rol); 
+
+            valueB = getRolText(b.id_rol); 
+
+        } else if (column === 'progreso') { 
+            valueA = a.avgProgress || 0; //ordenar por progreso
+            valueB = b.avgProgress || 0; 
+            // Para números, comparar directamente 
+            if (direction === 'asc') { 
+                return valueA - valueB; 
+            } else { 
+                return valueB - valueA; 
+            } 
+        } else { 
+            valueA = a[column]; 
+            valueB = b[column]; 
+        } 
+        if (valueA === null || valueA === undefined) valueA = ''; 
+        if (valueB === null || valueB === undefined) valueB = ''; 
+        valueA = String(valueA).toLowerCase(); 
+        valueB = String(valueB).toLowerCase(); 
+        if (valueA < valueB) return direction === 'asc' ? -1 : 1; 
+        if (valueA > valueB) return direction === 'asc' ? 1 : -1; 
+        return 0; 
+    }); 
+    return sorted; 
+} 
 
 function getRolText(roleId) {
     const rolMap = {
@@ -507,52 +585,40 @@ function formatDate(dateString) {
     return date.toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }); 
 } 
 
-async function displayUsuarios(usuarios) {
-    const tableBody = document.getElementById('usuariosTableBody');
-    if (!tableBody) return;
- 
-    totalPages = calculatePages(usuarios);
-    if (currentPage > totalPages && totalPages > 0) {
-        currentPage = totalPages;
-    }
- 
-    const paginatedUsuarios = getPaginatedUsuarios(usuarios);
- 
-    if (!usuarios || usuarios.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No hay usuarios registrados</td></tr>';
-        updatePaginationControls();
-        return;
-    }
- 
-    if (paginatedUsuarios.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center empty-state">
-                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i>
-                    <h5 class="mt-3">No se encontraron resultados en esta página</h5>
-                </td>
-            </tr>
-        `;
-        updatePaginationControls();
-        return;
-    }
- 
-    // Calculate progress for all paginated users
-    const usersWithProgress = await Promise.all(paginatedUsuarios.map(async usuario => {
-        const progress = await calculateUserProgress(usuario.id_usuario);
-        return { ...usuario, ...progress };
-    }));
- 
-    tableBody.innerHTML = '';
-    usersWithProgress.forEach(usuario => {
-        const row = createUsuarioRow(usuario);
-        tableBody.appendChild(row);
-    });
- 
-    attachCheckboxListeners();
-    attachButtonListeners();
-    updatePaginationControls();
-}
+async function displayUsuarios(usuarios) { 
+    const tableBody = document.getElementById('usuariosTableBody'); 
+    if (!tableBody) return; 
+    totalPages = calculatePages(usuarios); 
+    if (currentPage > totalPages && totalPages > 0) { 
+        currentPage = totalPages; 
+    } 
+    const paginatedUsuarios = getPaginatedUsuarios(usuarios); 
+    if (!usuarios || usuarios.length === 0) { 
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No hay usuarios registrados</td></tr>'; 
+        updatePaginationControls(); 
+        return; 
+    } 
+    if (paginatedUsuarios.length === 0) { 
+        tableBody.innerHTML = ` 
+            <tr> 
+                <td colspan="6" class="text-center empty-state"> 
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+                    <h5 class="mt-3">No se encontraron resultados en esta página</h5> 
+                </td> 
+            </tr> 
+        `; 
+        updatePaginationControls(); 
+        return; 
+    } 
+    tableBody.innerHTML = ''; 
+    paginatedUsuarios.forEach(usuario => { 
+        const row = createUsuarioRow(usuario); 
+        tableBody.appendChild(row); 
+    }); 
+    attachCheckboxListeners(); 
+    attachButtonListeners(); 
+    updatePaginationControls(); 
+} 
 
 function createUsuarioRow(usuario) {
     const tr = document.createElement('tr');
@@ -920,7 +986,6 @@ function handleSaveUserChanges(event) {
         if (responseData.success) {
             logAction('Usuario actualizado exitosamente', responseData.usuario);
             showSuccess('Usuario actualizado exitosamente', responseData.usuario);
-            
             const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
             modal.hide();
             loadUsuarios(); //recargar la tabla
@@ -1378,3 +1443,5 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 
 window.confirmDelete = confirmDelete;
 window.changePage = changePage;
+window.stopAutoRefresh = stopAutoRefresh;
+window.startAutoRefresh = startAutoRefresh;

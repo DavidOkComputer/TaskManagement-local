@@ -9,7 +9,7 @@
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Administrador de proyectos </title>
+  <title>Revisión de empleados </title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="../vendors/feather/feather.css">
   <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css">
@@ -214,69 +214,79 @@
         </ul>
       </nav>
       <!-- partial -->
-      <div class="row flex-grow">
-        <div class="col-12 grid-margin stretch-card">
-          <div class="card card-rounded">
-            <div class="card-body">
-              <div class="d-sm-flex justify-content-between align-items-start">
-                <div>
-                  <h4 class="card-title card-title-dash">Gestion de empleados</h4>
-                  <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los empleados</p>
-                </div>
-                <div>
-                  <a href="../registroDeEmpleados">
-                    <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo usuario</button>
-                  </a>
-                </div>
-              </div>
-              <!-- Rows Per Page Selector-->
-              <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
-                <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
-                <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">
-                  <option value="5">5</option>
-                  <option value="10" selected>10</option>
-                  <option value="15">15</option>
-                  <option value="20">20</option>
-                </select>
-              </div>
+      <div class="main-panel">
+        <div class="content-wrapper">
+          <div
+              id="alertMessage"
+              class="alert"
+              style="display: none;"
+              role="alert">
+            </div>
+          <div class="row flex-grow">
+            <div class="col-12 grid-margin stretch-card">
+              <div class="card card-rounded">
+                <div class="card-body">
+                  <div class="d-sm-flex justify-content-between align-items-start">
+                    <div>
+                      <h4 class="card-title card-title-dash">Gestion de empleados</h4>
+                      <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los empleados</p>
+                    </div>
+                    <div>
+                      <a href="../registroDeEmpleados">
+                        <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo usuario</button>
+                      </a>
+                    </div>
+                  </div>
+                  <!-- Rows Per Page Selector-->
+                  <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
+                    <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
+                    <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">
+                      <option value="5">5</option>
+                      <option value="10" selected>10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                    </select>
+                  </div>
 
-              <div class="table-responsive mt-1">
-                <table class="table select-table">
-                  <thead>
-                    <tr>
-                      <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
-                        Nombre <i class="mdi mdi-sort-variant"></i>
-                      </th>
-                      <th class="sortable-header" data-sort="superior" style="cursor: pointer; user-select: none;">
-                        Superior <i class="mdi mdi-sort-variant"></i>
-                      </th>
-                      <th class="sortable-header" data-sort="progreso" style="cursos:pointer; user-select:none;">
-                        Progreso <i class="mdi mdi-sort-variant"></i>
-                      </th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody id="usuariosTableBody">
-                    <!-- Users will be loaded here dynamically -->
-                    <tr>
-                      <td colspan="6" class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                          <span class="visually-hidden">Cargando...</span>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                  <div class="table-responsive mt-3">
+                    <table class="table select-table">
+                      <thead>
+                        <tr>
+                          <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
+                            Nombre <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="superior" style="cursor: pointer; user-select: none;">
+                            Superior <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="progreso" style="cursos:pointer; user-select:none;">
+                            Progreso <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody id="usuariosTableBody">
+                        <!-- Users will be loaded here dynamically -->
+                        <tr>
+                          <td colspan="6" class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                              <span class="visually-hidden">Cargando...</span>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
 
-              <!-- Pagination Controls - NEW -->
-              <div class="pagination-container mt-4">
-                <!-- Pagination info and buttons are dynamically inserted here -->
+                  <!-- Pagination Controls - NEW -->
+                  <div class="pagination-container mt-4">
+                    <!-- Pagination info and buttons are dynamically inserted here -->
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </div>    
       <!-- main-panel ends -->
     </div>
     <!-- content-wrapper ends --> 

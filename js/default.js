@@ -1,530 +1,967 @@
-/**create_proyect.js //javascript para creacion y edicion de proyectos*/
+/**manage projects maneja la carga y muestra todos los proyectos de la tabla con botones de accion*/ 
 
-const editMode = {
-    isEditing: false,
-    projectId: null
-};
+const Config = { 
+    API_ENDPOINTS: { 
+        DELETE: '../php/delete_project.php',
+        GET_PROJECT_USERS: '../php/get_project_user.php'
+    } 
+}; 
 
-// Estado para proyecto grupal
-const grupalState = {
-    selectedUsers: [],
-    usuariosModal: null
-};
+let allProjects = [];
+let currentSortColumn = null;
+let sortDirection = 'asc';
+let filteredProjects = [];
 
-//inicializar pagina al cargar
-document.addEventListener('DOMContentLoaded', function() {
-  // Detectar si estamos en modo edición
-  const params = new URLSearchParams(window.location.search);
-  editMode.projectId = params.get('edit');
-  editMode.isEditing = !!editMode.projectId;
-  
-  // Cambiar título y botón si estamos editando
-  if (editMode.isEditing) {
-    document.querySelector('h4.card-title')?.textContent == 'Editar Proyecto';
-    document.querySelector('p.card-subtitle')?.textContent == 'Actualiza la información del proyecto';
-    document.getElementById('btnCrear').textContent == 'Actualizar';
-  }
-  
-  cargarDepartamentos();
-  loadUsuarios();
-  setupFormHandlers();
-  setupGrupalHandlers();
-  
-  // Si es edición, cargar datos del proyecto
-  if (editMode.isEditing) {
-    cargarProyectoParaEditar(editMode.projectId);
-  }
-});
+//variables de paginacion
+let currentPage = 1;
+let rowsPerPage = 10;
+let totalPages = 0;
 
-const app = {
-    usuarios: []
-};
+// Variables para modal de usuarios
+let projectUsersData = [];
+let currentUsersPage = 1;
+let usersRowsPerPage = 10;
+let totalUsersPages = 0;
 
-function cargarDepartamentos() {
-  fetch('../php/get_departments.php')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('La respuesta de red no fue ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.success && data.departamentos) {
-        const select = document.getElementById('id_departamento');
-        data.departamentos.forEach(dept => {
-          const option = document.createElement('option');
-          option.value = dept.id_departamento;
-          option.textContent = dept.nombre;
-          select.appendChild(option);
+document.addEventListener('DOMContentLoaded', function() { 
+    initializeCustomDialogs();
+    setupSearch(); 
+    setupSorting();
+    setupPagination(); 
+    createProjectUsersModal();
+    cargarProyectos();
+}); 
+
+function cargarProyectos() { 
+    const tableBody = document.querySelector('#proyectosTableBody'); 
+    if(!tableBody) { 
+        console.error('El elemento de cuerpo de tabla no fue encontrado'); 
+        return; 
+    } 
+    tableBody.innerHTML = ` 
+        <tr> 
+            <td colspan="9" class="text-center"> 
+                <div class="spinner-border text-primary" role="status"> 
+                    <span class="visually-hidden">Cargando...</span> 
+                </div> 
+                <p class="mt-2">Cargando proyectos...</p> 
+            </td> 
+        </tr> 
+    `; 
+
+    fetch('../php/get_projects.php') 
+        .then(response => { 
+            if (!response.ok) { 
+                throw new Error('La respuesta de red no fue ok'); 
+            } 
+            return response.json(); 
+        }) 
+        .then(data => { 
+            console.log('Informacion recivida:', data);
+            if (data.success && data.proyectos) { 
+                allProjects = data.proyectos;
+                filteredProjects = [...allProjects];
+                currentPage = 1; // Reiniciar a la primera pagina al cargar
+                displayProjects(data.proyectos); 
+            } else { 
+                tableBody.innerHTML = ` 
+                    <tr> 
+                        <td colspan="9" class="text-center text-danger"> 
+                            <p class="mt-3">Error al cargar proyectos: ${data.message || 'Error desconocido'}</p> 
+                        </td> 
+                    </tr> 
+                `; 
+            } 
+        }) 
+        .catch(error => { 
+            console.error('Error cargando proyectos:', error); 
+            tableBody.innerHTML = ` 
+                <tr> 
+                    <td colspan="9" class="text-center text-danger"> 
+                        <p class="mt-3">Error al cargar los proyectos: ${error.message}</p> 
+                    </td> 
+                </tr> 
+            `; 
+        }); 
+}
+
+function setupSorting() {
+    const headers = document.querySelectorAll('th.sortable-header');
+    headers.forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.dataset.sort;
+            
+            if (currentSortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            updateSortIndicators();
+            currentPage = 1; //reiniciar a la primera pagina al hacer sort
+            const sorted = sortProjects(filteredProjects, column, sortDirection);
+            displayProjects(sorted);
         });
-      } else {
-        showAlert('Error al cargar departamentos', 'warning');
-      }
-    })
-    .catch(error => {
-      console.error('Error al cargar los departamentos:', error);
-      showAlert('Error al cargar departamentos', 'danger');
     });
 }
 
-function loadUsuarios() {
-  fetch('../php/get_users.php')
-    .then(response => response.json())
-    .then(data => {
-      if (data.success && data.usuarios) {
-        app.usuarios = data.usuarios;
-        populateUsuariosSelect(data.usuarios);
-        populateGrupalModal(data.usuarios);
-        console.log(`${data.usuarios.length} usuarios cargados`);
-      } else {
-        console.error('Error al cargar usuarios:', data.message);
-      }
-    })
-    .catch(error => {
-      console.error('Error en fetch de usuarios:', error);
-    });
-}
-
-function setupFormHandlers() {
-  document.getElementById('btnSubirArchivo').addEventListener('click', function() {
-    document.getElementById('archivoInput').click();
-  });
-
-  document.getElementById('archivoInput').addEventListener('change', function(e) {
-    if (e.target.files.length > 0) {
-      document.getElementById('nombreArchivo').value = e.target.files[0].name;
-    }
-  });
-
-  document.getElementById('btnCancelar').addEventListener('click', function() {
-    if (confirm('¿Deseas cancelar?')) {
-      window.location.href = '../revisarProyectos/';
-    }
-  });
-
-  document.getElementById('proyectoForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (editMode.isEditing) {
-      editarProyecto();
-    } else {
-      crearProyecto();
-    }
-  });
-}
-
-function setupGrupalHandlers() {
-  const tipoProyectoRadios = document.querySelectorAll('input[name="id_tipo_proyecto"]');
-  const participanteField = document.getElementById('id_participante');
-  const btnSeleccionarGrupo = document.getElementById('btnSeleccionarGrupo');
-
-  // Handler para el botón "Grupo"
-  if (btnSeleccionarGrupo && !btnSeleccionarGrupo.hasListener) {
-    btnSeleccionarGrupo.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Cambiar a proyecto grupal
-      document.querySelector('input[name="id_tipo_proyecto"][value="1"]').checked = true;
-      
-      // Mostrar modal
-      if (!grupalState.usuariosModal) {
-        grupalState.usuariosModal = new bootstrap.Modal(document.getElementById('grupalUsuariosModal'));
-      }
-      grupalState.usuariosModal.show();
-      
-      // Desactivar campo de participante individual
-      participanteField.disabled = true;
-      participanteField.value = '';
-      
-      showAlert('Cambiado a proyecto grupal. Selecciona los integrantes del equipo.', 'info');
-    });
-    btnSeleccionarGrupo.hasListener = true;
-  }
-
-  tipoProyectoRadios.forEach(radio => {
-    radio.addEventListener('change', function() {
-      if (this.value == '1') { // Grupal (value 1)
-        // Mostrar modal de selección grupal
-        if (!grupalState.usuariosModal) {
-          grupalState.usuariosModal = new bootstrap.Modal(document.getElementById('grupalUsuariosModal'));
-        }
-        grupalState.usuariosModal.show();
-        participanteField.disabled = true;// Desactivar/ocultar el campo de participante individual
-        participanteField.value = '0';
-        participanteField.disabled = true;
-        participanteField.value = '';
-      } else { // Individual (value 2)
-        grupalState.selectedUsers = [];// Limpiar selección grupal
-        grupalState.selectedUsers = [];
-        document.querySelectorAll('.usuario-checkbox').forEach(cb => cb.checked = false);
-        updateSelectedCount();
-        participanteField.disabled = false;// Activar campo de participante individual
-        participanteField.disabled = false;
-      }
-    });
-  });
-
-  const btnConfirmar = document.getElementById('btnConfirmarGrupal');
-  if (btnConfirmar) {
-  if (btnConfirmar && !btnConfirmar.hasListener) {
-    btnConfirmar.addEventListener('click', function() {
-      const selectedCheckboxes = document.querySelectorAll('.usuario-checkbox:checked');
-      if (selectedCheckboxes.length === 0) {
-        showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'warning');
-        return;
-      }
-      grupalState.selectedUsers = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
-      grupalState.usuariosModal.hide();
-      showAlert(`${grupalState.selectedUsers.length} usuario(s) seleccionado(s) para el proyecto grupal`, 'success');
-    });
-    btnConfirmar.hasListener = true;
-  }
-
-  const searchInput = document.getElementById('searchUsuarios');
-  if (searchInput) {
-  if (searchInput && !searchInput.hasListener) {
-    searchInput.addEventListener('keyup', function() {
-      const searchTerm = this.value.toLowerCase();
-      const checkboxes = document.querySelectorAll('.usuario-checkbox');
-
-      checkboxes.forEach(checkbox => {
-        const label = checkbox.closest('.form-check').querySelector('label').textContent.toLowerCase();
-        if (label.includes(searchTerm)) {
-          checkbox.closest('.form-check').style.display = 'block';
+function updateSortIndicators() {
+    const headers = document.querySelectorAll('th.sortable-header');
+    headers.forEach(header => {
+        const icon = header.querySelector('i');
+        if (header.dataset.sort === currentSortColumn) {
+            icon.className = sortDirection === 'asc' 
+                ? 'mdi mdi-sort-ascending' 
+                : 'mdi mdi-sort-descending';
+            header.style.fontWeight = 'bold';
+            header.style.color = '#007bff';
         } else {
-          checkbox.closest('.form-check').style.display = 'none';
+            icon.className = 'mdi mdi-sort-variant';
+            header.style.fontWeight = 'normal';
+            header.style.color = 'inherit';
         }
-      });
-    });
-    searchInput.hasListener = true;
-  }
-}
-
-function populateUsuariosSelect(usuarios) {
-  const select = document.getElementById('id_participante');
-  if (!select) return;
-
-  select.innerHTML = '<option value="0">Sin usuario asignado</option>';
-
-  usuarios.forEach(usuario => {
-    const option = document.createElement('option');
-    option.value = usuario.id_usuario;
-    option.textContent = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
-    select.appendChild(option);
-  });
-}
-
-function populateGrupalModal(usuarios) {
-  const container = document.getElementById('usuariosListContainer');
-  if (!container) return;
-
-  container.innerHTML = '';
-
-  usuarios.forEach(usuario => {
-    const userCheckbox = document.createElement('div');
-    userCheckbox.className = 'form-check mb-3 p-2 border-bottom';
-    userCheckbox.innerHTML = `
-      <input class="form-check-input usuario-checkbox" type="checkbox" value="${usuario.id_usuario}" id="check_${usuario.id_usuario}">
-      <label class="form-check-label w-100" for="check_${usuario.id_usuario}">
-        <strong>${usuario.nombre_completo}</strong>
-        <br>
-        <small class="text-muted">Empleado #${usuario.num_empleado} - ${usuario.e_mail}</small>
-      </label>
-    `;
-    container.appendChild(userCheckbox);
-  });
-
-  document.querySelectorAll('.usuario-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', updateSelectedCount);
-  });
-}
-
-function updateSelectedCount() {
-  const checkedCount = document.querySelectorAll('.usuario-checkbox:checked').length;
-  document.getElementById('countSelected').textContent = checkedCount;
-}
-
-
-function cargarProyectoParaEditar(projectId) {
-  fetch(`../php/get_project_by_id.php?id=${projectId}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('La respuesta de red no fue ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.success && data.proyecto) {
-        const proyecto = data.proyecto;
-        
-        document.getElementById('nombre').value = proyecto.nombre || '';
-        document.getElementById('descripcion').value = proyecto.descripcion || '';
-        document.getElementById('id_departamento').value = proyecto.id_departamento || '';
-        document.getElementById('fecha_creacion').value = proyecto.fecha_inicio || '';
-        document.getElementById('fecha_cumplimiento').value = proyecto.fecha_cumplimiento || '';
-        document.getElementById('progreso').value = proyecto.progreso || 0;
-        document.getElementById('ar').value = proyecto.ar || '';
-        document.getElementById('estado').value = proyecto.estado || 'pendiente';
-        document.getElementById('id_participante').value = proyecto.id_participante || 0;
-        
-        //tipo de proyecto
-        const tipoValue = proyecto.id_tipo_proyecto == 1 ? '1' : '2';
-        document.querySelector(`input[name="id_tipo_proyecto"][value="${tipoValue}"]`).checked = true;
-        
-        // Si es grupal, cargar los usuarios asignados
-        if (tipoValue == '1' && proyecto.usuarios_asignados) {
-          grupalState.selectedUsers = proyecto.usuarios_asignados.map(u => u.id_usuario);
-          //checar checkboxes cuando carga modal
-          grupalState.selectedUsers.forEach(userId => {
-            const checkbox = document.querySelector(`#check_${userId}`);
-            if (checkbox) checkbox.checked = true;
-          });
-          updateSelectedCount();
-        }
-        
-        if (proyecto.archivo_adjunto) {//si existe el archivo adjunto mostrarlo
-          document.getElementById('nombreArchivo').value = proyecto.archivo_adjunto.split('/').pop();
-        }
-        
-        showAlert('Proyecto cargado correctamente', 'success');
-      } else {
-        showAlert('Error al cargar el proyecto: ' + data.message, 'danger');
-        window.location.href = '../revisarProyectos/';
-      }
-    })
-    .catch(error => {
-      console.error('Error al cargar proyecto:', error);
-      showAlert('Error al cargar el proyecto: ' + error.message, 'danger');
-      window.location.href = '../revisarProyectos/';
     });
 }
 
-
-
-function crearProyecto() {
-  const form = document.getElementById('proyectoForm');
-  const formData = new FormData(form);
-  const archivoInput = document.getElementById('archivoInput');
-  const tipoProyecto = document.querySelector('input[name="id_tipo_proyecto"]:checked').value;
-
-  if (!form.checkValidity()) {
-    showAlert('Por favor, completa todos los campos requeridos', 'danger');
-    form.classList.add('was-validated');
-    return;
-  }
-  //revisar que se seleccionen usuarios para el poryecto grupal
-  if (tipoProyecto == '1' && grupalState.selectedUsers.length === 0) {
-    showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
-    return;
-  }
-
-  const btnCrear = document.getElementById('btnCrear');
-  btnCrear.disabled = true;
-  btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creando...';
-
-  if (archivoInput.files.length > 0) {
-    uploadFile(archivoInput.files[0], function(filePath) {
-      if (filePath) {
-        formData.set('archivo_adjunto', filePath);
-        // Agregar usuarios seleccionados para proyecto grupal
-        if (tipoProyecto == '1') {
-          formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
-        }
-        submitForm(formData, btnCrear, 'create');
-      } else {
-        btnCrear.disabled = false;
-        btnCrear.innerHTML = 'Crear';
-      }
-    });
-  } else {
-    formData.set('archivo_adjunto', '');
-    // Agregar usuarios seleccionados para proyecto grupal
-    if (tipoProyecto == '1') {
-      formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
-    }
-    submitForm(formData, btnCrear, 'create');
-  }
-}
-
-function setupCharacterCounters(){
-  const nombreInput = document.getElementById('nombre');
-  const descripcionInput = document.getElementById('descripcion');
-  if(nombreInput){
-    addCharacterCounter(nombreInput,100);
-  }
-  if(descripcionInput){
-    addCharacterCounter(descripcionInput,200);
-  }
-}
-
-function addCharacterCounter(input, maxLength){
-  const counter = document.createElement('small');
-  counter.className = 'form-text text-muted';
-  counter.textContent = `0/${maxLength} caracteres`;
-
-  input.parentElement.appendChild(counter);
-
-  input.addEventListener('input',function(){
-    const length = this.value.length;
-    counter.textContent = `${length}/${maxLength} caracteres`;
-
-    if(length>maxLength){
-      counter.classList.add('text-danger');
-      counter.classList.remove('text-muted');
-    }else{
-      counter.classList.add('text-muted');
-      counter.classList.remove('text-danger');
-    }
-  });
-}
-
-function editarProyecto() {
-  const form = document.getElementById('proyectoForm');
-  const formData = new FormData(form);
-  const archivoInput = document.getElementById('archivoInput');
-  const tipoProyecto = document.querySelector('input[name="id_tipo_proyecto"]:checked').value;
-
-  if (!form.checkValidity()) {
-    showAlert('Por favor, completa todos los campos requeridos', 'danger');
-    form.classList.add('was-validated');
-    return;
-  }
-
-  if (tipoProyecto == '1' && grupalState.selectedUsers.length === 0) {
-    showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
-    return;
-  }
-
-  const btnCrear = document.getElementById('btnCrear');
-  btnCrear.disabled = true;
-  btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Actualizando...';
-
-  // Si hay archivo nuevo, subirlo
-  if (archivoInput.files.length > 0) {
-    uploadFile(archivoInput.files[0], function(filePath) {
-      if (filePath) {
-        formData.set('archivo_adjunto', filePath);
-        // Agregar usuarios seleccionados para proyecto grupal
-        if (tipoProyecto == '1') {
-          formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
-        }
-        submitForm(formData, btnCrear, 'edit');
-      } else {
-        btnCrear.disabled = false;
-        btnCrear.innerHTML = 'Actualizar';
-      }
-    });
-  } else {
-    // Si no hay archivo nuevo, mantener el existente
-    const nombreArchivoField = document.getElementById('nombreArchivo').value;
-    if (nombreArchivoField) {
-      formData.set('archivo_adjunto', nombreArchivoField);
-    }
-    // Agregar usuarios seleccionados para proyecto grupal
-    if (tipoProyecto == '1') {
-      formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
-    }
-    submitForm(formData, btnCrear, 'edit');
-  }
-}
-
-function uploadFile(file, callback) {
-  const fileFormData = new FormData();
-  fileFormData.append('archivo', file);
-
-  fetch('../php/upload_file.php', {
-    method: 'POST',
-    body: fileFormData
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    return response.json();
-  })
-  .then(data => {
-    if (data.success) {
-      callback(data.filePath);
-    } else {
-      showAlert('Error al subir el archivo: ' + data.message, 'danger');
-      callback(null);
-    }
-  })
-  .catch(error => {
-    console.error('Error uploading file:', error);
-    showAlert('Error al subir el archivo: ' + error.message, 'danger');
-    callback(null);
-  });
-}
-
-function submitForm(formData, btnCrear, action) {
-  const endpoint = action === 'edit' 
-    ? '../php/update_project.php' 
-    : '../php/create_project.php';
-
-  if (editMode.isEditing) {  // Agregar ID del proyecto si es edición
-    formData.append('id_proyecto', editMode.projectId);
-  }
-
-  fetch(endpoint, {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    return response.json();
-  })
-  .then(data => {
-    if (data.success) {
-      const successMessage = action === 'edit' 
-        ? '¡Proyecto actualizado exitosamente!' 
-        : '¡Proyecto creado exitosamente!';
-      
-      showAlert(successMessage, 'success');
-      
-      setTimeout(function() {//redirigir a lista de proyectos
-        window.location.href = '../revisarProyectos/';
-      }, 1500);
-    } else {
-      showAlert('Error: ' + data.message, 'danger');
-      btnCrear.disabled = false;
-      btnCrear.innerHTML = action === 'edit' ? 'Actualizar' : 'Crear';
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    const errorMsg = action === 'edit' 
-      ? 'Error al actualizar el proyecto: ' 
-      : 'Error al crear el proyecto: ';
+function sortProjects(projects, column, direction) {
+    const sorted = [...projects];
     
-    showAlert(errorMsg + error.message, 'danger');
-    btnCrear.disabled = false;
-    btnCrear.innerHTML = action === 'edit' ? 'Actualizar' : 'Crear';
-  });
+    sorted.sort((a, b) => {
+        let valueA = a[column];
+        let valueB = b[column];
+        
+        if (valueA === null || valueA === undefined) valueA = '';
+        if (valueB === null || valueB === undefined) valueB = '';
+        
+        if (column === 'progreso' || column === 'id_proyecto') {
+            valueA = parseInt(valueA) || 0;
+            valueB = parseInt(valueB) || 0;
+        } else if (column === 'fecha_cumplimiento') {
+            valueA = new Date(valueA).getTime() || 0;
+            valueB = new Date(valueB).getTime() || 0;
+        } else {
+            valueA = String(valueA).toLowerCase();
+            valueB = String(valueB).toLowerCase();
+        }
+        
+        if (valueA < valueB) return direction === 'asc' ? -1 : 1;
+        if (valueA > valueB) return direction === 'asc' ? 1 : -1;
+        return 0;
+    });
+    return sorted;
 }
 
-function showAlert(message, type) {
-  const alertContainer = document.getElementById('alertContainer');
-  const alertDiv = document.createElement('div');
-  alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-  alertDiv.setAttribute('role', 'alert');
-  alertDiv.innerHTML = `
-    ${message}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  `;
-  
-  alertContainer.innerHTML = ''; //limpiar alertas anteriores
-  alertContainer.appendChild(alertDiv);
-
-  //auto eliminar despues de 5s
-  setTimeout(function() {
-    if (alertDiv.parentNode) {
-      alertDiv.remove();
+function setupPagination() {
+    const rowsPerPageSelect = document.getElementById('rowsPerPageSelect');
+    if (rowsPerPageSelect) {
+        rowsPerPageSelect.addEventListener('change', function() {
+            rowsPerPage = parseInt(this.value);
+            currentPage = 1; //reiniciar a primera pagina cuano cambien registros por pagina
+            displayProjects(filteredProjects);
+        });
     }
-  }, 5000);
 }
 
-document.addEventListener('DOMContentLoaded', setupCharacterCounters);
-}}
+function calculatePages(projects) {
+    return Math.ceil(projects.length / rowsPerPage);
+}
+
+function getPaginatedProjects(projects) {
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return projects.slice(startIndex, endIndex);
+}
+
+function changePage(pageNumber) {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+        currentPage = pageNumber;
+        displayProjects(filteredProjects);
+    }
+}
+
+function updatePaginationControls() {
+    const paginationContainer = document.querySelector('.pagination-container');
+    if (!paginationContainer) return;
+
+    //limpiar paginacion existente
+    paginationContainer.innerHTML = '';
+
+    //crear texto de info de paginacion
+    const infoText = document.createElement('div');
+    infoText.className = 'pagination-info';
+    const startItem = ((currentPage - 1) * rowsPerPage) + 1;
+    const endItem = Math.min(currentPage * rowsPerPage, filteredProjects.length);
+    infoText.innerHTML = `
+        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredProjects.length}</strong> proyectos</p>
+    `;
+    paginationContainer.appendChild(infoText);
+
+    //crear contenedores de botones de paginacion 
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'pagination-buttons';
+
+    //boton anterior
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn btn-sm btn-outline-primary';
+    prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener('click', () => changePage(currentPage - 1));
+    buttonContainer.appendChild(prevBtn);
+
+    //numero de paginas
+    const pageButtonsContainer = document.createElement('div');
+    pageButtonsContainer.className = 'page-buttons';
+
+    //calcular que paginas mostrar
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    //ajustar si esta cerca del principio o final
+    if (currentPage <= 3) {
+        endPage = Math.min(totalPages, 5);
+    }
+    if (currentPage > totalPages - 3) {
+        startPage = Math.max(1, totalPages - 4);
+    }
+
+    if (startPage > 1) {//boton de primera pagina
+        const firstBtn = document.createElement('button');
+        firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
+        firstBtn.textContent = '1';
+        firstBtn.addEventListener('click', () => changePage(1));
+        pageButtonsContainer.appendChild(firstBtn);
+
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            pageButtonsContainer.appendChild(ellipsis);
+        }
+    }
+
+    //numero de paginas
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', () => changePage(i));
+        pageButtonsContainer.appendChild(pageBtn);
+    }
+
+    if (endPage < totalPages) {//boton de ultima pagina
+        if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'pagination-ellipsis';
+            ellipsis.textContent = '...';
+            pageButtonsContainer.appendChild(ellipsis);
+        }
+
+        const lastBtn = document.createElement('button');
+        lastBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
+        lastBtn.textContent = totalPages;
+        lastBtn.addEventListener('click', () => changePage(totalPages));
+        pageButtonsContainer.appendChild(lastBtn);
+    }
+
+    buttonContainer.appendChild(pageButtonsContainer);
+
+    //boton siguiente
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn btn-sm btn-outline-primary';
+    nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener('click', () => changePage(currentPage + 1));
+    buttonContainer.appendChild(nextBtn);
+
+    paginationContainer.appendChild(buttonContainer);
+}
+
+function displayProjects(proyectos) { 
+    const tableBody = document.querySelector('#proyectosTableBody'); 
+    if(!tableBody) return;
+
+    //calcular paginacion
+    totalPages = calculatePages(proyectos);
+    if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+    }
+
+    //obtener proyectos paginados
+    const paginatedProjects = getPaginatedProjects(proyectos);
+
+    tableBody.innerHTML = ''; 
+    if(!proyectos || proyectos.length === 0) { 
+        displayEmptyState(); 
+        updatePaginationControls();
+        return; 
+    }
+    
+    if (paginatedProjects.length === 0) {
+        tableBody.innerHTML = `
+            <tr> 
+                <td colspan="9" class="text-center empty-state"> 
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+                    <h5 class="mt-3">No se encontraron resultados en esta página</h5> 
+                </td> 
+            </tr> 
+        `;
+        updatePaginationControls();
+        return;
+    }
+
+    paginatedProjects.forEach((project, index) => { 
+        const actualIndex = ((currentPage - 1) * rowsPerPage) + index + 1;
+        const row = createProjectRow(project, actualIndex); 
+        tableBody.appendChild(row); 
+    });
+
+    //actualizar controles de paginacion
+    updatePaginationControls();
+} 
+
+function createProjectRow(proyecto, index) { 
+    const row = document.createElement('tr'); 
+    const statusColor = getStatusColor(proyecto.estado); 
+    const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado || 'N/A'}</span>`; 
+    const progressBar = createProgressBar(proyecto.progreso || 0); 
+    const actionsButtons = ` 
+        <div class="action-buttons"> 
+            <button class="btn btn-sm btn-info btn-action"  
+                    onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
+                    title="Ver usuarios asignados"> 
+                <i class="mdi mdi-account-multiple"></i> 
+            </button>
+            <button class="btn btn-sm btn-success btn-action"  
+                    onclick="editarProyecto(${proyecto.id_proyecto})"  
+                    title="Editar"> 
+                <i class="mdi mdi-pencil"></i> 
+            </button> 
+            <button class="btn btn-sm btn-danger btn-action"  
+                    onclick="confirmDelete(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
+                    title="Eliminar"> 
+                <i class="mdi mdi-delete"></i> 
+            </button> 
+        </div> 
+    `; 
+    row.innerHTML = ` 
+        <td>${index}</td> 
+        <td> 
+            <strong>${truncateText(proyecto.nombre, 30)}</strong> 
+        </td> 
+        <td>${truncateText(proyecto.descripcion, 40)}</td> 
+        <td>${proyecto.area || '-'}</td> 
+        <td>${formatDate(proyecto.fecha_cumplimiento)}</td> 
+        <td> 
+            ${progressBar} 
+        </td> 
+        <td> 
+            ${statusBadge} 
+        </td> 
+        <td>${proyecto.participante || '-'}</td> 
+        <td> 
+            ${actionsButtons} 
+        </td> 
+    `;
+    return row; 
+} 
+
+function createProgressBar(progress) { 
+    const progressValue = parseInt(progress) || 0; 
+    const progressClass = progressValue >= 75 ? 'bg-success' :  
+                         progressValue >= 50 ? 'bg-info' :  
+                         progressValue >= 25 ? 'bg-warning' : 'bg-danger'; 
+    return ` 
+        <div class="progress" style="height: 20px;"> 
+            <div class="progress-bar ${progressClass}"  
+                 role="progressbar"  
+                 style="width: ${progressValue}%;"  
+                 aria-valuenow="${progressValue}"  
+                 aria-valuemin="0"  
+                 aria-valuemax="100"> 
+                ${progressValue}% 
+            </div> 
+        </div> 
+    `; 
+} 
+
+function getStatusColor(estado) { 
+    const colorMap = { 
+        'pendiente': 'warning', 
+        'en proceso': 'primary', 
+        'vencido': 'danger', 
+        'completado': 'success' 
+    }; 
+    return colorMap[estado?.toLowerCase()] || 'warning'; 
+} 
+
+function displayEmptyState() { 
+    const tableBody = document.querySelector('#proyectosTableBody'); 
+    tableBody.innerHTML = ` 
+        <tr> 
+            <td colspan="9" class="text-center empty-state"> 
+                <i class="mdi mdi-folder-open" style="font-size: 48px; color: #ccc;"></i> 
+                <h5 class="mt-3">No hay proyectos registrados</h5> 
+                <p>Comienza creando un nuevo proyecto</p> 
+                <a href="../nuevoProyecto/" class="btn btn-success mt-3"> 
+                    <i class="mdi mdi-plus-circle-outline"></i> Crear proyecto 
+                </a> 
+            </td> 
+        </tr> 
+    `; 
+} 
+
+function setupSearch() { 
+    const searchInput = document.getElementById('searchInput'); 
+    const searchForm = document.getElementById('search-form'); 
+    if (!searchInput) { 
+        console.warn('Search input not found'); 
+        return; 
+    } 
+    if (searchForm) { 
+        searchForm.addEventListener('submit', function(e) { 
+            e.preventDefault(); 
+        }); 
+    } 
+    let searchTimeout; 
+    searchInput.addEventListener('input', function() { 
+        clearTimeout(searchTimeout); 
+        searchTimeout = setTimeout(() => { 
+            performSearch(this.value); 
+        }, 300); 
+    }); 
+} 
+
+function performSearch(query) {
+    const normalizedQuery = query.toLowerCase().trim(); 
+    if (normalizedQuery === '') { 
+        filteredProjects = [...allProjects];
+        currentPage = 1; //reiniciar a la primer pagina cuando se limpie la busqueda
+        const sorted = currentSortColumn 
+            ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+            : filteredProjects;
+        displayProjects(sorted);
+        return; 
+    } 
+    const filtered = allProjects.filter(project => { 
+        return project.nombre.toLowerCase().includes(normalizedQuery) ||  
+               (project.descripcion && project.descripcion.toLowerCase().includes(normalizedQuery)) ||  
+               (project.area && project.area.toLowerCase().includes(normalizedQuery)) || 
+               (project.participante && project.participante.toLowerCase().includes(normalizedQuery)); 
+    });
+    
+    filteredProjects = filtered;
+    currentPage = 1; //reiniciar a primer pagina cuando se busca
+    
+    const sorted = currentSortColumn
+        ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+        : filteredProjects;
+    
+    displayProjects(sorted);
+    if (sorted.length === 0) { 
+        const tableBody = document.querySelector('#proyectosTableBody'); 
+        tableBody.innerHTML = ` 
+            <tr> 
+                <td colspan="9" class="text-center empty-state"> 
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+                    <h5 class="mt-3">No se encontraron resultados</h5> 
+                    <p>No hay proyectos que coincidan con "${escapeHtml(query)}"</p> 
+                </td> 
+            </tr> 
+        `; 
+    } 
+} 
+
+function truncateText(text, length) { 
+    if (!text) return '-'; 
+    return text.length > length ? text.substring(0, length) + '...' : text; 
+} 
+
+function formatDate(dateString) { 
+    if (!dateString) return '-'; 
+    const options = { year: 'numeric', month: 'short', day: 'numeric' }; 
+    const date = new Date(dateString); 
+    return date.toLocaleDateString('es-MX', options); 
+} 
+
+function editarProyecto(idProyecto) { 
+    window.location.href = `../nuevoProyecto/?edit=${idProyecto}`; 
+} 
+
+function confirmDelete(id, nombre) { 
+    showConfirm( 
+        `¿Está seguro de que desea eliminar el proyecto "${escapeHtml(nombre)}"?\n\nEsta acción no se puede deshacer.`, 
+        function() { 
+            deleteProject(id); 
+        }, 
+        'Confirmar eliminación', 
+        { 
+            type: 'danger', 
+            confirmText: 'Eliminar', 
+            cancelText: 'Cancelar' 
+        } 
+    ); 
+} 
+
+function deleteProject(id) { 
+    fetch(Config.API_ENDPOINTS.DELETE, { 
+        method: 'POST', 
+        headers: { 
+            'Content-Type': 'application/json' 
+        }, 
+        body: JSON.stringify({ id_proyecto: id }) 
+    }) 
+
+    .then(response => response.json()) 
+    .then(data => { 
+        if (data.success) { 
+            showSuccessAlert(data.message || 'Proyecto eliminado exitosamente'); 
+            allProjects = allProjects.filter(u => u.id_proyecto != id);
+            filteredProjects = filteredProjects.filter(u => u.id_proyecto != id);
+            //recalcular paginas despues de eliminar
+            totalPages = calculatePages(filteredProjects);
+            if (currentPage > totalPages && totalPages > 0) {
+                currentPage = totalPages;
+            }
+            const sorted = currentSortColumn
+                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+                : filteredProjects;
+            displayProjects(sorted); 
+        } else { 
+            showErrorAlert(data.message || 'Error al eliminar el proyecto'); 
+        } 
+    }) 
+    .catch(error => { 
+        console.error('Error:', error); 
+        showErrorAlert('Error al conectar con el servidor'); 
+    }); 
+}
+
+function createProjectUsersModal() {
+    const modalHTML = `
+        <div class="modal fade" id="projectUsersModal" tabindex="-1" role="dialog" aria-labelledby="projectUsersModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="projectUsersModalLabel">
+                            <i class="mdi mdi-account-multiple me-2"></i>
+                            Usuarios asignados al proyecto
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <input type="text" class="form-control" id="projectUsersSearch" placeholder="Buscar usuario por nombre, email o empleado...">
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nombre Completo</th>
+                                        <th>Email</th>
+                                        <th>Número de Empleado</th>
+                                        <th>Progreso en Proyecto</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="projectUsersTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Cargando...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="pagination-container mt-3"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function createUserProgressBar(progress) {
+    const progressValue = parseInt(progress) || 0;
+    const progressClass = progressValue >= 75 ? 'bg-success' :
+                         progressValue >= 50 ? 'bg-info' :
+                         progressValue >= 25 ? 'bg-warning' : 'bg-danger';
+    
+    return `
+        <div class="d-flex align-items-center gap-2">
+            <div class="progress flex-grow-1" style="height: 20px; min-width: 100px;">
+                <div class="progress-bar ${progressClass}"
+                     role="progressbar"
+                     style="width: ${progressValue}%;"
+                     aria-valuenow="${progressValue}"
+                     aria-valuemin="0"
+                     aria-valuemax="100">
+                    ${progressValue.toFixed(1)}%
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function viewProjectUsers(projectId, projectName) {
+    console.log('Cargando usuarios del proyecto:', projectId, projectName);
+    
+    const modal = new bootstrap.Modal(document.getElementById('projectUsersModal'));
+    document.getElementById('projectUsersModalLabel').textContent = `Usuarios asignados a: ${projectName}`;
+    
+    projectUsersData = [];//reiniciar variables
+    currentUsersPage = 1;
+    
+    document.getElementById('projectUsersSearch').value = '';//limpiar busqueda
+    
+    loadProjectUsers(projectId);
+    
+    modal.show();
+}
+
+function loadProjectUsers(projectId) {
+    const tableBody = document.getElementById('projectUsersTableBody');
+    
+    fetch(`${Config.API_ENDPOINTS.GET_PROJECT_USERS}?id=${projectId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta de red');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos de usuarios del proyecto:', data);
+            
+            if (data.success && data.usuarios) {
+                projectUsersData = data.usuarios;
+                displayProjectUsers(projectUsersData);
+                
+                const searchInput = document.getElementById('projectUsersSearch');//setup de busqueda de usuarios
+                if (searchInput) {
+                    searchInput.removeEventListener('input', handleProjectUsersSearch);
+                    searchInput.addEventListener('input', handleProjectUsersSearch);
+                }
+            } else {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            <i class="mdi mdi-account-off" style="font-size: 48px; color: #ccc;"></i>
+                            <h5 class="mt-3">No hay usuarios asignados a este proyecto</h5>
+                        </td>
+                    </tr>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando usuarios del proyecto:', error);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-danger">
+                        Error al cargar usuarios: ${error.message}
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+function handleProjectUsersSearch(event) {
+    const query = event.target.value.toLowerCase().trim();
+    
+    if (query === '') {
+        displayProjectUsers(projectUsersData);
+        return;
+    }
+    
+    const filtered = projectUsersData.filter(user => {
+        return user.nombre_completo.toLowerCase().includes(query) ||
+               user.e_mail.toLowerCase().includes(query) ||
+               user.num_empleado.toString().includes(query);
+    });
+    
+    displayProjectUsers(filtered);
+}
+
+function displayProjectUsers(users) {
+    const tableBody = document.getElementById('projectUsersTableBody');
+    
+    if (!users || users.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center text-muted">
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i>
+                    <h5 class="mt-3">No se encontraron usuarios</h5>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // Calculate pagination for users
+    totalUsersPages = Math.ceil(users.length / usersRowsPerPage);
+    if (currentUsersPage > totalUsersPages && totalUsersPages > 0) {
+        currentUsersPage = totalUsersPages;
+    }
+    
+    const startIndex = (currentUsersPage - 1) * usersRowsPerPage;
+    const endIndex = startIndex + usersRowsPerPage;
+    const paginatedUsers = users.slice(startIndex, endIndex);
+    
+    tableBody.innerHTML = '';
+    
+    paginatedUsers.forEach((user, index) => {
+        const rowNumber = startIndex + index + 1;
+        const row = document.createElement('tr');
+        const progressBar = createUserProgressBar(user.progreso_porcentaje || 0);
+        
+        row.innerHTML = `
+            <td>${rowNumber}</td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="avatar avatar-sm me-2">
+                        <img src="../images/faces/face1.jpg" alt="avatar" class="rounded-circle">
+                    </div>
+                    <div>
+                        <strong>${escapeHtml(user.nombre_completo)}</strong>
+                    </div>
+                </div>
+            </td>
+            <td>${escapeHtml(user.e_mail)}</td>
+            <td>${user.num_empleado}</td>
+            <td>
+                ${progressBar}
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+    
+    updateProjectUsersPagination(users.length);
+}
+
+function updateProjectUsersPagination(totalUsers) {
+    const paginationContainer = document.querySelector('#projectUsersModal .pagination-container');
+    if (!paginationContainer) return;
+    
+    paginationContainer.innerHTML = '';
+    
+    const infoText = document.createElement('div');//texto de informacion
+    infoText.className = 'pagination-info text-center mb-3';
+    const startItem = ((currentUsersPage - 1) * usersRowsPerPage) + 1;
+    const endItem = Math.min(currentUsersPage * usersRowsPerPage, totalUsers);
+    infoText.innerHTML = `
+        <p class="mb-0">Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${totalUsers}</strong> usuarios</p>
+    `;
+    paginationContainer.appendChild(infoText);
+    
+    if (totalUsersPages <= 1) {//solo mostrar botones cuando hay varias paginas
+        return;
+    }
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'pagination-buttons d-flex justify-content-center gap-2';
+    
+    const prevBtn = document.createElement('button');//boton previo
+    prevBtn.className = 'btn btn-sm btn-outline-primary';
+    prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
+    prevBtn.disabled = currentUsersPage === 1;
+    prevBtn.addEventListener('click', () => {
+        if (currentUsersPage > 1) {
+            currentUsersPage--;
+            const filtered = document.getElementById('projectUsersSearch').value.toLowerCase().trim();
+            if (filtered) {
+                const filteredUsers = projectUsersData.filter(user => 
+                    user.nombre_completo.toLowerCase().includes(filtered) ||
+                    user.e_mail.toLowerCase().includes(filtered) ||
+                    user.num_empleado.toString().includes(filtered)
+                );
+                displayProjectUsers(filteredUsers);
+            } else {
+                displayProjectUsers(projectUsersData);
+            }
+        }
+    });
+    buttonContainer.appendChild(prevBtn);
+    
+    const nextBtn = document.createElement('button');//boton siguiente
+    nextBtn.className = 'btn btn-sm btn-outline-primary';
+    nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
+    nextBtn.disabled = currentUsersPage === totalUsersPages;
+    nextBtn.addEventListener('click', () => {
+        if (currentUsersPage < totalUsersPages) {
+            currentUsersPage++;
+            const filtered = document.getElementById('projectUsersSearch').value.toLowerCase().trim();
+            if (filtered) {
+                const filteredUsers = projectUsersData.filter(user => 
+                    user.nombre_completo.toLowerCase().includes(filtered) ||
+                    user.e_mail.toLowerCase().includes(filtered) ||
+                    user.num_empleado.toString().includes(filtered)
+                );
+                displayProjectUsers(filteredUsers);
+            } else {
+                displayProjectUsers(projectUsersData);
+            }
+        }
+    });
+    buttonContainer.appendChild(nextBtn);
+    
+    paginationContainer.appendChild(buttonContainer);
+}
+
+function showSuccessAlert(message) { 
+    showAlert(message, 'success'); 
+} 
+
+function showErrorAlert(message) { 
+    showAlert(message, 'danger'); 
+} 
+
+function showAlert(message, type) { 
+    const alertDiv = document.getElementById('alertMessage'); 
+    if (!alertDiv) { 
+        console.warn('Alert div not found'); 
+        return; 
+    } 
+     
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger'; 
+    const icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'; 
+    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`; 
+    alertDiv.innerHTML = ` 
+        <i class="mdi ${icon} me-2"></i> 
+        ${message} 
+        <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button> 
+    `; 
+
+    alertDiv.style.display = 'block'; 
+    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
+
+    setTimeout(() => { 
+        if (alertDiv.style.display !== 'none') { 
+            alertDiv.style.display = 'none'; 
+        } 
+    }, 5000); 
+} 
+
+function escapeHtml(text) { 
+    const map = { 
+        '&': '&amp;', 
+        '<': '&lt;', 
+        '>': '&gt;', 
+        '"': '&quot;', 
+        "'": '&#039;' 
+    }; 
+    return String(text).replace(/[&<>"']/g, function(m) { return map[m]; }); 
+} 
+ 
+function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) { 
+    const modal = document.getElementById('customConfirmModal');
+    
+    if (!modal) {
+        console.error('Modal #customConfirmModal not found in DOM');
+        return;
+    }
+
+    const titleElement = modal.querySelector('#confirmTitle'); 
+    const messageElement = modal.querySelector('#confirmMessage'); 
+    const headerElement = modal.querySelector('.modal-header'); 
+    const confirmBtn = modal.querySelector('#confirmOkBtn'); 
+    const cancelBtn = modal.querySelector('#confirmCancelBtn');
+
+    if (!titleElement || !messageElement || !headerElement || !confirmBtn) {//validar todos los elementos
+        console.error('Critical modal elements not found');
+        console.log({
+            titleElement,
+            messageElement,
+            headerElement,
+            confirmBtn
+        });
+        return;
+    }
+
+    const config = { 
+        confirmText: 'Aceptar', 
+        cancelText: 'Cancelar', 
+        type: 'warning', 
+        ...options 
+    };
+
+    titleElement.textContent = title; //actualizar contenido de texto
+    messageElement.innerHTML = message.replace(/\n/g, '<br>'); 
+    confirmBtn.textContent = config.confirmText; 
+    if (cancelBtn) {
+        cancelBtn.textContent = config.cancelText;
+    }
+
+    headerElement.className = 'modal-header';//reiniciar manejo de clase
+
+    const iconMap = { 
+        'info': { icon: 'mdi-information-outline', class: 'bg-info text-white', btnClass: 'btn-info' }, 
+        'warning': { icon: 'mdi-alert-outline', class: 'bg-warning text-white', btnClass: 'btn-warning' }, 
+        'danger': { icon: 'mdi-alert-octagon-outline', class: 'bg-danger text-white', btnClass: 'btn-danger' }, 
+        'success': { icon: 'mdi-check-circle-outline', class: 'bg-success text-white', btnClass: 'btn-success' } 
+    };
+
+    const typeConfig = iconMap[config.type] || iconMap['warning'];
+    
+    let iconElement = modal.querySelector('.modal-title i');//actualizar icono
+    if (!iconElement) {
+        iconElement = document.createElement('i');//si no existe, crear el icono
+        titleElement.insertBefore(iconElement, titleElement.firstChild);
+    }
+    iconElement.className = `mdi ${typeConfig.icon} me-2`;
+    
+    headerElement.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success', 'text-white');//actualizar estilos
+    headerElement.classList.add(...typeConfig.class.split(' '));
+    
+    confirmBtn.className = `btn ${typeConfig.btnClass}`;
+
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+    newConfirmBtn.addEventListener('click', function(e) { 
+        e.preventDefault();
+        e.stopPropagation();
+        
+        try {
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        } catch (err) {
+            console.error('Error hiding modal:', err);
+        }
+        
+        if (onConfirm && typeof onConfirm === 'function') { 
+            onConfirm();
+        }
+    }, { once: true }); //opcion de una vez para remover despues 
+
+    let modalInstance = bootstrap.Modal.getInstance(modal);//obtener o crear la instancia del modal
+    if (modalInstance) {
+        modalInstance.dispose();
+    }
+    
+    try {
+        const confirmModal = new bootstrap.Modal(modal, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        confirmModal.show();
+    } catch (err) {
+        console.error('Error showing modal:', err);
+    }
+}
+
+//hacer funciones globalmente disponibles
+window.confirmDelete = confirmDelete; 
+window.editarProyecto = editarProyecto;
+window.changePage = changePage;
+window.showConfirm = showConfirm;
+window.viewProjectUsers = viewProjectUsers;
