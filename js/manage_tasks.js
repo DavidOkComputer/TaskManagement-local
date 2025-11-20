@@ -284,7 +284,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // ⭐ MEJORADO: cargar usuarios asignados a un proyecto específico
     function loadProjectUsers(projectId) {
         fetch(`../php/get_project_user.php?id_proyecto=${projectId}`)
             .then(response => {
@@ -296,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success && data.usuarios && data.usuarios.length > 0) {
                     populateUserSelect(document.getElementById('taskAssignee'), data.usuarios);
-                    console.log(`✓ ${data.usuarios.length} usuarios cargados para el proyecto ${projectId}`);
+                    console.log(` ${data.usuarios.length} usuarios cargados para el proyecto ${projectId}`);
                 } else {
                     // Si no hay usuarios, mostrar mensaje y limpiar dropdown
                     populateUserSelect(document.getElementById('taskAssignee'), []);
@@ -310,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    //⭐ MEJORADO: popular el dropdown de usuarios con nombre completo y numero de empleado
+    //popular el dropdown de usuarios con nombre completo y numero de empleado
     function populateUserSelect(selectElement, users) {
         if (!selectElement) return;
         
@@ -340,7 +339,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     //popular el elemento con proyectos
     function populateProjectSelect(selectElement, projects) {
-        //mantener la opcion default
+        //quedarse con la opcion default
         selectElement.innerHTML = '<option value="">Seleccione un proyecto</option>';
         
         projects.forEach(project => {
@@ -351,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    //cambio de proyecto - aqui se verifica el permiso para asignar tareas
+    //cambio de proyecto  aqui se verifica el permiso para asignar tareas
     projectSelect.addEventListener('change', function() {
         if (this.value) {
             currentProjectId = this.value;
@@ -737,7 +736,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.show();
     }
     
-    //⭐ MEJORADO: inicializar event listeners del modal con filtrado mejorado
+    //inicializar event listeners del modal con filtrado mejorado
     function initializeModalEventListeners() {
         const modal = document.getElementById('addTaskModal');
         const saveBtn = document.getElementById('saveTaskBtn');
@@ -745,7 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const projectSelect = document.getElementById('taskProject');
         const assigneeSelect = document.getElementById('taskAssignee');
         
-        // ⭐ Evento cuando cambia la selección de proyecto en el modal
+        //Evento cuando cambia la selección de proyecto en el modal
         projectSelect.addEventListener('change', function() {
             if (this.value) {
                 // Cargar y mostrar SOLO usuarios del proyecto seleccionado
@@ -861,7 +860,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // ⭐ MEJORADO: cargar usuarios del proyecto en el modal (SOLO usuarios del proyecto)
+    //cargar usuarios del proyecto en el modal SOLO usuarios del proyecto
     function loadProjectUsersForModal(projectId, callback) {
         console.log(`Cargando usuarios para el proyecto ${projectId}...`);
         

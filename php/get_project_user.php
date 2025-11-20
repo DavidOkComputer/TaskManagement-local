@@ -1,9 +1,5 @@
 <?php
-/*
- * get_project_users.php - Obtener usuarios asignados a un proyecto específico
- * Para proyectos grupales: obtiene todos los usuarios del grupo
- * Para proyectos individuales: obtiene solo el usuario asignado
- */
+/* get_project_users.php - Obtener usuarios asignados a un proyecto específico*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');

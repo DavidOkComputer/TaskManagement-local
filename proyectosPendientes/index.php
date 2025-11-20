@@ -306,19 +306,15 @@ Dashboard principal de admin proyectos pendientes
                                    <p class="card-subtitle card-subtitle-dash">Tienes 50+ proyectos nuevos</p>
                                   </div>
                                   <div>
-                                    <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo proyecto</button>
+                                    <a href="../nuevoProyecto/">
+                                      <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-folder-upload"></i>Agregar nuevo proyecto</button>
+                                    </a>
                                   </div>
                                 </div>
-                                <div class="table-responsive  mt-1">
+                                <div class="table-responsive  mt-3">
                                   <table class="table select-table">
                                     <thead>
                                       <tr>
-                                        <th>
-                                          <div class="form-check form-check-flat mt-0">
-                                            <label class="form-check-label">
-                                              <input type="checkbox" class="form-check-input" aria-checked="false"><i class="input-helper"></i></label>
-                                          </div>
-                                        </th>
                                         <th>Titulo</th>
                                         <th>Descripcion</th>
                                         <th>Progreso</th>
@@ -326,7 +322,6 @@ Dashboard principal de admin proyectos pendientes
                                       </tr>
                                     </thead>
                                     <tbody>
-                                    
                                     </tbody>
                                   </table>
                                 </div>

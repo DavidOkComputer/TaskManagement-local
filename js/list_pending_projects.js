@@ -23,7 +23,7 @@ function loadProyectosPendientes() {
         },
         error: function(xhr, status, error) {
             console.error('Error al cargar los proyectos pendientes:', error);
-            console.error('Response text:', xhr.responseText); // DEBUG
+            console.error('Response text:', xhr.responseText); // DEBUG necesario
             
             let errorMessage = 'Error al cargar proyectos pendientes';
             
@@ -69,26 +69,11 @@ function createProyectoRow(proyecto) {
     
     const progressBarId = 'progress-' + proyecto.id_proyecto;//id s unicos para los elementos 
     
-    //HTML
     const row = $(`
         <tr data-proyecto-id="${proyecto.id_proyecto}">
-            <!-- Checkbox column -->
-            <td>
-                <div class="form-check form-check-flat mt-0">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input proyecto-checkbox" 
-                               data-proyecto-id="${proyecto.id_proyecto}" 
-                               aria-checked="false">
-                        <i class="input-helper"></i>
-                    </label>
-                </div>
-            </td>
-            
             <!-- Proyecto Nombre column -->
             <td>
                 <div class="d-flex">
-                    <!-- Placeholder image - can be replaced with department logo -->
-                    <img src="../images/faces/face1.jpg" alt="${proyecto.nombre}" class="me-2">
                     <div>
                         <h6 class="mb-0">${proyecto.nombre}</h6>
                         <p class="text-muted small mb-0">${proyecto.tipo_proyecto}</p>

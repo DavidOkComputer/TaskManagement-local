@@ -319,12 +319,6 @@ Dashboard principal de admin proyectos totales
                 <div class="tab-content tab-content-basic">
                   <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview"> 
                     <div class="row">
-                      <div class="col-sm-12">
-                        
-                      </div>
-                    </div> 
-                    
-                    <div class="row">
                       <div class="col-lg-8 d-flex flex-column"> 
                         <div class="row flex-grow">
                           <div class="col-12 grid-margin stretch-card">
@@ -336,22 +330,15 @@ Dashboard principal de admin proyectos totales
                                    <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
                                   </div>
                                   <div>
-                                    <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo proyecto</button>
-                                  </div>
+                                    <a href="../nuevoProyecto/">
+                                      <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-folder-upload"></i>Agregar nuevo proyecto</button>
+                                    </a>
+                                    </div>
                                 </div>
-                                <div class="table-responsive  mt-1">
-                                  <table class="select-table">
+                                <div class="table-responsive  mt-3">
+                                  <table class="table select-table">
                                     <thead>
                                         <tr>
-                                            <th>
-                                                <div class="form-check form-check-flat mt-0">
-                                                    <label class="form-check-label">
-                                                        <input type="checkbox" class="form-check-input" 
-                                                              id="select-all-checkbox" aria-checked="false">
-                                                        <i class="input-helper"></i>
-                                                    </label>
-                                                </div>
-                                            </th>
                                             <th>Titulo</th>
                                             <th>Descripcion</th>
                                             <th>Progreso</th>
@@ -368,6 +355,7 @@ Dashboard principal de admin proyectos totales
                           </div>
                         </div>
                       </div>
+                      <!--Grafica de proyectos por estatus-->
                       <div class="col-lg-4 d-flex flex-column">
                         <div class="row flex-grow">
                           <div class="col-12 grid-margin stretch-card">

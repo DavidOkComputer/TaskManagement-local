@@ -5,11 +5,10 @@ const Config = {
     } 
 }; 
 
-// AUTO-REFRESH CONFIGURATION
 const AUTO_REFRESH_CONFIG = {
-    USERS_INTERVAL: 30000,      // 30 seconds - refresh user list and progress
-    MODAL_INTERVAL: 15000,      // 15 seconds - refresh modal projects when open
-    DEBUG: true                  // Enable console logging for debugging
+    USERS_INTERVAL: 60000,      
+    MODAL_INTERVAL: 60000,      
+    DEBUG: true                  
 };
 
 let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
@@ -72,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setupSorting();
     setupPagination();
-    setupModalEventListeners(); // Setup modal events for auto-refresh
+    setupModalEventListeners();
     
     console.log('%cSistema inicializado correctamente', 'color: #34b0aa; font-weight: bold;');
     console.log('%cConsola abierta: Presiona F12 para ver logs detallados', 'color: #17a2b8; font-style: italic;');
@@ -80,8 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 createCustomDialogSystem();
 
-// Setup listeners for modal open/close events
-function setupModalEventListeners() {
+function setupModalEventListeners() {//listener de abrir o cerrrar modal
     const modal = document.getElementById('viewProjectsModal');
     if (!modal) return;
     
@@ -104,16 +102,14 @@ function startAutoRefresh(){
         clearInterval(autoRefreshInterval);
     }
     
-    // Auto-refresh user data and progress
-    autoRefreshInterval = setInterval(() => {
+    autoRefreshInterval = setInterval(() => {//actualizar info y progreso de usuario
         if(AUTO_REFRESH_CONFIG.DEBUG) {
             console.log('%cAuto-refresh: Actualizando datos de usuarios y progreso...', 'color: #17a2b8; font-weight: bold;');
         }
         refreshUserData();
     }, AUTO_REFRESH_CONFIG.USERS_INTERVAL);
     
-    // Separate interval for modal projects when open
-    startModalAutoRefresh();
+    startModalAutoRefresh();//intervalo separado para el modal de proyectos cuando se abre
     
     if(AUTO_REFRESH_CONFIG.DEBUG) {
         console.log('Auto-refresh iniciado. Intervalos:', AUTO_REFRESH_CONFIG);
@@ -125,8 +121,7 @@ function startModalAutoRefresh(){
         clearInterval(modalRefreshInterval);
     }
     
-    // Check every few seconds if modal is open, and refresh if needed
-    modalRefreshInterval = setInterval(() => {
+    modalRefreshInterval = setInterval(() => {//revisar si esta abierto el modal y actualizarlo
         const modal = document.getElementById('viewProjectsModal');
         if(modal && modal.classList.contains('show')) {
             if(currentUserIdForProject) {
@@ -209,7 +204,6 @@ function refreshUserData(){
     });
 }
 
-// NEW: Refresh project data for the modal
 async function refreshUserProjectData(){
     if(!currentUserIdForProject) return;
     
@@ -223,7 +217,6 @@ async function refreshUserProjectData(){
             return;
         }
         
-        // Update modal content with new project data
         updateProjectsModal(projects);
         
         if(AUTO_REFRESH_CONFIG.DEBUG) {
@@ -238,7 +231,6 @@ async function refreshUserProjectData(){
     }
 }
 
-// NEW: Update projects modal with fresh data
 function updateProjectsModal(projects) {
     if(projects.length === 0) {
         document.getElementById('projectsContainer').style.display = 'none';
@@ -246,7 +238,7 @@ function updateProjectsModal(projects) {
         return;
     }
     
-    // Calculate new statistics
+    //calcular nuevas estadisticas
     let totalTasks = 0;
     let completedTasks = 0;
     let totalProgress = 0;
@@ -259,12 +251,12 @@ function updateProjectsModal(projects) {
     
     const avgProgress = projects.length > 0 ? totalProgress / projects.length : 0;
     
-    // Update statistics
+    //actualizar estadisticas
     document.getElementById('totalProjects').textContent = projects.length;
     document.getElementById('totalTasks').textContent = totalTasks;
     document.getElementById('avgProgress').textContent = avgProgress.toFixed(1) + '%';
     
-    // Update projects list with animated transitions
+    //actualizar lista de proyectos
     const projectsList = document.getElementById('projectsList');
     const newHTML = projects.map(project => `
         <div class="card mb-3 project-card-update">
@@ -934,7 +926,6 @@ function filterUsuarios() {
 }
 
 function performSearch(query) {
-    // Helper function for search implementation
     filterUsuarios();
 }
 

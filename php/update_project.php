@@ -1,10 +1,6 @@
 <?php
-/**
- * update_project.php - Actualizar proyectos con manejo robusto de errores
- * FIXED: Auto-calculate estado based on deadline and progress
- */
+/*update_project.php Actualizar proyectos*/
 
-// Start output buffering to prevent premature output
 ob_start();
 
 header('Content-Type: application/json; charset=UTF-8');
@@ -12,23 +8,18 @@ require_once 'db_config.php';
 
 $response = ['success' => false, 'message' => ''];
 
-try {
-    // Validate request method
+try {//validaciones
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Método de solicitud inválido');
     }
-
-    // Validate project ID
     if (!isset($_POST['id_proyecto'])) {
         throw new Exception('ID de proyecto requerido');
     }
-
     $id_proyecto = intval($_POST['id_proyecto']);
     if ($id_proyecto <= 0) {
         throw new Exception('ID de proyecto inválido');
     }
 
-    // Validate required fields
     $required_fields = [
         'nombre',
         'descripcion',
@@ -50,7 +41,7 @@ try {
         }
     }
 
-    // Sanitize and validate inputs
+    //limpiar y validar inputs
     $nombre = trim($_POST['nombre']);
     $descripcion = trim($_POST['descripcion']);
     $id_departamento = intval($_POST['id_departamento']);
@@ -63,7 +54,6 @@ try {
     $id_tipo_proyecto = intval($_POST['id_tipo_proyecto']);
     $puede_editar_otros = intval($_POST['puede_editar_otros']);
     
-    // Validate field lengths
     if (strlen($nombre) > 100) {
         throw new Exception('El nombre no puede exceder 100 caracteres');
     }
@@ -74,12 +64,10 @@ try {
         throw new Exception('La ruta del archivo no puede exceder 300 caracteres');
     }
 
-    // Format dates for database
+    //formato de fechas para la base de datos
     if (strpos($fecha_creacion, 'T') !== false) {
         $fecha_creacion = str_replace('T', ' ', $fecha_creacion);
     }
-    
-    // Validate dates
     if (strtotime($fecha_creacion) === false) {
         throw new Exception('La fecha de creación no es válida');
     }
@@ -91,10 +79,9 @@ try {
         throw new Exception('La fecha de entrega debe ser posterior o igual a la fecha de inicio');
     }
 
-    // FIXED: Auto-calculate estado based on deadline and progress
-    // This ensures that when a deadline is updated, the status reflects the actual state
+    //autocalcular estado basado en la fecha de entrega para que funcione al actualizar
     $today = date('Y-m-d');
-    $deadline = substr($fecha_cumplimiento, 0, 10); // Extract date portion
+    $deadline = substr($fecha_cumplimiento, 0, 10); //sacar parte de fecha
     
     if ($progreso >= 100) {
         $estado = 'completado';
@@ -106,13 +93,11 @@ try {
         $estado = 'pendiente';
     }
 
-    // Get database connection
     $conn = getDBConnection();
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Handle group project users
     $usuarios_grupo = [];
     $id_participante = 0;
     
@@ -126,13 +111,12 @@ try {
             throw new Exception('Debes seleccionar usuarios para el proyecto grupal');
         }
     } else {
-        // Individual project - use participante
         if (isset($_POST['id_participante'])) {
             $id_participante = intval($_POST['id_participante']);
         }
     }
 
-    // Update project with auto-calculated estado
+    //actualizar el proyecto con estado auto calculado
     $sql = "UPDATE tbl_proyectos SET
             nombre = ?,
             descripcion = ?,
@@ -153,7 +137,6 @@ try {
         throw new Exception('Error al preparar la consulta: ' . $conn->error);
     }
 
-    // Bind parameters with auto-calculated estado
     $stmt->bind_param(
         "ssissississii",
         $nombre,              // s-1
@@ -163,12 +146,12 @@ try {
         $fecha_cumplimiento,  // s-5
         $progreso,            // i-6
         $ar,                  // s-7
-        $estado,              // s-8 (auto-calculated)
+        $estado,              // s-8 
         $archivo_adjunto,     // s-9
         $id_participante,     // i-10
         $id_tipo_proyecto,    // i-11
         $puede_editar_otros,  // i-12
-        $id_proyecto          // i-13 (WHERE clause)
+        $id_proyecto          // i-13 
     );
 
     if (!$stmt->execute()) {
@@ -177,9 +160,9 @@ try {
 
     $stmt->close();
 
-    // Handle group project users
+    //manejo de usuarios en poryecto grupal
     if ($id_tipo_proyecto == 1) {
-        // Delete existing assignments
+        //eliminar proyectos existentes
         $sql_delete = "DELETE FROM tbl_proyecto_usuarios WHERE id_proyecto = ?";
         $stmt_delete = $conn->prepare($sql_delete);
         
@@ -193,7 +176,7 @@ try {
         }
         $stmt_delete->close();
 
-        // Insert new assignments
+        //insertar nuevos proyectos
         if (!empty($usuarios_grupo)) {
             $sql_insert = "INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)";
             $stmt_insert = $conn->prepare($sql_insert);
@@ -226,7 +209,6 @@ try {
     error_log('Error in update_project.php: ' . $e->getMessage());
 }
 
-// Clear output buffer and send response
 ob_end_clean();
 echo json_encode($response);
 exit;

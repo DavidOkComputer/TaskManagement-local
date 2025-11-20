@@ -339,20 +339,39 @@
                   </div>
 
                   <div class="row">
+                    <!--add the permisos de edicion here colmd6-->
                     <div class="col-md-6">
                       <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">AR (Opcional)</label>
-                        <div class="col-sm-9">
-                          <input 
-                            type="text" 
-                            id="ar" 
-                            name="ar" 
-                            class="form-control"
-                            maxlength="200"
-                            placeholder="Ingrese el código AR si aplica"
-                          />
-                          <small class="form-text text-muted">Código de referencia adicional</small>
-                        </div>
+                        <label class="col-sm-3 col-form-label">Permisos de edición <span class="text-danger">*</span></label>
+                          <div class="col-sm-4">
+                            <div class="form-check form-check-success">
+                              <label class="form-check-label">
+                                <input type="radio" 
+                                      class="form-check-input" 
+                                      name="puede_editar_otros" 
+                                      id="soloCreador" 
+                                      value="0"
+                                      checked
+                                      style="cursor:pointer;" 
+                                      required>
+                                Edición restringida
+                              </label>
+                            </div>
+                          </div>
+                          <div class="col-sm-5">
+                            <div class="form-check form-check-success">
+                              <label class="form-check-label">
+                                <input type="radio" 
+                                      class="form-check-input" 
+                                      name="puede_editar_otros" 
+                                      id="otrosEditan" 
+                                      value="1" 
+                                      required
+                                      style="cursor:pointer;">
+                                Edición libre
+                              </label>
+                            </div>
+                          </div>
                       </div>
                     </div>
                     <div class="col-md-6">
@@ -387,49 +406,6 @@
                       </div>
                     </div>
                   </div>
-
-                  <div class="row">
-                    <div class="col-md-6">
-                      <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Permisos de edición <span class="text-danger">*</span></label>
-                        <div class="col-sm-9">
-                          <div style="margin-bottom: 12px; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; background-color: #fff3cd;">
-                            <div class="form-check" style="margin-bottom: 8px;">
-                              <input type="radio" 
-                                     class="form-check-input" 
-                                     name="puede_editar_otros" 
-                                     id="soloCreador" 
-                                     value="0" 
-                                     checked
-                                     required
-                                     style="cursor: pointer;">
-                              <label class="form-check-label" for="soloCreador" style="cursor: pointer; margin-bottom: 0;">
-                                <i class="mdi mdi-lock" style="color: #ff6b6b; margin-right: 5px;"></i>
-                                <strong>Solo creador puede editar</strong>
-                              </label>
-                            </div>
-                          </div>
-                          <div style="margin-bottom: 12px; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; background-color: #d4edda;">
-                            <div class="form-check" style="margin-bottom: 0;">
-                              <input type="radio" 
-                                     class="form-check-input" 
-                                     name="puede_editar_otros" 
-                                     id="otrosEditan" 
-                                     value="1" 
-                                     required
-                                     style="cursor: pointer;">
-                              <label class="form-check-label" for="otrosEditan" style="cursor: pointer; margin-bottom: 0;">
-                                <i class="mdi mdi-lock-open" style="color: #28a745; margin-right: 5px;"></i>
-                                <strong>Otros usuarios pueden editar</strong>
-                              </label>
-                            </div>
-                          </div>
-                          <small class="form-text text-muted" style="display: block; margin-top: 8px;">Controla quién puede modificar este proyecto</small>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
                   <div class="row">
                     <div class="col-md-6">
                       <div class="form-group row">
@@ -438,8 +414,7 @@
                                id="archivoInput" 
                                name="archivo_adjunto" 
                                class="file-upload-default">
-                        
-                        <div class="col-sm-9">
+                        <div class="col-sm-6">
                           <input type="text" 
                                  id="nombreArchivo" 
                                  class="form-control" 
@@ -451,8 +426,23 @@
                         </div>
                       </div>
                     </div>
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">AR (Opcional)</label>
+                        <div class="col-sm-9">
+                          <input 
+                            type="text" 
+                            id="ar" 
+                            name="ar" 
+                            class="form-control"
+                            maxlength="200"
+                            placeholder="Ingrese el código AR si aplica"
+                          />
+                          <small class="form-text text-muted">Código de referencia adicional</small>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-
                   <!-- Hidden fields -->
                   <input type="hidden" id="id_creador" name="id_creador" value="1"/> <!-- Will be set to current user ID -->
                   <input type="hidden" id="progreso" name="progreso" value="0"/>
@@ -466,34 +456,34 @@
                     </div>
                   </div>
                   <!-- MODAL FOR GROUP PROJECT USER SELECTION -->
-<!-- Modal for Group Project User Selection -->
-<div class="modal fade" id="grupalUsuariosModal" tabindex="-1" aria-labelledby="grupalUsuariosLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="grupalUsuariosLabel">Seleccionar integrantes del proyecto grupal</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row mb-3">
-          <div class="col-md-12">
-            <input type="text" id="searchUsuarios" class="form-control" placeholder="Buscar usuario por nombre o email...">
-          </div>
-        </div>
-        <div id="usuariosListContainer" style="max-height: 400px; overflow-y: auto;">
-          <!-- Users will be populated here -->
-        </div>
-      </div>
-      <div class="modal-footer">
-        <div class="col-md-12" id="selectedUsersDisplay" class="mb-2">
-          <small class="text-muted">Usuarios seleccionados: <span id="countSelected">0</span></small>
-        </div>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="btnConfirmarGrupal">Confirmar selección</button>
-      </div>
-    </div>
-  </div>
-</div>
+                  <!-- Modal for Group Project User Selection -->
+                  <div class="modal fade" id="grupalUsuariosModal" tabindex="-1" aria-labelledby="grupalUsuariosLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h5 class="modal-title" id="grupalUsuariosLabel">Seleccionar integrantes del proyecto grupal</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="row mb-3">
+                            <div class="col-md-12">
+                              <input type="text" id="searchUsuarios" class="form-control" placeholder="Buscar usuario por nombre o email...">
+                            </div>
+                          </div>
+                          <div id="usuariosListContainer" style="max-height: 400px; overflow-y: auto;">
+                            <!-- Users will be populated here -->
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <div class="col-md-12" id="selectedUsersDisplay" class="mb-2">
+                            <small class="text-muted">Usuarios seleccionados: <span id="countSelected">0</span></small>
+                          </div>
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                          <button type="button" class="btn btn-success" id="btnConfirmarGrupal">Confirmar selección</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </form>
               </div>
             </div>

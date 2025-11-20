@@ -8,8 +8,8 @@ const Config = {
 
 // AUTO-REFRESH CONFIGURATION
 const AUTO_REFRESH_CONFIG = {
-    USERS_INTERVAL: 30000,      // 30 seconds - refresh user list and progress
-    MODAL_INTERVAL: 15000,      // 15 seconds - refresh modal projects when open
+    USERS_INTERVAL: 60000,      // minuto - refrescar lista de usuarios y progreso
+    MODAL_INTERVAL: 60000,      // 1minuto - refrescar el modal de proyectos cuando este abierto
     DEBUG: true
 };
 
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setupSorting();
     setupPagination();
-    setupModalEventListeners(); // Setup modal events for auto-refresh
+    setupModalEventListeners(); //congigurar los eventos del modal para auto refrescar
     
     console.log('%cSistema inicializado correctamente', 'color: #34b0aa; font-weight: bold;');
     console.log('%cConsola abierta: Presiona F12 para ver logs detallados', 'color: #17a2b8; font-style: italic;');
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 createCustomDialogSystem();
 
-// Setup listeners for modal open/close events
+// listeners para modal de eventos de abrir o cerrar
 function setupModalEventListeners() {
     const modal = document.getElementById('viewProjectsModal');
     if (!modal) return;
@@ -105,7 +105,7 @@ function startAutoRefresh(){
         clearInterval(autoRefreshInterval);
     }
     
-    // Auto-refresh user data and progress
+    //auto refrescar info de usuarios y progreso
     autoRefreshInterval = setInterval(() => {
         if(AUTO_REFRESH_CONFIG.DEBUG) {
             console.log('%cAuto-refresh: Actualizando datos de usuarios y progreso...', 'color: #17a2b8; font-weight: bold;');
@@ -113,7 +113,7 @@ function startAutoRefresh(){
         refreshUserData();
     }, AUTO_REFRESH_CONFIG.USERS_INTERVAL);
     
-    // Separate interval for modal projects when open
+    //separar intervalo para modal de proyectos cuando se abra
     startModalAutoRefresh();
     
     if(AUTO_REFRESH_CONFIG.DEBUG) {
@@ -126,7 +126,7 @@ function startModalAutoRefresh(){
         clearInterval(modalRefreshInterval);
     }
     
-    // Check every few seconds if modal is open, and refresh if needed
+    //revisar cada tanto tiempo si el modal esta abierto y refrescar si es necesario
     modalRefreshInterval = setInterval(() => {
         const modal = document.getElementById('viewProjectsModal');
         if(modal && modal.classList.contains('show')) {
@@ -210,7 +210,6 @@ function refreshUserData(){
     });
 }
 
-// NEW: Refresh project data for the modal
 async function refreshUserProjectData(){
     if(!currentUserIdForProject) return;
     
@@ -224,8 +223,7 @@ async function refreshUserProjectData(){
             return;
         }
         
-        // Update modal content with new project data
-        updateProjectsModal(projects);
+        updateProjectsModal(projects);//actualizar contenido del modal con nueva informacion del proyecto
         
         if(AUTO_REFRESH_CONFIG.DEBUG) {
             console.log('✓ Proyectos actualizados en modal:', {
@@ -239,16 +237,14 @@ async function refreshUserProjectData(){
     }
 }
 
-// NEW: Update projects modal with fresh data
-function updateProjectsModal(projects) {
+function updateProjectsModal(projects) {//actualizar modal de proyectos con la nueva info
     if(projects.length === 0) {
         document.getElementById('projectsContainer').style.display = 'none';
         document.getElementById('noProjects').style.display = 'block';
         return;
     }
     
-    // Calculate new statistics
-    let totalTasks = 0;
+    let totalTasks = 0;//calcular nuevas estadisticas
     let completedTasks = 0;
     let totalProgress = 0;
     
@@ -260,13 +256,11 @@ function updateProjectsModal(projects) {
     
     const avgProgress = projects.length > 0 ? totalProgress / projects.length : 0;
     
-    // Update statistics
-    document.getElementById('totalProjects').textContent = projects.length;
+    document.getElementById('totalProjects').textContent = projects.length;//actuializar estadisticas
     document.getElementById('totalTasks').textContent = totalTasks;
     document.getElementById('avgProgress').textContent = avgProgress.toFixed(1) + '%';
     
-    // Update projects list with animated transitions
-    const projectsList = document.getElementById('projectsList');
+    const projectsList = document.getElementById('projectsList');//actualizar lista de proyectos 
     const newHTML = projects.map(project => `
         <div class="card mb-3 project-card-update">
             <div class="card-body">
@@ -678,8 +672,7 @@ async function showUserProjects(userId, userName, userEmail) {
     document.getElementById('projectsContainer').style.display = 'none'; 
     document.getElementById('noProjects').style.display = 'none'; 
     
-    // Set current user for auto-refresh
-    currentUserIdForProject = userId;
+    currentUserIdForProject = userId; //configurar usuario actual para la actualizacion automatica
     
     modal.show(); 
     const projects = await fetchUserProjects(userId); //obtener proyectos
@@ -949,7 +942,6 @@ function filterUsuarios() {
 }
 
 function performSearch(query) {
-    // Helper function for search implementation
     filterUsuarios();
 }
 

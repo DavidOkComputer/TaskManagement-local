@@ -11,7 +11,7 @@ function loadProyectosVencidos() {
     
     
     $.ajax({//ajax para refrescar los proyectos vencidos
-        url: '../php/api_get_overdue_projects.php', // Fixed path
+        url: '../php/api_get_overdue_projects.php',
         type: 'GET',
         dataType: 'json',
         timeout: 10000, // 10segundos
@@ -93,26 +93,12 @@ function createProyectoVencidoRow(proyecto) {
         urgencyText = proyecto.dias_vencidos + ' días vencido';
     }
     
-    //HTML
     const row = $(`
         <tr data-proyecto-id="${proyecto.id_proyecto}" class="table-danger">
-            <!-- Checkbox column -->
-            <td>
-                <div class="form-check form-check-flat mt-0">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input proyecto-checkbox" 
-                               data-proyecto-id="${proyecto.id_proyecto}" 
-                               aria-checked="false">
-                        <i class="input-helper"></i>
-                    </label>
-                </div>
-            </td>
             
             <!-- Proyecto Nombre column -->
             <td>
                 <div class="d-flex">
-                    <!-- Placeholder image -->
-                    <img src="../images/faces/face1.jpg" alt="${proyecto.nombre}" class="me-2">
                     <div>
                         <h6 class="mb-0">${proyecto.nombre}</h6>
                         <p class="text-muted small mb-0">${proyecto.tipo_proyecto}</p>
@@ -251,6 +237,5 @@ function bulkActionProyectosVencidos(action) {
     }
     
     console.log('Performing action:', action, 'on overdue projects:', selected);
-    // Implement bulk action logic here
     //se puede implementar acciones masivas aqui, como extender la fecha de vencimiento de varios proyectos
 }

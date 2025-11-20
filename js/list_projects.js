@@ -11,7 +11,7 @@ function loadProyectos() {
     $.ajax({//obtener los proyectos
         url: '../php/api_get_projects.php', 
         type: 'GET',
-        dataType: 'text', // Change to text to see raw response
+        dataType: 'text', //cambiar a texto para ver la respuesta tal cual
         timeout: 10000, // 10s
         success: function(response) {
             console.log('Raw response from server:', response); // DEBUG
@@ -77,29 +77,12 @@ function populateProyectosTable(proyectos) {
 
 function createProyectoRow(proyecto) {
     const fechaCumplimiento = formatDate(proyecto.fecha_cumplimiento);
-    
     const progressBarId = 'progress-' + proyecto.id_proyecto;//id s unicos para los elementos 
-    
-    //HTML
     const row = $(`
         <tr data-proyecto-id="${proyecto.id_proyecto}">
-            <!-- Checkbox column -->
-            <td>
-                <div class="form-check form-check-flat mt-0">
-                    <label class="form-check-label">
-                        <input type="checkbox" class="form-check-input proyecto-checkbox" 
-                               data-proyecto-id="${proyecto.id_proyecto}" 
-                               aria-checked="false">
-                        <i class="input-helper"></i>
-                    </label>
-                </div>
-            </td>
-            
             <!-- Proyecto Nombre column -->
             <td>
                 <div class="d-flex">
-                    <!-- Placeholder image - can be replaced with department logo -->
-                    <img src="../images/faces/face1.jpg" alt="${proyecto.nombre}" class="me-2">
                     <div>
                         <h6 class="mb-0">${proyecto.nombre}</h6>
                         <p class="text-muted small mb-0">${proyecto.tipo_proyecto}</p>

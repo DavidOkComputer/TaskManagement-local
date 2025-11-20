@@ -10,13 +10,10 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
     error_log("PHP Error: $errstr in $errfile on line $errline");
 });
 
-// Include database configuration
 require_once('db_config.php');
 
-// Call the function to get the database connection
 $conexion = getDBConnection();
 
-// Check if connection was established
 if (!$conexion) {
     http_response_code(500);
     echo json_encode([
@@ -26,7 +23,7 @@ if (!$conexion) {
     exit;
 }
 
-$id_usuario = $_SESSION['user_id'] ?? 1; // Default to user ID 1 for development
+$id_usuario = $_SESSION['user_id'] ?? 1; //default de usuario 1 para pruebas
 $proyectos = [];
 
 try {

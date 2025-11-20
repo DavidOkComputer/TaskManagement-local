@@ -236,9 +236,8 @@ function cargarProyectoParaEditar(projectId) {
                     document.getElementById('fecha_creacion').value = fechaInicio;
                 }
                 
-                // For date input, extract just the date part
-                if (proyecto.fecha_cumplimiento) {
-                    // Extract "2024-11-13" from "2024-11-13 14:30:00" or "2024-11-13"
+                if (proyecto.fecha_cumplimiento) {//para input de fecha extraer solo la parte de fehca y no hora
+                    // Extraer "2024-11-13" de "2024-11-13 14:30:00" o "2024-11-13"
                     const fechaCumplimiento = proyecto.fecha_cumplimiento.split(' ')[0];
                     document.getElementById('fecha_cumplimiento').value = fechaCumplimiento;
                 }

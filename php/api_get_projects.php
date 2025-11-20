@@ -1,27 +1,21 @@
 <?php
 /*API Endpoint: obtener proyectos*/
 
-// Start output buffering to prevent any stray output before JSON
 ob_start();
 
 session_start();
 header('Content-Type: application/json');
 
-// Clean any output that might have been generated
 ob_end_clean();
 
-// Set error handling to capture errors
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
     error_log("PHP Error: $errstr in $errfile on line $errline");
 });
 
-// Include database configuration
 require_once('db_config.php');
 
-// Call the function to get the database connection
 $conexion = getDBConnection();
 
-// Check if connection was established
 if (!$conexion) {
     http_response_code(500);
     echo json_encode([
@@ -31,12 +25,11 @@ if (!$conexion) {
     exit;
 }
 
-// TODO: Replace with actual user session once login is implemented
-$id_usuario = $_SESSION['user_id'] ?? 1; // Default to user ID 1 for development
+//TODO: 
+$id_usuario = $_SESSION['user_id'] ?? 1; 
 $proyectos = [];
 
 try {
-    // Query para obtener todos los proyectos del usuario
     $query = "
         SELECT DISTINCT
             p.id_proyecto,
@@ -135,6 +128,5 @@ try {
     ]);
 }
 
-// Restore error handler
 restore_error_handler();
 ?>

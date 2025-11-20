@@ -1,8 +1,5 @@
 <?php
-/**
- * get_project_by_id.php - Obtener detalles de un proyecto incluyendo usuarios para proyectos grupales
- * Versión mejorada con error handling robusto y soporte para proyectos grupales
- */
+/** get_project_by_id.php - Obtener detalles de un proyecto incluyendo usuarios para proyectos grupales*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');
@@ -13,7 +10,7 @@ ini_set('display_errors', 0);
 $response = ['success' => false, 'proyecto' => null];
 
 try {
-    // Validar el ID del proyecto
+    // Validar el ID del proyecto 
     if (!isset($_GET['id']) || empty($_GET['id'])) {
         throw new Exception('El ID del proyecto es requerido');
     }
@@ -24,14 +21,12 @@ try {
         throw new Exception('El ID del proyecto no es válido');
     }
 
-    // Obtener conexión a la base de datos
     $conn = getDBConnection();
 
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Query para obtener los detalles del proyecto
     $query = "SELECT 
                 id_proyecto,
                 nombre,

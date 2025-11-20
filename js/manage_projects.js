@@ -383,22 +383,21 @@ function createProjectRow(proyecto, index) {
     const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado || 'N/A'}</span>`; 
     const progressBar = createProgressBar(proyecto.progreso || 0); 
     
-    // Only show the view users button for group projects (id_tipo_proyecto = 1)
-    const viewUsersButton = proyecto.id_tipo_proyecto === 1 
+    const viewUsersButton = proyecto.id_tipo_proyecto === 1 //mostrar unicamente boton de grupo para los proyectos que sean grupales
         ? `<button class="btn btn-sm btn-info btn-action" onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados"> 
                 <i class="mdi mdi-account-multiple"></i> 
             </button>` 
         : ''; 
     
     const actionsButtons = ` 
-        <div class="action-buttons"> 
-            ${viewUsersButton}
+        <div class="action-buttons">
             <button class="btn btn-sm btn-success btn-action" onclick="editarProyecto(${proyecto.id_proyecto})" title="Editar"> 
                 <i class="mdi mdi-pencil"></i> 
             </button> 
             <button class="btn btn-sm btn-danger btn-action" onclick="confirmDelete(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Eliminar"> 
                 <i class="mdi mdi-delete"></i> 
             </button> 
+            ${viewUsersButton}
         </div> 
     `; 
     row.innerHTML = ` 

@@ -1,9 +1,6 @@
 <?php
-/**
- * create_project.php - Crear proyectos con manejo robusto de errores
- */
+/**create_project.php - Crear proyectos con manejo robusto de errores*/
 
-// Start output buffering to prevent premature output
 ob_start();
 
 header('Content-Type: application/json; charset=UTF-8');
@@ -12,12 +9,10 @@ require_once 'db_config.php';
 $response = ['success' => false, 'message' => ''];
 
 try {
-    // Validate request method
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Método de solicitud inválido');
     }
 
-    // Validate required fields
     $required_fields = [
         'nombre',
         'descripcion',
@@ -40,7 +35,6 @@ try {
         }
     }
 
-    // Sanitize and validate inputs
     $nombre = trim($_POST['nombre']);
     $descripcion = trim($_POST['descripcion']);
     $id_departamento = intval($_POST['id_departamento']);
@@ -54,7 +48,6 @@ try {
     $id_tipo_proyecto = intval($_POST['id_tipo_proyecto']);
     $puede_editar_otros = intval($_POST['puede_editar_otros']);
     
-    // Validate field lengths
     if (strlen($nombre) > 100) {
         throw new Exception('El nombre no puede exceder 100 caracteres');
     }
@@ -65,36 +58,28 @@ try {
         throw new Exception('La ruta del archivo no puede exceder 300 caracteres');
     }
 
-    // Validate estado
     $estados_validos = ['pendiente', 'en proceso', 'vencido', 'completado'];
     if (!in_array($estado, $estados_validos)) {
         throw new Exception('El estado debe ser: pendiente, en proceso, vencido o completado');
     }
-    
-    // Format dates for database
     if (strpos($fecha_creacion, 'T') !== false) {
         $fecha_creacion = str_replace('T', ' ', $fecha_creacion);
     }
-    
-    // Validate dates
     if (strtotime($fecha_creacion) === false) {
         throw new Exception('La fecha de creación no es válida');
     }
     if (strtotime($fecha_cumplimiento) === false) {
         throw new Exception('La fecha de cumplimiento no es válida');
     }
-    
     if (strtotime($fecha_cumplimiento) < strtotime($fecha_creacion)) {
         throw new Exception('La fecha de entrega debe ser posterior o igual a la fecha de inicio');
     }
 
-    // Get database connection
     $conn = getDBConnection();
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Handle group project users
     $usuarios_grupo = [];
     $id_participante = 0;
     
@@ -108,13 +93,11 @@ try {
             throw new Exception('Debes seleccionar usuarios para el proyecto grupal');
         }
     } else {
-        // Individual project - use participante
-        if (isset($_POST['id_participante'])) {
+        if (isset($_POST['id_participante'])) {//para proyecto individual usar participante y no grupo
             $id_participante = intval($_POST['id_participante']);
         }
     }
 
-    // Insert project - FIXED: Include puede_editar_otros in the query
     $sql = "INSERT INTO tbl_proyectos (
                 nombre,
                 descripcion,
@@ -136,7 +119,6 @@ try {
         throw new Exception('Error al preparar la consulta: ' . $conn->error);
     }
 
-    // FIXED: Bind parameters with correct types - 13 total (was missing puede_editar_otros)
     $stmt->bind_param(
         "ssissississii",
         $nombre,              // s-1
@@ -161,7 +143,6 @@ try {
     $id_proyecto = $stmt->insert_id;
     $stmt->close();
 
-    // Insert group project users if applicable
     if ($id_tipo_proyecto == 1 && !empty($usuarios_grupo)) {
         $sql_usuarios = "INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)";
         $stmt_usuarios = $conn->prepare($sql_usuarios);
@@ -193,7 +174,6 @@ try {
     error_log('Error in create_project.php: ' . $e->getMessage());
 }
 
-// Clear output buffer and send response
 ob_end_clean();
 echo json_encode($response);
 exit;
