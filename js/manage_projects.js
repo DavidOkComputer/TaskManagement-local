@@ -377,6 +377,8 @@ function displayProjects(proyectos) {
     updatePaginationControls(); 
 } 
 
+
+
 function createProjectRow(proyecto, index) { 
     const row = document.createElement('tr'); 
     const statusColor = getStatusColor(proyecto.estado); 

@@ -239,7 +239,7 @@ function determineProjectStatus($progress, $id_proyecto, $conn) {
         $row = $result->fetch_assoc();
         $stmt->close();
 
-        $fecha_cumplimiento = strtotime($row['fecha_cumplimiento']);
+        $fecha_cumplimiento = date($row['fecha_cumplimiento'], timestamp:null);
         $hoy = time();
 
         //si la fecha paso y no se ha completado marcar como vencido

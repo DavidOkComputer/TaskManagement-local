@@ -11,10 +11,10 @@
       saleGradientBg2.addColorStop(0, 'rgba(0, 208, 255, 0.19)');
       saleGradientBg2.addColorStop(1, 'rgba(0, 208, 255, 0.03)');
       var salesTopData = {
-          labels: ["SUN","sun", "MON", "mon", "TUE","tue", "WED", "wed", "THU", "thu", "FRI", "fri", "SAT"],
+          labels: ["DOM","dom", "LUN", "lun", "MAR","mar", "MIE", "mie", "JUE", "jue", "VIE", "vie", "SAB"],
           datasets: [{
-              label: 'This week',
-              data: [50, 110, 60, 290, 200, 115, 130, 170, 90, 210, 240, 280, 200],
+              label: 'Esta semana',
+              data: [50, 110, 60, 400, 200, 115, 130, 170, 90, 210, 240, 280, 200],
               backgroundColor: saleGradientBg,
               borderColor: [
                   '#1F3BB3',
@@ -27,7 +27,7 @@
               pointBackgroundColor: ['#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)'],
               pointBorderColor: ['#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff',],
           },{
-            label: 'Last week',
+            label: 'Semana anterior',
             data: [30, 150, 190, 250, 120, 150, 130, 20, 30, 15, 40, 95, 180],
             backgroundColor: saleGradientBg2,
             borderColor: [
@@ -117,9 +117,9 @@
       saleGradientBg2.addColorStop(0, 'rgba(0, 208, 255, 0.19)');
       saleGradientBg2.addColorStop(1, 'rgba(34, 36, 55, 0.2)');
       var salesTopDataDark = {
-          labels: ["SUN","sun", "MON", "mon", "TUE","tue", "WED", "wed", "THU", "thu", "FRI", "fri", "SAT"],
+          labels: ["DOM","dom", "LUN", "lun", "MAR","mar", "MIE", "mie", "JUE", "jue", "VIE", "vie", "SAB"],
           datasets: [{
-              label: '# of Votes',
+              label: '# de votos',
               data: [50, 110, 60, 290, 200, 115, 130, 170, 90, 210, 240, 280, 200],
               backgroundColor: saleGradientBg,
               borderColor: [
@@ -133,7 +133,7 @@
               pointBackgroundColor: ['#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)'],
               pointBorderColor: ['#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437',],
           },{
-            label: '# of Votes',
+            label: '# de votos',
             data: [30, 150, 190, 250, 120, 150, 130, 20, 30, 15, 40, 95, 180],
             backgroundColor: saleGradientBg2,
             borderColor: [
@@ -223,9 +223,9 @@
     if ($("#status-summary").length) {
       var statusSummaryChartCanvas = document.getElementById("status-summary").getContext('2d');;
       var statusData = {
-          labels: ["SUN", "MON", "TUE", "WED", "THU", "FRI"],
+          labels: ["DOM", "LUN", "MAR", "MIE", "JUE", "VIE"],
           datasets: [{
-              label: '# of Votes',
+              label: '# de Votos',
               data: [50, 68, 70, 10, 12, 80],
               backgroundColor: "#ffcc00",
               borderColor: [
@@ -369,7 +369,7 @@
     if ($("#marketingOverview").length) {
       var marketingOverviewChart = document.getElementById("marketingOverview").getContext('2d');
       var marketingOverviewData = {
-          labels: ["JAN","FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"],
+          labels: ["ENE","FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"],
           datasets: [{
               label: 'Last week',
               data: [110, 220, 200, 190, 220, 110, 210, 110, 205, 202, 201, 150],
@@ -381,7 +381,7 @@
               fill: true, // 3: no fill
               
           },{
-            label: 'This week',
+            label: 'Esta semana',
             data: [215, 290, 210, 250, 290, 230, 290, 210, 280, 220, 190, 300],
             backgroundColor: "#1F3BB3",
             borderColor: [
@@ -461,9 +461,9 @@
     if ($("#marketingOverview-dark").length) {
       var marketingOverviewChartDark = document.getElementById("marketingOverview-dark").getContext('2d');
       var marketingOverviewDataDark = {
-          labels: ["JAN","FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"],
+          labels: ["ENE","FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"],
           datasets: [{
-              label: 'Last week',
+              label: 'Semana Pasada',
               data: [110, 220, 200, 190, 220, 110, 210, 110, 205, 202, 201, 150],
               backgroundColor: "#52CDFF",
               borderColor: [
@@ -473,7 +473,7 @@
               fill: true, // 3: no fill
               
           },{
-            label: 'This week',
+            label: 'Esta semana',
             data: [215, 290, 210, 250, 290, 230, 290, 210, 280, 220, 190, 300],
             backgroundColor: "#1F3BB3",
             borderColor: [
@@ -554,27 +554,24 @@
       var doughnutChartCanvas = $("#doughnutChart").get(0).getContext("2d");
       var doughnutPieData = {
         datasets: [{
-          data: [40, 20, 30, 10],
+          data: [20, 30, 10],
           backgroundColor: [
-            "#1F3BB3",
-            "#FDD0C7",
-            "#52CDFF",
-            "#81DADA"
+            "#f6e84e",
+            "#58d8a3",
+            "#f96868" 
           ],
           borderColor: [
-            "#1F3BB3",
-            "#FDD0C7",
-            "#52CDFF",
-            "#81DADA"
+            "#f6e84e",
+            "#58d8a3",
+            "#f96868"
           ],
         }],
   
         // These labels appear in the legend and in the tooltips when hovering different arcs
         labels: [
-          'Total',
-          'Net',
-          'Gross',
-          'AVG',
+          'Pendientes',
+          'Completados',
+          'Vencidos',
         ]
       };
       var doughnutPieOptions = {
@@ -637,9 +634,9 @@
     if ($("#leaveReport").length) {
       var leaveReportChart = document.getElementById("leaveReport").getContext('2d');
       var leaveReportData = {
-          labels: ["Jan","Feb", "Mar", "Apr", "May"],
+          labels: ["Ene","Feb", "Mar", "Abr", "May"],
           datasets: [{
-              label: 'Last week',
+              label: 'Semana anterior',
               data: [18, 25, 39, 11, 24],
               backgroundColor: "#52CDFF",
               borderColor: [
@@ -705,7 +702,7 @@
     if ($("#leaveReport-dark").length) {
       var leaveReportChartDark = document.getElementById("leaveReport-dark").getContext('2d');
       var leaveReportDataDark = {
-          labels: ["JAN","FEB", "MAR", "APR", "MAY"],
+          labels: ["ENE","FEB", "MAR", "ABR", "MAY"],
           datasets: [{
               label: 'Last week',
               data: [18, 25, 39, 11, 24],

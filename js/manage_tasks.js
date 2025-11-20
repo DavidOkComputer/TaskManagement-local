@@ -1,4 +1,4 @@
-/*task-management.js - manejo de tareas, creacion, actualizacion y asignacion de usuarios - VERSIÓN MEJORADA*/
+/*task-management.js - manejo de tareas, creacion, actualizacion y asignacion de usuarios */
 
 document.addEventListener('DOMContentLoaded', function() {
     
