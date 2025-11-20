@@ -11,18 +11,30 @@ function loadProyectos() {
     $.ajax({//obtener los proyectos
         url: '../php/api_get_projects.php', 
         type: 'GET',
-        dataType: 'json',
+        dataType: 'text', // Change to text to see raw response
         timeout: 10000, // 10s
         success: function(response) {
-            if (response.success) {
-                populateProyectosTable(response.data);//agregar proyectos a la tabla
-                hideLoadingState();
-            } else {
-                showError('Error: ' + response.message);
+            console.log('Raw response from server:', response); // DEBUG
+            console.log('Response length:', response.length); // DEBUG
+            
+            try {
+                const parsed = JSON.parse(response);
+                if (parsed.success) {
+                    populateProyectosTable(parsed.data);//agregar proyectos a la tabla
+                    hideLoadingState();
+                } else {
+                    showError('Error: ' + parsed.message);
+                }
+            } catch (e) {
+                console.error('JSON Parse Error:', e);
+                console.error('Response was:', response);
+                showError('Error al parsear datos: ' + e.message);
             }
         },
         error: function(xhr, status, error) {
             console.error('Error al cargar los proyectos.:', error);
+            console.error('Response text:', xhr.responseText); // DEBUG
+            console.error('Status:', xhr.status); // DEBUG
             
             let errorMessage = 'Error al cargar proyectos';
             
@@ -217,5 +229,4 @@ function bulkActionProyectos(action) {
     }
     
     console.log('Performing action:', action, 'on projects:', selected);
-
 }

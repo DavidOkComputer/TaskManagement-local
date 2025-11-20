@@ -1,27 +1,42 @@
 <?php
 /*API Endpoint: obtener proyectos*/
 
+// Start output buffering to prevent any stray output before JSON
+ob_start();
+
 session_start();
 header('Content-Type: application/json');
 
-//revisar autenticacin del usuario
-if (!isset($_SESSION['id_usuario'])) {
-    http_response_code(401);
+// Clean any output that might have been generated
+ob_end_clean();
+
+// Set error handling to capture errors
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    error_log("PHP Error: $errstr in $errfile on line $errline");
+});
+
+// Include database configuration
+require_once('db_config.php');
+
+// Call the function to get the database connection
+$conexion = getDBConnection();
+
+// Check if connection was established
+if (!$conexion) {
+    http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Usuario no autenticado'
+        'message' => 'Database connection failed'
     ]);
     exit;
 }
 
-require_once('db_config.php');
-
-$id_usuario = $_SESSION['user_id'];
+// TODO: Replace with actual user session once login is implemented
+$id_usuario = $_SESSION['user_id'] ?? 1; // Default to user ID 1 for development
 $proyectos = [];
-$error = null;
 
 try {
-    // Query para obtener todos los proytectos de la sesion del usuario
+    // Query para obtener todos los proyectos del usuario
     $query = "
         SELECT DISTINCT
             p.id_proyecto,
@@ -70,7 +85,7 @@ try {
             default => $proyecto['estado']
         };
         
-        $estado_style = match($proyecto['estado']) {//color de insignia dependiendo del estado
+        $estado_style = match($proyecto['estado']) {
             'pendiente' => 'badge-danger',
             'en proceso' => 'badge-warning',
             'vencido' => 'badge-danger',
@@ -78,7 +93,7 @@ try {
             default => 'badge-secondary'
         };
         
-        $progreso_color = match($proyecto['estado']) {//color de la barra de progreso 
+        $progreso_color = match($proyecto['estado']) {
             'pendiente' => 'bg-danger',
             'en proceso' => 'bg-warning',
             'vencido' => 'bg-danger',
@@ -111,7 +126,6 @@ try {
     ]);
     
 } catch (Exception $e) {
-    // Handle errors
     error_log('Error en api_get_proyectos.php: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode([
@@ -120,4 +134,7 @@ try {
         'error' => $e->getMessage()
     ]);
 }
+
+// Restore error handler
+restore_error_handler();
 ?>

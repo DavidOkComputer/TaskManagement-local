@@ -6,6 +6,13 @@ const Config = {
     } 
 }; 
 
+// AUTO-REFRESH CONFIGURATION
+const AUTO_REFRESH_CONFIG = {
+    USERS_INTERVAL: 30000,      // 30 seconds - refresh user list and progress
+    MODAL_INTERVAL: 15000,      // 15 seconds - refresh modal projects when open
+    DEBUG: true
+};
+
 let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
 let filteredUsuarios = [];
 let allDepartamentos = []; //guardar todos los departamentos
@@ -19,16 +26,19 @@ let totalPages = 0;
 let projectUsersData = [];
 //variables de refresco automatico
 let autoRefreshInterval = null;
+let modalRefreshInterval = null;
 let currentUserIdForProject = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // inicializar
     console.clear();
-    console.log('%cSistema de Gestión de Empleados v2.0', 'font-size: 16px; font-weight: bold; color: #28a745;');
+    console.log('%cSistema de Gestión de Empleados v2.0 - Enhanced Auto-Refresh', 'font-size: 16px; font-weight: bold; color: #28a745;');
     console.log('%c=====================================', 'color: #28a745;');
     console.log('Fecha/Hora:', new Date().toLocaleString());
     console.log('URL:', window.location.href);
     console.log('User Agent:', navigator.userAgent);
+    console.log('Auto-refresh interval (users):', AUTO_REFRESH_CONFIG.USERS_INTERVAL + 'ms');
+    console.log('Auto-refresh interval (modal):', AUTO_REFRESH_CONFIG.MODAL_INTERVAL + 'ms');
     console.log('%c=====================================', 'color: #28a745;');
     
     logAction('Página cargada - Inicializando sistema');
@@ -63,6 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setupSorting();
     setupPagination();
+    setupModalEventListeners(); // Setup modal events for auto-refresh
     
     console.log('%cSistema inicializado correctamente', 'color: #34b0aa; font-weight: bold;');
     console.log('%cConsola abierta: Presiona F12 para ver logs detallados', 'color: #17a2b8; font-style: italic;');
@@ -70,24 +81,75 @@ document.addEventListener('DOMContentLoaded', function() {
 
 createCustomDialogSystem();
 
-function startAutoRefresh(){
-    if(autoRefreshInterval){//para limpiar el intervalo
-        cleaninterval(autoRefreshInterval);
-    }
-    autoRefreshInterval = setInterval(() => {//configuracion para refrescar cada minuto
-        console.log('Auto-refresh: Actualizando datos de usuarios...');
-        refreshUserData();
-        if(currentUserIdForProject){
-            refreshUserProjectData();
+// Setup listeners for modal open/close events
+function setupModalEventListeners() {
+    const modal = document.getElementById('viewProjectsModal');
+    if (!modal) return;
+    
+    modal.addEventListener('show.bs.modal', function() {
+        if (AUTO_REFRESH_CONFIG.DEBUG) {
+            console.log('Modal abierto - iniciando auto-refresh de proyectos');
         }
-    }, 60000);
+    });
+    
+    modal.addEventListener('hide.bs.modal', function() {
+        if (AUTO_REFRESH_CONFIG.DEBUG) {
+            console.log('Modal cerrado - deteniendo auto-refresh de proyectos');
+        }
+        currentUserIdForProject = null;
+    });
+}
+
+function startAutoRefresh(){
+    if(autoRefreshInterval){
+        clearInterval(autoRefreshInterval);
+    }
+    
+    // Auto-refresh user data and progress
+    autoRefreshInterval = setInterval(() => {
+        if(AUTO_REFRESH_CONFIG.DEBUG) {
+            console.log('%cAuto-refresh: Actualizando datos de usuarios y progreso...', 'color: #17a2b8; font-weight: bold;');
+        }
+        refreshUserData();
+    }, AUTO_REFRESH_CONFIG.USERS_INTERVAL);
+    
+    // Separate interval for modal projects when open
+    startModalAutoRefresh();
+    
+    if(AUTO_REFRESH_CONFIG.DEBUG) {
+        console.log('Auto-refresh iniciado. Intervalos:', AUTO_REFRESH_CONFIG);
+    }
+}
+
+function startModalAutoRefresh(){
+    if(modalRefreshInterval){
+        clearInterval(modalRefreshInterval);
+    }
+    
+    // Check every few seconds if modal is open, and refresh if needed
+    modalRefreshInterval = setInterval(() => {
+        const modal = document.getElementById('viewProjectsModal');
+        if(modal && modal.classList.contains('show')) {
+            if(currentUserIdForProject) {
+                if(AUTO_REFRESH_CONFIG.DEBUG) {
+                    console.log('%cModal abierto - refrescando datos de proyectos para usuario: ' + currentUserIdForProject, 'color: #ffc107; font-weight: bold;');
+                }
+                refreshUserProjectData();
+            }
+        }
+    }, AUTO_REFRESH_CONFIG.MODAL_INTERVAL);
 }
 
 function stopAutoRefresh(){
     if(autoRefreshInterval){
         clearInterval(autoRefreshInterval);
         autoRefreshInterval = null;
-        console.log('Auto-refresh detenido');
+        console.log('Auto-refresh de usuarios detenido');
+    }
+    if(modalRefreshInterval){
+        clearInterval(modalRefreshInterval);
+        modalRefreshInterval = null;
+        console.log('Auto-refresh de modal detenido');
     }
 }
 
@@ -102,28 +164,151 @@ function refreshUserData(){
     .then(data =>{
         if(data.success && data.usuarios){
             //guardar el estado actual de la busqueda
-            const searchInput = document.getElementById('searchInput');
+            const searchInput = document.getElementById('searchUser');
             const currentSearchQuery = searchInput ? searchInput.value:'';
-            allUsuarios = data.usuarios;//actualizar los datos
-            if(currentSearchQuery.trim()!==''){//reaplicar los filtros de busqueda si existen
-                performSearch(currentSearchQuery);
-            } else{
-                filteredUsuarios = [...allUsuarios];
-            }if(currentSortColumn){//reaplicar ordenamiento si existe
-                filteredUsuarios = sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection);
-            }
-            const newTotalPages = calculatePages(filteredUsuarios);//actualizar la vista manteniendo la pagina actual si es posible
-            if(currentPage > newTotalPages && newTotalPages > 0){
-                currentPage = newTotalPages;
-            }
-            displayUsuarios(filteredUsuarios);
-            console.log('Datos de proyectos actualizados exitosamente');
+            
+            // Actualizar usuarios y recalcular progreso
+            logAction('Recalculando progreso de todos los usuarios...');
+            
+            Promise.all(
+                data.usuarios.map(async usuario => {
+                    const progress = await calculateUserProgress(usuario.id_usuario);
+                    usersProgressCache[usuario.id_usuario] = progress;
+                    return { ...usuario, ...progress };
+                })
+            ).then(usersWithProgress => {
+                allUsuarios = usersWithProgress;
+                
+                if(currentSearchQuery.trim()!==''){//reaplicar los filtros de busqueda si existen
+                    performSearch(currentSearchQuery);
+                } else{
+                    filteredUsuarios = [...allUsuarios];
+                }
+                
+                if(currentSortColumn){//reaplicar ordenamiento si existe
+                    filteredUsuarios = sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection);
+                }
+                
+                const newTotalPages = calculatePages(filteredUsuarios);//actualizar la vista manteniendo la pagina actual si es posible
+                if(currentPage > newTotalPages && newTotalPages > 0){
+                    currentPage = newTotalPages;
+                }
+                
+                displayUsuarios(filteredUsuarios);
+                if(AUTO_REFRESH_CONFIG.DEBUG) {
+                    console.log('✓ Datos de usuarios y progreso actualizados exitosamente', {
+                        total_usuarios: allUsuarios.length,
+                        usuarios_con_proyectos: allUsuarios.filter(u => u.totalProjects > 0).length
+                    });
+                }
+            });
         }
     })
     .catch(error =>{
         console.error('Error al refrescar usuarios:', error);
         //no mostrar alerta para no interrumpir al usuario
     });
+}
+
+// NEW: Refresh project data for the modal
+async function refreshUserProjectData(){
+    if(!currentUserIdForProject) return;
+    
+    try {
+        const projects = await fetchUserProjects(currentUserIdForProject);
+        
+        if(projects.length === 0) {
+            if(AUTO_REFRESH_CONFIG.DEBUG) {
+                console.log('No projects found for user:', currentUserIdForProject);
+            }
+            return;
+        }
+        
+        // Update modal content with new project data
+        updateProjectsModal(projects);
+        
+        if(AUTO_REFRESH_CONFIG.DEBUG) {
+            console.log('✓ Proyectos actualizados en modal:', {
+                total_proyectos: projects.length,
+                total_tareas: projects.reduce((sum, p) => sum + p.tareas_totales, 0),
+                tareas_completadas: projects.reduce((sum, p) => sum + p.tareas_completadas, 0)
+            });
+        }
+    } catch(error) {
+        console.error('Error al refrescar proyectos en modal:', error);
+    }
+}
+
+// NEW: Update projects modal with fresh data
+function updateProjectsModal(projects) {
+    if(projects.length === 0) {
+        document.getElementById('projectsContainer').style.display = 'none';
+        document.getElementById('noProjects').style.display = 'block';
+        return;
+    }
+    
+    // Calculate new statistics
+    let totalTasks = 0;
+    let completedTasks = 0;
+    let totalProgress = 0;
+    
+    projects.forEach(project => {
+        totalTasks += project.tareas_totales;
+        completedTasks += project.tareas_completadas;
+        totalProgress += project.progreso;
+    });
+    
+    const avgProgress = projects.length > 0 ? totalProgress / projects.length : 0;
+    
+    // Update statistics
+    document.getElementById('totalProjects').textContent = projects.length;
+    document.getElementById('totalTasks').textContent = totalTasks;
+    document.getElementById('avgProgress').textContent = avgProgress.toFixed(1) + '%';
+    
+    // Update projects list with animated transitions
+    const projectsList = document.getElementById('projectsList');
+    const newHTML = projects.map(project => `
+        <div class="card mb-3 project-card-update">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h6 class="mb-1 fw-bold">${escapeHtml(project.nombre)}</h6>
+                        <p class="text-muted mb-2 small">${escapeHtml(project.descripcion || 'Sin descripción')}</p>
+                    </div>
+                    <span class="badge ${getStatusBadgeClass(project.estado)}">${project.estado}</span>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="mdi mdi-view-grid"></i> Área: ${escapeHtml(project.area || 'N/A')}
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="mdi mdi-calendar"></i> ${formatDate(project.fecha_cumplimiento)}
+                        </small>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">Progreso: ${project.progreso_porcentaje}%</small>
+                        <small class="text-muted">${project.tareas_completadas}/${project.tareas_totales} tareas</small>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar ${getProgressBarClass(project.progreso)}"
+                             role="progressbar"
+                             style="width: ${project.progreso}%; transition: width 0.5s ease;"
+                             aria-valuenow="${project.progreso}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    projectsList.innerHTML = newHTML;
 }
 
 // Cargar departamentos para el dropdown
@@ -292,11 +477,8 @@ function sortUsuarios(usuarios, column, direction) {
             valueA = `${a.nombre} ${a.apellido}`; 
             valueB = `${b.nombre} ${b.apellido}`; 
         } else if (column === 'rol') { 
-
             valueA = getRolText(a.id_rol); 
-
             valueB = getRolText(b.id_rol); 
-
         } else if (column === 'progreso') { 
             valueA = a.avgProgress || 0; //ordenar por progreso
             valueB = b.avgProgress || 0; 
@@ -495,6 +677,10 @@ async function showUserProjects(userId, userName, userEmail) {
     document.getElementById('projectsLoading').style.display = 'block'; //mostrar estado de carga
     document.getElementById('projectsContainer').style.display = 'none'; 
     document.getElementById('noProjects').style.display = 'none'; 
+    
+    // Set current user for auto-refresh
+    currentUserIdForProject = userId;
+    
     modal.show(); 
     const projects = await fetchUserProjects(userId); //obtener proyectos
     document.getElementById('projectsLoading').style.display = 'none'; //ocular carga
@@ -550,7 +736,7 @@ async function showUserProjects(userId, userName, userEmail) {
                     <div class="progress" style="height: 10px;"> 
                         <div class="progress-bar ${getProgressBarClass(project.progreso)}"  
                              role="progressbar"  
-                             style="width: ${project.progreso}%" 
+                             style="width: ${project.progreso}%; transition: width 0.5s ease;" 
                              aria-valuenow="${project.progreso}"  
                              aria-valuemin="0"  
                              aria-valuemax="100"> 
@@ -654,7 +840,7 @@ function createUsuarioRow(usuario) {
                 <div class="progress" style="height: 8px;">
                     <div class="progress-bar ${getProgressBarClass(usuario.avgProgress || 0)}"
                          role="progressbar"
-                         style="width: ${usuario.avgProgress || 0}%"
+                         style="width: ${usuario.avgProgress || 0}%; transition: width 0.5s ease;"
                          aria-valuenow="${usuario.avgProgress || 0}"
                          aria-valuemin="0"
                          aria-valuemax="100">
@@ -691,91 +877,6 @@ function createUsuarioRow(usuario) {
  
     return tr;
 }
-
-/*
-async function renderUsers(users) { 
-    const tbody = document.getElementById('usuariosTableBody'); 
-    if (!users || users.length === 0) { 
-        tbody.innerHTML = ` 
-            <tr> 
-                <td colspan="7" class="text-center"> 
-                    <p class="text-muted my-3">No se encontraron usuarios</p> 
-                </td> 
-            </tr> 
-        `; 
-        return; 
-    } 
-
-    const usersWithProgress = await Promise.all(users.map(async user => { //calcular el progreso para todos los usuarios
-        const progress = await calculateUserProgress(user.id_usuario); 
-        return { ...user, ...progress }; 
-    })); 
-
-    tbody.innerHTML = usersWithProgress.map(user => ` 
-        <tr> 
-            <td> 
-                <div class="form-check form-check-flat mt-0"> 
-                    <label class="form-check-label"> 
-                        <input type="checkbox" class="form-check-input" value="${user.id_usuario}"><i class="input-helper"></i> 
-                    </label> 
-                </div> 
-            </td> 
-            <td> 
-                <div class="d-flex align-items-center"> 
-                    <img src="../images/faces/face1.jpg" alt="image" class="me-3 rounded-circle" style="width: 40px; height: 40px;"> 
-                    <div> 
-                        <h6 class="mb-0">${escapeHtml(user.nombre)} ${escapeHtml(user.apellido)}</h6> 
-                        <small class="text-muted">${escapeHtml(user.e_mail)}</small> 
-                    </div> 
-                </div> 
-            </td> 
-            <td>${escapeHtml(user.departamento || 'N/A')}</td> 
-            <td>${escapeHtml(user.superior || 'N/A')}</td> 
-            <td> 
-                <span class="badge badge-opacity-${getRoleBadgeColor(user.rol)}">${escapeHtml(user.rol || 'N/A')}</span> 
-            </td> 
-            <td> 
-                <div class="d-flex flex-column"> 
-                    <div class="d-flex justify-content-between mb-1"> 
-                        <small>${user.avgProgress.toFixed(1)}%</small> 
-                        <small>${user.totalProjects} proyectos</small> 
-                    </div> 
-                    <div class="progress" style="height: 8px;"> 
-                        <div class="progress-bar ${getProgressBarClass(user.avgProgress)}"  
-                             role="progressbar"  
-                             style="width: ${user.avgProgress}%" 
-                             aria-valuenow="${user.avgProgress}"  
-                             aria-valuemin="0"  
-                             aria-valuemax="100"> 
-                        </div> 
-                    </div> 
-                </div> 
-            </td> 
-            <td> 
-                <div class="btn-group" role="group"> 
-                    <button type="button"  
-                            class="btn btn-sm btn-info"  
-                            onclick="showUserProjects(${user.id_usuario}, '${escapeHtml(user.nombre)} ${escapeHtml(user.apellido)}', '${escapeHtml(user.e_mail)}')" 
-                            title="Ver proyectos"> 
-                        <i class="mdi mdi-folder-account"></i> 
-                    </button> 
-                    <button type="button"  
-                            class="btn btn-sm btn-primary"  
-                            onclick="editUser(${user.id_usuario})" 
-                            title="Editar"> 
-                        <i class="mdi mdi-pencil"></i> 
-                    </button> 
-                    <button type="button"  
-                            class="btn btn-sm btn-danger"  
-                            onclick="deleteUser(${user.id_usuario})" 
-                            title="Eliminar"> 
-                        <i class="mdi mdi-delete"></i> 
-                    </button> 
-                </div> 
-            </td> 
-        </tr> 
-    `).join(''); 
-} */
 
 function renderUsuariosTable(usuarios) {
     displayUsuarios(usuarios);
@@ -847,6 +948,11 @@ function filterUsuarios() {
     displayUsuarios(sorted);
 }
 
+function performSearch(query) {
+    // Helper function for search implementation
+    filterUsuarios();
+}
+
 function attachCheckboxListeners() {
     const checkboxes = document.querySelectorAll('.usuario-checkbox');
     checkboxes.forEach(checkbox => {
@@ -902,8 +1008,10 @@ function updateSelectAllCheckbox() {
     const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
     const someChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
     
-    selectAllCheckbox.checked = allChecked;
-    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+    if(selectAllCheckbox) {
+        selectAllCheckbox.checked = allChecked;
+        selectAllCheckbox.indeterminate = someChecked && !allChecked;
+    }
 }
 
 

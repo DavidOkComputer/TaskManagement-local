@@ -11,7 +11,7 @@ function loadProyectosVencidos() {
     
     
     $.ajax({//ajax para refrescar los proyectos vencidos
-        url: '../api_get_proyectos_vencidos.php',
+        url: '../php/api_get_overdue_projects.php', // Fixed path
         type: 'GET',
         dataType: 'json',
         timeout: 10000, // 10segundos
@@ -26,6 +26,7 @@ function loadProyectosVencidos() {
         },
         error: function(xhr, status, error) {
             console.error('Error al cargar los proyectos vencidos:', error);
+            console.error('Response text:', xhr.responseText); // DEBUG
             
             let errorMessage = 'Error al cargar proyectos vencidos';
             

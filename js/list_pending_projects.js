@@ -1,36 +1,36 @@
-/*Proyectos Pendientes */
+/*listar Proyectos Pendientes*/
 
 $(document).ready(function() {
     loadProyectosPendientes();
-    
-    setInterval(loadProyectosPendientes, 30000);//refrescar proyectos pendientes cada 30s de maner automatica
+    setInterval(loadProyectosPendientes, 30000);//actualizar cada 30s
 });
 
 function loadProyectosPendientes() {
     showLoadingState();
     
-    $.ajax({//obtener proyectos pendientes
-        url: '../api_get_proyectos_pendientes.php',
+    $.ajax({//obtener los proyectos pendientes
+        url: '../php/api_get_pending_projects.php', 
         type: 'GET',
         dataType: 'json',
-        timeout: 10000, // 10 s
+        timeout: 10000, // 10s
         success: function(response) {
             if (response.success) {
-                populateProyectosPendientesTable(response.data);//llenado de tabla
+                populateProyectosPendientesTable(response.data);//agregar proyectos a la tabla
                 hideLoadingState();
             } else {
                 showError('Error: ' + response.message);
             }
         },
         error: function(xhr, status, error) {
-            console.error('Error loading pending projects:', error);
+            console.error('Error al cargar los proyectos pendientes:', error);
+            console.error('Response text:', xhr.responseText); // DEBUG
             
             let errorMessage = 'Error al cargar proyectos pendientes';
             
             if (xhr.status === 401) {
                 errorMessage = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
             } else if (xhr.status === 403) {
-                errorMessage = 'No tiene permiso para ver proyectos pendientes';
+                errorMessage = 'No tiene permiso para ver proyectos';
             } else if (status === 'timeout') {
                 errorMessage = 'Tiempo de espera agotado. Por favor, intente de nuevo.';
             }
@@ -43,38 +43,35 @@ function loadProyectosPendientes() {
 function populateProyectosPendientesTable(proyectos) {
     const tbody = $('table.select-table tbody');
     
-    tbody.empty();//limpiar registros existentes
+    tbody.empty();//limpiar filas existentes
     
-    if (!proyectos || proyectos.length === 0) {//revisar si hay proyecto pendientes
+    if (!proyectos || proyectos.length === 0) {//revisar si hay proyectos
         tbody.html(`
             <tr>
                 <td colspan="5" class="text-center py-4">
-                    <p class="text-muted">No hay proyectos pendientes asignados</p>
+                    <p class="text-muted">No hay proyectos pendientes</p>
                 </td>
             </tr>
         `);
         return;
     }
     
-    proyectos.forEach(function(proyecto) {//iteracion entrecada proyecto y crear los registros de la tabla
-        const row = createProyectoPendienteRow(proyecto);
+    proyectos.forEach(function(proyecto) {//iteracion a traves de los proyectos y crear las filas de la tabla
+        const row = createProyectoRow(proyecto);
         tbody.append(row);
     });
     
-    updateProyectoPendienteCount(proyectos.length);
+    updateProyectoCount(proyectos.length);//actualizar contador de proyectos
 }
 
-function createProyectoPendienteRow(proyecto) {
-    const fechaCumplimiento = formatDate(proyecto.fecha_cumplimiento);//formato de fecha
+function createProyectoRow(proyecto) {
+    const fechaCumplimiento = formatDate(proyecto.fecha_cumplimiento);
     
-    const isOverdue = isDateOverdue(proyecto.fecha_cumplimiento);//revisar si el proyecto esta vencido
-    const overdueClass = isOverdue ? 'table-danger' : '';
-    
-    const progressBarId = 'progress-' + proyecto.id_proyecto;//ids dinamicas para los elementos
+    const progressBarId = 'progress-' + proyecto.id_proyecto;//id s unicos para los elementos 
     
     //HTML
     const row = $(`
-        <tr data-proyecto-id="${proyecto.id_proyecto}" class="${overdueClass}">
+        <tr data-proyecto-id="${proyecto.id_proyecto}">
             <!-- Checkbox column -->
             <td>
                 <div class="form-check form-check-flat mt-0">
@@ -90,7 +87,7 @@ function createProyectoPendienteRow(proyecto) {
             <!-- Proyecto Nombre column -->
             <td>
                 <div class="d-flex">
-                    <!-- Placeholder image -->
+                    <!-- Placeholder image - can be replaced with department logo -->
                     <img src="../images/faces/face1.jpg" alt="${proyecto.nombre}" class="me-2">
                     <div>
                         <h6 class="mb-0">${proyecto.nombre}</h6>
@@ -102,21 +99,18 @@ function createProyectoPendienteRow(proyecto) {
             <!-- Descripcion column -->
             <td>
                 <h6 class="mb-0">${proyecto.descripcion}</h6>
-                <p class="text-muted small mb-0">
-                    Departamento: ${proyecto.departamento}
-                    ${isOverdue ? '<br><span class="badge badge-danger">VENCIDO</span>' : ''}
-                </p>
+                <p class="text-muted small mb-0">Departamento: ${proyecto.departamento}</p>
             </td>
             
             <!-- Progreso column -->
             <td>
                 <div>
                     <div class="d-flex justify-content-between align-items-center mb-1 max-width-progress-wrap">
-                        <p class="text-danger mb-0 fw-bold">${proyecto.progreso}%</p>
-                        <p class="text-muted small mb-0">Fecha límite: ${fechaCumplimiento}</p>
+                        <p class="text-success mb-0 fw-bold">${proyecto.progreso}%</p>
+                        <p class="text-muted small mb-0">${proyecto.progreso}/100</p>
                     </div>
                     <div class="progress progress-md">
-                        <div class="progress-bar bg-danger" 
+                        <div class="progress-bar ${proyecto.progreso_color}" 
                              id="${progressBarId}"
                              role="progressbar" 
                              style="width: ${proyecto.progreso}%" 
@@ -130,30 +124,24 @@ function createProyectoPendienteRow(proyecto) {
             
             <!-- Estado column -->
             <td>
-                <div class="badge badge-opacity-danger">
+                <div class="badge badge-opacity-${getEstadoClass(proyecto.estado_style)}">
                     ${proyecto.estado_display}
                 </div>
             </td>
         </tr>
     `);
     
-    row.on('click', function(e) {//ver detalles del proyecto
-        if (e.target.type !== 'checkbox') {// no activar al hacer clic en checkbox
-            viewProyectoPendienteDetails(proyecto.id_proyecto);
+    row.on('click', function(e) {
+        if (e.target.type !== 'checkbox') {
+            viewProyectoDetails(proyecto.id_proyecto);
         }
     });
     
     return row;
 }
 
-function isDateOverdue(dateString) {
-    if (!dateString) return false;
-    
-    const date = new Date(dateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); //reiniciar dia
-    
-    return date < today;
+function getEstadoClass(estado_style) {
+    return estado_style.replace('badge-', '');
 }
 
 function formatDate(dateString) {
@@ -169,14 +157,11 @@ function formatDate(dateString) {
     });
 }
 
-function updateProyectoPendienteCount(count) {
-    const subtitle = $('p.card-subtitle-dash');//encontrar y actualizar el subtitulo de conteo de proyectos
+function updateProyectoCount(count) {
+    const subtitle = $('p.card-subtitle-dash');//actualizar contador
     if (subtitle.length) {
         const plural = count === 1 ? 'proyecto' : 'proyectos';
-        const text = count === 0 
-            ? 'No hay proyectos pendientes' 
-            : 'Tienes ' + count + ' ' + plural + ' pendiente' + (count > 1 ? 's' : '');
-        subtitle.text(text);
+        subtitle.text('Tienes ' + count + ' ' + plural);
     }
 }
 
@@ -212,12 +197,11 @@ function showError(message) {
     `);
 }
 
-function viewProyectoPendienteDetails(proyectoId) {
-    console.log('Viewing pending project details:', proyectoId);
-    // window.location.href = '../proyectoDetalle/?id=' + proyectoId;
+function viewProyectoDetails(proyectoId) {
+    console.log('Viewing project details:', proyectoId);
 }
 
-function getSelectedProyectosPendientes() {
+function getSelectedProyectos() {
     const selected = [];
     $('input.proyecto-checkbox:checked').each(function() {
         selected.push($(this).data('proyecto-id'));
@@ -225,14 +209,13 @@ function getSelectedProyectosPendientes() {
     return selected;
 }
 
-function bulkActionProyectosPendientes(action) {
-    const selected = getSelectedProyectosPendientes();
+function bulkActionProyectos(action) {
+    const selected = getSelectedProyectos();
     
     if (selected.length === 0) {
-        alert('Por favor seleccione al menos un proyecto pendiente');
+        alert('Por favor seleccione al menos un proyecto');
         return;
     }
     
-    console.log('Performing action:', action, 'on pending projects:', selected);
-    //se puede agregar opcion de acciones masivas como iniciar varios proyectos pendientes
+    console.log('Performing action:', action, 'on projects:', selected);
 }

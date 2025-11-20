@@ -1,34 +1,50 @@
 const Config = { 
     API_ENDPOINTS: {  
-        DELETE: '../php/delete_users.php',
-        GET_DEPARTMENTS: '../php/get_departments.php'
+        GET_DEPARTMENTS: '../php/get_departments.php',
+        GET_USERS: '../php/get_users.php'
     } 
 }; 
+
+// AUTO-REFRESH CONFIGURATION
+const AUTO_REFRESH_CONFIG = {
+    USERS_INTERVAL: 30000,      // 30 seconds - refresh user list and progress
+    MODAL_INTERVAL: 15000,      // 15 seconds - refresh modal projects when open
+    DEBUG: true                  // Enable console logging for debugging
+};
 
 let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
 let filteredUsuarios = [];
 let allDepartamentos = []; //guardar todos los departamentos
 let allUsersData=[];//guardat todos los usuarios con su informacion de proyecto
+let usersProgressCache=[];
 let currentSortColumn = null;
 let sortDirection = 'asc';
 let currentPage = 1;
 let rowsPerPage = 10;
 let totalPages = 0;
 
+// Auto-refresh variables
+let autoRefreshInterval = null;
+let modalRefreshInterval = null;
+let currentUserIdForProject = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     // inicializar
     console.clear();
-    console.log('%cSistema de Gestión de Empleados v2.0', 'font-size: 16px; font-weight: bold; color: #28a745;');
+    console.log('%cSistema de Gestión de Empleados (Vista Gerente) v2.0 - Enhanced Auto-Refresh', 'font-size: 16px; font-weight: bold; color: #28a745;');
     console.log('%c=====================================', 'color: #28a745;');
     console.log('Fecha/Hora:', new Date().toLocaleString());
     console.log('URL:', window.location.href);
     console.log('User Agent:', navigator.userAgent);
+    console.log('Auto-refresh interval (users):', AUTO_REFRESH_CONFIG.USERS_INTERVAL + 'ms');
+    console.log('Auto-refresh interval (modal):', AUTO_REFRESH_CONFIG.MODAL_INTERVAL + 'ms');
     console.log('%c=====================================', 'color: #28a745;');
     
     logAction('Página cargada - Inicializando sistema');
     
     loadDepartamentos(); // Cargar departamentos para el dropdown
     loadUsuarios();//cargar usuarios al cargar la pagina
+    startAutoRefresh();//iniciar refresco de usuarios y progreso
     
     const searchInput = document.getElementById('searchUser');//funcionalidad de buscar
     if (searchInput) {
@@ -56,12 +72,243 @@ document.addEventListener('DOMContentLoaded', function() {
 
     setupSorting();
     setupPagination();
+    setupModalEventListeners(); // Setup modal events for auto-refresh
     
     console.log('%cSistema inicializado correctamente', 'color: #34b0aa; font-weight: bold;');
     console.log('%cConsola abierta: Presiona F12 para ver logs detallados', 'color: #17a2b8; font-style: italic;');
 });
 
 createCustomDialogSystem();
+
+// Setup listeners for modal open/close events
+function setupModalEventListeners() {
+    const modal = document.getElementById('viewProjectsModal');
+    if (!modal) return;
+    
+    modal.addEventListener('show.bs.modal', function() {
+        if (AUTO_REFRESH_CONFIG.DEBUG) {
+            console.log('Modal abierto - iniciando auto-refresh de proyectos');
+        }
+    });
+    
+    modal.addEventListener('hide.bs.modal', function() {
+        if (AUTO_REFRESH_CONFIG.DEBUG) {
+            console.log('Modal cerrado - deteniendo auto-refresh de proyectos');
+        }
+        currentUserIdForProject = null;
+    });
+}
+
+function startAutoRefresh(){
+    if(autoRefreshInterval){
+        clearInterval(autoRefreshInterval);
+    }
+    
+    // Auto-refresh user data and progress
+    autoRefreshInterval = setInterval(() => {
+        if(AUTO_REFRESH_CONFIG.DEBUG) {
+            console.log('%cAuto-refresh: Actualizando datos de usuarios y progreso...', 'color: #17a2b8; font-weight: bold;');
+        }
+        refreshUserData();
+    }, AUTO_REFRESH_CONFIG.USERS_INTERVAL);
+    
+    // Separate interval for modal projects when open
+    startModalAutoRefresh();
+    
+    if(AUTO_REFRESH_CONFIG.DEBUG) {
+        console.log('Auto-refresh iniciado. Intervalos:', AUTO_REFRESH_CONFIG);
+    }
+}
+
+function startModalAutoRefresh(){
+    if(modalRefreshInterval){
+        clearInterval(modalRefreshInterval);
+    }
+    
+    // Check every few seconds if modal is open, and refresh if needed
+    modalRefreshInterval = setInterval(() => {
+        const modal = document.getElementById('viewProjectsModal');
+        if(modal && modal.classList.contains('show')) {
+            if(currentUserIdForProject) {
+                if(AUTO_REFRESH_CONFIG.DEBUG) {
+                    console.log('%cModal abierto - refrescando datos de proyectos para usuario: ' + currentUserIdForProject, 'color: #ffc107; font-weight: bold;');
+                }
+                refreshUserProjectData();
+            }
+        }
+    }, 5000);
+}
+
+function stopAutoRefresh(){
+    if(autoRefreshInterval){
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        console.log('Auto-refresh de usuarios detenido');
+    }
+    if(modalRefreshInterval){
+        clearInterval(modalRefreshInterval);
+        modalRefreshInterval = null;
+        console.log('Auto-refresh de modal detenido');
+    }
+}
+
+function refreshUserData(){
+    fetch('../php/get_users.php')
+    .then(response =>{
+        if(!response.ok){
+            throw new Error('La respuesta de red no fue ok');
+        }
+        return response.json();
+    })
+    .then(data =>{
+        if(data.success && data.usuarios){
+            //guardar el estado actual de la busqueda
+            const searchInput = document.getElementById('searchUser');
+            const currentSearchQuery = searchInput ? searchInput.value:'';
+            
+            // Actualizar usuarios y recalcular progreso
+            logAction('Recalculando progreso de todos los usuarios...');
+            
+            Promise.all(
+                data.usuarios.map(async usuario => {
+                    const progress = await calculateUserProgress(usuario.id_usuario);
+                    usersProgressCache[usuario.id_usuario] = progress;
+                    return { ...usuario, ...progress };
+                })
+            ).then(usersWithProgress => {
+                allUsuarios = usersWithProgress;
+                
+                if(currentSearchQuery.trim()!==''){//reaplicar los filtros de busqueda si existen
+                    filterUsuarios();
+                } else{
+                    filteredUsuarios = [...allUsuarios];
+                }
+                
+                if(currentSortColumn){//reaplicar ordenamiento si existe
+                    filteredUsuarios = sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection);
+                }
+                
+                const newTotalPages = calculatePages(filteredUsuarios);//actualizar la vista manteniendo la pagina actual si es posible
+                if(currentPage > newTotalPages && newTotalPages > 0){
+                    currentPage = newTotalPages;
+                }
+                
+                displayUsuarios(filteredUsuarios);
+                if(AUTO_REFRESH_CONFIG.DEBUG) {
+                    console.log('✓ Datos de usuarios y progreso actualizados exitosamente', {
+                        total_usuarios: allUsuarios.length,
+                        usuarios_con_proyectos: allUsuarios.filter(u => u.totalProjects > 0).length
+                    });
+                }
+            });
+        }
+    })
+    .catch(error =>{
+        console.error('Error al refrescar usuarios:', error);
+        //no mostrar alerta para no interrumpir al usuario
+    });
+}
+
+// NEW: Refresh project data for the modal
+async function refreshUserProjectData(){
+    if(!currentUserIdForProject) return;
+    
+    try {
+        const projects = await fetchUserProjects(currentUserIdForProject);
+        
+        if(projects.length === 0) {
+            if(AUTO_REFRESH_CONFIG.DEBUG) {
+                console.log('No projects found for user:', currentUserIdForProject);
+            }
+            return;
+        }
+        
+        // Update modal content with new project data
+        updateProjectsModal(projects);
+        
+        if(AUTO_REFRESH_CONFIG.DEBUG) {
+            console.log('✓ Proyectos actualizados en modal:', {
+                total_proyectos: projects.length,
+                total_tareas: projects.reduce((sum, p) => sum + p.tareas_totales, 0),
+                tareas_completadas: projects.reduce((sum, p) => sum + p.tareas_completadas, 0)
+            });
+        }
+    } catch(error) {
+        console.error('Error al refrescar proyectos en modal:', error);
+    }
+}
+
+// NEW: Update projects modal with fresh data
+function updateProjectsModal(projects) {
+    if(projects.length === 0) {
+        document.getElementById('projectsContainer').style.display = 'none';
+        document.getElementById('noProjects').style.display = 'block';
+        return;
+    }
+    
+    // Calculate new statistics
+    let totalTasks = 0;
+    let completedTasks = 0;
+    let totalProgress = 0;
+    
+    projects.forEach(project => {
+        totalTasks += project.tareas_totales;
+        completedTasks += project.tareas_completadas;
+        totalProgress += project.progreso;
+    });
+    
+    const avgProgress = projects.length > 0 ? totalProgress / projects.length : 0;
+    
+    // Update statistics
+    document.getElementById('totalProjects').textContent = projects.length;
+    document.getElementById('totalTasks').textContent = totalTasks;
+    document.getElementById('avgProgress').textContent = avgProgress.toFixed(1) + '%';
+    
+    // Update projects list with animated transitions
+    const projectsList = document.getElementById('projectsList');
+    const newHTML = projects.map(project => `
+        <div class="card mb-3 project-card-update">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h6 class="mb-1 fw-bold">${escapeHtml(project.nombre)}</h6>
+                        <p class="text-muted mb-2 small">${escapeHtml(project.descripcion || 'Sin descripción')}</p>
+                    </div>
+                    <span class="badge ${getStatusBadgeClass(project.estado)}">${project.estado}</span>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="mdi mdi-view-grid"></i> Área: ${escapeHtml(project.area || 'N/A')}
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="mdi mdi-calendar"></i> ${formatDate(project.fecha_cumplimiento)}
+                        </small>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">Progreso: ${project.progreso_porcentaje}%</small>
+                        <small class="text-muted">${project.tareas_completadas}/${project.tareas_totales} tareas</small>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar ${getProgressBarClass(project.progreso)}"
+                             role="progressbar"
+                             style="width: ${project.progreso}%; transition: width 0.5s ease;"
+                             aria-valuenow="${project.progreso}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    projectsList.innerHTML = newHTML;
+}
 
 // Cargar departamentos para el dropdown
 function loadDepartamentos() {
@@ -217,23 +464,22 @@ function sortUsuarios(usuarios, column, direction) {
         if (valueA === null || valueA === undefined) valueA = '';
         if (valueB === null || valueB === undefined) valueB = '';
         
-        if (column === 'progreso' || column === 'id_proyecto') {
-            valueA = parseInt(valueA) || 0;
-            valueB = parseInt(valueB) || 0;
-        } else if (column === 'departamento') {    
-            valueA = getDepartamentoName(a.id_departamento);
-            valueB = getDepartamentoName(b.id_departamento);
+        if (column === 'progreso') {
+            valueA = parseFloat(a.avgProgress) || 0;
+            valueB = parseFloat(b.avgProgress) || 0;
+            // Para números, comparar directamente 
+            if (direction === 'asc') { 
+                return valueA - valueB; 
+            } else { 
+                return valueB - valueA; 
+            }
         } else if (column === 'superior') {
             valueA = getSuperiorName(a.id_superior);
             valueB = getSuperiorName(b.id_superior);
         } else if (column === 'nombre') {
             valueA = `${a.nombre} ${a.apellido}`;
             valueB = `${b.nombre} ${b.apellido}`;
-        } else if (column === 'rol') {
-            valueA = getRolText(a.id_rol);
-            valueB = getRolText(b.id_rol);
-        }
-        else {
+        } else {
             valueA = a[column];
             valueB = b[column];
         }
@@ -425,6 +671,10 @@ async function showUserProjects(userId, userName, userEmail) {
     document.getElementById('projectsLoading').style.display = 'block'; //mostrar estado de carga
     document.getElementById('projectsContainer').style.display = 'none'; 
     document.getElementById('noProjects').style.display = 'none'; 
+    
+    // Set current user for auto-refresh
+    currentUserIdForProject = userId;
+    
     modal.show(); 
     const projects = await fetchUserProjects(userId); //obtener proyectos
     document.getElementById('projectsLoading').style.display = 'none'; //ocular carga
@@ -480,7 +730,7 @@ async function showUserProjects(userId, userName, userEmail) {
                     <div class="progress" style="height: 10px;"> 
                         <div class="progress-bar ${getProgressBarClass(project.progreso)}"  
                              role="progressbar"  
-                             style="width: ${project.progreso}%" 
+                             style="width: ${project.progreso}%; transition: width 0.5s ease;" 
                              aria-valuenow="${project.progreso}"  
                              aria-valuemin="0"  
                              aria-valuemax="100"> 
@@ -527,7 +777,7 @@ async function displayUsuarios(usuarios) {
     const paginatedUsuarios = getPaginatedUsuarios(usuarios);
  
     if (!usuarios || usuarios.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No hay usuarios registrados</td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">No hay usuarios registrados</td></tr>';
         updatePaginationControls();
         return;
     }
@@ -535,7 +785,7 @@ async function displayUsuarios(usuarios) {
     if (paginatedUsuarios.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center empty-state">
+                <td colspan="4" class="text-center empty-state">
                     <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i>
                     <h5 class="mt-3">No se encontraron resultados en esta página</h5>
                 </td>
@@ -589,7 +839,7 @@ function createUsuarioRow(usuario) {
                 <div class="progress" style="height: 8px;">
                     <div class="progress-bar ${getProgressBarClass(usuario.avgProgress || 0)}"
                          role="progressbar"
-                         style="width: ${usuario.avgProgress || 0}%"
+                         style="width: ${usuario.avgProgress || 0}%; transition: width 0.5s ease;"
                          aria-valuenow="${usuario.avgProgress || 0}"
                          aria-valuemin="0"
                          aria-valuemax="100">
@@ -612,91 +862,6 @@ function createUsuarioRow(usuario) {
  
     return tr;
 }
-
-/*
-async function renderUsers(users) { 
-    const tbody = document.getElementById('usuariosTableBody'); 
-    if (!users || users.length === 0) { 
-        tbody.innerHTML = ` 
-            <tr> 
-                <td colspan="7" class="text-center"> 
-                    <p class="text-muted my-3">No se encontraron usuarios</p> 
-                </td> 
-            </tr> 
-        `; 
-        return; 
-    } 
-
-    const usersWithProgress = await Promise.all(users.map(async user => { //calcular el progreso para todos los usuarios
-        const progress = await calculateUserProgress(user.id_usuario); 
-        return { ...user, ...progress }; 
-    })); 
-
-    tbody.innerHTML = usersWithProgress.map(user => ` 
-        <tr> 
-            <td> 
-                <div class="form-check form-check-flat mt-0"> 
-                    <label class="form-check-label"> 
-                        <input type="checkbox" class="form-check-input" value="${user.id_usuario}"><i class="input-helper"></i> 
-                    </label> 
-                </div> 
-            </td> 
-            <td> 
-                <div class="d-flex align-items-center"> 
-                    <img src="../images/faces/face1.jpg" alt="image" class="me-3 rounded-circle" style="width: 40px; height: 40px;"> 
-                    <div> 
-                        <h6 class="mb-0">${escapeHtml(user.nombre)} ${escapeHtml(user.apellido)}</h6> 
-                        <small class="text-muted">${escapeHtml(user.e_mail)}</small> 
-                    </div> 
-                </div> 
-            </td> 
-            <td>${escapeHtml(user.departamento || 'N/A')}</td> 
-            <td>${escapeHtml(user.superior || 'N/A')}</td> 
-            <td> 
-                <span class="badge badge-opacity-${getRoleBadgeColor(user.rol)}">${escapeHtml(user.rol || 'N/A')}</span> 
-            </td> 
-            <td> 
-                <div class="d-flex flex-column"> 
-                    <div class="d-flex justify-content-between mb-1"> 
-                        <small>${user.avgProgress.toFixed(1)}%</small> 
-                        <small>${user.totalProjects} proyectos</small> 
-                    </div> 
-                    <div class="progress" style="height: 8px;"> 
-                        <div class="progress-bar ${getProgressBarClass(user.avgProgress)}"  
-                             role="progressbar"  
-                             style="width: ${user.avgProgress}%" 
-                             aria-valuenow="${user.avgProgress}"  
-                             aria-valuemin="0"  
-                             aria-valuemax="100"> 
-                        </div> 
-                    </div> 
-                </div> 
-            </td> 
-            <td> 
-                <div class="btn-group" role="group"> 
-                    <button type="button"  
-                            class="btn btn-sm btn-info"  
-                            onclick="showUserProjects(${user.id_usuario}, '${escapeHtml(user.nombre)} ${escapeHtml(user.apellido)}', '${escapeHtml(user.e_mail)}')" 
-                            title="Ver proyectos"> 
-                        <i class="mdi mdi-folder-account"></i> 
-                    </button> 
-                    <button type="button"  
-                            class="btn btn-sm btn-primary"  
-                            onclick="editUser(${user.id_usuario})" 
-                            title="Editar"> 
-                        <i class="mdi mdi-pencil"></i> 
-                    </button> 
-                    <button type="button"  
-                            class="btn btn-sm btn-danger"  
-                            onclick="deleteUser(${user.id_usuario})" 
-                            title="Eliminar"> 
-                        <i class="mdi mdi-delete"></i> 
-                    </button> 
-                </div> 
-            </td> 
-        </tr> 
-    `).join(''); 
-} */
 
 function renderUsuariosTable(usuarios) {
     displayUsuarios(usuarios);
@@ -768,6 +933,11 @@ function filterUsuarios() {
     displayUsuarios(sorted);
 }
 
+function performSearch(query) {
+    // Helper function for search implementation
+    filterUsuarios();
+}
+
 function attachCheckboxListeners() {
     const checkboxes = document.querySelectorAll('.usuario-checkbox');
     checkboxes.forEach(checkbox => {
@@ -776,28 +946,6 @@ function attachCheckboxListeners() {
 }
 
 function attachButtonListeners() {
-    const editButtons = document.querySelectorAll('.btn-edit');//editar listener de botones
-    editButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.getAttribute('data-user-id');
-            const nombre = this.getAttribute('data-nombre');
-            const apellido = this.getAttribute('data-apellido');
-            const usuario = this.getAttribute('data-usuario');
-            const email = this.getAttribute('data-email');
-            const depart = this.getAttribute('data-depart');
-            openEditModal(userId, nombre, apellido, usuario, email, depart);
-        });
-    });
- 
-    const deleteButtons = document.querySelectorAll('.btn-delete');//eliminar listeners de botones
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const userId = this.getAttribute('data-user-id');
-            const nombre = this.getAttribute('data-nombre');
-            confirmDelete(userId, nombre);
-        });
-    });
- 
     const viewProjectsButtons = document.querySelectorAll('.btn-view-projects');//ver listeners de botones de proyecto
     viewProjectsButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -823,187 +971,11 @@ function updateSelectAllCheckbox() {
     const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
     const someChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
     
-    selectAllCheckbox.checked = allChecked;
-    selectAllCheckbox.indeterminate = someChecked && !allChecked;
-}
-
-
-function openEditModal(userId, nombre, apellido, usuario, email, departId) {
-    logAction('Abriendo modal de edición', { 
-        userId: userId,
-        nombre: nombre,
-        apellido: apellido,
-        usuario: usuario,
-        email: email,
-        departId: departId
-    });
-    document.getElementById('editUserId').value = userId;
-    document.getElementById('editNombre').value = nombre;
-    document.getElementById('editApellido').value = apellido;
-    document.getElementById('editUsuario').value = usuario;
-    document.getElementById('editEmail').value = email;
-    
-    // Establecer el valor del dropdown
-    const departmentDropdown = document.getElementById('editDepartamento');
-    departmentDropdown.value = departId;
-    
-    logAction('Departamento seleccionado en dropdown', { 
-        departId: departId,
-        departName: getDepartamentoName(departId)
-    });
-    
-    const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
-    modal.show();
-}
-
-function handleSaveUserChanges(event) {
-    event.preventDefault();
-    
-    logAction('Guardando cambios de usuario');
-
-    const validation = validateEditForm();//validar form
-    if (!validation.isValid) {
-        console.error('Validación fallida. Errores:', validation.errors);
-        
-        validation.errors.forEach(error => {//mostrar cada error
-            showError(error);
-        });
-        return;
+    if(selectAllCheckbox) {
+        selectAllCheckbox.checked = allChecked;
+        selectAllCheckbox.indeterminate = someChecked && !allChecked;
     }
-    
-    const userId = document.getElementById('editUserId').value;
-    const nombre = document.getElementById('editNombre').value.trim();
-    const apellido = document.getElementById('editApellido').value.trim();
-    const usuario = document.getElementById('editUsuario').value.trim();
-    const email = document.getElementById('editEmail').value.trim();
-    const id_departamento = parseInt(document.getElementById('editDepartamento').value);
-    
-    const data = {
-        id_usuario: parseInt(userId),
-        nombre: nombre,
-        apellido: apellido,
-        usuario: usuario,
-        e_mail: email,
-        id_departamento: id_departamento
-    };
-
-    logAction('Enviando datos al servidor', data);
-    showInfo('Guardando cambios...');
-    
-    fetch('../php/update_users.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(responseData => {
-        if (responseData.success) {
-            logAction('Usuario actualizado exitosamente', responseData.usuario);
-            showSuccess('Usuario actualizado exitosamente', responseData.usuario);
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
-            modal.hide();
-            loadUsuarios(); //recargar la tabla
-        } else {
-            const errorMsg = responseData.message || responseData.error || 'Error desconocido';
-            logAction('Error en actualización', { error: errorMsg });
-            showError('Error al actualizar usuario: ' + errorMsg);
-        }
-    })
-    .catch(error => {
-        console.error('Error de conexión:', error);
-        showError('Error de conexión: ' + error.message, error);
-    });
 }
-
-function confirmDelete(id, nombre) { 
-    showConfirm(
-        `¿Está seguro de que desea eliminar el usuario "${escapeHtml(nombre)}"?\n\nEsta acción no se puede deshacer.`,
-        function() {
-            deleteUser(id);
-        },
-        'Confirmar eliminación',
-        {
-            type: 'danger',
-            confirmText: 'Eliminar',
-            cancelText: 'Cancelar'
-        }
-    );
-} 
-
-function deleteUser(id) {
-    //se envia json en ves de data
-    fetch(Config.API_ENDPOINTS.DELETE, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify({ id_usuario: id }) 
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showSuccessAlert(data.message || 'Usuario eliminado exitosamente');
-            allUsuarios = allUsuarios.filter(u => u.id_usuario != id);
-            filteredUsuarios = filteredUsuarios.filter(u => u.id_usuario != id);
-            
-            totalPages = calculatePages(filteredUsuarios);
-            if (currentPage > totalPages && totalPages > 0) {
-                currentPage = totalPages;
-            }
-            
-            const sorted = currentSortColumn
-                ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
-                : filteredUsuarios;
-            displayUsuarios(sorted);
-        } else {
-            showErrorAlert(data.message || 'Error al eliminar el usuario');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showErrorAlert('Error al conectar con el servidor');
-    });
-}
-
-function showSuccessAlert(message) { 
-    showAlert(message, 'success'); 
-} 
-
-function showErrorAlert(message) { 
-    showAlert(message, 'danger'); 
-} 
-
-function showAlert(message, type) { 
-    const alertDiv = document.getElementById('alertMessage'); 
-    if (!alertDiv) return; 
-    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger'; 
-    const icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'; 
-    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`; 
-    alertDiv.innerHTML = ` 
-        <i class="mdi ${icon} me-2"></i> 
-        ${message} 
-        <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button> 
-    `; 
-    alertDiv.style.display = 'block'; 
-
-    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
-
-    setTimeout(() => { 
-        if (alertDiv.style.display !== 'none') { 
-            alertDiv.style.display = 'none'; 
-        } 
-    }, 5000); 
-}
-
-
 
 function showSuccess(message, data = null) {
     const timestamp = new Date().toLocaleTimeString();
@@ -1172,65 +1144,6 @@ function validateDepartment(departmentId) {
     return { isValid: true, message: '' };
 }
 
-function validateEditForm() {
-    const errors = [];
-    const nombre = document.getElementById('editNombre').value;
-    const apellido = document.getElementById('editApellido').value;
-    const usuario = document.getElementById('editUsuario').value;
-    const email = document.getElementById('editEmail').value;
-    const departamento = document.getElementById('editDepartamento').value;
-
-    console.group('Validando formulario de edición');
-
-    const nombreValid = validateTextField(nombre, 'Nombre', 2);//validar nombre 
-    if (!nombreValid.isValid) {
-        errors.push(nombreValid.message);
-        console.warn('Nombre inválido:', nombreValid.message);
-    } else {
-        console.log('Nombre válido:', nombre);
-    }
-
-    const apellidoValid = validateTextField(apellido, 'Apellido', 2);//validar apllido
-    if (!apellidoValid.isValid) {
-        errors.push(apellidoValid.message);
-        console.warn('Apellido inválido:', apellidoValid.message);
-    } else {
-        console.log('Apellido válido:', apellido);
-    }
-
-    const usuarioValid = validateTextField(usuario, 'Usuario', 3);//validar suario
-    if (!usuarioValid.isValid) {
-        errors.push(usuarioValid.message);
-        console.warn('Usuario inválido:', usuarioValid.message);
-    } else {
-        console.log('Usuario válido:', usuario);
-    }
-
-    const emailValid = validateEmail(email);//validar email
-    if (!emailValid.isValid) {
-        errors.push(emailValid.message);
-        console.warn('Email inválido:', emailValid.message);
-    } else {
-        console.log('Email válido:', email);
-    }
-
-    // Validar departamento
-    const deptValid = validateDepartment(departamento);
-    if (!deptValid.isValid) {
-        errors.push(deptValid.message);
-        console.warn('Departamento inválido:', deptValid.message);
-    } else {
-        console.log('Departamento válido:', departamento);
-    }
-
-    console.groupEnd();
-
-    return {
-        isValid: errors.length === 0,
-        errors: errors
-    };
-}
-
 function createCustomDialogSystem() {
     const dialogHTML = `
         <!-- Custom Alert Dialog -->
@@ -1360,5 +1273,6 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     confirmModal.show();
 }
 
-window.confirmDelete = confirmDelete;
 window.changePage = changePage;
+window.stopAutoRefresh = stopAutoRefresh;
+window.startAutoRefresh = startAutoRefresh;

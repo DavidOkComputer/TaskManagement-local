@@ -263,6 +263,10 @@ function cargarProyectoParaEditar(projectId) {
                     });
                     updateSelectedCount();
                 }
+
+                // Cargar permiso de edición
+                const puedeEditarOtros = proyecto.puede_editar_otros == 1 ? '1' : '0';
+                document.querySelector(`input[name="puede_editar_otros"][value="${puedeEditarOtros}"]`).checked = true;
  
                 if (proyecto.archivo_adjunto) {//si existe el archivo adjunto mostrarlo
                     document.getElementById('nombreArchivo').value = proyecto.archivo_adjunto.split('/').pop();
@@ -347,6 +351,8 @@ function crearProyecto() {
         if (tipoProyecto == '1') {
           formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
         }
+        // Agregar permiso de edición
+        formData.set('puede_editar_otros', document.querySelector('input[name="puede_editar_otros"]:checked').value);
         submitForm(formData, btnCrear, 'create');
       } else {
         btnCrear.disabled = false;
@@ -359,6 +365,8 @@ function crearProyecto() {
     if (tipoProyecto == '1') {
       formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
     }
+    // Agregar permiso de edición
+    formData.set('puede_editar_otros', document.querySelector('input[name="puede_editar_otros"]:checked').value);
     submitForm(formData, btnCrear, 'create');
   }
 }
@@ -393,6 +401,8 @@ function editarProyecto() {
         if (tipoProyecto == '1') {
           formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
         }
+        // Agregar permiso de edición
+        formData.set('puede_editar_otros', document.querySelector('input[name="puede_editar_otros"]:checked').value);
         submitForm(formData, btnCrear, 'edit');
       } else {
         btnCrear.disabled = false;
@@ -409,6 +419,8 @@ function editarProyecto() {
     if (tipoProyecto == '1') {
       formData.set('usuarios_grupo', JSON.stringify(grupalState.selectedUsers));
     }
+    // Agregar permiso de edición
+    formData.set('puede_editar_otros', document.querySelector('input[name="puede_editar_otros"]:checked').value);
     submitForm(formData, btnCrear, 'edit');
   }
 }

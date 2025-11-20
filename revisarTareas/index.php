@@ -244,6 +244,7 @@
                                     name="id_proyecto">
                               <option value="">Seleccione un proyecto</option>
                             </select>
+                            <small class="form-text text-muted" id="projectPermissionNote" style="display: none;"></small>
                           </div>
                           <hr>
                         </div>

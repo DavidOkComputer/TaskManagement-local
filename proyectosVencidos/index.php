@@ -294,7 +294,7 @@
                                 <div class="d-sm-flex justify-content-between align-items-start">
                                   <div>
                                     <h4 class="card-title card-title-dash">Proyectos Vencidos</h4>
-                                   <p class="card-subtitle card-subtitle-dash">Tienes 50+ proyectos nuevos</p>
+                                   <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
                                   </div>
                                   <div>
                                     <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo proyecto</button>
@@ -383,8 +383,8 @@
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
+  <script src="../js/list_overdue_projects.js"></script>
   <!-- End custom js for this page-->
 </body>
 
 </html>
-

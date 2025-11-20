@@ -1,5 +1,5 @@
 <?php
-/*update_task.php - actualizar tareas incluyendo asignacion de usuario*/
+/*update_task.php - actualizar tareas con validacion de permisos de asignacion, fecha de inicio, y membresía del proyecto*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');
@@ -21,6 +21,7 @@ try {
     $fecha_cumplimiento = isset($_POST['fecha_vencimiento']) ? trim($_POST['fecha_vencimiento']) : '';
     $estado = isset($_POST['estado']) ? trim($_POST['estado']) : 'pendiente';
     $id_participante = isset($_POST['id_participante']) && !empty($_POST['id_participante']) ? intval($_POST['id_participante']) : null;
+    $id_creador = isset($_POST['id_creador']) ? intval($_POST['id_creador']) : 0;
 
     if ($id_tarea <= 0) {//validaciones
         throw new Exception('El ID de la tarea no es válido');
@@ -74,7 +75,7 @@ try {
     $old_id_proyecto = $row['id_proyecto'];
     $stmt->close();
 
-    $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_proyectos WHERE id_proyecto = ?");//verificar que el proyecto existe
+    $stmt = $conn->prepare("SELECT id_creador, puede_editar_otros, fecha_inicio, id_tipo_proyecto, id_participante FROM tbl_proyectos WHERE id_proyecto = ?");//verificar que el proyecto existe y obtener permisos, tipo y fecha de inicio
     $stmt->bind_param("i", $id_proyecto);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -82,7 +83,28 @@ try {
     if ($result->num_rows === 0) {
         throw new Exception('El proyecto especificado no existe');
     }
+    
+    $projectData = $result->fetch_assoc();
     $stmt->close();
+
+    //VALIDAR FECHA DE CUMPLIMIENTO CONTRA FECHA DE INICIO DEL PROYECTO
+    if (!empty($fecha_cumplimiento) && !empty($projectData['fecha_inicio'])) {
+        $fecha_cumplimiento_time = strtotime($fecha_cumplimiento);
+        $fecha_inicio_time = strtotime($projectData['fecha_inicio']);
+        
+        if ($fecha_cumplimiento_time < $fecha_inicio_time) {
+            throw new Exception('La fecha de vencimiento no puede ser anterior a la fecha de inicio del proyecto');
+        }
+    }
+
+    //VALIDAR PERMISOS DE ASIGNACION
+    //si el proyecto solo puede ser editado por el creador, solo el creador puede asignar tareas
+    if ($projectData['puede_editar_otros'] == 0) {
+        if ($projectData['id_creador'] != $id_creador) {
+            throw new Exception('Solo el creador del proyecto puede asignar tareas a este proyecto');
+        }
+    }
+    //si puede_editar_otros = 1, cualquiera puede asignar tareas
 
     //verificar que el participante existe si se asigna uno
     if ($id_participante !== null) {
@@ -95,9 +117,31 @@ try {
             throw new Exception('El usuario especificado no existe');
         }
         $stmt->close();
+
+        // VALIDAR QUE EL USUARIO ASIGNADO PERTENECE AL PROYECTO
+        // Si es proyecto grupal (id_tipo_proyecto = 1)
+        if ($projectData['id_tipo_proyecto'] == 1) {
+            // Verificar que el usuario está en tbl_proyecto_usuarios
+            $stmt = $conn->prepare("SELECT id_usuario FROM tbl_proyecto_usuarios WHERE id_proyecto = ? AND id_usuario = ?");
+            $stmt->bind_param("ii", $id_proyecto, $id_participante);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($result->num_rows === 0) {
+                throw new Exception('El usuario especificado no está asignado a este proyecto grupal');
+            }
+            $stmt->close();
+        } 
+        // Si es proyecto individual (id_tipo_proyecto = 2)
+        elseif ($projectData['id_tipo_proyecto'] == 2) {
+            // Verificar que el usuario es el asignado al proyecto
+            if ((int)$projectData['id_participante'] !== $id_participante) {
+                throw new Exception('El usuario especificado no está asignado a este proyecto individual');
+            }
+        }
     }
 
-    //actualizar tarea con id_participante
+    //actualizar tarea con id_participante y validacion de permisos
     $sql = "UPDATE tbl_tareas SET 
                 nombre = ?,
                 descripcion = ?,

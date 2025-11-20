@@ -1,4 +1,4 @@
-/*task-management.js - manejo de tareas, creacion, actualizacion y asignacion de usuarios*/
+/*task-management.js - manejo de tareas, creacion, actualizacion y asignacion de usuarios - VERSIÓN MEJORADA*/
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -6,9 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const tasksList = document.getElementById('tasksList');
     const tasksLoading = document.getElementById('tasksLoading');
     const addBtn = document.querySelector('.todo-list-add-btn');
+    const projectPermissionNote = document.getElementById('projectPermissionNote');
     
     let currentProjectId = null; //seguir el proyecto seleccionado actualmente
     let currentUserId = 1; //id del usuario actual - remplazar con sesion real
+    let currentProjectData = null; //almacenar datos del proyecto actual
     
     createCustomDialogSystem();
     createTaskModal();
@@ -36,14 +38,16 @@ document.addEventListener('DOMContentLoaded', function() {
                                               placeholder="Ingrese la descripción de la tarea" required></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="taskProject" class="form-label">Proyecto</label>
+                                    <label for="taskProject" class="form-label">Proyecto <span class="text-danger">*</span></label>
                                     <select class="form-control" id="taskProject" required>
                                         <option value="">Seleccione un proyecto</option>
                                     </select>
+                                    <small class="form-text text-muted">Seleccionar un proyecto para ver usuarios disponibles</small>
                                 </div>
                                 <div class="mb-3">
                                     <label for="taskDate" class="form-label">Fecha de Vencimiento</label>
                                     <input type="date" class="form-control" id="taskDate">
+                                    <small class="form-text text-muted" id="taskDateNote" style="display: none;"></small>
                                 </div>
                                 <div class="mb-3">
                                     <label for="taskStatus" class="form-label">Estado</label>
@@ -54,10 +58,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="taskAssignee" class="form-label">Asignar a</label>
-                                    <select class="form-control" id="taskAssignee">
-                                        <option value="">Sin asignar</option>
+                                    <label for="taskAssignee" class="form-label">
+                                        <i class="mdi mdi-account-check"></i> Asignar a
+                                    </label>
+                                    <select class="form-control" id="taskAssignee" disabled>
+                                        <option value="">Seleccione un proyecto primero</option>
                                     </select>
+                                    <small class="form-text text-muted" id="taskAssigneeNote" style="display: none; margin-top: 5px;"></small>
                                 </div>
                             </form>
                             <div id="taskMessage" class="alert" style="display: none;"></div>
@@ -255,8 +262,10 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // cargar usuarios para el dropdown
+    // cargar usuarios para el dropdown (ya no usado para lista general, solo para referencia)
     function loadUsers() {
+        // Este método ahora solo se usa si necesitamos datos de todos los usuarios
+        // Los usuarios del assignee se cargan dinámicamente basado en el proyecto
         fetch('../php/get_users.php')
             .then(response => {
                 if (!response.ok) {
@@ -266,7 +275,8 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.success && data.usuarios) {
-                    populateUserSelect(document.getElementById('taskAssignee'), data.usuarios);
+                    // Ya no poblamos el dropdown global, esperamos a que se seleccione un proyecto
+                    console.log('Usuarios disponibles cargados');
                 }
             })
             .catch(error => {
@@ -274,18 +284,58 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    //popular el dropdown de usuarios con nombre completo y numero de empleado
+    // ⭐ MEJORADO: cargar usuarios asignados a un proyecto específico
+    function loadProjectUsers(projectId) {
+        fetch(`../php/get_project_user.php?id_proyecto=${projectId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error cargando usuarios del proyecto');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success && data.usuarios && data.usuarios.length > 0) {
+                    populateUserSelect(document.getElementById('taskAssignee'), data.usuarios);
+                    console.log(`✓ ${data.usuarios.length} usuarios cargados para el proyecto ${projectId}`);
+                } else {
+                    // Si no hay usuarios, mostrar mensaje y limpiar dropdown
+                    populateUserSelect(document.getElementById('taskAssignee'), []);
+                    showNotification('No hay usuarios asignados a este proyecto', 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar usuarios del proyecto:', error);
+                populateUserSelect(document.getElementById('taskAssignee'), []);
+                showNotification('Error al cargar usuarios del proyecto', 'danger');
+            });
+    }
+    
+    //⭐ MEJORADO: popular el dropdown de usuarios con nombre completo y numero de empleado
     function populateUserSelect(selectElement, users) {
-        //mantener la opcion default
-        selectElement.innerHTML = '<option value="">Sin asignar</option>';
+        if (!selectElement) return;
         
-        users.forEach(user => {
-            const option = document.createElement('option');
-            option.value = user.id_usuario;
-            //mostrar: Nombre Apellido (#NumEmpleado)
-            option.textContent = `${user.nombre} ${user.apellido} (#${user.num_empleado})`;
-            selectElement.appendChild(option);
-        });
+        //limpiar opciones previas
+        selectElement.innerHTML = '';
+        
+        //mantener la opcion default
+        if (users.length === 0) {
+            selectElement.innerHTML = '<option value="">No hay usuarios en este proyecto</option>';
+            selectElement.disabled = true;
+            selectElement.classList.add('is-invalid');
+        } else {
+            selectElement.innerHTML = '<option value="">Sin asignar</option>';
+            selectElement.disabled = false;
+            selectElement.classList.remove('is-invalid');
+            
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id_usuario;
+                //mostrar: Nombre Apellido (#NumEmpleado)
+                option.textContent = `${user.nombre} ${user.apellido} (#${user.num_empleado})`;
+                option.dataset.userId = user.id_usuario; // Agregar atributo data para referencia
+                selectElement.appendChild(option);
+            });
+        }
     }
     
     //popular el elemento con proyectos
@@ -301,16 +351,123 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    //cambio de proyecto
+    //cambio de proyecto - aqui se verifica el permiso para asignar tareas
     projectSelect.addEventListener('change', function() {
         if (this.value) {
             currentProjectId = this.value;
-            loadTasks(this.value);
+            
+            //obtener detalles del proyecto para verificar permisos de asignacion
+            fetchProjectDetails(this.value, function(projectData) {
+                currentProjectData = projectData;
+                updateTaskAssignmentPermissions(projectData);
+                loadTasks(this.value);
+            }.bind(this));
         } else {
             currentProjectId = null;
+            currentProjectData = null;
             showDefaultMessage();
+            projectPermissionNote.style.display = 'none';
         }
     });
+    
+    //obtener detalles del proyecto incluyendo permisos y fecha de inicio
+    function fetchProjectDetails(projectId, callback) {
+        fetch(`../php/get_project_by_id.php?id=${projectId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.proyecto) {
+                    callback(data.proyecto);
+                } else {
+                    console.error('Error al cargar detalles del proyecto');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching project details:', error);
+            });
+    }
+    
+    //establecer la fecha minima del proyecto en el input de fecha
+    function setTaskDateMinimum(projectData) {
+        const taskDateInput = document.getElementById('taskDate');
+        const taskDateNoteDiv = document.getElementById('taskDateNote');
+        
+        if (!taskDateInput) return;
+        
+        if (projectData && projectData.fecha_inicio) {
+            taskDateInput.min = projectData.fecha_inicio;
+            
+            if (taskDateNoteDiv) {
+                const fecha = new Date(projectData.fecha_inicio);
+                const fechaFormato = fecha.toLocaleDateString('es-MX', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                });
+                
+                taskDateNoteDiv.textContent = `La fecha mínima es ${fechaFormato} (inicio del proyecto)`;
+                taskDateNoteDiv.style.display = 'block';
+            }
+        } else {
+            taskDateInput.min = '';
+            if (taskDateNoteDiv) {
+                taskDateNoteDiv.style.display = 'none';
+            }
+        }
+    }
+    
+    //actualizar permisos de asignacion de tareas basado en los permisos del proyecto
+    function updateTaskAssignmentPermissions(projectData) {
+        const canAssignTasks = canAssignTasksToProject(projectData);
+        
+        if (!canAssignTasks) {
+            // Usuario no puede asignar tareas a este proyecto
+            projectPermissionNote.innerHTML = `
+                <i class="mdi mdi-lock text-warning"></i>
+                <strong>Nota:</strong> Solo el creador del proyecto puede asignar tareas
+            `;
+            projectPermissionNote.style.display = 'block';
+        } else {
+            // Usuario puede asignar tareas
+            projectPermissionNote.style.display = 'none';
+        }
+    }
+    
+    //verificar si el usuario puede asignar tareas a este proyecto
+    function canAssignTasksToProject(projectData) {
+        //si el proyecto permite edicion por otros, todos pueden asignar tareas
+        if (projectData.puede_editar_otros == 1) {
+            return true;
+        }
+        
+        //si solo el creador puede editar, verificar si el usuario actual es el creador
+        if (projectData.puede_editar_otros == 0) {
+            return projectData.id_creador == currentUserId;
+        }
+        
+        return false;
+    }
+    
+    //actualizar el estado de asignacion de tareas en el modal cuando se carga
+    function updateModalTaskAssignmentPermissions() {
+        if (!currentProjectData) return;
+        
+        const assigneeField = document.getElementById('taskAssignee');
+        const assigneeNote = document.getElementById('taskAssigneeNote');
+        const canAssign = canAssignTasksToProject(currentProjectData);
+        
+        if (!canAssign) {
+            assigneeField.disabled = true;
+            assigneeField.value = '';
+            assigneeNote.innerHTML = `
+                <i class="mdi mdi-lock"></i>
+                Solo el creador del proyecto puede asignar tareas
+            `;
+            assigneeNote.style.display = 'block';
+        } else {
+            assigneeField.disabled = false;
+            assigneeNote.style.display = 'none';
+        }
+    }
 
     //cargar tareas de un proyecto especifico
     function loadTasks(projectId) {
@@ -556,9 +713,22 @@ document.addEventListener('DOMContentLoaded', function() {
         loadProjectsForModal(() => {
             document.getElementById('taskProject').value = taskProject;
             
-            //preseleccionar el usuario asignado
-            if (taskAssignee) {
-                document.getElementById('taskAssignee').value = taskAssignee;
+            // Cargar usuarios del proyecto de la tarea
+            loadProjectUsersForModal(taskProject, () => {
+                //preseleccionar el usuario asignado
+                if (taskAssignee) {
+                    document.getElementById('taskAssignee').value = taskAssignee;
+                }
+            });
+            
+            //establecer la fecha minima basada en el proyecto de la tarea
+            if (currentProjectData && currentProjectData.id_proyecto == taskProject) {
+                setTaskDateMinimum(currentProjectData);
+            } else {
+                //si es diferente proyecto, obtener los detalles
+                fetchProjectDetails(taskProject, function(projectData) {
+                    setTaskDateMinimum(projectData);
+                });
             }
         });
         
@@ -567,10 +737,45 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.show();
     }
     
+    //⭐ MEJORADO: inicializar event listeners del modal con filtrado mejorado
     function initializeModalEventListeners() {
         const modal = document.getElementById('addTaskModal');
         const saveBtn = document.getElementById('saveTaskBtn');
         const form = document.getElementById('addTaskForm');
+        const projectSelect = document.getElementById('taskProject');
+        const assigneeSelect = document.getElementById('taskAssignee');
+        
+        // ⭐ Evento cuando cambia la selección de proyecto en el modal
+        projectSelect.addEventListener('change', function() {
+            if (this.value) {
+                // Cargar y mostrar SOLO usuarios del proyecto seleccionado
+                console.log(`Proyecto seleccionado: ${this.value}`);
+                loadProjectUsersForModal(this.value, () => {
+                    // Verificar permisos de asignación
+                    fetchProjectDetails(this.value, function(projectData) {
+                        const canAssign = canAssignTasksToProject(projectData);
+                        const assigneeNote = document.getElementById('taskAssigneeNote');
+                        
+                        if (!canAssign) {
+                            assigneeSelect.disabled = true;
+                            assigneeNote.innerHTML = `
+                                <i class="mdi mdi-lock text-danger"></i>
+                                Solo el creador del proyecto puede asignar tareas
+                            `;
+                            assigneeNote.style.display = 'block';
+                        } else {
+                            assigneeSelect.disabled = false;
+                            assigneeNote.style.display = 'none';
+                        }
+                    });
+                });
+            } else {
+                // Si no hay proyecto seleccionado, deshabilitar y limpiar assignee
+                assigneeSelect.innerHTML = '<option value="">Seleccione un proyecto primero</option>';
+                assigneeSelect.disabled = true;
+                document.getElementById('taskAssigneeNote').style.display = 'none';
+            }
+        });
         
         // cargar proyectos cuando se muestra el modal
         modal.addEventListener('show.bs.modal', function() {
@@ -581,10 +786,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadProjectsForModal(() => {
                     if (currentProjectId) {
                         document.getElementById('taskProject').value = currentProjectId;
+                        //cargar usuarios del proyecto actual
+                        loadProjectUsersForModal(currentProjectId);
+                        //establecer fecha minima y actualizar permisos de asignacion basado en el proyecto actual
+                        setTaskDateMinimum(currentProjectData);
+                        updateModalTaskAssignmentPermissions();
                     }
-                    //preseleccionar el usuario actual por defecto
-                    document.getElementById('taskAssignee').value = currentUserId;
                 });
+            } else {
+                //en modo edicion, cargar permisos basado en el proyecto de la tarea
+                const taskProject = form.getAttribute('data-task-project');
+                if (taskProject) {
+                    fetchProjectDetails(taskProject, function(projectData) {
+                        const canAssign = canAssignTasksToProject(projectData);
+                        
+                        if (!canAssign) {
+                            assigneeSelect.disabled = true;
+                            document.getElementById('taskAssigneeNote').innerHTML = `
+                                <i class="mdi mdi-lock"></i>
+                                Solo el creador del proyecto puede asignar tareas
+                            `;
+                            document.getElementById('taskAssigneeNote').style.display = 'block';
+                        } else {
+                            assigneeSelect.disabled = false;
+                            document.getElementById('taskAssigneeNote').style.display = 'none';
+                        }
+                    });
+                }
             }
         });
         
@@ -594,10 +822,15 @@ document.addEventListener('DOMContentLoaded', function() {
             form.removeAttribute('data-task-id');
             form.removeAttribute('data-mode');
             document.getElementById('taskMessage').style.display = 'none';
+            document.getElementById('taskDateNote').style.display = 'none';
             
             //reiniciar titulo del modal y texto del botn
             document.getElementById('addTaskModalLabel').textContent = 'Agregar Nueva Tarea';
             document.querySelector('#saveTaskBtn .btn-text').textContent = 'Guardar Tarea';
+            
+            // Reiniciar assignee select
+            assigneeSelect.innerHTML = '<option value="">Seleccione un proyecto primero</option>';
+            assigneeSelect.disabled = true;
         });
         
         if (saveBtn) {
@@ -628,6 +861,39 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
+    // ⭐ MEJORADO: cargar usuarios del proyecto en el modal (SOLO usuarios del proyecto)
+    function loadProjectUsersForModal(projectId, callback) {
+        console.log(`Cargando usuarios para el proyecto ${projectId}...`);
+        
+        fetch(`../php/get_project_user.php?id_proyecto=${projectId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const assigneeSelect = document.getElementById('taskAssignee');
+                
+                if (data.success && data.usuarios) {
+                    console.log(`✓ Se encontraron ${data.usuarios.length} usuarios para el proyecto`);
+                    populateUserSelect(assigneeSelect, data.usuarios);
+                } else {
+                    console.warn(`No hay usuarios en este proyecto`);
+                    populateUserSelect(assigneeSelect, []);
+                }
+                
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading project users:', error);
+                populateUserSelect(document.getElementById('taskAssignee'), []);
+                showModalMessage('Error al cargar usuarios del proyecto', 'danger');
+            });
+    }
+    
     //maneja crear una nueva tarea y actualizar las que ya existen
     function handleSaveTask() {
         const form = document.getElementById('addTaskForm');
@@ -645,6 +911,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskDate = document.getElementById('taskDate').value;
         const taskStatus = document.getElementById('taskStatus').value;
         const taskAssignee = document.getElementById('taskAssignee').value;
+        const taskDateInput = document.getElementById('taskDate');
+        
+        //validar que la fecha no es anterior a la fecha de inicio del proyecto
+        if (taskDate && taskDateInput.min) {
+            if (taskDate < taskDateInput.min) {
+                showModalMessage(
+                    'La fecha de vencimiento no puede ser anterior a la fecha de inicio del proyecto',
+                    'danger'
+                );
+                return;
+            }
+        }
         
         //revisar si esta en modo de edicion
         const mode = form.getAttribute('data-mode');
@@ -661,6 +939,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('fecha_vencimiento', taskDate);
         formData.append('estado', taskStatus);
         formData.append('id_participante', taskAssignee || null);
+        formData.append('id_creador', currentUserId);
         
         if (isEditMode) {
             //modo de edicion, actualizar tarea existente
@@ -706,7 +985,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         } else {
             //modo crear, nueva tarea
-            formData.append('id_creador', currentUserId); //usar el id del usuario actual
             
             fetch('../php/save_task.php', {
                 method: 'POST',

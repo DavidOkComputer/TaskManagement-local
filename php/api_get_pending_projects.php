@@ -1,25 +1,33 @@
 <?php
 /*API Endpoint: obtener proyectos pendientes*/
 
+ob_start();
 session_start();
 header('Content-Type: application/json');
+ob_end_clean();
 
-//revisar autenticacion
-if (!isset($_SESSION['id_usuario'])) {
-    http_response_code(401);
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    error_log("PHP Error: $errstr in $errfile on line $errline");
+});
+
+// Include database configuration
+require_once('db_config.php');
+
+// Call the function to get the database connection
+$conexion = getDBConnection();
+
+// Check if connection was established
+if (!$conexion) {
+    http_response_code(500);
     echo json_encode([
         'success' => false,
-        'message' => 'Usuario no autenticado'
+        'message' => 'Database connection failed'
     ]);
     exit;
 }
 
-//conexion a base de datos
-require_once('db_config.php');
-
-$id_usuario = $_SESSION['id_usuario'];
+$id_usuario = $_SESSION['user_id'] ?? 1; // Default to user ID 1 for development
 $proyectos = [];
-$error = null;
 
 try {
     //query para obtener todos los proyectos pendientes
@@ -124,4 +132,6 @@ try {
         'error' => $e->getMessage()
     ]);
 }
+
+restore_error_handler();
 ?>

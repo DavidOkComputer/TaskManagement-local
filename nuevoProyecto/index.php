@@ -391,6 +391,48 @@
                   <div class="row">
                     <div class="col-md-6">
                       <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Permisos de edición <span class="text-danger">*</span></label>
+                        <div class="col-sm-9">
+                          <div style="margin-bottom: 12px; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; background-color: #fff3cd;">
+                            <div class="form-check" style="margin-bottom: 8px;">
+                              <input type="radio" 
+                                     class="form-check-input" 
+                                     name="puede_editar_otros" 
+                                     id="soloCreador" 
+                                     value="0" 
+                                     checked
+                                     required
+                                     style="cursor: pointer;">
+                              <label class="form-check-label" for="soloCreador" style="cursor: pointer; margin-bottom: 0;">
+                                <i class="mdi mdi-lock" style="color: #ff6b6b; margin-right: 5px;"></i>
+                                <strong>Solo creador puede editar</strong>
+                              </label>
+                            </div>
+                          </div>
+                          <div style="margin-bottom: 12px; padding: 8px; border: 1px solid #dee2e6; border-radius: 4px; background-color: #d4edda;">
+                            <div class="form-check" style="margin-bottom: 0;">
+                              <input type="radio" 
+                                     class="form-check-input" 
+                                     name="puede_editar_otros" 
+                                     id="otrosEditan" 
+                                     value="1" 
+                                     required
+                                     style="cursor: pointer;">
+                              <label class="form-check-label" for="otrosEditan" style="cursor: pointer; margin-bottom: 0;">
+                                <i class="mdi mdi-lock-open" style="color: #28a745; margin-right: 5px;"></i>
+                                <strong>Otros usuarios pueden editar</strong>
+                              </label>
+                            </div>
+                          </div>
+                          <small class="form-text text-muted" style="display: block; margin-top: 8px;">Controla quién puede modificar este proyecto</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
                         <label for="subirArchivo" class="col-sm-3 col-form-label">Subir archivo</label>
                         <input type="file" 
                                id="archivoInput" 
@@ -473,9 +515,8 @@
   <!-- endinject -->
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
-  <script src="../js/create_project.js"></script>
-  <!-- Custom Dialog System (add this before create_project.js) -->
   <script src="../js/custom_dialogs.js"></script>
+  <script src="../js/create_project.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

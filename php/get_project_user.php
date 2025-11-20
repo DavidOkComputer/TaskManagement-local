@@ -1,82 +1,159 @@
 <?php
-/** get_project_users.php obtiene todos los usuarios asignados a un proyecto especifico con su progreso calculado*/
+/*
+ * get_project_users.php - Obtener usuarios asignados a un proyecto específico
+ * Para proyectos grupales: obtiene todos los usuarios del grupo
+ * Para proyectos individuales: obtiene solo el usuario asignado
+ */
 
 header('Content-Type: application/json');
-require_once 'db_config.php';
+require_once('db_config.php');
+
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 
 $response = ['success' => false, 'usuarios' => []];
 
 try {
-    if (!isset($_GET['id'])) {
-        throw new Exception('ID de proyecto requerido');
+    // Validar el ID del proyecto
+    if (!isset($_GET['id_proyecto']) || empty($_GET['id_proyecto'])) {
+        throw new Exception('El ID del proyecto es requerido');
     }
 
-    $id_proyecto = intval($_GET['id']);
+    $id_proyecto = intval($_GET['id_proyecto']);
+
+    if ($id_proyecto <= 0) {
+        throw new Exception('El ID del proyecto no es válido');
+    }
 
     $conn = getDBConnection();
+
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    //query optimizada - solo una query con join y agregacion
-    $sql = "SELECT 
-                pu.id_usuario,
-                u.nombre,
-                u.apellido,
-                u.e_mail,
-                u.num_empleado,
-                COUNT(t.id_tarea) as total_tareas,
-                SUM(CASE WHEN t.estado = 'completado' THEN 1 ELSE 0 END) as tareas_completadas
-            FROM tbl_proyecto_usuarios pu
-            JOIN tbl_usuarios u ON pu.id_usuario = u.id_usuario
-            LEFT JOIN tbl_tareas t ON (
-                t.id_participante = pu.id_usuario 
-                AND t.id_proyecto = pu.id_proyecto
-            )
-            WHERE pu.id_proyecto = ?
-            GROUP BY pu.id_usuario, u.nombre, u.apellido, u.e_mail, u.num_empleado
-            ORDER BY u.apellido ASC, u.nombre ASC";
+    // Obtener información del proyecto (tipo y participante)
+    $stmt = $conn->prepare("
+        SELECT 
+            id_tipo_proyecto,
+            id_participante
+        FROM tbl_proyectos 
+        WHERE id_proyecto = ?
+    ");
 
-    $stmt = $conn->prepare($sql);
     if (!$stmt) {
         throw new Exception('Error al preparar la consulta: ' . $conn->error);
     }
 
     $stmt->bind_param("i", $id_proyecto);
+
     if (!$stmt->execute()) {
         throw new Exception('Error al ejecutar la consulta: ' . $stmt->error);
     }
 
     $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $total_tasks = (int)$row['total_tareas'];
-        $completed_tasks = (int)$row['tareas_completadas'];
-        
-        // Calcular progreso
-        $progress = $total_tasks > 0 ? ($completed_tasks / $total_tasks) * 100 : 0;
-        
-        $response['usuarios'][] = [
-            'id_usuario' => (int)$row['id_usuario'],
-            'nombre' => $row['nombre'],
-            'apellido' => $row['apellido'],
-            'nombre_completo' => $row['nombre'] . ' ' . $row['apellido'],
-            'e_mail' => $row['e_mail'],
-            'num_empleado' => (int)$row['num_empleado'],
-            'progreso' => $progress,
-            'progreso_porcentaje' => round($progress, 1),
-            'tareas_totales' => $total_tasks,
-            'tareas_completadas' => $completed_tasks
-        ];
+
+    if ($result->num_rows === 0) {
+        throw new Exception('El proyecto no existe');
+    }
+
+    $proyecto = $result->fetch_assoc();
+    $id_tipo_proyecto = intval($proyecto['id_tipo_proyecto']);
+    $id_participante_individual = $proyecto['id_participante'];
+    $stmt->close();
+
+    $usuarios = [];
+
+    // Si es proyecto grupal (id_tipo_proyecto = 1), obtener todos los usuarios del grupo
+    if ($id_tipo_proyecto == 1) {
+        $sql_usuarios = "
+            SELECT 
+                u.id_usuario,
+                u.nombre,
+                u.apellido,
+                u.num_empleado
+            FROM tbl_proyecto_usuarios pu
+            JOIN tbl_usuarios u ON pu.id_usuario = u.id_usuario
+            WHERE pu.id_proyecto = ?
+            ORDER BY u.apellido ASC, u.nombre ASC
+        ";
+
+        $stmt_usuarios = $conn->prepare($sql_usuarios);
+
+        if (!$stmt_usuarios) {
+            throw new Exception('Error al preparar consulta de usuarios: ' . $conn->error);
+        }
+
+        $stmt_usuarios->bind_param("i", $id_proyecto);
+
+        if (!$stmt_usuarios->execute()) {
+            throw new Exception('Error al obtener usuarios: ' . $stmt_usuarios->error);
+        }
+
+        $result_usuarios = $stmt_usuarios->get_result();
+
+        while ($row = $result_usuarios->fetch_assoc()) {
+            $usuarios[] = [
+                'id_usuario' => (int)$row['id_usuario'],
+                'nombre' => $row['nombre'],
+                'apellido' => $row['apellido'],
+                'num_empleado' => (int)$row['num_empleado']
+            ];
+        }
+
+        $result_usuarios->free();
+        $stmt_usuarios->close();
+
+    } 
+    // Si es proyecto individual (id_tipo_proyecto = 2), obtener solo el usuario asignado
+    elseif ($id_tipo_proyecto == 2 && !empty($id_participante_individual)) {
+        $sql_usuario = "
+            SELECT 
+                id_usuario,
+                nombre,
+                apellido,
+                num_empleado
+            FROM tbl_usuarios
+            WHERE id_usuario = ?
+        ";
+
+        $stmt_usuario = $conn->prepare($sql_usuario);
+
+        if (!$stmt_usuario) {
+            throw new Exception('Error al preparar consulta de usuario: ' . $conn->error);
+        }
+
+        $stmt_usuario->bind_param("i", $id_participante_individual);
+
+        if (!$stmt_usuario->execute()) {
+            throw new Exception('Error al obtener usuario: ' . $stmt_usuario->error);
+        }
+
+        $result_usuario = $stmt_usuario->get_result();
+
+        if ($result_usuario->num_rows > 0) {
+            $row = $result_usuario->fetch_assoc();
+            $usuarios[] = [
+                'id_usuario' => (int)$row['id_usuario'],
+                'nombre' => $row['nombre'],
+                'apellido' => $row['apellido'],
+                'num_empleado' => (int)$row['num_empleado']
+            ];
+        }
+
+        $result_usuario->free();
+        $stmt_usuario->close();
     }
 
     $response['success'] = true;
-
-    $stmt->close();
-    $conn->close();
+    $response['usuarios'] = $usuarios;
 
 } catch (Exception $e) {
-    $response['message'] = $e->getMessage();
-    error_log('Error en get_project_users.php: ' . $e->getMessage());
+    $response['message'] = 'Error al cargar usuarios del proyecto: ' . $e->getMessage();
+    error_log('get_project_users.php Error: ' . $e->getMessage());
+} finally {
+    if (isset($conn) && $conn) {
+        $conn->close();
+    }
 }
 
 echo json_encode($response);

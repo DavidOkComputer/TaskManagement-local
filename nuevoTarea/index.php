@@ -17,6 +17,8 @@
   <link rel="stylesheet" href="../vendors/simple-line-icons/css/simple-line-icons.css">
   <link rel="stylesheet" href="../vendors/css/vendor.bundle.base.css">
   <!-- endinject -->
+  <!-- Plugin css for this page -->
+  <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
   <!-- endinject -->
@@ -242,6 +244,7 @@
                                     name="id_proyecto">
                               <option value="">Seleccione un proyecto</option>
                             </select>
+                            <small class="form-text text-muted" id="projectPermissionNote" style="display: none;"></small>
                           </div>
                           <hr>
                         </div>

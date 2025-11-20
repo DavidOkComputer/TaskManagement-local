@@ -382,11 +382,17 @@ function createProjectRow(proyecto, index) {
     const statusColor = getStatusColor(proyecto.estado); 
     const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado || 'N/A'}</span>`; 
     const progressBar = createProgressBar(proyecto.progreso || 0); 
+    
+    // Only show the view users button for group projects (id_tipo_proyecto = 1)
+    const viewUsersButton = proyecto.id_tipo_proyecto === 1 
+        ? `<button class="btn btn-sm btn-info btn-action" onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados"> 
+                <i class="mdi mdi-account-multiple"></i> 
+            </button>` 
+        : ''; 
+    
     const actionsButtons = ` 
         <div class="action-buttons"> 
-            <button class="btn btn-sm btn-info btn-action" onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados"> 
-                <i class="mdi mdi-account-multiple"></i> 
-            </button> 
+            ${viewUsersButton}
             <button class="btn btn-sm btn-success btn-action" onclick="editarProyecto(${proyecto.id_proyecto})" title="Editar"> 
                 <i class="mdi mdi-pencil"></i> 
             </button> 
@@ -975,4 +981,4 @@ window.changePage = changePage;
 window.showConfirm = showConfirm; 
 window.viewProjectUsers = viewProjectUsers; 
 window.stopAutoRefresh = stopAutoRefresh; // Exportar por si se necesita detener manualmente 
-window.startAutoRefresh = startAutoRefresh; // Exportar por si se necesita reiniciar manualmente 
+window.startAutoRefresh = startAutoRefresh; // Exportar por si se necesita reiniciar manualmente
