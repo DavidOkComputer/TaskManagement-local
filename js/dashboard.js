@@ -550,87 +550,93 @@
       });
       document.getElementById('marketing-overview-legend').innerHTML = marketingOverviewDark.generateLegend();
     }
-    if ($("#doughnutChart").length) {
-      var doughnutChartCanvas = $("#doughnutChart").get(0).getContext("2d");
-      var doughnutPieData = {
-        datasets: [{
-          data: [20, 30, 10],
-          backgroundColor: [
-            "#f6e84e",
-            "#58d8a3",
-            "#f96868" 
-          ],
-          borderColor: [
-            "#f6e84e",
-            "#58d8a3",
-            "#f96868"
-          ],
-        }],
-  
-        // These labels appear in the legend and in the tooltips when hovering different arcs
-        labels: [
-          'Pendientes',
-          'Completados',
-          'Vencidos',
-        ]
-      };
-      var doughnutPieOptions = {
-        cutoutPercentage: 50,
-        animationEasing: "easeOutBounce",
-        animateRotate: true,
-        animateScale: false,
-        responsive: true,
-        maintainAspectRatio: true,
-        showScale: true,
-        legend: false,
-        legendCallback: function (chart) {
-          var text = [];
-          text.push('<div class="chartjs-legend"><ul class="justify-content-center">');
-          for (var i = 0; i < chart.data.datasets[0].data.length; i++) {
-            text.push('<li><span style="background-color:' + chart.data.datasets[0].backgroundColor[i] + '">');
-            text.push('</span>');
-            if (chart.data.labels[i]) {
-              text.push(chart.data.labels[i]);
-            }
-            text.push('</li>');
-          }
-          text.push('</div></ul>');
-          return text.join("");
-        },
-        
-        layout: {
-          padding: {
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0
-          }
-        },
-        tooltips: {
-          callbacks: {
-            title: function(tooltipItem, data) {
-              return data['labels'][tooltipItem[0]['index']];
-            },
-            label: function(tooltipItem, data) {
-              return data['datasets'][0]['data'][tooltipItem['index']];
-            }
-          },
-            
-          backgroundColor: '#fff',
-          titleFontSize: 14,
-          titleFontColor: '#0B0F32',
-          bodyFontColor: '#737F8B',
-          bodyFontSize: 11,
-          displayColors: false
+    // Replace the doughnut chart section in dashboard.js with this code:
+
+if ($("#doughnutChart").length) {
+  var doughnutChartCanvas = $("#doughnutChart").get(0).getContext("2d");
+  var doughnutPieData = {
+    datasets: [{
+      data: [0, 0, 0, 0],
+      backgroundColor: [
+        "#f6e84e",   // Pendientes - Yellow
+        "#58d8a3",   // Completados - Green
+        "#f96868",   // Vencidos - Red
+        "#ff9800"    // En Progreso - Orange
+      ],
+      borderColor: [
+        "#f6e84e",
+        "#58d8a3",
+        "#f96868",
+        "#ff9800"
+      ],
+    }],
+
+    // These labels appear in the legend and in the tooltips when hovering different arcs
+    labels: [
+      'Pendientes',
+      'Completados',
+      'Vencidos',
+      'En Progreso'
+    ]
+  };
+  var doughnutPieOptions = {
+    cutoutPercentage: 50,
+    animationEasing: "easeOutBounce",
+    animateRotate: true,
+    animateScale: false,
+    responsive: true,
+    maintainAspectRatio: true,
+    showScale: true,
+    legend: false,
+    legendCallback: function (chart) {
+      var text = [];
+      text.push('<div class="chartjs-legend"><ul class="justify-content-center">');
+      for (var i = 0; i < chart.data.datasets[0].data.length; i++) {
+        text.push('<li><span style="background-color:' + chart.data.datasets[0].backgroundColor[i] + '">');
+        text.push('</span>');
+        if (chart.data.labels[i]) {
+          text.push(chart.data.labels[i]);
         }
-      };
-      var doughnutChart = new Chart(doughnutChartCanvas, {
-        type: 'doughnut',
-        data: doughnutPieData,
-        options: doughnutPieOptions
-      });
-      document.getElementById('doughnut-chart-legend').innerHTML = doughnutChart.generateLegend();
+        text.push('</li>');
+      }
+      text.push('</div></ul>');
+      return text.join("");
+    },
+    
+    layout: {
+      padding: {
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0
+      }
+    },
+    tooltips: {
+      callbacks: {
+        title: function(tooltipItem, data) {
+          return data['labels'][tooltipItem[0]['index']];
+        },
+        label: function(tooltipItem, data) {
+          return data['datasets'][0]['data'][tooltipItem['index']];
+        }
+      },
+        
+      backgroundColor: '#fff',
+      titleFontSize: 14,
+      titleFontColor: '#0B0F32',
+      bodyFontColor: '#737F8B',
+      bodyFontSize: 11,
+      displayColors: false
     }
+  };
+  // Store chart in window object so it can be accessed and updated from other files
+  window.doughnutChart = new Chart(doughnutChartCanvas, {
+    type: 'doughnut',
+    data: doughnutPieData,
+    options: doughnutPieOptions
+  });
+  document.getElementById('doughnut-chart-legend').innerHTML = window.doughnutChart.generateLegend();
+}
     if ($("#leaveReport").length) {
       var leaveReportChart = document.getElementById("leaveReport").getContext('2d');
       var leaveReportData = {

@@ -64,6 +64,7 @@ function populateProyectosTable(proyectos) {
                 </td>
             </tr>
         `);
+        updateProyectoStatusChart([], 0);//actualizar grafica con datos vacios
         return;
     }
     
@@ -73,6 +74,61 @@ function populateProyectosTable(proyectos) {
     });
     
     updateProyectoCount(proyectos.length);//actualizar contador de protectos
+    updateProyectoStatusChart(proyectos, proyectos.length);//actualizar grafica con los proyectos
+}
+
+function updateProyectoStatusChart(proyectos, total) {
+    // Verificar si el chart existe
+    if (!window.doughnutChart) {
+        console.warn('Doughnut chart not initialized yet');
+        return;
+    }
+    
+    // Contar proyectos por estado
+    const statusCounts = {
+        'pendiente': 0,
+        'completado': 0,
+        'vencido': 0,
+        'en proceso': 0
+    };
+    
+    // Si no hay proyectos, establecer todos en 0
+    if (!proyectos || proyectos.length === 0) {
+        window.doughnutChart.data.datasets[0].data = [0, 0, 0, 0];
+        window.doughnutChart.update();
+        document.getElementById('doughnut-chart-legend').innerHTML = window.doughnutChart.generateLegend();
+        return;
+    }
+    
+    // Contar proyectos por estado
+    proyectos.forEach(function(proyecto) {
+        const estado = proyecto.estado.toLowerCase().trim();
+        if (statusCounts.hasOwnProperty(estado)) {
+            statusCounts[estado]++;
+        }
+    });
+    
+    // Actualizar los datos del chart en el orden correcto: pendientes, completados, vencidos, en proceso
+    window.doughnutChart.data.datasets[0].data = [
+        statusCounts['pendiente'],
+        statusCounts['completado'],
+        statusCounts['vencido'],
+        statusCounts['en proceso']
+    ];
+    
+    // Actualizar el chart con animacion
+    window.doughnutChart.update();
+    
+    // Actualizar la leyenda
+    document.getElementById('doughnut-chart-legend').innerHTML = window.doughnutChart.generateLegend();
+    
+    console.log('Chart updated:', {
+        pendientes: statusCounts['pendiente'],
+        completados: statusCounts['completado'],
+        vencidos: statusCounts['vencido'],
+        enProgreso: statusCounts['en proceso'],
+        total: total
+    });
 }
 
 function createProyectoRow(proyecto) {

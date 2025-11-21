@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function loadProjectUsers(projectId) {
-        fetch(`../php/get_project_user.php?id_proyecto=${projectId}`)
+        fetch(`../php/get_project_user_two.php?id_proyecto=${projectId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Error cargando usuarios del proyecto');
@@ -396,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
             taskDateInput.min = projectData.fecha_inicio;
             
             if (taskDateNoteDiv) {
-                const fecha = new Date(projectData.fecha_inicio);
+                const fecha = parseDateStringToLocal(projectData.fecha_inicio);
                 const fechaFormato = fecha.toLocaleDateString('es-MX', {
                     day: '2-digit',
                     month: 'long',
@@ -507,15 +507,37 @@ document.addEventListener('DOMContentLoaded', function() {
         attachTaskListeners();
     }
     
-    //crear un html para un solo elemento de tarea
-    function createTaskElement(task, isLast = false) {
-        //formato de fecha
-        const dateObj = new Date(task.fecha_cumplimiento);
-        const formattedDate = dateObj.toLocaleDateString('es-MX', {
+    //parsear fecha en formato YYYY-MM-DD correctamente (evitando problema de timezone UTC)
+    function parseDateStringToLocal(dateString) {
+        if (!dateString) return null;
+        
+        const parts = dateString.split('-');
+        if (parts.length !== 3) return null;
+        
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // mes es 0-indexed
+        const day = parseInt(parts[2], 10);
+        
+        // crear fecha en timezone local, no UTC
+        return new Date(year, month, day);
+    }
+
+    //formatear fecha a formato local (es-MX)
+    function formatDateForDisplay(dateString) {
+        const dateObj = parseDateStringToLocal(dateString);
+        if (!dateObj) return 'Sin fecha';
+        
+        return dateObj.toLocaleDateString('es-MX', {
             day: '2-digit',
             month: 'short',
             year: 'numeric'
         });
+    }
+    
+    //crear un html para un solo elemento de tarea - FIXED: usando MDI icons para checkbox
+    function createTaskElement(task, isLast = false) {
+        //formato de fecha - USAR HELPER FUNCTION PARA EVITAR PROBLEMA DE TIMEZONE
+        const formattedDate = formatDateForDisplay(task.fecha_cumplimiento);
         
         //estilo de la insignia basado en estatus
         const badgeInfo = getTaskBadgeInfo(task.estado);
@@ -524,36 +546,44 @@ document.addEventListener('DOMContentLoaded', function() {
         const isCompleted = task.estado === 'completado';
         const borderClass = isLast ? 'border-bottom-0' : '';
         
-        //mostrar el participante asignado si existe
+        //icono basado en si esta completado o no
+        const checkboxIcon = isCompleted ? 'mdi-checkbox-marked-circle-outline' : 'mdi-checkbox-blank-circle-outline';
+        const checkboxColor = isCompleted ? 'text-success' : 'text-muted';
+        
+        //mostrar el participante asignado si existe - ESCAPAR EL HTML para prevenir rotura de estructura
         const assigneeDisplay = task.participante ? ` <small class="text-muted">(Asignado a: ${escapeHtml(task.participante)})</small>` : '';
         
         return `
             <li class="d-block ${borderClass}" data-task-id="${task.id_tarea}">
-                <div class="form-check w-100">
-                    <label class="form-check-label">
-                        <input class="checkbox task-checkbox" type="checkbox" 
-                               ${isCompleted ? 'checked' : ''} 
-                               data-task-id="${task.id_tarea}">
-                        ${task.nombre}${assigneeDisplay}
-                        <i class="input-helper rounded"></i>
-                    </label>
-                    <div class="d-flex mt-2 align-items-center">
-                        <div class="ps-4 text-small me-3">${formattedDate}</div>
-                        <div class="badge ${badgeInfo.class} me-3 task-badge">${badgeInfo.text}</div>
-                        <i class="mdi mdi-flag ms-2 flag-color"></i>
-                        <button class="btn btn-sm btn-link text-primary ms-auto task-edit-btn" 
-                                data-task-id="${task.id_tarea}"
-                                data-task-name="${escapeHtml(task.nombre)}"
-                                data-task-description="${escapeHtml(task.descripcion)}"
-                                data-task-date="${task.fecha_cumplimiento}"
-                                data-task-status="${task.estado}"
-                                data-task-project="${task.id_proyecto}"
-                                data-task-assignee="${task.id_participante || ''}"
-                                title="Editar tarea">
-                            <i class="mdi mdi-pencil"></i>
-                        </button>
+                <div class="d-flex align-items-start w-100 gap-2">
+                    <i class="mdi mdi-24px ${checkboxIcon} ${checkboxColor} task-checkbox-icon flex-shrink-0" 
+                       data-task-id="${task.id_tarea}" 
+                       style="cursor: pointer; margin-top: 2px; transition: color 0.2s ease;"
+                       title="Click para marcar como completado"></i>
+                    <div class="flex-grow-1">
+                        <div>
+                            <label style="cursor: pointer; ${isCompleted ? 'text-decoration: line-through; color: #6c757d;' : ''}">
+                                ${escapeHtml(task.nombre)}${assigneeDisplay}
+                            </label>
+                        </div>
+                        <div class="d-flex mt-2 align-items-center">
+                            <div class="text-small me-3">${formattedDate}</div>
+                            <div class="badge ${badgeInfo.class} me-3 task-badge">${badgeInfo.text}</div>
+                            <i class="mdi mdi-flag ms-2 flag-color"></i>
+                            <button class="btn btn-sm btn-link text-primary ms-auto task-edit-btn" 
+                                    data-task-id="${task.id_tarea}"
+                                    data-task-name="${escapeHtml(task.nombre)}"
+                                    data-task-description="${escapeHtml(task.descripcion)}"
+                                    data-task-date="${task.fecha_cumplimiento}"
+                                    data-task-status="${task.estado}"
+                                    data-task-project="${task.id_proyecto}"
+                                    data-task-assignee="${task.id_participante || ''}"
+                                    title="Editar tarea">
+                                <i class="mdi mdi-pencil"></i>
+                            </button>
+                        </div>
+                        <div class="text-muted small mt-1">${escapeHtml(task.descripcion)}</div>
                     </div>
-                    <div class="ps-4 text-muted small mt-1">${task.descripcion}</div>
                 </div>
             </li>
         `;
@@ -600,9 +630,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //agregar event listeners a todas las checkboxes y botones de edicion
     function attachTaskListeners() {
-        const checkboxes = document.querySelectorAll('.task-checkbox');
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', handleTaskStatusChange);
+        const checkboxIcons = document.querySelectorAll('.task-checkbox-icon');
+        checkboxIcons.forEach(icon => {
+            icon.addEventListener('click', handleTaskStatusChange);
         });
         
         const editButtons = document.querySelectorAll('.task-edit-btn');
@@ -611,22 +641,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    //manejo de cambio de estado cuando se hace clic en la checkbox 
+    //manejo de cambio de estado cuando se hace clic en el icono checkbox
     function handleTaskStatusChange(event) {
-        const checkbox = event.target;
-        const taskId = checkbox.getAttribute('data-task-id');
-        const isChecked = checkbox.checked;
+        const icon = event.target;
+        const taskId = icon.getAttribute('data-task-id');
+        
+        //determinar si esta actualmente marcado o no basado en la clase del icono
+        const isCurrentlyChecked = icon.classList.contains('mdi-checkbox-marked-circle-outline');
         
         //Checado = completado, sin checar = pendiente 
-        const newStatus = isChecked ? 'completado' : 'pendiente';
+        const newStatus = isCurrentlyChecked ? 'pendiente' : 'completado';
         
         //obtener el item de la lista de tareas
-        const taskLi = checkbox.closest('li');
+        const taskLi = icon.closest('li');
         
         //mostrar estado de carga
         taskLi.style.opacity = '0.6';
         taskLi.style.pointerEvents = 'none';
-        checkbox.disabled = true;
+        icon.style.pointerEvents = 'none';
         
         //preparar info para la actualizacion
         const updateData = new FormData();
@@ -641,6 +673,19 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                //actualizar icono basado en el nuevo estado
+                if (newStatus === 'completado') {
+                    icon.classList.remove('mdi-checkbox-blank-circle-outline');
+                    icon.classList.add('mdi-checkbox-marked-circle-outline');
+                    icon.classList.remove('text-muted');
+                    icon.classList.add('text-success');
+                } else {
+                    icon.classList.remove('mdi-checkbox-marked-circle-outline');
+                    icon.classList.add('mdi-checkbox-blank-circle-outline');
+                    icon.classList.remove('text-success');
+                    icon.classList.add('text-muted');
+                }
+                
                 //actualizar insignia
                 const badge = taskLi.querySelector('.task-badge');
                 const badgeInfo = getTaskBadgeInfo(newStatus);
@@ -650,19 +695,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     badge.textContent = badgeInfo.text;
                 }
                 
+                //actualizar decoracion del texto
+                const label = taskLi.querySelector('label');
+                if (label) {
+                    if (newStatus === 'completado') {
+                        label.style.textDecoration = 'line-through';
+                        label.style.color = '#6c757d';
+                    } else {
+                        label.style.textDecoration = 'none';
+                        label.style.color = 'inherit';
+                    }
+                }
+                
                 //devolver a estado normal
                 taskLi.style.opacity = '1';
                 taskLi.style.pointerEvents = 'auto';
-                checkbox.disabled = false;
+                icon.style.pointerEvents = 'auto';
                 
-                const statusMessage = isChecked ? 'Tarea marcada como completada' : 'Tarea marcada como pendiente';
+                const statusMessage = newStatus === 'completado' ? 'Tarea marcada como completada' : 'Tarea marcada como pendiente';
                 showNotification(statusMessage, 'success');
             } else {
-                //regresar checkbox a estado original si hay error
-                checkbox.checked = !isChecked;
+                //revertir en caso de error
                 taskLi.style.opacity = '1';
                 taskLi.style.pointerEvents = 'auto';
-                checkbox.disabled = false;
+                icon.style.pointerEvents = 'auto';
                 
                 showNotification(data.message || 'Error al actualizar la tarea', 'danger');
             }
@@ -670,10 +726,9 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error updating task:', error);
             
-            checkbox.checked = !isChecked;
             taskLi.style.opacity = '1';
             taskLi.style.pointerEvents = 'auto';
-            checkbox.disabled = false;
+            icon.style.pointerEvents = 'auto';
             
             showNotification('Error al conectar con el servidor', 'danger');
         });
@@ -864,7 +919,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadProjectUsersForModal(projectId, callback) {
         console.log(`Cargando usuarios para el proyecto ${projectId}...`);
         
-        fetch(`../php/get_project_user.php?id_proyecto=${projectId}`)
+        fetch(`../php/get_project_user_two.php?id_proyecto=${projectId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -1026,44 +1081,44 @@ document.addEventListener('DOMContentLoaded', function() {
             tasksList.innerHTML = '';
         }
         
-        let formattedDate = 'Sin fecha';
-        if (taskDate) {
-            const dateObj = new Date(taskDate);
-            formattedDate = dateObj.toLocaleDateString('es-MX', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
-        }
+        const formattedDate = formatDateForDisplay(taskDate);
         const badgeInfo = getTaskBadgeInfo(taskStatus);
+        
+        const isCompleted = taskStatus === 'completado';
+        const checkboxIcon = isCompleted ? 'mdi-checkbox-marked-circle-outline' : 'mdi-checkbox-blank-circle-outline';
+        const checkboxColor = isCompleted ? 'text-success' : 'text-muted';
         
         const newTaskHTML = `
             <li class="d-block" data-task-id="${taskId}">
-                <div class="form-check w-100">
-                    <label class="form-check-label">
-                        <input class="checkbox task-checkbox" type="checkbox" 
-                               data-task-id="${taskId}" 
-                               ${taskStatus === 'completado' ? 'checked' : ''}>
-                        ${taskName}
-                        <i class="input-helper rounded"></i>
-                    </label>
-                    <div class="d-flex mt-2 align-items-center">
-                        <div class="ps-4 text-small me-3">${formattedDate}</div>
-                        <div class="badge ${badgeInfo.class} me-3 task-badge">${badgeInfo.text}</div>
-                        <i class="mdi mdi-flag ms-2 flag-color"></i>
-                        <button class="btn btn-sm btn-link text-primary ms-auto task-edit-btn" 
-                                data-task-id="${taskId}"
-                                data-task-name="${escapeHtml(taskName)}"
-                                data-task-description="${escapeHtml(taskDescription)}"
-                                data-task-date="${taskDate}"
-                                data-task-status="${taskStatus}"
-                                data-task-project="${taskProject}"
-                                data-task-assignee="${taskAssignee || ''}"
-                                title="Editar tarea">
-                            <i class="mdi mdi-pencil"></i>
-                        </button>
+                <div class="d-flex align-items-start w-100 gap-2">
+                    <i class="mdi mdi-24px ${checkboxIcon} ${checkboxColor} task-checkbox-icon flex-shrink-0" 
+                       data-task-id="${taskId}" 
+                       style="cursor: pointer; margin-top: 2px; transition: color 0.2s ease;"
+                       title="Click para marcar como completado"></i>
+                    <div class="flex-grow-1">
+                        <div>
+                            <label style="cursor: pointer; ${isCompleted ? 'text-decoration: line-through; color: #6c757d;' : ''}">
+                                ${escapeHtml(taskName)}
+                            </label>
+                        </div>
+                        <div class="d-flex mt-2 align-items-center">
+                            <div class="text-small me-3">${formattedDate}</div>
+                            <div class="badge ${badgeInfo.class} me-3 task-badge">${badgeInfo.text}</div>
+                            <i class="mdi mdi-flag ms-2 flag-color"></i>
+                            <button class="btn btn-sm btn-link text-primary ms-auto task-edit-btn" 
+                                    data-task-id="${taskId}"
+                                    data-task-name="${escapeHtml(taskName)}"
+                                    data-task-description="${escapeHtml(taskDescription)}"
+                                    data-task-date="${taskDate}"
+                                    data-task-status="${taskStatus}"
+                                    data-task-project="${taskProject}"
+                                    data-task-assignee="${taskAssignee || ''}"
+                                    title="Editar tarea">
+                                <i class="mdi mdi-pencil"></i>
+                            </button>
+                        </div>
+                        <div class="text-muted small mt-1">${escapeHtml(taskDescription)}</div>
                     </div>
-                    <div class="ps-4 text-muted small mt-1">${taskDescription}</div>
                 </div>
             </li>
         `;
@@ -1073,11 +1128,11 @@ document.addEventListener('DOMContentLoaded', function() {
         //agregar event listener a nueva tarea
         const newTaskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
         if (newTaskLi) {
-            const checkbox = newTaskLi.querySelector('.task-checkbox');
+            const checkboxIcon = newTaskLi.querySelector('.task-checkbox-icon');
             const editBtn = newTaskLi.querySelector('.task-edit-btn');
             
-            if (checkbox) {
-                checkbox.addEventListener('change', handleTaskStatusChange);
+            if (checkboxIcon) {
+                checkboxIcon.addEventListener('click', handleTaskStatusChange);
             }
             if (editBtn) {
                 editBtn.addEventListener('click', handleEditTask);
@@ -1090,33 +1145,40 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
         if (!taskLi) return;
         
-        let formattedDate = 'Sin fecha';
-        if (taskDate) {
-            const dateObj = new Date(taskDate);
-            formattedDate = dateObj.toLocaleDateString('es-MX', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
-        }
+        const formattedDate = formatDateForDisplay(taskDate);
         
         //info de la insignia
         const badgeInfo = getTaskBadgeInfo(taskStatus);
         
-        //actualizar nombre de la tarea
-        const label = taskLi.querySelector('.form-check-label');
-        const checkbox = taskLi.querySelector('.task-checkbox');
-        if (label && checkbox) {
-            //quedarse con la checkbox y actualizar el label
-            const isChecked = taskStatus === 'completado';
-            checkbox.checked = isChecked;
-            
-            //actualizar el contenido del label sin cambiar checkbox
-            label.childNodes.forEach(node => {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    node.textContent = taskName;
-                }
-            });
+        //actualizar icono checkbox basado en el nuevo estado
+        const icon = taskLi.querySelector('.task-checkbox-icon');
+        if (icon) {
+            const isCompleted = taskStatus === 'completado';
+            if (isCompleted) {
+                icon.classList.remove('mdi-checkbox-blank-circle-outline');
+                icon.classList.add('mdi-checkbox-marked-circle-outline');
+                icon.classList.remove('text-muted');
+                icon.classList.add('text-success');
+            } else {
+                icon.classList.remove('mdi-checkbox-marked-circle-outline');
+                icon.classList.add('mdi-checkbox-blank-circle-outline');
+                icon.classList.remove('text-success');
+                icon.classList.add('text-muted');
+            }
+        }
+        
+        //actualizar nombre de la tarea en el label
+        const label = taskLi.querySelector('label');
+        if (label) {
+            const isCompleted = taskStatus === 'completado';
+            label.textContent = taskName;
+            if (isCompleted) {
+                label.style.textDecoration = 'line-through';
+                label.style.color = '#6c757d';
+            } else {
+                label.style.textDecoration = 'none';
+                label.style.color = 'inherit';
+            }
         }
         
         //actualizar fecha 
@@ -1138,7 +1200,7 @@ document.addEventListener('DOMContentLoaded', function() {
             descDiv.textContent = taskDescription;
         }
         
-        //actualizar boron de edicion
+        //actualizar boton de edicion
         const editBtn = taskLi.querySelector('.task-edit-btn');
         if (editBtn) {
             editBtn.setAttribute('data-task-name', escapeHtml(taskName));

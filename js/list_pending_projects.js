@@ -1,14 +1,27 @@
-/*listar Proyectos Pendientes*/
+/*listar Proyectos Pendientes con Grafico de Todos los Proyectos*/
 
 $(document).ready(function() {
-    loadProyectosPendientes();
-    setInterval(loadProyectosPendientes, 30000);//actualizar cada 30s
+    loadProyectosPendientesAndChart();
+    setInterval(loadProyectosPendientesAndChart, 30000);//actualizar cada 30s
 });
 
-function loadProyectosPendientes() {
+function loadProyectosPendientesAndChart() {
     showLoadingState();
     
-    $.ajax({//obtener los proyectos pendientes
+    // Hacer dos llamadas AJAX: una para proyectos pendientes y otra para todos los proyectos
+    $.when(
+        loadPendingProjectsData(),
+        loadAllProjectsForChart()
+    ).done(function(pendingResponse, allProjectsResponse) {
+        hideLoadingState();
+    }).fail(function(error) {
+        console.error('Error loading data:', error);
+        showError('Error al cargar los datos');
+    });
+}
+
+function loadPendingProjectsData() {
+    return $.ajax({//obtener los proyectos pendientes
         url: '../php/api_get_pending_projects.php', 
         type: 'GET',
         dataType: 'json',
@@ -16,7 +29,6 @@ function loadProyectosPendientes() {
         success: function(response) {
             if (response.success) {
                 populateProyectosPendientesTable(response.data);//agregar proyectos a la tabla
-                hideLoadingState();
             } else {
                 showError('Error: ' + response.message);
             }
@@ -36,6 +48,33 @@ function loadProyectosPendientes() {
             }
             
             showError(errorMessage);
+        }
+    });
+}
+
+function loadAllProjectsForChart() {
+    return $.ajax({
+        url: '../php/api_get_projects.php',
+        type: 'GET',
+        dataType: 'text',
+        timeout: 10000,
+        success: function(response) {
+            try {
+                const parsed = JSON.parse(response);
+                if (parsed.success) {
+                    // Actualizar el grafico con todos los proyectos
+                    updateProyectoStatusChart(parsed.data, parsed.total);
+                } else {
+                    console.error('Error: ' + parsed.message);
+                }
+            } catch (e) {
+                console.error('JSON Parse Error:', e);
+                console.error('Response was:', response);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error al cargar todos los proyectos para el grafico:', error);
+            console.error('Response text:', xhr.responseText);
         }
     });
 }
@@ -123,6 +162,60 @@ function createProyectoRow(proyecto) {
     });
     
     return row;
+}
+
+function updateProyectoStatusChart(proyectos, total) {
+    // Verificar si el chart existe
+    if (!window.doughnutChart) {
+        console.warn('Doughnut chart not initialized yet');
+        return;
+    }
+    
+    // Contar proyectos por estado
+    const statusCounts = {
+        'pendiente': 0,
+        'completado': 0,
+        'vencido': 0,
+        'en proceso': 0
+    };
+    
+    // Si no hay proyectos, establecer todos en 0
+    if (!proyectos || proyectos.length === 0) {
+        window.doughnutChart.data.datasets[0].data = [0, 0, 0, 0];
+        window.doughnutChart.update();
+        document.getElementById('doughnut-chart-legend').innerHTML = window.doughnutChart.generateLegend();
+        return;
+    }
+    
+    // Contar proyectos por estado
+    proyectos.forEach(function(proyecto) {
+        const estado = proyecto.estado.toLowerCase().trim();
+        if (statusCounts.hasOwnProperty(estado)) {
+            statusCounts[estado]++;
+        }
+    });
+    
+    // Actualizar los datos del chart en el orden correcto: pendientes, completados, vencidos, en proceso
+    window.doughnutChart.data.datasets[0].data = [
+        statusCounts['pendiente'],
+        statusCounts['completado'],
+        statusCounts['vencido'],
+        statusCounts['en proceso']
+    ];
+    
+    // Actualizar el chart con animacion
+    window.doughnutChart.update();
+    
+    // Actualizar la leyenda
+    document.getElementById('doughnut-chart-legend').innerHTML = window.doughnutChart.generateLegend();
+    
+    console.log('Chart updated (Pending Projects Page):', {
+        pendientes: statusCounts['pendiente'],
+        completados: statusCounts['completado'],
+        vencidos: statusCounts['vencido'],
+        enProgreso: statusCounts['en proceso'],
+        total: total
+    });
 }
 
 function getEstadoClass(estado_style) {
