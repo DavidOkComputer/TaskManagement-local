@@ -457,7 +457,7 @@ function displayEmptyState() {
     tableBody.innerHTML = ` 
         <tr> 
             <td colspan="9" class="text-center empty-state"> 
-                <i class="mdi mdi-folder-open" style="font-size: 48px; color: #ccc;"></i> 
+                <i class="mdi mdi-folder-open" style="font-size: 48px; color: #e9e9e9;"></i> 
                 <h5 class="mt-3">No hay proyectos registrados</h5> 
                 <p>Comienza creando un nuevo proyecto</p> 
                 <a href="../nuevoProyecto/" class="btn btn-success mt-3"> 
@@ -707,7 +707,7 @@ function loadProjectUsers(projectId) {
                 tableBody.innerHTML = ` 
                     <tr> 
                         <td colspan="5" class="text-center text-muted"> 
-                            <i class="mdi mdi-account-off" style="font-size: 48px; color: #ccc;"></i> 
+                            <i class="mdi mdi-account-off" style="font-size: 48px; color: #E9E9E9;"></i> 
                             <h5 class="mt-3">No hay usuarios asignados a este proyecto</h5> 
                         </td> 
                     </tr> 

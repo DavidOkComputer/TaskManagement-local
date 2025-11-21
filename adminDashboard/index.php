@@ -135,24 +135,6 @@ Dashboard principal de admin
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
       <!-- partial:partials/_settings-panel.html -->
-      <div class="theme-setting-wrapper">
-        <div id="settings-trigger"><i class="ti-settings"></i></div>
-        <div id="theme-settings" class="settings-panel">
-          <i class="settings-close ti-close"></i>
-          <p class="settings-heading">SIDEBAR SKINS</p>
-          <div class="sidebar-bg-options selected" id="sidebar-light-theme"><div class="img-ss rounded-circle bg-light border me-3"></div>Light</div>
-          <div class="sidebar-bg-options" id="sidebar-dark-theme"><div class="img-ss rounded-circle bg-dark border me-3"></div>Dark</div>
-          <p class="settings-heading mt-2">HEADER SKINS</p>
-          <div class="color-tiles mx-0 px-4">
-            <div class="tiles success"></div>
-            <div class="tiles warning"></div>
-            <div class="tiles danger"></div>
-            <div class="tiles info"></div>
-            <div class="tiles dark"></div>
-            <div class="tiles default"></div>
-          </div>
-        </div>
-      </div>
       <div id="right-sidebar" class="settings-panel">
         <i class="settings-close ti-close"></i>
         <ul class="nav nav-tabs border-top" id="setting-panel" role="tablist">
@@ -435,100 +417,277 @@ Dashboard principal de admin
                             <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+0.1%</span></p>
                           </div>
                           <div>
-                            <p class="statistics-title">Total de avance</p>
+                            <p class="statistics-title">Total de Tareas</p>
                             <h3 class="rate-percentage">50%</h3>
                             <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>20% fehca esperada</span></p>
                           </div>
                           <div class="d-none d-md-block">
-                            <p class="statistics-title">Tiempo estimado por avance</p>
-                            <h3 class="rate-percentage">2m:35s</h3>
+                            <p class="statistics-title">Proyectos completados</p>
+                            <h3 class="rate-percentage">30</h3>
                             <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
                           </div>
                           <div class="d-none d-md-block">
-                            <p class="statistics-title">Avances por asignar</p>
+                            <p class="statistics-title">Proyectos en proceso</p>
                             <h3 class="rate-percentage">12</h3>
                             <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>2 asignaciones</span></p>
                           </div>
                           <div class="d-none d-md-block">
-                            <p class="statistics-title">Tiempo estimado de cumplimiento</p>
-                            <h3 class="rate-percentage">2m:35s</h3>
+                            <p class="statistics-title">Proyectos pendientes</p>
+                            <h3 class="rate-percentage">10</h3>
+                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                          </div>
+                          <div class="d-none d-md-block">
+                            <p class="statistics-title">Proyectos vencidos</p>
+                            <h3 class="rate-percentage">5</h3>
                             <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
                           </div>
                         </div>
                       </div>
                     </div> 
                     <div class="row">
-                      <div class="col-lg-8 d-flex flex-column">
-                        <div class="row flex-grow">
-                          <div class="col-12 col-lg-4 col-lg-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="d-sm-flex justify-content-between align-items-start">
-                                  <div>
-                                   <h4 class="card-title card-title-dash">Grafica de avances semanales</h4>
-                                   <h5 class="card-subtitle card-subtitle-dash">Avances semanales de proyecto</h5>
-                                  </div>
-                                  <div id="performance-line-legend"></div>
-                                </div>
-                                <div class="chartjs-wrapper mt-5">
-                                  <canvas id="performaneLine"></canvas>
-                                </div>
-                              </div>
+                      <!--Progreso por responsable-->
+                      <div class="col-sm-4 grid-margin stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <h4 class="card-title">Progreso por responsable</h4>
+                            <div class="table-responsive pt-3">
+                              <table class="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>
+                                      #
+                                    </th>
+                                    <th>
+                                      Nombre
+                                    </th>
+                                    <th>
+                                      Progreso
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>
+                                      1
+                                    </td>
+                                    <td>
+                                      Herman Beck
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      2
+                                    </td>
+                                    <td>
+                                      Messsy Adam
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
+                                      </div>
+                                    </td>
+                                    
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      3
+                                    </td>
+                                    <td>
+                                      John Richards
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      4
+                                    </td>
+                                    <td>
+                                      Peter Meggik
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      5
+                                    </td>
+                                    <td>
+                                      Edward
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 35%" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div class="col-lg-4 d-flex flex-column">
-                        <div class="row flex-grow">
-                          <div class="col-md-6 col-lg-12 grid-margin stretch-card">
-                            <div class="card bg-primary card-rounded">
-                              <div class="card-body pb-0">
-                                <h4 class="card-title card-title-dash text-white mb-4">Resumen de avances</h4>
-                                <div class="row">
-                                  <div class="col-sm-4">
-                                    <p class="status-summary-ight-white mb-1">Cumplimiento a la fecha</p>
-                                    <h2 class="text-info">100</h2>
-                                  </div>
-                                  <div class="col-sm-8">
-                                    <div class="status-summary-chart-wrapper pb-4">
-                                      <canvas id="status-summary"></canvas>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="col-md-6 col-lg-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="row">
-                                  <div class="col-sm-6">
-                                    <div class="d-flex justify-content-between align-items-center mb-2 mb-sm-0">
-                                      <div class="circle-progress-width">
-                                        <div id="totalVisitors" class="progressbar-js-circle pr-2"></div>
+                      <!--Progreso por proyecto/tareas-->
+                      <div class="col-sm-4 grid-margin stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <h4 class="card-title">Progreso por proyecto</h4>
+                            <div class="table-responsive pt-3">
+                              <table class="table table-bordered">
+                                <thead>
+                                  <tr>
+                                    <th>
+                                      #
+                                    </th>
+                                    <th>
+                                      Proyecto
+                                    </th>
+                                    <th>
+                                      Progreso
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td>
+                                      1
+                                    </td>
+                                    <td>
+                                      Herman Beck
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                                       </div>
-                                      <div>
-                                        <p class="text-small mb-2">Proyecto terminado</p>
-                                        <h4 class="mb-0 fw-bold">60.50%</h4>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      2
+                                    </td>
+                                    <td>
+                                      Messsy Adam
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
                                       </div>
-                                    </div>
-                                  </div>
-                                  <div class="col-sm-6">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                      <div class="circle-progress-width">
-                                        <div id="visitperday" class="progressbar-js-circle pr-2"></div>
+                                    </td>
+                                    
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      3
+                                    </td>
+                                    <td>
+                                      John Richards
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
                                       </div>
-                                      <div>
-                                        <p class="text-small mb-2">Proyecto pendiente</p>
-                                        <h4 class="mb-0 fw-bold">39.50%</h4>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      4
+                                    </td>
+                                    <td>
+                                      Peter Meggik
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
                                       </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td>
+                                      5
+                                    </td>
+                                    <td>
+                                      Edward
+                                    </td>
+                                    <td>
+                                      <div class="progress">
+                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 35%" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
                             </div>
                           </div>
                         </div>
+                      </div>
+                      <!--Fin de progreso por proyecto/tarea-->
+                      <div class="col-sm-4 grid-margin stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <h4 class="card-title">Proyectos por estado</h4>
+                            <div class="col-lg-12">
+                              <div class="d-flex justify-content-between align-items-center mb-3">
+                              </div>
+                              <canvas class="my-auto" id="doughnutChart" height="200"></canvas>
+                             <div id="doughnut-chart-legend" class="mt-5 text-center"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                        <div class="col-lg-12 grid-margin-stretch-card">
+                          <div class="card">
+                            <div class="card-body">
+                              <h4 class="card-title">Detalles de los proyectos</h4>
+                              <div class="table-responsive mt-3">
+                                <table class="table select-table">
+                                  <thead>
+                                    <tr>
+                                      <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
+                                        Título <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="descripcion" style="cursor: pointer; user-select: none;">
+                                        Descripción <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor: pointer; user-select: none;">
+                                        Fecha de entrega <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="progreso" style="cursor: pointer; user-select: none;">
+                                        Progreso <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="estado" style="cursor: pointer; user-select: none;">
+                                        Estado <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="participante" style="cursor: pointer; user-select: none;">
+                                        Responsable <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody id="proyectosTableBody">
+                                    <!--proyectos cargados automaticamente-->
+                                    <tr>
+                                      <td colspan="9" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                          <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                        <p class="mt-2">Cargando proyectos...</p>
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>  
+                          </div>  
                       </div>
                     </div>
                   </div>
@@ -561,6 +720,9 @@ Dashboard principal de admin
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
+  <script src="../js/list_projects.js"></script>
+  <script src="../js/manage_projects.js"></script>
+  <script src=""></script>
   <!-- End custom js for this page-->
 </body>
 

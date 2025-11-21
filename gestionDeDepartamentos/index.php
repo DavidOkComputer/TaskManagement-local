@@ -231,8 +231,6 @@ $user_id = 1;
                             <div class="card card-rounded"> 
                                 <div class="card-body"> 
                                     <div id="alertContainer">
-                                        <h4 class="card-title">Asignación de tareas para proyectos</h4>
-                                        <p class="card-description">Asigne las tareas a desarrollar dentro del proyecto</p>
                                     </div>
                                     <div class="d-sm-flex justify-content-between align-items-start"> 
                                         <div> 

@@ -558,16 +558,16 @@ if ($("#doughnutChart").length) {
     datasets: [{
       data: [0, 0, 0, 0],
       backgroundColor: [
-        "#f6e84e",   // Pendientes - Yellow
-        "#58d8a3",   // Completados - Green
-        "#f96868",   // Vencidos - Red
-        "#ff9800"    // En Progreso - Orange
+        "#E9E9E9",   // Pendientes - Yellow
+        "#009B4A",   // Completados - Green
+        "#000000",   // Vencidos - Red
+        "#666666"    // En Progreso - Orange
       ],
       borderColor: [
-        "#f6e84e",
-        "#58d8a3",
-        "#f96868",
-        "#ff9800"
+        "#E9E9E9",
+        "#009B4A",
+        "#000000",
+        "#666666"
       ],
     }],
 
@@ -621,10 +621,10 @@ if ($("#doughnutChart").length) {
         }
       },
         
-      backgroundColor: '#fff',
+      backgroundColor: '#ffffff',
       titleFontSize: 14,
-      titleFontColor: '#0B0F32',
-      bodyFontColor: '#737F8B',
+      titleFontColor: '#000000',
+      bodyFontColor: '#666666',
       bodyFontSize: 11,
       displayColors: false
     }
