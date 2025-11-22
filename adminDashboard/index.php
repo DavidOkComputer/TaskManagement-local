@@ -491,7 +491,6 @@ Dashboard principal de admin
                                         <div class="progress-bar bg-danger" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
                                       </div>
                                     </td>
-                                    
                                   </tr>
                                   <tr>
                                     <td>
@@ -652,7 +651,10 @@ Dashboard principal de admin
                               <div class="table-responsive mt-3">
                                 <table class="table select-table">
                                   <thead>
-                                    <tr>
+                                    <tr>            
+                                      <th class="sortable-header" data-sort="id_proyecto" style="cursor: pointer; user-select: none;">
+                                        # <i class="mdi mdi-sort-variant"></i>
+                                      </th>
                                       <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
                                         Título <i class="mdi mdi-sort-variant"></i>
                                       </th>
@@ -720,9 +722,8 @@ Dashboard principal de admin
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/list_projects.js"></script>
-  <script src="../js/manage_projects.js"></script>
-  <script src=""></script>
+  <script src="../js/list_projects_index.js"></script>
+  <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->
 </body>
 

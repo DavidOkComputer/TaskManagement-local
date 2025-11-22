@@ -131,7 +131,7 @@ function createProyectoVencidoRow(proyecto) {
     }
     
     const row = $(`
-        <tr data-proyecto-id="${proyecto.id_proyecto}" class="table-danger">
+        <tr data-proyecto-id="${proyecto.id_proyecto}">
             
             <!-- Proyecto Nombre column -->
             <td>
