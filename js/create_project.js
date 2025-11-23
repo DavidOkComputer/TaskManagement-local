@@ -98,7 +98,12 @@ function populateUsuariosSelect(usuarios) {
     select.appendChild(option);
   });
 }
- 
+
+/**
+ * Populate group modal with MDI icon-based selection
+ * Uses mdi-checkbox-marked-circle-outline for selected state
+ * and mdi-checkbox-blank-circle-outline for unselected state
+ */
 function populateGrupalModal(usuarios) {
   const container = document.getElementById('usuariosListContainer');
   if (!container) return;
@@ -106,26 +111,114 @@ function populateGrupalModal(usuarios) {
   container.innerHTML = '';
  
   usuarios.forEach(usuario => {
-    const userCheckbox = document.createElement('div');
-    userCheckbox.className = 'form-check mb-3 p-2 border-bottom';
-    userCheckbox.innerHTML = `
-      <input class="form-check-input usuario-checkbox" type="checkbox" value="${usuario.id_usuario}" id="check_${usuario.id_usuario}">
-      <label class="form-check-label w-100" for="check_${usuario.id_usuario}">
-        <strong>${usuario.nombre_completo}</strong>
-        <br>
-        <small class="text-muted">Empleado #${usuario.num_empleado} - ${usuario.e_mail}</small>
-      </label>
+    const userItem = document.createElement('div');
+    userItem.className = 'usuario-item mb-3 p-3 border-bottom';
+    userItem.setAttribute('data-user-id', usuario.id_usuario);
+    userItem.style.cursor = 'pointer';
+    userItem.style.transition = 'background-color 0.3s ease, box-shadow 0.3s ease';
+    userItem.style.borderRadius = '4px';
+    
+    userItem.innerHTML = `
+      <div class="d-flex align-items-start justify-content-between">
+        <div class="flex-grow-1">
+          <strong class="d-block mb-1">${usuario.nombre_completo}</strong>
+          <small class="text-muted d-block">Empleado #${usuario.num_empleado}</small>
+          <small class="text-muted d-block">${usuario.e_mail}</small>
+        </div>
+        <div class="ms-3 d-flex align-items-center">
+          <i class="mdi mdi-checkbox-blank-circle-outline usuario-selection-icon" 
+             style="font-size: 28px; color: #999; transition: all 0.3s ease; cursor: pointer;"></i>
+        </div>
+      </div>
+      <input type="hidden" class="usuario-id" value="${usuario.id_usuario}">
     `;
-    container.appendChild(userCheckbox);
+    
+    container.appendChild(userItem);
+    
+    // Add hover effect
+    userItem.addEventListener('mouseenter', function() {
+      if (!this.classList.contains('selected')) {
+        this.style.backgroundColor = '#f8f9fa';
+      }
+    });
+    
+    userItem.addEventListener('mouseleave', function() {
+      if (!this.classList.contains('selected')) {
+        this.style.backgroundColor = 'transparent';
+      }
+    });
+    
+    // Add click handler
+    userItem.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleUsuarioSelection(this);
+    });
   });
- 
-  document.querySelectorAll('.usuario-checkbox').forEach(checkbox => {
-    checkbox.addEventListener('change', updateSelectedCount);
-  });
+  
+  setupUsuarioItemHandlers();
+}
+
+/**
+ * Toggle user selection state
+ * Updates icon color and background color based on selection state
+ */
+function toggleUsuarioSelection(userItem) {
+  const userId = parseInt(userItem.getAttribute('data-user-id'));
+  const icon = userItem.querySelector('.usuario-selection-icon');
+  
+  const isSelected = icon.classList.contains('mdi-checkbox-marked-circle-outline');
+  
+  if (isSelected) {
+    // Deselect
+    icon.classList.remove('mdi-checkbox-marked-circle-outline');
+    icon.classList.add('mdi-checkbox-blank-circle-outline');
+    icon.style.color = '#999';
+    userItem.style.backgroundColor = 'transparent';
+    userItem.classList.remove('selected');
+    
+    grupalState.selectedUsers = grupalState.selectedUsers.filter(id => id !== userId);
+  } else {
+    // Select
+    icon.classList.remove('mdi-checkbox-blank-circle-outline');
+    icon.classList.add('mdi-checkbox-marked-circle-outline');
+    icon.style.color = '#28a745';
+    userItem.style.backgroundColor = '#f0f8f5';
+    userItem.classList.add('selected');
+    
+    if (!grupalState.selectedUsers.includes(userId)) {
+      grupalState.selectedUsers.push(userId);
+    }
+  }
+  
+  updateSelectedCount();
+}
+
+/**
+ * Setup event handlers for user items including search functionality
+ */
+function setupUsuarioItemHandlers() {
+  const searchInput = document.getElementById('searchUsuarios');
+  
+  if (searchInput && !searchInput.hasEventListener) {
+    searchInput.addEventListener('keyup', function() {
+      const searchTerm = this.value.toLowerCase();
+      const usuarioItems = document.querySelectorAll('.usuario-item');
+      
+      usuarioItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+    searchInput.hasEventListener = true;
+  }
 }
  
 function updateSelectedCount() {
-  const checkedCount = document.querySelectorAll('.usuario-checkbox:checked').length;
+  const checkedCount = grupalState.selectedUsers.length;
   document.getElementById('countSelected').textContent = checkedCount;
 }
  
@@ -172,7 +265,19 @@ function setupGrupalHandlers() {
         participanteField.value = '';
       } else { // Individual (value 2)
         grupalState.selectedUsers = [];
-        document.querySelectorAll('.usuario-checkbox').forEach(cb => cb.checked = false);
+        
+        // Clear visual state from previously selected items
+        document.querySelectorAll('.usuario-item').forEach(item => {
+          const icon = item.querySelector('.usuario-selection-icon');
+          if (icon) {
+            icon.classList.remove('mdi-checkbox-marked-circle-outline');
+            icon.classList.add('mdi-checkbox-blank-circle-outline');
+            icon.style.color = '#999';
+            item.style.backgroundColor = 'transparent';
+            item.classList.remove('selected');
+          }
+        });
+        
         updateSelectedCount();
         participanteField.disabled = false;
       }
@@ -182,34 +287,14 @@ function setupGrupalHandlers() {
   const btnConfirmar = document.getElementById('btnConfirmarGrupal');
   if (btnConfirmar && !btnConfirmar.hasListener) {
     btnConfirmar.addEventListener('click', function() {
-      const selectedCheckboxes = document.querySelectorAll('.usuario-checkbox:checked');
-      if (selectedCheckboxes.length === 0) {
+      if (grupalState.selectedUsers.length === 0) {
         showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'warning');
         return;
       }
-      grupalState.selectedUsers = Array.from(selectedCheckboxes).map(cb => parseInt(cb.value));
       grupalState.usuariosModal.hide();
       showAlert(`${grupalState.selectedUsers.length} usuario(s) seleccionado(s) para el proyecto grupal`, 'success');
     });
     btnConfirmar.hasListener = true;
-  }
-
-  const searchInput = document.getElementById('searchUsuarios');
-  if (searchInput && !searchInput.hasListener) {
-    searchInput.addEventListener('keyup', function() {
-      const searchTerm = this.value.toLowerCase();
-      const checkboxes = document.querySelectorAll('.usuario-checkbox');
-      
-      checkboxes.forEach(checkbox => {
-        const label = checkbox.closest('.form-check').querySelector('label').textContent.toLowerCase();
-        if (label.includes(searchTerm)) {
-          checkbox.closest('.form-check').style.display = 'block';
-        } else {
-          checkbox.closest('.form-check').style.display = 'none';
-        }
-      });
-    });
-    searchInput.hasListener = true;
   }
 }
  
@@ -255,12 +340,23 @@ function cargarProyectoParaEditar(projectId) {
                 if (tipoValue == '1' && proyecto.usuarios_asignados) {
                     grupalState.selectedUsers = proyecto.usuarios_asignados.map(u => u.id_usuario);
                     
-                    //checar checkboxes cuando carga modal
-                    grupalState.selectedUsers.forEach(userId => {
-                        const checkbox = document.querySelector(`#check_${userId}`);
-                        if (checkbox) checkbox.checked = true;
-                    });
-                    updateSelectedCount();
+                    // Mark selected users with icon when modal is loaded
+                    setTimeout(() => {
+                        grupalState.selectedUsers.forEach(userId => {
+                            const userItem = document.querySelector(`[data-user-id="${userId}"]`);
+                            if (userItem) {
+                                const icon = userItem.querySelector('.usuario-selection-icon');
+                                if (icon) {
+                                    icon.classList.remove('mdi-checkbox-blank-circle-outline');
+                                    icon.classList.add('mdi-checkbox-marked-circle-outline');
+                                    icon.style.color = '#28a745';
+                                    userItem.style.backgroundColor = '#f0f8f5';
+                                    userItem.classList.add('selected');
+                                }
+                            }
+                        });
+                        updateSelectedCount();
+                    }, 100);
                 }
 
                 // Cargar permiso de edición

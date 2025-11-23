@@ -448,95 +448,41 @@ Dashboard principal de admin
                       <!--Progreso por responsable-->
                       <div class="col-sm-4 grid-margin stretch-card">
                         <div class="card">
-                          <div class="card-body">
-                            <h4 class="card-title">Progreso por responsable</h4>
-                            <div class="table-responsive pt-3">
-                              <table class="table table-bordered">
-                                <thead>
-                                  <tr>
-                                    <th>
-                                      #
-                                    </th>
-                                    <th>
-                                      Nombre
-                                    </th>
-                                    <th>
-                                      Progreso
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td>
-                                      1
-                                    </td>
-                                    <td>
-                                      Herman Beck
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      2
-                                    </td>
-                                    <td>
-                                      Messsy Adam
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      3
-                                    </td>
-                                    <td>
-                                      John Richards
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      4
-                                    </td>
-                                    <td>
-                                      Peter Meggik
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      5
-                                    </td>
-                                    <td>
-                                      Edward
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 35%" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
+                            <div class="card-body">
+                                <h4 class="card-title">
+                                    Empleados por Progreso
+                                </h4>
+                                <div class="table-responsive pt-3">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 10%;">
+                                                    Posición
+                                                </th>
+                                                <th style="width: 40%;">
+                                                    Nombre
+                                                </th>
+                                                <th style="width: 50%;">
+                                                    Progreso
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topEmployeesTableBody">
+                                            <!-- Contenido cargado dinámicamente -->
+                                            <tr>
+                                                <td colspan="3" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Cargando...</span>
+                                                    </div>
+                                                    <p class="mt-2">Cargando empleados...</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                          </div>
                         </div>
-                      </div>
+                    </div>
                       <!--Progreso por proyecto/tareas-->
                       <div class="col-sm-4 grid-margin stretch-card">
                         <div class="card">
@@ -633,17 +579,17 @@ Dashboard principal de admin
                       <!--Fin de progreso por proyecto/tarea-->
                       <div class="col-sm-4 grid-margin stretch-card">
                         <div class="card">
-                          <div class="card-body">
-                            <h4 class="card-title">Proyectos por estado</h4>
-                            <div class="col-lg-12">
-                              <div class="d-flex justify-content-between align-items-center mb-3">
-                              </div>
-                              <canvas class="my-auto" id="doughnutChart" height="200"></canvas>
-                             <div id="doughnut-chart-legend" class="mt-5 text-center"></div>
+                            <div class="card-body">
+                                <h4 class="card-title">Proyectos por estado</h4>
+                                <div class="chart-container" style="width: 100%; display: flex; flex-direction: column;">
+                                    <div class="chart-wrapper" style="flex: 1; display: flex; justify-content: center; align-items: center;">
+                                        <canvas id="doughnutChart" height="200" style="max-width: 100%;"></canvas>
+                                    </div>
+                                    <div id="doughnut-chart-legend" class="mt-5 text-center" style="width: 100%; overflow-x: auto;"></div>
+                                </div>
                             </div>
-                          </div>
                         </div>
-                      </div>
+                    </div>
                         <div class="col-lg-12 grid-margin-stretch-card">
                           <div class="card">
                             <div class="card-body">

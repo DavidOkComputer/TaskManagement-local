@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     cargarProyectos(); 
     loadDashboardStats(); // Cargar estadísticas al inicio 
     startAutoRefresh(); // iniciar refresco cada minuto o 60000ms 
+    loadTopEmployeesProgress();
 }); 
 
 function startAutoRefresh() { 
@@ -39,6 +40,7 @@ function startAutoRefresh() {
         console.log('Auto-refresh: Actualizando datos de proyectos...'); 
         refreshProjectsData(); 
         loadDashboardStats(); // Refrescar estadísticas también 
+        loadTopEmployeesProgress();
         if (currentProjectIdForUsers) { 
             //si el modal de usuarios esta abirto refrescar 
             refreshProjectUsersData();
@@ -75,75 +77,157 @@ function loadDashboardStats() {
         }); 
 } 
 
+// Updated function to replace in list_projects_index.js
+// This replaces the old updateDashboardStats function
+
 function updateDashboardStats(stats) { 
     // Actualizar cada estadística en el DOM 
     const statsElements = document.querySelectorAll('.statistics-details > div'); 
     if (statsElements.length >= 7) { 
-        // Total de objetivos 
+        // 1. Total de objetivos - Show: objetivos retrasados
         const objetivosElement = statsElements[0].querySelector('.rate-percentage'); 
         if (objetivosElement) { 
             objetivosElement.textContent = stats.total_objetivos; 
         } 
-        // Indicador de progreso de objetivos 
         const objetivosProgress = statsElements[0].querySelector('.text-danger, .text-success'); 
         if (objetivosProgress) { 
-            const isPositive = stats.porcentaje_objetivos >= 50; 
+            const retrasados = stats.objetivos_retrasados || 0;
+            const isPositive = retrasados === 0; 
             objetivosProgress.className = isPositive ? 'text-success d-flex' : 'text-danger d-flex'; 
             const icon = objetivosProgress.querySelector('i'); 
             if (icon) { 
-                icon.className = isPositive ? 'mdi mdi-menu-up' : 'mdi mdi-menu-down'; 
+                icon.className = isPositive ? 'mdi mdi-check-circle' : 'mdi mdi-alert-circle'; 
             } 
             const span = objetivosProgress.querySelector('span'); 
             if (span) { 
-                span.textContent = `${stats.porcentaje_objetivos}% completado`; 
+                span.textContent = retrasados === 0 
+                    ? 'Sin retrasos' 
+                    : `${retrasados} retrasado${retrasados > 1 ? 's' : ''}`; 
             } 
         } 
-        // Total de proyectos 
+        
+        // 2. Total de proyectos - Show: % completados
         const proyectosElement = statsElements[1].querySelector('.rate-percentage'); 
         if (proyectosElement) { 
             proyectosElement.textContent = stats.total_proyectos; 
         } 
-        // Total de Tareas 
+        const proyectosProgress = statsElements[1].querySelector('.text-danger, .text-success'); 
+        if (proyectosProgress) { 
+            const porcentajeComp = stats.porcentaje_completados || 0;
+            const isPositive = porcentajeComp >= 50; 
+            proyectosProgress.className = isPositive ? 'text-success d-flex' : 'text-danger d-flex'; 
+            const icon = proyectosProgress.querySelector('i'); 
+            if (icon) { 
+                icon.className = isPositive ? 'mdi mdi-menu-up' : 'mdi mdi-menu-down'; 
+            } 
+            const span = proyectosProgress.querySelector('span'); 
+            if (span) { 
+                span.textContent = `${porcentajeComp}% completados`; 
+            } 
+        }
+        
+        // 3. Total de Tareas - Show: % completadas y tareas retrasadas
         const tareasElement = statsElements[2].querySelector('.rate-percentage'); 
         if (tareasElement) { 
-            tareasElement.textContent = stats.total_tareas; 
+            tareasElement.textContent = `${stats.porcentaje_tareas}%`; 
         } 
-        // Indicador de progreso de tareas 
         const tareasProgress = statsElements[2].querySelector('.text-danger, .text-success'); 
         if (tareasProgress) { 
-            const isPositive = stats.porcentaje_tareas >= 50; 
+            const retrasadas = stats.tareas_retrasadas || 0;
+            const isPositive = retrasadas === 0; 
             tareasProgress.className = isPositive ? 'text-success d-flex' : 'text-danger d-flex'; 
             const icon = tareasProgress.querySelector('i'); 
             if (icon) { 
-                icon.className = isPositive ? 'mdi mdi-menu-up' : 'mdi mdi-menu-down'; 
+                icon.className = isPositive ? 'mdi mdi-check-circle' : 'mdi mdi-alert-circle'; 
             }
             const span = tareasProgress.querySelector('span'); 
             if (span) { 
-                span.textContent = `${stats.porcentaje_tareas}% completado`; 
+                span.textContent = retrasadas === 0 
+                    ? 'Sin retrasos' 
+                    : `${retrasadas} retrasada${retrasadas > 1 ? 's' : ''}`; 
             } 
         } 
-        // Proyectos completados 
+        
+        // 4. Proyectos completados - Show: % del total
         const completadosElement = statsElements[3].querySelector('.rate-percentage'); 
         if (completadosElement) { 
             completadosElement.textContent = stats.proyectos_completados; 
         } 
-        // Proyectos en proceso 
+        const completadosProgress = statsElements[3].querySelector('.text-danger, .text-success'); 
+        if (completadosProgress) { 
+            const porcentajeComp = stats.porcentaje_completados || 0;
+            completadosProgress.className = 'text-success d-flex';
+            const icon = completadosProgress.querySelector('i'); 
+            if (icon) { 
+                icon.className = 'mdi mdi-trending-up'; 
+            } 
+            const span = completadosProgress.querySelector('span'); 
+            if (span) { 
+                span.textContent = `${porcentajeComp}% del total`; 
+            } 
+        }
+        
+        // 5. Proyectos en proceso - Show: Progreso promedio
         const procesoElement = statsElements[4].querySelector('.rate-percentage'); 
         if (procesoElement) { 
             procesoElement.textContent = stats.proyectos_en_proceso; 
         } 
-        // Proyectos pendientes 
+        const procesoProgress = statsElements[4].querySelector('.text-danger, .text-success'); 
+        if (procesoProgress) { 
+            const promedioProgreso = stats.progreso_promedio_en_proceso || 0;
+            const isPositive = promedioProgreso >= 50; 
+            procesoProgress.className = isPositive ? 'text-success d-flex' : 'text-warning d-flex'; 
+            const icon = procesoProgress.querySelector('i'); 
+            if (icon) { 
+                icon.className = isPositive ? 'mdi mdi-menu-up' : 'mdi mdi-menu-right'; 
+            } 
+            const span = procesoProgress.querySelector('span'); 
+            if (span) { 
+                span.textContent = `${promedioProgreso}% promedio`; 
+            } 
+        }
+        
+        // 6. Proyectos pendientes - Show: % del total
         const pendientesElement = statsElements[5].querySelector('.rate-percentage'); 
         if (pendientesElement) { 
             pendientesElement.textContent = stats.proyectos_pendientes; 
         } 
-        // Proyectos vencidos 
+        const pendientesProgress = statsElements[5].querySelector('.text-danger, .text-success'); 
+        if (pendientesProgress) { 
+            const porcentajePend = stats.porcentaje_pendientes || 0;
+            pendientesProgress.className = porcentajePend > 30 ? 'text-warning d-flex' : 'text-success d-flex'; 
+            const icon = pendientesProgress.querySelector('i'); 
+            if (icon) { 
+                icon.className = porcentajePend > 30 ? 'mdi mdi-alert' : 'mdi mdi-check'; 
+            } 
+            const span = pendientesProgress.querySelector('span'); 
+            if (span) { 
+                span.textContent = `${porcentajePend}% del total`; 
+            } 
+        }
+        
+        // 7. Proyectos vencidos - Show: % del total
         const vencidosElement = statsElements[6].querySelector('.rate-percentage'); 
         if (vencidosElement) { 
             vencidosElement.textContent = stats.proyectos_vencidos; 
         } 
+        const vencidosProgress = statsElements[6].querySelector('.text-danger, .text-success'); 
+        if (vencidosProgress) { 
+            const porcentajeVenc = stats.porcentaje_vencidos || 0;
+            vencidosProgress.className = 'text-danger d-flex';
+            const icon = vencidosProgress.querySelector('i'); 
+            if (icon) { 
+                icon.className = porcentajeVenc > 0 ? 'mdi mdi-alert-circle' : 'mdi mdi-check'; 
+            } 
+            const span = vencidosProgress.querySelector('span'); 
+            if (span) { 
+                span.textContent = porcentajeVenc > 0 
+                    ? `${porcentajeVenc}% del total` 
+                    : 'Sin retrasos'; 
+            } 
+        }
     } 
-} 
+}
 
 function refreshProjectsData() { 
     fetch('../php/get_projects.php') 
@@ -856,6 +940,121 @@ function updateProyectoCount(count) {
         subtitle.textContent = 'Tienes ' + count + ' ' + plural; 
     } 
 } 
+
+// Add these functions to list_projects_index.js
+
+// Load top 5 employees by progress
+function loadTopEmployeesProgress() {
+    fetch('../php/get_top_employees_progress.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta de red');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                displayTopEmployeesProgress(data.empleados);
+                console.log('Top empleados cargados:', data.empleados);
+            } else {
+                console.warn('Aviso al cargar empleados:', data.message);
+                displayEmptyEmployeesState();
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar empleados top:', error);
+            displayEmptyEmployeesState();
+        });
+}
+
+// Display top employees in the table
+function displayTopEmployeesProgress(empleados) {
+    const tableBody = document.querySelector('#topEmployeesTableBody');
+    
+    if (!tableBody) {
+        console.warn('Elemento #topEmployeesTableBody no encontrado');
+        return;
+    }
+
+    // Limpiar tabla
+    tableBody.innerHTML = '';
+
+    if (!empleados || empleados.length === 0) {
+        displayEmptyEmployeesState();
+        return;
+    }
+
+    // Crear filas para cada empleado
+    empleados.forEach((empleado, index) => {
+        const row = document.createElement('tr');
+        const progressBar = createProgressBarForEmployee(empleado.progreso);
+        
+        row.innerHTML = `
+            <td>
+                <strong>${index + 1}</strong>
+            </td>
+            <td>
+                <strong>${escapeHtml(empleado.nombre_completo)}</strong>
+                <br>
+                <small class="text-muted">#${empleado.num_empleado}</small>
+            </td>
+            <td>
+                ${progressBar}
+                <small class="text-muted d-block mt-1">
+                    ${empleado.tareas_completadas}/${empleado.total_tareas} tareas
+                </small>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+}
+
+// Create progress bar with styling based on percentage
+function createProgressBarForEmployee(progress) {
+    const progressValue = parseFloat(progress) || 0;
+    const progressClass = progressValue >= 75 ? 'bg-success' : 
+                         progressValue >= 50 ? 'bg-info' : 
+                         progressValue >= 25 ? 'bg-warning' : 'bg-danger';
+    
+    return `
+        <div class="progress" style="height: 20px;">
+            <div class="progress-bar ${progressClass}" 
+                 role="progressbar" 
+                 style="width: ${progressValue}%;"  
+                 aria-valuenow="${progressValue}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100">
+                ${progressValue.toFixed(1)}%
+            </div>
+        </div>
+    `;
+}
+
+// Display empty state when no employees
+function displayEmptyEmployeesState() {
+    const tableBody = document.querySelector('#topEmployeesTableBody');
+    
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="3" class="text-center text-muted py-4">
+                <i class="mdi mdi-account-off" style="font-size: 32px; opacity: 0.5;"></i>
+                <p class="mt-2">No hay empleados con tareas asignadas</p>
+            </td>
+        </tr>
+    `;
+}
+
+// Add to DOMContentLoaded event - call this function
+// Add this line to the existing DOMContentLoaded listener:
+// loadTopEmployeesProgress();
+
+// Also call this in the auto-refresh interval
+// Add this line to the startAutoRefresh function's setInterval callback:
+// loadTopEmployeesProgress();
+
 
 //hacer funciones globalmente disponibles 
 window.changePage = changePage; 

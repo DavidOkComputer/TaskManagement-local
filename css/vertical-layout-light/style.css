@@ -11919,6 +11919,118 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
             transform: translateY(-50%); 
             cursor: pointer; 
         }
+
+        /* Fix for responsive chart legend overflow */
+
+/* Main chart container - ensure proper constraints */
+.card-body > div[class*="col-"] {
+    overflow: hidden;
+}
+
+/* Chart legend wrapper - handle responsiveness */
+#doughnut-chart-legend {
+    width: 100%;
+    overflow: hidden;
+    word-wrap: break-word;
+    padding: 0 10px;
+}
+
+/* Chart.js legend list styling */
+#doughnut-chart-legend ul {
+    list-style: none;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Individual legend items */
+#doughnut-chart-legend li {
+    display: inline-flex;
+    align-items: center;
+    margin: 5px 10px;
+    padding: 5px 10px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+/* Legend color box */
+#doughnut-chart-legend li span {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* Canvas responsiveness */
+#doughnutChart {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Small screens - adjust chart container */
+@media (max-width: 768px) {
+    /* Reduce canvas height on smaller screens */
+    #doughnutChart {
+        height: 180px !important;
+    }
+    
+    /* Stack legend items better on mobile */
+    #doughnut-chart-legend ul {
+        flex-direction: row;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    #doughnut-chart-legend li {
+        margin: 4px 5px;
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    #doughnut-chart-legend li span {
+        width: 10px;
+        height: 10px;
+        margin-right: 6px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 576px) {
+    #doughnutChart {
+        height: 150px !important;
+    }
+    
+    #doughnut-chart-legend li {
+        margin: 3px 4px;
+        padding: 3px 6px;
+        font-size: 11px;
+    }
+    
+    #doughnut-chart-legend {
+        padding: 0 5px;
+    }
+}
+
+/* Ensure the card body doesn't overflow */
+.card-body {
+    padding: 15px;
+    overflow: hidden;
+}
+
+/* Chart wrapper container */
+.card-body > div {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
 .btn-outline-primary {
   color: #000000;
   border-color: #009B4A;
