@@ -1,5 +1,5 @@
 <?php
-// Iniciar output buffering para capturar cualquier salida no deseada
+// Iniciar output buffering para capturar cualquier salida no deseada get_dashboard_stats.php
 ob_start();
 
 // Suprimir errores de visualización

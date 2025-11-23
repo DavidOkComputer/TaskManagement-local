@@ -457,7 +457,7 @@ Dashboard principal de admin
                                         <thead>
                                             <tr>
                                                 <th style="width: 10%;">
-                                                    Posición
+                                                    #
                                                 </th>
                                                 <th style="width: 40%;">
                                                     Nombre
@@ -482,92 +482,35 @@ Dashboard principal de admin
                                 </div>
                             </div>
                         </div>
-                    </div>
+                      </div>
                       <!--Progreso por proyecto/tareas-->
                       <div class="col-sm-4 grid-margin stretch-card">
                         <div class="card">
                           <div class="card-body">
                             <h4 class="card-title">Progreso por proyecto</h4>
                             <div class="table-responsive pt-3">
-                              <table class="table table-bordered">
+                              <table class="table table-bordered table-hover">
                                 <thead>
                                   <tr>
-                                    <th>
+                                    <th style="width: 10%;">
                                       #
                                     </th>
-                                    <th>
+                                    <th style="width: 50%;">
                                       Proyecto
                                     </th>
-                                    <th>
+                                    <th style="width: 40%;">
                                       Progreso
                                     </th>
                                   </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="topProjectsTableBody">
+                                  <!-- Contenido cargado dinámicamente -->
                                   <tr>
-                                    <td>
-                                      1
-                                    </td>
-                                    <td>
-                                      Herman Beck
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                                    <td colspan="3" class="text-center py-4">
+                                      <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
                                       </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      2
-                                    </td>
-                                    <td>
-                                      Messsy Adam
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                                      </div>
-                                    </td>
-                                    
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      3
-                                    </td>
-                                    <td>
-                                      John Richards
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      4
-                                    </td>
-                                    <td>
-                                      Peter Meggik
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td>
-                                      5
-                                    </td>
-                                    <td>
-                                      Edward
-                                    </td>
-                                    <td>
-                                      <div class="progress">
-                                        <div class="progress-bar bg-danger" role="progressbar" style="width: 35%" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
-                                      </div>
+                                      <p class="mt-2">Cargando proyectos...</p>
                                     </td>
                                   </tr>
                                 </tbody>

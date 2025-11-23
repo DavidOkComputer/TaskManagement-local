@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadDashboardStats(); // Cargar estadísticas al inicio 
     startAutoRefresh(); // iniciar refresco cada minuto o 60000ms 
     loadTopEmployeesProgress();
+    loadTopProjectsProgress();
 }); 
 
 function startAutoRefresh() { 
@@ -41,6 +42,7 @@ function startAutoRefresh() {
         refreshProjectsData(); 
         loadDashboardStats(); // Refrescar estadísticas también 
         loadTopEmployeesProgress();
+        loadTopProjectsProgress();
         if (currentProjectIdForUsers) { 
             //si el modal de usuarios esta abirto refrescar 
             refreshProjectUsersData();
@@ -1047,14 +1049,105 @@ function displayEmptyEmployeesState() {
     `;
 }
 
-// Add to DOMContentLoaded event - call this function
-// Add this line to the existing DOMContentLoaded listener:
-// loadTopEmployeesProgress();
+function loadTopProjectsProgress() {
+    fetch('../php/get_top_projects_progress.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta de red');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                displayTopProjectsProgress(data.proyectos);
+                console.log('Top proyectos cargados:', data.proyectos);
+            } else {
+                console.warn('Aviso al cargar proyectos:', data.message);
+                displayEmptyProjectsState();
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar proyectos top:', error);
+            displayEmptyProjectsState();
+        });
+}
 
-// Also call this in the auto-refresh interval
-// Add this line to the startAutoRefresh function's setInterval callback:
-// loadTopEmployeesProgress();
+function displayTopProjectsProgress(proyectos) {
+    const tableBody = document.querySelector('#topProjectsTableBody');
+    
+    if (!tableBody) {
+        console.warn('Elemento #topProjectsTableBody no encontrado');
+        return;
+    }
 
+    // Limpiar tabla
+    tableBody.innerHTML = '';
+
+    if (!proyectos || proyectos.length === 0) {
+        displayEmptyProjectsState();
+        return;
+    }
+
+    // Crear filas para cada proyecto
+    proyectos.forEach((proyecto, index) => {
+        const row = document.createElement('tr');
+        const progressBar = createProgressBarForProject(proyecto.progreso);
+        
+        row.innerHTML = `
+            <td>
+                <strong>${index + 1}</strong>
+            </td>
+            <td>
+                <strong>${escapeHtml(proyecto.nombre)}</strong>
+                <br>
+                <small class="text-muted">${proyecto.estado}</small>
+            </td>
+            <td>
+                ${progressBar}
+                <small class="text-muted d-block mt-1">
+                    ${proyecto.tareas_completadas}/${proyecto.total_tareas} tareas
+                </small>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+}
+
+function createProgressBarForProject(progress) {
+    const progressValue = parseFloat(progress) || 0;
+    const progressClass = progressValue >= 75 ? 'bg-success' : 
+                         progressValue >= 50 ? 'bg-info' : 
+                         progressValue >= 25 ? 'bg-warning' : 'bg-danger';
+    
+    return `
+        <div class="progress" style="height: 20px;">
+            <div class="progress-bar ${progressClass}" 
+                 role="progressbar" 
+                 style="width: ${progressValue}%;"  
+                 aria-valuenow="${progressValue}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100">
+                ${progressValue.toFixed(1)}%
+            </div>
+        </div>
+    `;
+}
+
+function displayEmptyProjectsState() {
+    const tableBody = document.querySelector('#topProjectsTableBody');
+    
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="3" class="text-center text-muted py-4">
+                <i class="mdi mdi-folder-off" style="font-size: 32px; opacity: 0.5;"></i>
+                <p class="mt-2">No hay proyectos en progreso</p>
+            </td>
+        </tr>
+    `;
+}
 
 //hacer funciones globalmente disponibles 
 window.changePage = changePage; 

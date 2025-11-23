@@ -22,6 +22,7 @@ try {
 
     // Query optimizada para obtener progreso de cada empleado
     // Calcula: total de tareas asignadas, tareas completadas, y porcentaje de progreso
+    // IMPORTANTE: Solo incluye usuarios que tengan tareas asignadas (id_participante NOT NULL)
     $sql = "
         SELECT 
             u.id_usuario,
@@ -30,15 +31,14 @@ try {
             u.num_empleado,
             COUNT(t.id_tarea) as total_tareas,
             SUM(CASE WHEN t.estado = 'completado' THEN 1 ELSE 0 END) as tareas_completadas,
-            CASE 
-                WHEN COUNT(t.id_tarea) = 0 THEN 0
-                ELSE ROUND((SUM(CASE WHEN t.estado = 'completado' THEN 1 ELSE 0 END) / COUNT(t.id_tarea)) * 100, 1)
-            END as progreso
+            ROUND(
+                (SUM(CASE WHEN t.estado = 'completado' THEN 1 ELSE 0 END) / COUNT(t.id_tarea)) * 100, 
+                1
+            ) as progreso
         FROM tbl_usuarios u
-        LEFT JOIN tbl_tareas t ON u.id_usuario = t.id_participante
-        WHERE u.acceso = 1
+        INNER JOIN tbl_tareas t ON u.id_usuario = t.id_participante
+        WHERE t.id_participante IS NOT NULL
         GROUP BY u.id_usuario, u.nombre, u.apellido, u.num_empleado
-        HAVING total_tareas > 0
         ORDER BY progreso DESC, tareas_completadas DESC
         LIMIT 5
     ";
