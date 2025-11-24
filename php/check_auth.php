@@ -3,7 +3,7 @@ session_start();
 
 // revisar si esta loggeado
 if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    header('Location: index.php');
+    header('Location: ../index.html');
     exit;
 }
 
@@ -13,7 +13,7 @@ if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 
     // sesion expiro
     session_unset();
     session_destroy();
-    header('Location: index.php');
+    header('Location: ../index.html');
     exit;
 }
 

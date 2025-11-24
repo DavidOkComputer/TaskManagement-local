@@ -78,7 +78,14 @@ try {
     
     // Preparar la consulta para buscar el usuario
     $stmt = $conn->prepare("
-        SELECT id_usuario, usuario, acceso
+        SELECT id_usuario, 
+               usuario, 
+               acceso, 
+               nombre,
+               apellido,
+               id_departamento,
+               id_rol,
+               e_mail
         FROM tbl_usuarios
         WHERE usuario = :usuario
         LIMIT 1
@@ -104,8 +111,13 @@ try {
         
         // Guardar información del usuario en la sesión
         $_SESSION['user_id'] = $user['id_usuario'];
-        $_SESSION['num_empleado'] = $user['usuario'];
+        $_SESSION['usuario'] = $user['usuario'];
         $_SESSION['logged_in'] = true;
+        $_SESSION['nombre'] = $user['nombre'];
+        $_SESSION['apellido'] = $user['apellido'];
+        $_SESSION['user_department'] = $user['id_departamento'];
+        $_SESSION['id_rol'] = $user['id_rol'];
+        $_SESSION['e_mail'] = $user['e_mail'];
         $_SESSION['login_time'] = time();
         
         sendResponse(true, 'Inicio de sesión exitoso', '/taskManagement/adminDashboard');

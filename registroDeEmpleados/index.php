@@ -1,11 +1,12 @@
 <?php 
-/*require_once('php/check_auth.php');*/ 
+require_once('php/check_auth.php');
 
-// Get user information from session 
-$user_name = "David"; 
-$user_apellido = "Barreto"; 
-$user_email = "david.barreto@nidec.com"; 
-$user_id = 1; 
+//obtener la informacion del usuario  
+session_start();
+$user_name = $_SESSION['nombre']; 
+$user_apellido = $_SESSION['apellido']; 
+$user_email = $_SESSION['e_mail']; 
+$user_id = $_SESSION['user_id']; 
 ?> 
 <!DOCTYPE html> 
 <html lang="es"> 
@@ -49,7 +50,11 @@ $user_id = 1;
             <div class="navbar-menu-wrapper d-flex align-items-top"> 
                 <ul class="navbar-nav"> 
                     <li class="nav-item font-weight-semibold d-none d-lg-block ms-0"> 
-                        <h1 class="welcome-text">Buenos dias, <span class="text-black fw-bold"><?php echo htmlspecialchars($user_name); ?></span></h1> 
+                        <h1 class="welcome-text">Buenos dias,
+                            <span class="text-black fw-bold">
+                                <?php echo htmlspecialchars($user_name); ?>
+                            </span>
+                        </h1> 
                         <h3 class="welcome-sub-text">Registra nuevos usuarios en el sistema</h3> 
                     </li> 
                 </ul> 
@@ -94,13 +99,13 @@ $user_id = 1;
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown"> 
                             <div class="dropdown-header text-center"> 
                                 <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> 
-                                <p class="mb-1 mt-3 font-weight-semibold"><?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?></p> 
-                                <p class="fw-light text-muted mb-0"><?php echo htmlspecialchars($user_email); ?></p> 
-                            </div> 
-                            <a class="dropdown-item"> 
-                                <i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> Mi Perfil 
-                                <span class="badge badge-pill badge-danger">1</span> 
-                            </a> 
+                                <p class="mb-1 mt-3 font-weight-semibold">
+                                    <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
+                                </p> 
+                                <p class="fw-light text-muted mb-0">
+                                    <?php echo htmlspecialchars($user_email); ?>
+                                </p> 
+                            </div>
                             <a class="dropdown-item" href="../php/logout.php"> 
                                 <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesion 
                             </a> 

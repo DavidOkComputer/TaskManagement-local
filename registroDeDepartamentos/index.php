@@ -1,11 +1,12 @@
 <?php 
 
-/*require_once('php/check_auth.php');*/  
-//tomar informacion de usuario, implementar basado en autenticacion
-$user_name = "David"; 
-$user_apellido = "Barreto"; 
-$user_email = "david.barreto@nidec.com"; 
-$user_id = 1; //usuario viene de la sesion 
+require_once('../php/check_auth.php');
+//tomar informacion de usuario
+session_start();
+$user_name = $_SESSION['nombre']; 
+$user_apellido = $_SESSION['apellido']; 
+$user_email = $_SESSION['e_mail']; 
+$user_id = $_SESSION['user_id']; 
 ?> 
 <!DOCTYPE html> 
 <html lang="es"> 
@@ -127,10 +128,6 @@ $user_id = 1; //usuario viene de la sesion
                                 <p class="mb-1 mt-3 font-weight-semibold"><?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?></p> 
                                 <p class="fw-light text-muted mb-0"><?php echo htmlspecialchars($user_email); ?></p> 
                             </div> 
-                            <a class="dropdown-item"> 
-                                <i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> Mi Perfil 
-                                <span class="badge badge-pill badge-danger">1</span> 
-                            </a> 
 
                             <a class="dropdown-item" href="../php/logout.php"> 
                                 <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesion 

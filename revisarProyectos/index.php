@@ -1,5 +1,11 @@
 <?php
-/*require_once('php/check_auth.php');*/
+require_once('php/check_auth.php');
+
+session_start();
+$user_name = $_SESSION['nombre']; 
+$user_apellido = $_SESSION['apellido']; 
+$user_email = $_SESSION['e_mail']; 
+$user_id = $_SESSION['user_id']; 
 /*revisar proyectos*/ 
 ?>
 <!DOCTYPE html>
@@ -45,7 +51,11 @@
       <div class="navbar-menu-wrapper d-flex align-items-top"> 
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-            <h1 class="welcome-text">Buenos días, <span class="text-black fw-bold">David</span></h1>
+            <h1 class="welcome-text">Buenos días, 
+              <span class="text-black fw-bold">
+                David
+              </span>
+            </h1>
             <h3 class="welcome-sub-text">Gestiona los proyectos registrados</h3>
           </li>
         </ul>

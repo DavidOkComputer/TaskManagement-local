@@ -10,7 +10,7 @@ header('X-XSS-Protection: 1; mode=block');
 require_once 'db_config.php';
  
 define('MAX_LOGIN_ATTEMPTS', 5);
-define('LOCKOUT_TIME', 900); // 15 minutes
+define('LOCKOUT_TIME', 900); // 15 minutos
  
 function isRateLimited() {
     $ip = $_SERVER['REMOTE_ADDR'];
@@ -30,9 +30,6 @@ function isRateLimited() {
     return count($_SESSION['login_attempts']) >= MAX_LOGIN_ATTEMPTS;
 }
  
-/**
-* Record failed login attempt
-*/
 function recordFailedAttempt() {
     if (!isset($_SESSION['login_attempts'])) {
         $_SESSION['login_attempts'] = [];
@@ -83,16 +80,14 @@ if (isRateLimited()) {
 $input = file_get_contents('php://input');
 $data = json_decode($input, true);
  
-// Validate input data
-if (!isset($data['usuario']) || !isset($data['password'])) {
+if (!isset($data['usuario']) || !isset($data['password'])) {//validar informacion de input
     sendResponse(false, 'Datos incompletos');
 }
  
 $usuario = trim($data['usuario']);
 $password = $data['password'];
  
-// Validate empty fields
-if (empty($usuario) || empty($password)) {
+if (empty($usuario) || empty($password)) {//validar campos vacios
     sendResponse(false, 'Por favor completa todos los campos');
 }
  
@@ -103,7 +98,7 @@ try {
         sendResponse(false, 'Error de conexión con la base de datos');
     }
     
-    // Get user from database including role
+    //obtener ususario desde la base de datos incluido rol
     $stmt = $conn->prepare("
         SELECT id_usuario, num_empleado, contrasenia, rol
         FROM tbl_usuarios
