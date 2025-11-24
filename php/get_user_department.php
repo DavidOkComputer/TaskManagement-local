@@ -1,9 +1,5 @@
 <?php
-/**
- * get_user_department.php
- * Obtiene el departamento del usuario actual
- * Nota: La autenticación se verifica en el sistema principal
- */
+/*get_user_department.php Obtiene el departamento del usuario actual*/
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -11,20 +7,16 @@ require_once 'db_config.php';
 $response = ['success' => false, 'department' => null];
 
 try {
-    // Get user ID from session or parameter
+  
     $id_usuario = null;
     
-    // Try to get from SESSION first (if available)
-    if (isset($_SESSION['id_usuario'])) {
+    if (isset($_SESSION['id_usuario'])) {//obtener la variable de usuario desde la sesion
         $id_usuario = (int)$_SESSION['id_usuario'];
     } 
-    // Try to get from GET/POST parameter
     elseif (isset($_REQUEST['id_usuario'])) {
         $id_usuario = (int)$_REQUEST['id_usuario'];
     }
-    
-    // If no user ID available, return error but don't fail completely
-    if (!$id_usuario) {
+    if (!$id_usuario) {//si no hay id disponible, devolver error pero no fallar completamente
         $response['message'] = 'ID de usuario no disponible';
         echo json_encode($response);
         exit();
@@ -36,7 +28,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Get user's department
+    //obtener los departamentos
     $query = "SELECT 
                 u.id_usuario,
                 u.nombre,
@@ -67,7 +59,7 @@ try {
         throw new Exception('Usuario no encontrado');
     }
 
-    // Check if user has a department assigned
+    //revisar si el usuario tiene departamentos asignados
     if (!$user['id_departamento'] || !$user['departamento_nombre']) {
         throw new Exception('Usuario no tiene departamento asignado');
     }

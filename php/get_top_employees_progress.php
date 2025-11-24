@@ -1,8 +1,6 @@
 <?php
-/*
-get_top_employees_progress.php - Obtiene los top 5 empleados con mayor progreso en sus proyectos
-Calcula el progreso promedio basado en tareas completadas vs totales asignadas
-*/
+/*get_top_employees_progress.php 5 empleados con mayor progreso en sus proyectos
+el progrteso se calcula con las tareas completadas frente a las tareas que se tienen asignadas*/
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -20,9 +18,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Query optimizada para obtener progreso de cada empleado
     // Calcula: total de tareas asignadas, tareas completadas, y porcentaje de progreso
-    // IMPORTANTE: Solo incluye usuarios que tengan tareas asignadas (id_participante NOT NULL)
     $sql = "
         SELECT 
             u.id_usuario,

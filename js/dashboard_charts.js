@@ -1,20 +1,8 @@
-/**
- * dashboard_charts.js (UPDATED WITH ENHANCED SCATTER TOOLTIP)
- * Integra gráficos Chart.js con datos dinámicos del dashboard
- * Incluye área chart para tendencias de tareas completadas
- * Incluye scatter chart para matriz de eficiencia departamental
- * Muestra comparación entre departamentos cuando no hay uno seleccionado
- * Incluye gráfico de línea de tendencia de proyectos completados
- * Updated with official brand colors: Green, Black, Gray, Ice
- * 
- * ENHANCEMENT: Scatter chart tooltip now displays person/department name
- * prominently with corresponding numbers for better visibility
- */
+/*dashboard_charts.js */
 
 let dashboardChartsInstance = {
     charts: {},
     currentDepartment: null,
-    // Official brand colors: Green, Black, Gray, Ice
     departmentColors: [
         'rgba(34, 139, 89, 0.7)',      // Green (Primary)
         'rgba(80, 154, 108, 0.7)',     // Green Light
@@ -37,45 +25,24 @@ let dashboardChartsInstance = {
     ]
 };
 
-/**
- * Shorten long project titles for display
- * Truncates to 25 characters and adds ellipsis if longer
- */
-function shortenProjectTitle(title, maxLength = 25) {
+function shortenProjectTitle(title, maxLength = 15) {
     if (!title) return '';
     if (title.length <= maxLength) return title;
     return title.substring(0, maxLength) + '...';
 }
 
-/**
- * Initialize all charts on page load
- */
 function initializeDashboardCharts() {
     console.log('Inicializando gráficos del dashboard...');
     
-    // Load user's department and show their data by default
     loadUserDepartmentView();
-    
-    // Initialize line chart
     initializeLineChart();
-    
-    // Initialize area chart
     initializeAreaChart();
-    
-    // Initialize scatter chart - Department Efficiency Matrix
     initializeScatterChart();
 }
 
-/**
- * Initialize scatter chart - Department Efficiency Matrix or Person Efficiency
- * Automatically switches between:
- * - Department view (all departments comparison)
- * - Person view (selected department, shows individual employees)
- */
 function initializeScatterChart() {
     console.log('Inicializando gráfico de dispersión...');
     
-    // Check if a department is actually selected
     const hasDepartmentSelected = dashboardChartsInstance.currentDepartment && 
                                   dashboardChartsInstance.currentDepartment.id &&
                                   dashboardChartsInstance.currentDepartment.id > 0;
@@ -84,47 +51,39 @@ function initializeScatterChart() {
     console.log('Current department state:', dashboardChartsInstance.currentDepartment);
     
     if (hasDepartmentSelected) {
-        // Load person efficiency for selected department
+        //cargar eficiencia de la persona por departamento seleccionado
         console.log('Loading person efficiency for:', dashboardChartsInstance.currentDepartment.name);
         loadPersonEfficiencyByDepartment(
             dashboardChartsInstance.currentDepartment.id,
             dashboardChartsInstance.currentDepartment.name
         );
     } else {
-        // Load department efficiency comparison
+        //cargar comparacion de eficiencia entre departamentos
         console.log('Loading department efficiency comparison (all departments)');
         loadDepartmentEfficiency();
     }
 }
-
-/**
- * DEBUG HELPER: Log current chart state
- * Call this in console to see what's happening
- */
+/*
 function debugChartState() {
     console.log('╔════════════════════════════════════════╗');
     console.log('║ DASHBOARD CHARTS STATE DEBUG           ║');
     console.log('╚════════════════════════════════════════╝');
     console.log('Current Department:', dashboardChartsInstance.currentDepartment);
     console.log('Active Charts:');
-    console.log('  - Line Chart:', dashboardChartsInstance.charts.lineChart ? '✅ Active' : '❌ Not initialized');
-    console.log('  - Area Chart:', dashboardChartsInstance.charts.areaChart ? '✅ Active' : '❌ Not initialized');
-    console.log('  - Scatter Chart:', dashboardChartsInstance.charts.scatterChart ? '✅ Active' : '❌ Not initialized');
-    console.log('  - Bar Chart:', dashboardChartsInstance.charts.barChart ? '✅ Active' : '❌ Not initialized');
-    console.log('  - Doughnut Chart:', dashboardChartsInstance.charts.doughnutChart ? '✅ Active' : '❌ Not initialized');
+    console.log('  - Line Chart:', dashboardChartsInstance.charts.lineChart ? ' Active' : ' Not initialized');
+    console.log('  - Area Chart:', dashboardChartsInstance.charts.areaChart ? ' Active' : ' Not initialized');
+    console.log('  - Scatter Chart:', dashboardChartsInstance.charts.scatterChart ? ' Active' : ' Not initialized');
+    console.log('  - Bar Chart:', dashboardChartsInstance.charts.barChart ? ' Active' : ' Not initialized');
+    console.log('  - Doughnut Chart:', dashboardChartsInstance.charts.doughnutChart ? ' Active' : ' Not initialized');
     console.log('╚════════════════════════════════════════╝');
-}
+}*/
 
-/**
- * Load person efficiency data for a specific department
- */
 function loadPersonEfficiencyByDepartment(deptId, deptName) {
-    console.log(`📊 Loading person efficiency for department: ${deptName} (ID: ${deptId})`);
+    console.log(` Loading person efficiency for department: ${deptName} (ID: ${deptId})`);
     
-    // Validate state matches
-    if (!dashboardChartsInstance.currentDepartment || 
+    if (!dashboardChartsInstance.currentDepartment || //validar que los estados coincidan
         dashboardChartsInstance.currentDepartment.id !== deptId) {
-        console.warn('⚠️ State mismatch! Current dept:', dashboardChartsInstance.currentDepartment, 'Requested:', deptId);
+        console.warn(' State mismatch! Current dept:', dashboardChartsInstance.currentDepartment, 'Requested:', deptId);
     }
     
     fetch(`../php/get_person_efficiency_by_department.php?id_departamento=${deptId}`)
@@ -143,7 +102,7 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
             
             try {
                 const data = JSON.parse(text);
-                console.log('✅ Person efficiency data loaded:', data.data.details.length, 'people');
+                console.log(' Person efficiency data loaded:', data.data.details.length, 'people');
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -157,19 +116,16 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
                 updateScatterChart(data.data, 'person', deptName);
             } else {
                 console.warn('Error in person efficiency data:', data.message);
-                // Don't fall back - keep showing what we have
+                //no regresar, mas bien seguir mostrando lo que se tiene
             }
         })
         .catch(error => {
-            console.error('❌ Error loading person efficiency:', error.message);
+            console.error(' Error loading person efficiency:', error.message);
             console.warn('Falling back to department view');
             loadDepartmentEfficiency();
         });
 }
 
-/**
- * Load department efficiency data for scatter chart
- */
 function loadDepartmentEfficiency() {
     console.log('Cargando datos de eficiencia departamental...');
     
@@ -212,12 +168,6 @@ function loadDepartmentEfficiency() {
         });
 }
 
-/**
- * Update scatter chart with department or person efficiency data
- * Supports two modes:
- * - 'department': Shows all departments (comparison view)
- * - 'person': Shows individuals in selected department
- */
 function updateScatterChart(data, mode = 'department', deptName = null) {
     const ctx = document.getElementById('scatterChart');
     
@@ -226,13 +176,11 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
         return;
     }
     
-    // Destroy existing chart if it exists
-    if (dashboardChartsInstance.charts.scatterChart) {
+    if (dashboardChartsInstance.charts.scatterChart) {//destruir grafica si hay una
         dashboardChartsInstance.charts.scatterChart.destroy();
     }
     
-    // Prepare chart title based on mode
-    let chartTitle = 'Matriz de Eficiencia Departamental';
+    let chartTitle = 'Matriz de Eficiencia Departamental';//preparar el titulo de la grafica dependiendo de modo
     let xAxisLabel = 'Carga de Trabajo (Total de Tareas)';
     let yAxisLabel = 'Tasa de Completación (%)';
     
@@ -347,7 +295,6 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
                 borderWidth: 2,
                 usePointStyle: false,
                 callbacks: {
-                    // Enhanced title showing department/person with icon - MORE PROMINENT
                     title: function(context) {
                         if (context.length > 0) {
                             const label = context[0].raw.label || 'Elemento';
@@ -356,7 +303,6 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
                         }
                         return '';
                     },
-                    // Main information lines - CLEANER FORMAT
                     label: function(context) {
                         const point = context.raw;
                         const workloadLabel = mode === 'person' ? 'Tareas Asignadas' : 'Carga de Trabajo';
@@ -368,21 +314,19 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
                             '━━━━━━━━━━━━━━━━━━'
                         ];
                     },
-                    // Additional details section - ONLY IF AVAILABLE
                     afterLabel: function(context) {
                         const raw = context.raw;
-                        // Find the detail object for this point
                         const detail = data.details.find(d => d.nombre_completo === raw.label || d.nombre === raw.label);
                         
                         if (detail) {
                             const lines = [
-                                '📋 Detalles:'
+                                'Detalles:'
                             ];
                             
-                            if (detail.completadas !== undefined) lines.push('  ✅ Completadas: ' + detail.completadas);
-                            if (detail.en_proceso !== undefined) lines.push('  ⏳ En Proceso: ' + detail.en_proceso);
-                            if (detail.pendientes !== undefined) lines.push('  ⏸️  Pendientes: ' + detail.pendientes);
-                            if (detail.vencidas !== undefined) lines.push('  ⚠️  Vencidas: ' + detail.vencidas);
+                            if (detail.completadas !== undefined) lines.push('Completadas: ' + detail.completadas);
+                            if (detail.en_proceso !== undefined) lines.push('En Proceso: ' + detail.en_proceso);
+                            if (detail.pendientes !== undefined) lines.push('Pendientes: ' + detail.pendientes);
+                            if (detail.vencidas !== undefined) lines.push('Vencidas: ' + detail.vencidas);
                             
                             return lines;
                         }
@@ -393,13 +337,11 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
         }
     };
     
-    // Add quadrant guidelines for department mode
-    if (mode === 'department') {
+    if (mode === 'department') {//agregar lineas de guia de cuadrante para el modo departamento
         options.plugins.annotation = {
             annotations: {
-                // Average efficiency line
                 averageLine: {
-                    type: 'line',
+                    type: 'line',//linea de eficiencia promedio
                     yMin: data.avg_completion,
                     yMax: data.avg_completion,
                     borderColor: 'rgba(34, 139, 89, 0.4)',
@@ -418,26 +360,20 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
         options: options
     });
     
-    // Add legend text below chart
-    addScatterChartLegend(mode, deptName, data);
+    addScatterChartLegend(mode, deptName, data);//agregar texto de leyenda debajo del grafico
     
     console.log(`Gráfico de dispersión actualizado: ${chartTitle}`);
 }
 
-/**
- * Add contextual legend below scatter chart
- */
 function addScatterChartLegend(mode, deptName, data) {
     const canvasContainer = document.getElementById('scatterChart').parentElement;
     
-    // Remove old legend if exists
-    const oldLegend = canvasContainer.querySelector('.scatter-chart-legend');
+    const oldLegend = canvasContainer.querySelector('.scatter-chart-legend');//eliminar leyendas si existen
     if (oldLegend) {
         oldLegend.remove();
     }
     
-    // Create legend div
-    const legendDiv = document.createElement('div');
+    const legendDiv = document.createElement('div');//crear div de leynda
     legendDiv.className = 'scatter-chart-legend';
     legendDiv.style.cssText = `
         margin-top: 15px;
@@ -454,22 +390,22 @@ function addScatterChartLegend(mode, deptName, data) {
     
     if (mode === 'person') {
         legendHTML = `
-            <strong>📍 Guía de Lectura - Eficiencia de Personas:</strong><br>
+            <strong>Guía de Lectura - Eficiencia de Personas:</strong><br>
             <span style="margin-left: 15px;">
-                🟢 <strong>Superior-Derecha:</strong> Alto rendimiento (Muchas tareas, alta eficiencia)<br>
-                🟡 <strong>Superior-Izquierda:</strong> Especialista eficiente (Pocas tareas, muy eficiente)<br>
-                🔵 <strong>Inferior-Derecha:</strong> Necesita apoyo (Muchas tareas, baja eficiencia)<br>
-                ⚪ <strong>Inferior-Izquierda:</strong> Capacidad disponible (Pocas tareas, baja eficiencia)
+                <strong>Superior-Derecha:</strong> Alto rendimiento (Muchas tareas, alta eficiencia)<br>
+                <strong>Superior-Izquierda:</strong> Especialista eficiente (Pocas tareas, muy eficiente)<br>
+                <strong>Inferior-Derecha:</strong> Necesita apoyo (Muchas tareas, baja eficiencia)<br>
+                <strong>Inferior-Izquierda:</strong> Capacidad disponible (Pocas tareas, baja eficiencia)
             </span>
         `;
     } else {
         legendHTML = `
-            <strong>📍 Guía de Lectura - Eficiencia Departamental:</strong><br>
+            <strong>Guía de Lectura - Eficiencia Departamental:</strong><br>
             <span style="margin-left: 15px;">
-                🟢 <strong>Superior-Derecha:</strong> Departamentos estrella (Alta carga, alta eficiencia)<br>
-                🟡 <strong>Superior-Izquierda:</strong> Especialización (Baja carga, alta eficiencia)<br>
-                🔴 <strong>Inferior-Derecha:</strong> Requieren recursos (Alta carga, baja eficiencia)<br>
-                ⚪ <strong>Inferior-Izquierda:</strong> Capacidad para crecer (Baja carga, baja eficiencia)<br>
+                <strong>Superior-Derecha:</strong> Departamentos estrella (Alta carga, alta eficiencia)<br>
+                <strong>Superior-Izquierda:</strong> Especialización (Baja carga, alta eficiencia)<br>
+                <strong>Inferior-Derecha:</strong> Requieren recursos (Alta carga, baja eficiencia)<br>
+                <strong>Inferior-Izquierda:</strong> Capacidad para crecer (Baja carga, baja eficiencia)<br>
                 <strong style="color: rgba(34, 139, 89, 1);">━━━ Línea punteada:</strong> Promedio de eficiencia organizacional
             </span>
         `;
@@ -479,19 +415,11 @@ function addScatterChartLegend(mode, deptName, data) {
     canvasContainer.appendChild(legendDiv);
 }
 
-/**
- * Initialize area chart on page load
- */
 function initializeAreaChart() {
     console.log('Inicializando gráfico de área de tendencias de tareas...');
-    
-    // Load user's department for area chart
     loadUserDepartmentForAreaChart();
 }
 
-/**
- * Load user's department for area chart
- */
 function loadUserDepartmentForAreaChart() {
     console.log('Cargando vista de departamento del usuario para gráfico de área...');
     
@@ -518,9 +446,6 @@ function loadUserDepartmentForAreaChart() {
         });
 }
 
-/**
- * Load task trends for a specific department
- */
 function loadTaskTrendForDepartment(deptId, deptName) {
     console.log(`Cargando tendencia de tareas para: ${deptName}`);
     
@@ -561,9 +486,6 @@ function loadTaskTrendForDepartment(deptId, deptName) {
         });
 }
 
-/**
- * Load comparison view - all departments task trends
- */
 function loadTaskTrendComparison() {
     console.log('Cargando vista de comparación de tendencias de tareas (todos los departamentos)');
     
@@ -608,9 +530,6 @@ function loadTaskTrendComparison() {
         });
 }
 
-/**
- * Update area chart with task trends data
- */
 function updateAreaChart(data, mode, deptName = null) {
     const ctx = document.getElementById('areaChart');
     
@@ -619,12 +538,10 @@ function updateAreaChart(data, mode, deptName = null) {
         return;
     }
     
-    // Destroy existing chart if it exists
     if (dashboardChartsInstance.charts.areaChart) {
         dashboardChartsInstance.charts.areaChart.destroy();
     }
     
-    // Prepare chart title
     let chartTitle = 'Tendencia de Tareas Completadas';
     if (mode === 'single' && deptName) {
         chartTitle = `Tareas Completadas - ${deptName}`;
@@ -632,7 +549,6 @@ function updateAreaChart(data, mode, deptName = null) {
         chartTitle = 'Comparación de Tareas Completadas - Todos los Departamentos';
     }
     
-    // Prepare chart data
     const chartData = {
         labels: data.data.labels,
         datasets: data.data.datasets
@@ -648,7 +564,7 @@ function updateAreaChart(data, mode, deptName = null) {
         scales: {
             y: {
                 beginAtZero: true,
-                stacked: mode === 'comparison', // Stack for comparison view
+                stacked: mode === 'comparison', // Stack para vista de comparacion
                 ticks: {
                     stepSize: mode === 'single' ? 1 : undefined,
                     font: {
@@ -661,7 +577,7 @@ function updateAreaChart(data, mode, deptName = null) {
                 }
             },
             x: {
-                stacked: mode === 'comparison', // Stack for comparison view
+                stacked: mode === 'comparison', //Stack necesario para vista de comparacion
                 ticks: {
                     font: {
                         size: 10
@@ -728,19 +644,11 @@ function updateAreaChart(data, mode, deptName = null) {
     console.log('Gráfico de área actualizado: ' + chartTitle);
 }
 
-/**
- * Initialize line chart on page load
- */
 function initializeLineChart() {
     console.log('Inicializando gráfico de línea de tendencias...');
-    
-    // Load user's department and show their data by default
     loadUserDepartmentForLineChart();
 }
 
-/**
- * Load user's department for line chart
- */
 function loadUserDepartmentForLineChart() {
     console.log('Cargando vista de departamento del usuario para gráfico de línea...');
     
@@ -767,9 +675,6 @@ function loadUserDepartmentForLineChart() {
         });
 }
 
-/**
- * Load project trends for a specific department
- */
 function loadProjectTrendForDepartment(deptId, deptName) {
     console.log(`Cargando tendencia de proyectos para: ${deptName}`);
     
@@ -810,9 +715,6 @@ function loadProjectTrendForDepartment(deptId, deptName) {
         });
 }
 
-/**
- * Load comparison view - all departments project trends
- */
 function loadProjectTrendComparison() {
     console.log('Cargando vista de comparación de tendencias (todos los departamentos)');
     
@@ -851,16 +753,9 @@ function loadProjectTrendComparison() {
         .catch(error => {
             console.error('Error loading comparison trends:', error.message);
             console.error('Full error:', error);
-            console.warn('DEBUG: Check the following:');
-            console.warn('1. Is get_project_trends.php deployed to /php/?');
-            console.warn('2. Open browser Network tab (F12) to see API response');
-            console.warn('3. Run diagnose_project_trends.php to test connection');
         });
 }
 
-/**
- * Update line chart with project trends data
- */
 function updateLineChart(data, mode, deptName = null) {
     const ctx = document.getElementById('lineChart');
     
@@ -869,21 +764,18 @@ function updateLineChart(data, mode, deptName = null) {
         return;
     }
     
-    // Destroy existing chart if it exists
-    if (dashboardChartsInstance.charts.lineChart) {
+    if (dashboardChartsInstance.charts.lineChart) {//destruir graficas si existen
         dashboardChartsInstance.charts.lineChart.destroy();
     }
     
-    // Prepare chart title
-    let chartTitle = 'Tendencia de Proyectos Completados';
+    let chartTitle = 'Tendencia de Proyectos Completados';//preparar titulo de grafico
     if (mode === 'single' && deptName) {
         chartTitle = `Tendencia - ${deptName}`;
     } else if (mode === 'comparison') {
         chartTitle = 'Comparación de Tendencias - Todos los Departamentos';
     }
     
-    // Prepare chart data
-    const chartData = {
+    const chartData = {//preparar info de chart
         labels: data.data.labels,
         datasets: data.data.datasets
     };
@@ -973,14 +865,10 @@ function updateLineChart(data, mode, deptName = null) {
     console.log('Gráfico de línea actualizado: ' + chartTitle);
 }
 
-/**
- * Load and display user's own department data on page load
- */
 function loadUserDepartmentView() {
     console.log('Cargando vista del departamento del usuario...');
     
-    // Fetch current user's department
-    fetch('../php/get_user_department.php')
+    fetch('../php/get_user_department.php')//fetch el departamento del usuario actual
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error fetching user department');
@@ -992,43 +880,33 @@ function loadUserDepartmentView() {
                 const userDept = data.department;
                 console.log('Departamento del usuario:', userDept);
                 
-                // Set current department to user's department
-                dashboardChartsInstance.currentDepartment = {
+                dashboardChartsInstance.currentDepartment = {//establecer el departamento actual al departamento del ususario actual
                     id: userDept.id_departamento,
                     name: userDept.nombre,
                     isUserDept: true
                 };
                 
-                // Update dropdown button to show user's department
-                updateDropdownButtonText(userDept.nombre);
+                updateDropdownButtonText(userDept.nombre);//actualizar el boton de dropdwon para mostrar el departamento del usuario
                 
-                // Load and display user's department data
-                loadDepartmentView(userDept.id_departamento, userDept.nombre);
+                loadDepartmentView(userDept.id_departamento, userDept.nombre);//cargar y mostrar la info del departamento del usuario
             } else {
                 console.warn('No se pudo obtener el departamento del usuario:', data.message);
-                // Fallback to comparison view if department not found
-                loadComparisonView();
+                loadComparisonView();//volver al modo de comparacio si no se encuentra el departamento
             }
         })
         .catch(error => {
             console.error('Error loading user department:', error);
-            // Fallback to comparison view on error
-            loadComparisonView();
+            loadComparisonView();//cuando hay un error dentro del departamento volver a la vista de comparacion de departamentos
         });
 }
 
-/**
- * Load comparison view - all departments data
- */
 function loadComparisonView() {
     console.log('Cargando vista de comparación (todos los departamentos)');
     console.log('Reseteando estado a comparación...');
     
-    // Reset the current department state
-    dashboardChartsInstance.currentDepartment = null;
+    dashboardChartsInstance.currentDepartment = null;//reiniciar el estado actual del departamento
     
-    // Fetch all projects and departments
-    Promise.all([
+    Promise.all([//fetch todos los proyectos y departamentos
         fetch('../php/get_departments.php').then(r => r.json()),
         fetch('../php/get_projects.php').then(r => r.json())
     ])
@@ -1039,8 +917,7 @@ function loadComparisonView() {
             
             console.log('Datos de comparación obtenidos - actualizando gráficos...');
             
-            // Process data for comparison charts (bar + doughnut)
-            processComparisonData(departments, projects);
+            processComparisonData(departments, projects);//procesar informacion para graficas de comparacion, de barraws y dona
             
             console.log('Gráficos de bar y doughnut actualizados');
         } else {
@@ -1052,29 +929,22 @@ function loadComparisonView() {
     });
 }
 
-/**
- * Process and display comparison data
- */
 function processComparisonData(departments, projects) {
     console.log('Procesando datos de comparación...');
     console.log('Departamentos:', departments.length);
     console.log('Proyectos:', projects.length);
     
-    // Prepare data for bar chart - Completed Projects by Department
+    //preparar info para la grafica de barras 
     const completedByDept = prepareCompletedProjectsByDepartment(departments, projects);
     
-    // Prepare data for doughnut chart - Project Status Distribution
+    // preparar info para la grafica de dona
     const statusDistribution = prepareProjectStatusDistribution(projects);
     
-    // Update charts
+    //actualizar graficas
     updateBarChart(completedByDept);
     updateDoughnutChart(statusDistribution);
 }
 
-/**
- * Prepare data: Completed projects by department
- * Returns: { labels: [...], data: [...], colors: [...] }
- */
 function prepareCompletedProjectsByDepartment(departments, projects) {
     console.log('Preparando: Proyectos completados por departamento');
     
@@ -1087,8 +957,7 @@ function prepareCompletedProjectsByDepartment(departments, projects) {
     };
     
     departments.forEach((dept, index) => {
-        // Count completed projects for this department
-        const completedCount = projects.filter(proj => 
+        const completedCount = projects.filter(proj => //contar proyectos completados por departamento
             proj.area === dept.nombre && proj.estado === 'completado'
         ).length;
         
@@ -1102,11 +971,6 @@ function prepareCompletedProjectsByDepartment(departments, projects) {
     return data;
 }
 
-/**
- * Prepare data: Project status distribution
- * Uses official brand colors: Green (completed), Gray (in progress), Ice (pending), Black (overdue)
- * Returns: { labels: [...], data: [...], backgroundColor: [...] }
- */
 function prepareProjectStatusDistribution(projects) {
     console.log('Preparando: Distribución de estados de proyectos');
     
@@ -1117,8 +981,7 @@ function prepareProjectStatusDistribution(projects) {
         'vencido': 0
     };
     
-    // Count projects by status
-    projects.forEach(proj => {
+    projects.forEach(proj => {//CONTAR PROYECTOS POR ESTADO
         const status = proj.estado.toLowerCase();
         if (statusCounts.hasOwnProperty(status)) {
             statusCounts[status]++;
@@ -1134,10 +997,10 @@ function prepareProjectStatusDistribution(projects) {
             statusCounts['vencido']
         ],
         backgroundColor: [
-            'rgba(34, 139, 89, 0.7)',     // Green - Completed
-            'rgba(130, 140, 150, 0.7)',   // Gray - In Progress
-            'rgba(200, 205, 210, 0.7)',   // Ice - Pending
-            'rgba(50, 50, 50, 0.7)'       // Black - Overdue
+            'rgba(34, 139, 89, 0.7)',     // Green - Completado
+            'rgba(130, 140, 150, 0.7)',   // Gray - en progreso
+            'rgba(200, 205, 210, 0.7)',   // Ice - pendiente
+            'rgba(50, 50, 50, 0.7)'       // Black - vencidos
         ],
         borderColor: [
             'rgba(34, 139, 89, 1)',       // Green
@@ -1151,9 +1014,6 @@ function prepareProjectStatusDistribution(projects) {
     return data;
 }
 
-/**
- * Update Bar Chart - Completed Projects by Department
- */
 function updateBarChart(data) {
     const ctx = document.getElementById('barChart');
     
@@ -1162,8 +1022,7 @@ function updateBarChart(data) {
         return;
     }
     
-    // Destroy existing chart if it exists
-    if (dashboardChartsInstance.charts.barChart) {
+    if (dashboardChartsInstance.charts.barChart) {//destruir graficas existentes 
         dashboardChartsInstance.charts.barChart.destroy();
     }
     
@@ -1228,9 +1087,6 @@ function updateBarChart(data) {
     console.log('Bar chart actualizado');
 }
 
-/**
- * Update Doughnut Chart - Project Status Distribution
- */
 function updateDoughnutChart(data) {
     const ctx = document.getElementById('doughnutChart');
     
@@ -1239,8 +1095,7 @@ function updateDoughnutChart(data) {
         return;
     }
     
-    // Destroy existing chart if it exists
-    if (dashboardChartsInstance.charts.doughnutChart) {
+    if (dashboardChartsInstance.charts.doughnutChart) {//destruir graficas existentes
         dashboardChartsInstance.charts.doughnutChart.destroy();
     }
     
@@ -1289,14 +1144,10 @@ function updateDoughnutChart(data) {
     console.log('Doughnut chart actualizado');
 }
 
-/**
- * Update charts when department is selected
- */
 function loadDepartmentView(deptId, deptName) {
-    console.log('🏢 SWITCHING TO DEPARTMENT VIEW:', deptName);
+    console.log('SWITCHING TO DEPARTMENT VIEW:', deptName);
     
-    // Update state FIRST
-    dashboardChartsInstance.currentDepartment = { 
+    dashboardChartsInstance.currentDepartment = { //actualizar el estado primero
         id: deptId, 
         name: deptName,
         updatedAt: new Date().getTime()
@@ -1304,8 +1155,7 @@ function loadDepartmentView(deptId, deptName) {
     
     console.log('Department state updated:', dashboardChartsInstance.currentDepartment);
     
-    // Fetch projects for this department
-    console.log('Loading department-specific projects data...');
+    console.log('Loading department-specific projects data...');//fetch de proyectos para el departamento seleccionado
     fetch(`../php/get_projects.php?id_departamento=${deptId}`)
         .then(response => response.json())
         .then(data => {
@@ -1320,41 +1170,29 @@ function loadDepartmentView(deptId, deptName) {
             console.error('Error loading department view projects:', error);
         });
     
-    // Update line chart for this department
-    console.log('Loading line chart for department...');
+    console.log('Loading line chart for department...'); //actualizar grafica lineal para este departamento
     loadProjectTrendForDepartment(deptId, deptName);
-    
-    // Update area chart for this department  
-    console.log('Loading area chart for department...');
+
+    console.log('Loading area chart for department...');//actualizar grafica de area para este departamento
     loadTaskTrendForDepartment(deptId, deptName);
     
-    // UPDATE SCATTER CHART: Switch to person efficiency view for selected department
-    console.log('Loading scatter chart (person efficiency) for department...');
+    console.log('Loading scatter chart (person efficiency) for department...');//cambiar a eficiencia de empleado cuando se selecciona un departamento
     loadPersonEfficiencyByDepartment(deptId, deptName);
     
-    console.log('✅ All department-specific charts queued for loading');
+    console.log('All department-specific charts queued for loading');
 }
 
-/**
- * Process and display department-specific data
- */
 function processDepepartmentData(projects, deptName) {
     console.log(`Procesando datos del departamento: ${deptName}`);
     console.log(`Total de proyectos: ${projects.length}`);
     
-    // Prepare status distribution for this department
-    const statusDistribution = prepareDepartmentStatusDistribution(projects);
+    const statusDistribution = prepareDepartmentStatusDistribution(projects);//preparar distribucion de estatus para este departamento
     
-    // Update doughnut chart with department-specific data
-    updateDoughnutChartForDepartment(statusDistribution, deptName);
+    updateDoughnutChartForDepartment(statusDistribution, deptName);//actualizar grafica de dona con informacion especifica del departamento
     
-    // Update bar chart to show progress if needed
-    updateBarChartForDepartment(projects, deptName);
+    updateBarChartForDepartment(projects, deptName);//actualizar grafica de barras para mostrar progreso
 }
 
-/**
- * Prepare department status distribution
- */
 function prepareDepartmentStatusDistribution(projects) {
     const statusCounts = {
         'completado': 0,
@@ -1379,10 +1217,10 @@ function prepareDepartmentStatusDistribution(projects) {
             statusCounts['vencido']
         ],
         backgroundColor: [
-            'rgba(34, 139, 89, 0.7)',     // Green - Completed
-            'rgba(130, 140, 150, 0.7)',   // Gray - In Progress
-            'rgba(200, 205, 210, 0.7)',   // Ice - Pending
-            'rgba(50, 50, 50, 0.7)'       // Black - Overdue
+            'rgba(34, 139, 89, 0.7)',     // Green - completado
+            'rgba(130, 140, 150, 0.7)',   // Gray - en progreso
+            'rgba(200, 205, 210, 0.7)',   // Ice - pendiente
+            'rgba(50, 50, 50, 0.7)'       // Black -  vencido
         ],
         borderColor: [
             'rgba(34, 139, 89, 1)',       // Green
@@ -1393,9 +1231,6 @@ function prepareDepartmentStatusDistribution(projects) {
     };
 }
 
-/**
- * Update doughnut chart for specific department
- */
 function updateDoughnutChartForDepartment(data, deptName) {
     const ctx = document.getElementById('doughnutChart');
     
@@ -1451,11 +1286,6 @@ function updateDoughnutChartForDepartment(data, deptName) {
     });
 }
 
-/**
- * Update bar chart for specific department
- * Shows top 5 projects with shortened titles
- * Uses green for completed (100%), gray for in-progress, ice for pending, black for overdue
- */
 function updateBarChartForDepartment(projects, deptName) {
     const ctx = document.getElementById('barChart');
     
@@ -1468,16 +1298,14 @@ function updateBarChartForDepartment(projects, deptName) {
         dashboardChartsInstance.charts.barChart.destroy();
     }
     
-    // Prepare progress data for projects
-    const progressData = {
-        labels: projects.slice(0, 5).map(p => shortenProjectTitle(p.nombre)), // Show top 5 projects with shortened titles
+    const progressData = {//preparar info de progreso para proyectos
+        labels: projects.slice(0, 5).map(p => shortenProjectTitle(p.nombre)), //mostrar top 5 proyectos con titulo corto
         data: projects.slice(0, 5).map(p => p.progreso),
         backgroundColor: projects.slice(0, 5).map((p, i) => {
-            // Color based on progress - using official brand colors
-            if (p.progreso === 100) return 'rgba(34, 139, 89, 0.7)';        // Green - Completed
-            if (p.progreso >= 75) return 'rgba(80, 154, 108, 0.7)';         // Green Light
-            if (p.progreso >= 50) return 'rgba(130, 140, 150, 0.7)';        // Gray - In Progress
-            return 'rgba(200, 205, 210, 0.7)';                              // Ice - Pending
+            if (p.progreso === 100) return 'rgba(34, 139, 89, 0.7)';        // Green -  completado
+            if (p.progreso >= 75) return 'rgba(80, 154, 108, 0.7)';         // Green Light 
+            if (p.progreso >= 50) return 'rgba(130, 140, 150, 0.7)';        // Gray - en progreso
+            return 'rgba(200, 205, 210, 0.7)';                              // Ice - pendiente
         })
     };
     
@@ -1493,7 +1321,7 @@ function updateBarChartForDepartment(projects, deptName) {
     };
     
     const options = {
-        indexAxis: 'y', // Horizontal bar chart
+        indexAxis: 'y', //grafica de barras horizontal
         responsive: true,
         maintainAspectRatio: true,
         scales: {
@@ -1516,12 +1344,10 @@ function updateBarChartForDepartment(projects, deptName) {
             },
             tooltip: {
                 callbacks: {
-                    // Show full project title in tooltip
-                    label: function(context) {
+                    label: function(context) {//mostrar titulo fr proyecto completo
                         return 'Progreso: ' + context.parsed.x + '%';
                     },
-                    // Show full title when hovering
-                    title: function(context) {
+                    title: function(context) {//mostrar titulo completo cuando se pasa el mouse encima
                         const index = context[0].dataIndex;
                         const fullTitle = projects.slice(0, 5)[index].nombre;
                         return fullTitle;
@@ -1538,28 +1364,17 @@ function updateBarChartForDepartment(projects, deptName) {
     });
 }
 
-/**
- * Clear department selection and return to comparison view
- * Called when user clears department selection or clicks "Revisar departamentos"
- */
 function clearDepartmentSelection() {
-    console.log('⭐ CLEARING DEPARTMENT SELECTION - SWITCHING TO COMPARISON MODE');
+    console.log('CLEARING DEPARTMENT SELECTION - SWITCHING TO COMPARISON MODE');
     console.log('Reseteando state y cargando vista de comparación para TODOS los gráficos...');
+
+    dashboardChartsInstance.currentDepartment = null;//reinciar departamento actual primero
     
-    // Reset current department FIRST
-    dashboardChartsInstance.currentDepartment = null;
+    updateDropdownButtonText('Revisar departamentos');//actualizar texto del boton dropdown
     
-    // Update dropdown button text
-    updateDropdownButtonText('Revisar departamentos');
-    
-    // SEQUENTIAL LOADING: Ensure each chart loads with comparison data
-    // This prevents race conditions and ensures proper state management
-    
+    //carga sequencial, asegura que cada grafica cargue con informacion de comparacion para buen manejo de estados
     console.log('Step 1: Loading bar/doughnut comparison data...');
     loadComparisonView();
-    
-    // Use setTimeout to ensure sequential loading with slight delays
-    // This prevents race conditions where state gets mixed
     
     setTimeout(() => {
         console.log('Step 2: Loading line chart comparison data...');
@@ -1577,51 +1392,36 @@ function clearDepartmentSelection() {
     }, 900);
     
     setTimeout(() => {
-        console.log('✅ ALL CHARTS UPDATED TO COMPARISON MODE');
+        console.log('ALL CHARTS UPDATED TO COMPARISON MODE');
         console.log('Current department state:', dashboardChartsInstance.currentDepartment);
     }, 1200);
 }
 
-/**
- * Handle department selection from dropdown
- * This is called when user selects a department from the dropdown
- * Ensures ALL charts including area chart are updated
- */
 function selectDepartmentFromDropdown(deptId, deptName) {
     console.log('═══════════════════════════════════════════════════════');
-    console.log('👤 DEPARTMENT SELECTION FROM DROPDOWN');
+    console.log('DEPARTMENT SELECTION FROM DROPDOWN');
     console.log('Department:', deptName, '(ID:', deptId + ')');
     console.log('Previous state:', dashboardChartsInstance.currentDepartment);
     
-    // Call loadDepartmentView which handles all chart updates
-    loadDepartmentView(deptId, deptName);
+    loadDepartmentView(deptId, deptName);//llamada a funcion que maneja las actualizafciones de graficas
     
     console.log('New state:', dashboardChartsInstance.currentDepartment);
     console.log('═══════════════════════════════════════════════════════');
 }
 
-/**
- * Update dropdown button text - FIXED: Keep only original icon, don't create duplicates
- */
 function updateDropdownButtonText(text) {
     const dropdownButton = document.querySelector('#messageDropdown');
     if (dropdownButton) {
-        // Get the existing icon element to preserve it
-        const existingIcon = dropdownButton.querySelector('i');
-        // Clear the button and set new text
-        dropdownButton.textContent = text + ' ';
+        const existingIcon = dropdownButton.querySelector('i');//obtener el icono existente y mantenerlo
+        dropdownButton.textContent = text + ' ';//limpiar el boton y agregar un texto nuevo
         
-        // Re-append the original icon if it existed
-        if (existingIcon) {
+        if (existingIcon) {//reaplicar el icono original si existe
             const newIcon = existingIcon.cloneNode(true);
             dropdownButton.appendChild(newIcon);
         }
     }
 }
 
-/**
- * Initialize on DOM ready
- */
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboardCharts();
 });

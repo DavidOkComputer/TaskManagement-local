@@ -345,7 +345,7 @@ try {
         'proyectos_en_proceso' => (int)$estadosCount['en proceso'],
         'proyectos_pendientes' => (int)$estadosCount['pendiente'],
         'proyectos_vencidos' => (int)$estadosCount['vencido'],
-        // Additional calculated stats for display under counters
+        //estadisticas adicionales calculadas para mostrar debajo de contadores
         'objetivos_retrasados' => (int)$objetivosRetrasados,
         'tareas_retrasadas' => (int)$tareasRetrasadas,
         'tareas_en_proceso' => (int)$tareasEnProceso,

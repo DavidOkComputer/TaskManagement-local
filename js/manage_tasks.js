@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <label for="taskAssignee" class="form-label">
                                         <i class="mdi mdi-account-check"></i> Asignar a
                                     </label>
-                                    <select class="form-control" id="taskAssignee" disabled>
+                                    <select class="form-control" id="taskAssignee" disabled required>
                                         <option value="">Seleccione un proyecto primero</option>
                                     </select>
                                     <small class="form-text text-muted" id="taskAssigneeNote" style="display: none; margin-top: 5px;"></small>

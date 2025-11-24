@@ -1,16 +1,6 @@
 <?php
 /**
- * get_person_efficiency_by_department.php
- * Endpoint para obtener matriz de eficiencia de personas en un departamento específico
- * Compara carga de trabajo individual vs tasa de finalización
- * 
- * Parameters:
- *   - id_departamento (required): ID de departamento
- * 
- * Response: JSON con datos de personas para scatter chart
- * - X-axis: Total de tareas asignadas a la persona
- * - Y-axis: Porcentaje de tareas completadas por la persona (eficiencia)
- */
+ * get_person_efficiency_by_department.php para obtener matriz de eficiencia de personas en un departamento específico*/
 
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
@@ -159,9 +149,6 @@ try {
 
 ob_end_flush();
 
-/**
- * Procesa datos de eficiencia de personas para scatter chart
- */
 function processPersonEfficiencyData($efficiency_data) {
     $scatterPoints = [];
     $colors = getPersonEfficiencyColors(count($efficiency_data));
@@ -206,10 +193,6 @@ function processPersonEfficiencyData($efficiency_data) {
     ];
 }
 
-/**
- * Obtiene colores para eficiencia de personas
- * Usa paleta oficial de marca, pero más variados para individuos
- */
 function getPersonEfficiencyColors($count) {
     $colors = [
         // Verdes en gradiente

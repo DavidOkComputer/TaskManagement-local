@@ -1,31 +1,10 @@
-/**
- * load_departments_dropdown.js (FIXED - Unified Integration)
- * Carga dinámicamente los departamentos en el dropdown "Seleccionar Categoría"
- * 
- * ⭐ CRITICAL FIX: Now calls BOTH dashboard_charts.js AND dashboard_charts_workload.js functions
- * 
- * FEATURES:
- * - Carga departamentos desde la API
- * - Integración con AMBOS gráficos (main charts + workload)
- * - Opción para resetear la vista
- * - Comprehensive logging for debugging
- */
+/*load_departments_dropdown.js carga dinamica de los departamentos en el dropdown */
 
-console.log('═══════════════════════════════════════════════════════════');
-console.log('Loading load_departments_dropdown.js (FIXED VERSION)');
-console.log('═══════════════════════════════════════════════════════════\n');
-
-/**
- * Load departments on page load
- */
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Inicializando dropdown de departamentos...');
     loadDepartmentsIntoDropdown();
 });
 
-/**
- * Load departments from API and populate dropdown
- */
 function loadDepartmentsIntoDropdown() {
     console.log('Cargando departamentos para dropdown...');
     
@@ -50,9 +29,6 @@ function loadDepartmentsIntoDropdown() {
         });
 }
 
-/**
- * Populate dropdown with departments
- */
 function populateDepartmentDropdown(departamentos) {
     const dropdownMenu = document.querySelector('[aria-labelledby="messageDropdown"]');
     
@@ -92,40 +68,29 @@ function populateDepartmentDropdown(departamentos) {
             </div>
         `;
         
-        // ⭐ FIXED: Event listener that calls BOTH chart functions
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const deptId = parseInt(this.getAttribute('data-department-id'));
             const deptName = this.getAttribute('data-department-name');
             
-            console.log('═══════════════════════════════════════════════════════');
-            console.log(`📍 DEPARTMENT SELECTED FROM DROPDOWN`);
-            console.log(`Department: ${deptName} | ID: ${deptId}`);
-            console.log('═══════════════════════════════════════════════════════');
             
-            // ⭐ STEP 1: Call MAIN DASHBOARD CHARTS (dashboard_charts.js)
             console.log('Step 1: Updating main dashboard charts (bar, doughnut, line, area, scatter)...');
             if (typeof selectDepartmentFromDropdown === 'function') {
-                console.log('  ✅ Calling selectDepartmentFromDropdown()');
+                console.log('  Calling selectDepartmentFromDropdown()');
                 selectDepartmentFromDropdown(deptId, deptName);
             } else {
-                console.error('  ❌ ERROR: selectDepartmentFromDropdown() NOT FOUND!');
+                console.error('  ERROR: selectDepartmentFromDropdown() NOT FOUND!');
                 console.error('  Make sure dashboard_charts.js is loaded BEFORE this file');
             }
             
-            // ⭐ STEP 2: Call WORKLOAD CHART (dashboard_charts_workload.js)
             console.log('Step 2: Updating workload chart...');
             if (typeof selectDepartmentWorkload === 'function') {
-                console.log('  ✅ Calling selectDepartmentWorkload()');
+                console.log('   Calling selectDepartmentWorkload()');
                 selectDepartmentWorkload(deptId, deptName);
             } else {
-                console.warn('  ⚠️ selectDepartmentWorkload() NOT FOUND');
+                console.warn('  selectDepartmentWorkload() NOT FOUND');
                 console.warn('  Make sure dashboard_charts_workload.js is loaded');
             }
-            
-            console.log('═══════════════════════════════════════════════════════');
-            console.log('✅ DEPARTMENT SELECTION COMPLETE');
-            console.log('   All charts should update now\n');
             
             // Cerrar el dropdown de forma segura
             try {
@@ -135,8 +100,7 @@ function populateDepartmentDropdown(departamentos) {
                     if (bsDropdown) {
                         bsDropdown.hide();
                     } else {
-                        // Fallback: manually remove show class
-                        dropdown.classList.remove('show');
+                        dropdown.classList.remove('show');//volver y de manera manual quitar la claes
                         const dropdownMenu = dropdown.nextElementSibling;
                         if (dropdownMenu) {
                             dropdownMenu.classList.remove('show');
@@ -162,37 +126,25 @@ function populateDepartmentDropdown(departamentos) {
     allLink.href = '#';
     allLink.innerHTML = '<small class="text-muted">Ver todos los departamentos</small>';
     
-    // ⭐ FIXED: Event listener that calls BOTH clearing functions
     allLink.addEventListener('click', function(e) {
         e.preventDefault();
-        
-        console.log('═══════════════════════════════════════════════════════');
-        console.log('📍 CLEARING DEPARTMENT - Switching to all departments');
-        console.log('═══════════════════════════════════════════════════════');
-        
-        // ⭐ STEP 1: Clear MAIN DASHBOARD CHARTS (dashboard_charts.js)
         console.log('Step 1: Clearing main dashboard charts...');
         if (typeof clearDepartmentSelection === 'function') {
-            console.log('  ✅ Calling clearDepartmentSelection()');
+            console.log('  Calling clearDepartmentSelection()');
             clearDepartmentSelection();
         } else {
-            console.error('  ❌ ERROR: clearDepartmentSelection() NOT FOUND!');
+            console.error('  ERROR: clearDepartmentSelection() NOT FOUND!');
             console.error('  Make sure dashboard_charts.js is loaded BEFORE this file');
         }
         
-        // ⭐ STEP 2: Clear WORKLOAD CHART (dashboard_charts_workload.js)
         console.log('Step 2: Clearing workload chart...');
         if (typeof resetWorkloadView === 'function') {
-            console.log('  ✅ Calling resetWorkloadView()');
+            console.log('  Calling resetWorkloadView()');
             resetWorkloadView();
         } else {
-            console.warn('  ⚠️ resetWorkloadView() NOT FOUND');
+            console.warn('  resetWorkloadView() NOT FOUND');
             console.warn('  Make sure dashboard_charts_workload.js is loaded');
         }
-        
-        console.log('═══════════════════════════════════════════════════════');
-        console.log('✅ CLEARING COMPLETE');
-        console.log('   All charts should show comparison view now\n');
         
         // Cerrar el dropdown de forma segura
         try {
@@ -202,8 +154,7 @@ function populateDepartmentDropdown(departamentos) {
                 if (bsDropdown) {
                     bsDropdown.hide();
                 } else {
-                    // Fallback: manually remove show class
-                    dropdown.classList.remove('show');
+                    dropdown.classList.remove('show');//eliminar la clase de manera manual
                     const dropdownMenu = dropdown.nextElementSibling;
                     if (dropdownMenu) {
                         dropdownMenu.classList.remove('show');
@@ -217,12 +168,9 @@ function populateDepartmentDropdown(departamentos) {
     
     dropdownMenu.appendChild(allLink);
     
-    console.log(`✅ Dropdown poblado con ${departamentos.length} departamentos\n`);
+    console.log(`Dropdown poblado con ${departamentos.length} departamentos\n`);
 }
 
-/**
- * Escape HTML special characters to prevent XSS
- */
 function escapeHtml(text) {
     if (!text) return '';
     
@@ -236,38 +184,7 @@ function escapeHtml(text) {
     
     return text.replace(/[&<>"']/g, m => map[m]);
 }
-
-/**
- * Refresh departments list (for external use)
- */
 window.refreshDepartmentsList = function() {
     console.log('Refrescando lista de departamentos...');
     loadDepartmentsIntoDropdown();
 };
-
-/**
- * DEBUG: Check which functions are available
- */
-window.checkDropdownIntegration = function() {
-    console.log('╔════════════════════════════════════════════════════════╗');
-    console.log('║     DROPDOWN INTEGRATION CHECK                         ║');
-    console.log('╚════════════════════════════════════════════════════════╝');
-    
-    console.log('\n📊 Main Dashboard Charts (dashboard_charts.js):');
-    console.log('  selectDepartmentFromDropdown():', typeof selectDepartmentFromDropdown === 'function' ? '✅ Available' : '❌ NOT FOUND');
-    console.log('  clearDepartmentSelection():', typeof clearDepartmentSelection === 'function' ? '✅ Available' : '❌ NOT FOUND');
-    
-    console.log('\n📈 Workload Chart (dashboard_charts_workload.js):');
-    console.log('  selectDepartmentWorkload():', typeof selectDepartmentWorkload === 'function' ? '✅ Available' : '❌ NOT FOUND');
-    console.log('  resetWorkloadView():', typeof resetWorkloadView === 'function' ? '✅ Available' : '❌ NOT FOUND');
-    
-    console.log('\n🔗 Dropdown Functions (load_departments_dropdown.js):');
-    console.log('  loadDepartmentsIntoDropdown():', typeof loadDepartmentsIntoDropdown === 'function' ? '✅ Available' : '❌ NOT FOUND');
-    console.log('  refreshDepartmentsList():', typeof refreshDepartmentsList === 'function' ? '✅ Available' : '❌ NOT FOUND');
-    
-    console.log('\n╚════════════════════════════════════════════════════════╝\n');
-};
-
-console.log('═══════════════════════════════════════════════════════════');
-console.log('✅ load_departments_dropdown.js loaded successfully');
-console.log('═══════════════════════════════════════════════════════════\n');

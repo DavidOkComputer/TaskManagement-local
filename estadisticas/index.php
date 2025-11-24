@@ -33,10 +33,10 @@
           </button>
         </div>
         <div>
-          <a class="navbar-brand brand-logo" href="#">
+          <a class="navbar-brand brand-logo" href="../adminDashboard/">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
-          <a class="navbar-brand brand-logo-mini" href="#">
+          <a class="navbar-brand brand-logo-mini" href="../adminDashboard/">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
         </div>
@@ -406,7 +406,7 @@
             <div class="col-lg-6 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">Area chart</h4>
+                  <h4 class="card-title">Avances por periodo de tiempo</h4>
                   <canvas id="areaChart"></canvas>
                 </div>
               </div>
@@ -424,7 +424,7 @@
             <div class="col-lg-6 grid-margin grid-margin-lg-0 stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">Scatter chart</h4>
+                  <h4 class="card-title">Medidas de eficiencia</h4>
                   <canvas id="scatterChart"></canvas>
                 </div>
               </div>

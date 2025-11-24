@@ -1,32 +1,15 @@
-/**
- * dashboard_charts_workload.js (Enhanced)
- * Extension para dashboard_charts.js
- * Maneja el gráfico de pastel de distribución de carga de trabajo
- * 
- * FEATURES:
- * - Muestra distribución de carga por departamento (por defecto)
- * - Al seleccionar un departamento en el dropdown, muestra carga por proyectos
- * - Auto-refresh cada 60 segundos
- * - Detección automática de cambios en el dropdown
- */
+/* dashboard_charts_workload.js Maneja el gráfico de pastel de distribución de carga de trabajo*/
 
-// Variable global para rastrear el modo de visualización
 let currentViewMode = 'departments'; // 'departments' o 'projects'
 let selectedDepartmentId = null;
 let selectedDepartmentName = null;
 
-/**
- * Initialize workload distribution chart on page load
- */
 function initializeWorkloadChart() {
     console.log('Inicializando gráfico de distribución de carga de trabajo...');
     setupDepartmentDropdownListener();
     loadWorkloadDistribution();
 }
 
-/**
- * Setup listener for department dropdown changes
- */
 function setupDepartmentDropdownListener() {
     const dropdown = document.getElementById('messageDropdown');
     
@@ -35,16 +18,14 @@ function setupDepartmentDropdownListener() {
         return;
     }
 
-    // Escuchar clicks en los items del dropdown
-    const dropdownMenu = dropdown.nextElementSibling;
+    const dropdownMenu = dropdown.nextElementSibling;// Escuchar clicks en los items del dropdown
     
     if (!dropdownMenu) {
         console.warn('Dropdown menu no encontrado');
         return;
     }
 
-    // Delegación de eventos para items del dropdown
-    dropdownMenu.addEventListener('click', function(e) {
+    dropdownMenu.addEventListener('click', function(e) {//eventos para items de dropdown
         const departmentItem = e.target.closest('[data-department-id]');
         
         if (departmentItem) {
@@ -59,9 +40,6 @@ function setupDepartmentDropdownListener() {
     console.log('Listener de dropdown de departamentos configurado');
 }
 
-/**
- * Select department and update chart
- */
 function selectDepartment(deptId, deptName) {
     selectedDepartmentId = deptId;
     selectedDepartmentName = deptName;
@@ -70,13 +48,9 @@ function selectDepartment(deptId, deptName) {
     console.log(`Cargando proyectos para departamento: ${deptName} (ID: ${deptId})`);
     loadProjectWorkload(deptId, deptName);
     
-    // Actualizar el texto del dropdown sin romper la estructura
-    updateDropdownButtonText(deptName);
+    updateDropdownButtonText(deptName);//Actualizar el texto del dropdown sin romper la estructura
 }
 
-/**
- * Reset to departments view
- */
 function resetToAllDepartments() {
     selectedDepartmentId = null;
     selectedDepartmentName = null;
@@ -85,57 +59,41 @@ function resetToAllDepartments() {
     console.log('Volviendo a vista de departamentos...');
     loadWorkloadDistribution();
     
-    // Resetear texto del dropdown a original
-    resetDropdownButtonText();
+    resetDropdownButtonText();//texto original del dropdown
 }
 
-/**
- * Safely update dropdown button text without breaking dropdown functionality
- */
 function updateDropdownButtonText(deptName) {
     const dropdownButton = document.getElementById('messageDropdown');
     if (!dropdownButton) return;
     
-    // Find or create a span to hold the text (preserves dropdown structure)
-    let textSpan = dropdownButton.querySelector('.dropdown-text');
+    let textSpan = dropdownButton.querySelector('.dropdown-text');//encontrar o crear span para el texto
     
     if (!textSpan) {
-        // First time: wrap existing text in span
         const originalText = dropdownButton.textContent.trim();
         textSpan = document.createElement('span');
         textSpan.className = 'dropdown-text';
         textSpan.textContent = originalText;
         
-        // Clear and recreate button structure
-        dropdownButton.innerHTML = '';
+        dropdownButton.innerHTML = '';//LIMPIAR Y CREAR LA ESTRUCTURA DEL BOTON
         dropdownButton.appendChild(textSpan);
     }
     
-    // Update only the text content, not the entire button
     textSpan.textContent = deptName;
 }
 
-/**
- * Reset dropdown button text to original
- */
 function resetDropdownButtonText() {
     const dropdownButton = document.getElementById('messageDropdown');
     if (!dropdownButton) return;
     
-    // Reset to original text
-    let textSpan = dropdownButton.querySelector('.dropdown-text');
+    let textSpan = dropdownButton.querySelector('.dropdown-text');//texto original
     
     if (textSpan) {
         textSpan.textContent = 'Seleccionar Categoría';
     } else {
-        // Fallback if span doesn't exist
         dropdownButton.textContent = 'Seleccionar Categoría';
     }
 }
 
-/**
- * Load workload data from API endpoint (all departments)
- */
 function loadWorkloadDistribution() {
     console.log('Cargando distribución de carga de trabajo por departamento...');
     
@@ -161,9 +119,6 @@ function loadWorkloadDistribution() {
         });
 }
 
-/**
- * Load project workload for a specific department
- */
 function loadProjectWorkload(deptId, deptName) {
     console.log(`Cargando carga de trabajo por proyectos del departamento: ${deptName}...`);
     
@@ -190,9 +145,6 @@ function loadProjectWorkload(deptId, deptName) {
         });
 }
 
-/**
- * Update workload pie chart with data
- */
 function updateWorkloadChart(data, chartTitle = 'Distribución de Carga de Trabajo por Departamento') {
     const ctx = document.getElementById('workloadChart');
     
@@ -201,13 +153,12 @@ function updateWorkloadChart(data, chartTitle = 'Distribución de Carga de Traba
         return;
     }
     
-    // Destroy existing chart if it exists
+    //destruir chart actual si existe
     if (dashboardChartsInstance && dashboardChartsInstance.charts && dashboardChartsInstance.charts.workloadChart) {
         dashboardChartsInstance.charts.workloadChart.destroy();
     }
     
-    // Check if data is empty
-    if (!data.labels || data.labels.length === 0) {
+    if (!data.labels || data.labels.length === 0) {//revisar si la data esta vacia
         console.warn('No data available for chart');
         ctx.style.display = 'none';
         const parent = ctx.parentElement;
@@ -222,8 +173,7 @@ function updateWorkloadChart(data, chartTitle = 'Distribución de Carga de Traba
         return;
     }
     
-    // Show canvas if it was hidden
-    ctx.style.display = 'block';
+    ctx.style.display = 'block';//mostrar el canva si estaba oculto
     const parent = ctx.parentElement;
     const errorDiv = parent.querySelector('.chart-error');
     if (errorDiv) {
@@ -275,8 +225,7 @@ function updateWorkloadChart(data, chartTitle = 'Distribución de Carga de Traba
                         return label + ': ' + value + ' tareas (' + percentage + '%)';
                     },
                     afterLabel: function(context) {
-                        // Show breakdown of task statuses
-                        const dataIndex = context.dataIndex;
+                        const dataIndex = context.dataIndex;//mostrar explicacion de estados de tareas
                         if (data.details && data.details[dataIndex]) {
                             const detail = data.details[dataIndex];
                             return [
@@ -316,9 +265,6 @@ function updateWorkloadChart(data, chartTitle = 'Distribución de Carga de Traba
     console.log('Gráfico de carga de trabajo actualizado - Total de tareas: ' + data.total_tareas);
 }
 
-/**
- * Show error message in chart area
- */
 function showChartError(message) {
     const ctx = document.getElementById('workloadChart');
     if (!ctx) return;
@@ -337,9 +283,6 @@ function showChartError(message) {
     parent.appendChild(errorDiv);
 }
 
-/**
- * Refresh workload chart
- */
 function refreshWorkloadChart() {
     console.log('Refrescando gráfico de carga de trabajo...');
     
@@ -350,20 +293,11 @@ function refreshWorkloadChart() {
     }
 }
 
-/**
- * Hook into existing chart initialization
- */
 function initializeDashboardChartsWithWorkload() {
-    // Original initialization
     initializeDashboardCharts();
-    
-    // Add workload chart
     initializeWorkloadChart();
 }
 
-/**
- * Auto-refresh functionality for workload chart
- */
 function startWorkloadChartAutoRefresh(intervalSeconds = 60) {
     console.log('Iniciando auto-actualización de gráfico de carga de trabajo cada ' + intervalSeconds + ' segundos');
     
@@ -372,29 +306,19 @@ function startWorkloadChartAutoRefresh(intervalSeconds = 60) {
     }, intervalSeconds * 1000);
 }
 
-/**
- * Public function to manually select department (for external use)
- */
 window.selectDepartmentWorkload = function(deptId, deptName) {
     selectDepartment(deptId, deptName);
 };
 
-/**
- * Public function to reset view (for external use)
- */
 window.resetWorkloadView = function() {
     resetToAllDepartments();
 };
 
-// Initialize on DOM ready if workload chart canvas exists
 document.addEventListener('DOMContentLoaded', function() {
     const workloadCanvas = document.getElementById('workloadChart');
     if (workloadCanvas) {
         console.log('Workload chart canvas detectado, inicializando...');
         initializeWorkloadChart();
-        
-        // Optionally start auto-refresh
-        // Uncomment the following line to enable auto-refresh every 60 seconds
-        // startWorkloadChartAutoRefresh(60);
+        startWorkloadChartAutoRefresh(60);
     }
 });

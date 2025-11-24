@@ -79,14 +79,11 @@ function loadDashboardStats() {
         }); 
 } 
 
-// Updated function to replace in list_projects_index.js
-// This replaces the old updateDashboardStats function
-
 function updateDashboardStats(stats) { 
     // Actualizar cada estadística en el DOM 
     const statsElements = document.querySelectorAll('.statistics-details > div'); 
     if (statsElements.length >= 7) { 
-        // 1. Total de objetivos - Show: objetivos retrasados
+        // 1. Total de objetivos - mostrar: objetivos retrasados
         const objetivosElement = statsElements[0].querySelector('.rate-percentage'); 
         if (objetivosElement) { 
             objetivosElement.textContent = stats.total_objetivos; 
@@ -108,7 +105,7 @@ function updateDashboardStats(stats) {
             } 
         } 
         
-        // 2. Total de proyectos - Show: % completados
+        // 2. Total de proyectos - mostrar: % completados
         const proyectosElement = statsElements[1].querySelector('.rate-percentage'); 
         if (proyectosElement) { 
             proyectosElement.textContent = stats.total_proyectos; 
@@ -128,7 +125,7 @@ function updateDashboardStats(stats) {
             } 
         }
         
-        // 3. Total de Tareas - Show: % completadas y tareas retrasadas
+        // 3. Total de Tareas - mosrtar: % completadas y tareas retrasadas
         const tareasElement = statsElements[2].querySelector('.rate-percentage'); 
         if (tareasElement) { 
             tareasElement.textContent = `${stats.porcentaje_tareas}%`; 
@@ -150,7 +147,7 @@ function updateDashboardStats(stats) {
             } 
         } 
         
-        // 4. Proyectos completados - Show: % del total
+        // 4. Proyectos completados - mostrar: % del total
         const completadosElement = statsElements[3].querySelector('.rate-percentage'); 
         if (completadosElement) { 
             completadosElement.textContent = stats.proyectos_completados; 
@@ -169,7 +166,7 @@ function updateDashboardStats(stats) {
             } 
         }
         
-        // 5. Proyectos en proceso - Show: Progreso promedio
+        // 5. Proyectos en proceso - mostrar: Progreso promedio
         const procesoElement = statsElements[4].querySelector('.rate-percentage'); 
         if (procesoElement) { 
             procesoElement.textContent = stats.proyectos_en_proceso; 
@@ -189,7 +186,7 @@ function updateDashboardStats(stats) {
             } 
         }
         
-        // 6. Proyectos pendientes - Show: % del total
+        // 6. Proyectos pendientes - mostrar: % del total
         const pendientesElement = statsElements[5].querySelector('.rate-percentage'); 
         if (pendientesElement) { 
             pendientesElement.textContent = stats.proyectos_pendientes; 
@@ -208,7 +205,7 @@ function updateDashboardStats(stats) {
             } 
         }
         
-        // 7. Proyectos vencidos - Show: % del total
+        // 7. Proyectos vencidos - mostrar: % del total
         const vencidosElement = statsElements[6].querySelector('.rate-percentage'); 
         if (vencidosElement) { 
             vencidosElement.textContent = stats.proyectos_vencidos; 
@@ -943,10 +940,7 @@ function updateProyectoCount(count) {
     } 
 } 
 
-// Add these functions to list_projects_index.js
-
-// Load top 5 employees by progress
-function loadTopEmployeesProgress() {
+function loadTopEmployeesProgress() {//cargar top5de empleados por progreso
     fetch('../php/get_top_employees_progress.php')
         .then(response => {
             if (!response.ok) {
@@ -969,8 +963,7 @@ function loadTopEmployeesProgress() {
         });
 }
 
-// Display top employees in the table
-function displayTopEmployeesProgress(empleados) {
+function displayTopEmployeesProgress(empleados) {//mostrar top empleados en las tablas
     const tableBody = document.querySelector('#topEmployeesTableBody');
     
     if (!tableBody) {
@@ -1012,7 +1005,6 @@ function displayTopEmployeesProgress(empleados) {
     });
 }
 
-// Create progress bar with styling based on percentage
 function createProgressBarForEmployee(progress) {
     const progressValue = parseFloat(progress) || 0;
     const progressClass = progressValue >= 75 ? 'bg-success' : 
@@ -1033,7 +1025,6 @@ function createProgressBarForEmployee(progress) {
     `;
 }
 
-// Display empty state when no employees
 function displayEmptyEmployeesState() {
     const tableBody = document.querySelector('#topEmployeesTableBody');
     

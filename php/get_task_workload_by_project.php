@@ -1,13 +1,5 @@
 <?php
-/**
- * get_task_workload_by_project.php
- * Endpoint para obtener la distribución de carga de trabajo (tareas) por proyecto dentro de un departamento
- * 
- * Parámetros GET:
- *   - id_departamento: ID del departamento (opcional, si no se envía muestra todos)
- * 
- * Response: JSON con proyectos y cantidad de tareas asignadas
- */
+/* get_task_workload_by_project.php para obtener la distribución de tareas por proyecto dentro de un departamento*/
 
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
@@ -154,9 +146,6 @@ try {
 
 ob_end_flush();
 
-/**
- * Process project workload data for pie chart display
- */
 function processProjectWorkloadData($workload_data, $total_tasks) {
     $labels = [];
     $values = [];
@@ -196,10 +185,6 @@ function processProjectWorkloadData($workload_data, $total_tasks) {
     ];
 }
 
-/**
- * Get colors for project workload pie chart
- * Uses official brand color palette
- */
 function getProjectWorkloadColors($count) {
     $colors = [
         // Verde primario

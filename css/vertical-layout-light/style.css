@@ -13780,13 +13780,13 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .alert-info {
-  color: #215266;
-  background-color: #dcf5ff;
-  border-color: #cbf0ff;
+  color: #FFFFFF;
+  background-color: #666666;
+  border-color: #666666;
 }
 
 .alert-info .alert-link {
-  color: #1a4252;
+  color: #ffffff;
 }
 
 .alert-warning {
@@ -14169,8 +14169,8 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .list-group-item-info {
-  color: #215266;
-  background-color: #dcf5ff;
+  color: #FFFFFF;
+  background-color: #666666;
 }
 
 .list-group-item-info.list-group-item-action:hover, .list-group-item-info.list-group-item-action:focus {
@@ -20966,31 +20966,31 @@ code {
 }
 
 .alert-secondary {
-  color: #F1F1F1;
+  color: #a9a9a9;
 }
 
 .alert-success {
-  color: #34B1AA;
+  color: #009B4A;
 }
 
 .alert-info {
-  color: #52CDFF;
+  color: #ffffff;
 }
 
 .alert-warning {
-  color: #ffaf00;
+  color: #666666;
 }
 
 .alert-danger {
-  color: #F95F53;
+  color: #000000;
 }
 
 .alert-light {
-  color: #fbfbfb;
+  color: #e9e9e9;
 }
 
 .alert-dark {
-  color: #1E283D;
+  color: #000000;
 }
 
 .alert-fill-primary {

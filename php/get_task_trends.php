@@ -24,7 +24,7 @@ $response = [
     'success' => false,
     'message' => '',
     'data' => null,
-    'mode' => 'single', // 'single' o 'comparison'
+    'mode' => 'single', // 'solo un departamento' o 'comparacion'
     'departamento' => null
 ];
 

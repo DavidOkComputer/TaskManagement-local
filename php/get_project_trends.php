@@ -1,15 +1,5 @@
 <?php
-/**
- * get_project_trends.php
- * Endpoint para obtener datos de tendencia de proyectos completados por semana
- * Soporta vista de departamento individual y comparación entre departamentos
- * 
- * Parameters:
- *   - id_departamento (optional): ID de departamento específico para vista individual
- *   - weeks (optional): Número de semanas a retornar (default: 12)
- * 
- * Response: JSON con etiquetas de semanas y datos de proyectos completados
- */
+/*get_project_trends.php para obtener datos de tendencia de proyectos completados por semana*/
 
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
@@ -24,7 +14,7 @@ $response = [
     'success' => false,
     'message' => '',
     'data' => null,
-    'mode' => 'single', // 'single' o 'comparison'
+    'mode' => 'single', // 'single' o 'comparison' 
     'departamento' => null
 ];
 
@@ -43,12 +33,11 @@ try {
         $weeks = 12;
     }
 
-    // Determinar modo: single vs comparison
+    // Determinar modo: solo un departamento o comparacion
     $mode = $id_departamento ? 'single' : 'comparison';
     $response['mode'] = $mode;
 
     if ($mode === 'single') {
-        // ===== MODO INDIVIDUAL: Un departamento específico =====
         
         // Obtener nombre del departamento
         $dept_query = "SELECT nombre FROM tbl_departamentos WHERE id_departamento = ?";
@@ -118,7 +107,6 @@ try {
         $response['data'] = $processed_data;
 
     } else {
-        // ===== MODO COMPARACIÓN: Todos los departamentos =====
         
         // Obtener lista de departamentos que tienen proyectos
         $dept_list_query = "
@@ -281,10 +269,6 @@ try {
 
 ob_end_flush();
 
-/**
- * Procesa datos de departamento individual
- * Convierte conteos por semana en datos acumulativos
- */
 function processSingleDepartmentData($data, $weeks) {
     // Crear mapa de semanas completo (últimas $weeks semanas)
     $all_weeks = [];
@@ -340,10 +324,6 @@ function processSingleDepartmentData($data, $weeks) {
     ];
 }
 
-/**
- * Obtiene colores para comparación entre departamentos
- * Usa la paleta de colores oficial de la marca
- */
 function getComparisonColors($count) {
     $colors = [
         // Verde primario

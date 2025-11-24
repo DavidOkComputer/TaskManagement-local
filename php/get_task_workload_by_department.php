@@ -1,10 +1,5 @@
 <?php
-/**
- * get_task_workload_by_department.php
- * Endpoint para obtener la distribución de carga de trabajo (tareas) por departamento
- * 
- * Response: JSON con departamentos y cantidad de tareas asignadas
- */
+/*get_task_workload_by_department.php para obtener la distribución de tareas por departamento*/
 
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
@@ -28,7 +23,7 @@ try {
     }
 
     // Query para obtener tareas agrupadas por departamento
-    // Cuenta todas las tareas activas (no completadas) por departamento
+    // Cuenta todas las tareas no completadas por departamento
     $query = "
         SELECT 
             d.id_departamento,
@@ -80,7 +75,7 @@ try {
         throw new Exception('No hay datos de carga de trabajo disponibles');
     }
 
-    // Procesar datos para pie chart
+    // Procesar datos para grafica de pastel de distribucion de carga
     $processed_data = processWorkloadData($workload_data, $total_tasks);
 
     if (ob_get_length()) ob_clean();
@@ -104,10 +99,6 @@ try {
 
 ob_end_flush();
 
-/**
- * Process workload data for pie chart display
- * Calculates percentages and prepares labels
- */
 function processWorkloadData($workload_data, $total_tasks) {
     $labels = [];
     $values = [];

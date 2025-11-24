@@ -1,6 +1,5 @@
 <?php
-// get_top_projects_progress.php
-// Obtiene los top 5 proyectos con mayor progreso
+// get_top_projects_progress.php top 5 proyectos con mayor progreso
 
 ob_start();
 error_reporting(E_ALL);

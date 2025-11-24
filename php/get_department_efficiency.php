@@ -1,13 +1,5 @@
 <?php
-/**
- * get_department_efficiency.php
- * Endpoint para obtener matriz de eficiencia departamental
- * Compara carga de trabajo total vs tasa de finalización
- * 
- * Response: JSON con datos de departamentos para scatter chart
- * - X-axis: Total de tareas por departamento
- * - Y-axis: Porcentaje de tareas completadas (eficiencia)
- */
+/*get_department_efficiency.php para obtener matriz de eficiencia departamental*/
 
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
@@ -89,7 +81,7 @@ try {
         throw new Exception('No hay datos de eficiencia departamental disponibles');
     }
 
-    // Procesar datos para scatter chart
+    // Procesar datos para scatter chart, grafica de medidas de eficiencia
     $processed_data = processEfficiencyData($efficiency_data);
 
     if (ob_get_length()) ob_clean();
@@ -113,9 +105,6 @@ try {
 
 ob_end_flush();
 
-/**
- * Procesa datos de eficiencia para scatter chart
- */
 function processEfficiencyData($efficiency_data) {
     $scatterPoints = [];
     $colors = getEfficiencyColors(count($efficiency_data));
@@ -158,10 +147,6 @@ function processEfficiencyData($efficiency_data) {
     ];
 }
 
-/**
- * Obtiene colores para eficiencia departamental
- * Usa paleta oficial de marca
- */
 function getEfficiencyColors($count) {
     $colors = [
         // Verde primario

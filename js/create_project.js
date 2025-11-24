@@ -1,4 +1,4 @@
-/**create_proyect.js //javascript para creacion y edicion de proyectos*/
+/**create_proyect.js creacion y edicion de proyectos*/
  
 const editMode = {
     isEditing: false,
@@ -99,11 +99,6 @@ function populateUsuariosSelect(usuarios) {
   });
 }
 
-/**
- * Populate group modal with MDI icon-based selection
- * Uses mdi-checkbox-marked-circle-outline for selected state
- * and mdi-checkbox-blank-circle-outline for unselected state
- */
 function populateGrupalModal(usuarios) {
   const container = document.getElementById('usuariosListContainer');
   if (!container) return;
@@ -135,8 +130,7 @@ function populateGrupalModal(usuarios) {
     
     container.appendChild(userItem);
     
-    // Add hover effect
-    userItem.addEventListener('mouseenter', function() {
+    userItem.addEventListener('mouseenter', function() {//efecto al pasar el cursor encima
       if (!this.classList.contains('selected')) {
         this.style.backgroundColor = '#f8f9fa';
       }
@@ -148,8 +142,7 @@ function populateGrupalModal(usuarios) {
       }
     });
     
-    // Add click handler
-    userItem.addEventListener('click', function(e) {
+    userItem.addEventListener('click', function(e) {//manejo del evento de clic
       e.stopPropagation();
       toggleUsuarioSelection(this);
     });
@@ -158,10 +151,6 @@ function populateGrupalModal(usuarios) {
   setupUsuarioItemHandlers();
 }
 
-/**
- * Toggle user selection state
- * Updates icon color and background color based on selection state
- */
 function toggleUsuarioSelection(userItem) {
   const userId = parseInt(userItem.getAttribute('data-user-id'));
   const icon = userItem.querySelector('.usuario-selection-icon');
@@ -169,8 +158,7 @@ function toggleUsuarioSelection(userItem) {
   const isSelected = icon.classList.contains('mdi-checkbox-marked-circle-outline');
   
   if (isSelected) {
-    // Deselect
-    icon.classList.remove('mdi-checkbox-marked-circle-outline');
+    icon.classList.remove('mdi-checkbox-marked-circle-outline');//deseleccionar
     icon.classList.add('mdi-checkbox-blank-circle-outline');
     icon.style.color = '#999';
     userItem.style.backgroundColor = 'transparent';
@@ -178,11 +166,10 @@ function toggleUsuarioSelection(userItem) {
     
     grupalState.selectedUsers = grupalState.selectedUsers.filter(id => id !== userId);
   } else {
-    // Select
-    icon.classList.remove('mdi-checkbox-blank-circle-outline');
+    icon.classList.remove('mdi-checkbox-blank-circle-outline');//seleccionar
     icon.classList.add('mdi-checkbox-marked-circle-outline');
-    icon.style.color = '#28a745';
-    userItem.style.backgroundColor = '#f0f8f5';
+    icon.style.color = '#009b4a';
+    userItem.style.backgroundColor = '#ffffff';
     userItem.classList.add('selected');
     
     if (!grupalState.selectedUsers.includes(userId)) {
@@ -193,9 +180,6 @@ function toggleUsuarioSelection(userItem) {
   updateSelectedCount();
 }
 
-/**
- * Setup event handlers for user items including search functionality
- */
 function setupUsuarioItemHandlers() {
   const searchInput = document.getElementById('searchUsuarios');
   
@@ -221,8 +205,6 @@ function updateSelectedCount() {
   const checkedCount = grupalState.selectedUsers.length;
   document.getElementById('countSelected').textContent = checkedCount;
 }
- 
-//create_project.js para crear un proyecto
 
 function setupGrupalHandlers() {
   const tipoProyectoRadios = document.querySelectorAll('input[name="id_tipo_proyecto"]');
@@ -340,8 +322,7 @@ function cargarProyectoParaEditar(projectId) {
                 if (tipoValue == '1' && proyecto.usuarios_asignados) {
                     grupalState.selectedUsers = proyecto.usuarios_asignados.map(u => u.id_usuario);
                     
-                    // Mark selected users with icon when modal is loaded
-                    setTimeout(() => {
+                    setTimeout(() => {//marcar usuarios seleccionados con el icono cuando carga el modal
                         grupalState.selectedUsers.forEach(userId => {
                             const userItem = document.querySelector(`[data-user-id="${userId}"]`);
                             if (userItem) {
@@ -349,8 +330,8 @@ function cargarProyectoParaEditar(projectId) {
                                 if (icon) {
                                     icon.classList.remove('mdi-checkbox-blank-circle-outline');
                                     icon.classList.add('mdi-checkbox-marked-circle-outline');
-                                    icon.style.color = '#28a745';
-                                    userItem.style.backgroundColor = '#f0f8f5';
+                                    icon.style.color = '#009B4A';
+                                    userItem.style.backgroundColor = '#FFFFFF';
                                     userItem.classList.add('selected');
                                 }
                             }
@@ -359,8 +340,7 @@ function cargarProyectoParaEditar(projectId) {
                     }, 100);
                 }
 
-                // Cargar permiso de edición
-                const puedeEditarOtros = proyecto.puede_editar_otros == 1 ? '1' : '0';
+                const puedeEditarOtros = proyecto.puede_editar_otros == 1 ? '1' : '0';//CARGAR PERMISOS DE EDICION
                 document.querySelector(`input[name="puede_editar_otros"][value="${puedeEditarOtros}"]`).checked = true;
  
                 if (proyecto.archivo_adjunto) {//si existe el archivo adjunto mostrarlo
