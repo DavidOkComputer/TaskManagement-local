@@ -1,5 +1,5 @@
 <?php 
-require_once('php/check_auth.php');
+require_once('../php/check_auth.php');
 
 //obtener la informacion del usuario  
 session_start();
@@ -419,6 +419,7 @@ $user_id = $_SESSION['user_id'];
     <!-- endinject --> 
     <!-- inject:js --> 
     <script src="../js/template.js"></script> 
+    <script src="../js/hoverable-collapse.js"></script>
     <!-- endinject --> 
     <!-- Custom js for this page--> 
     <script src="../js/file-upload.js"></script> 

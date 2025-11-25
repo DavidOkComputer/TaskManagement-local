@@ -27,6 +27,7 @@ $user_id = $_SESSION['user_id'];
     <link rel="stylesheet" href="../css/vertical-layout-light/style.css"> 
     <!-- endinject --> 
     <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />  
+    <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" type="image/x-icon">
 </head> 
 <body> 
     <div class="container-scroller"> 
@@ -364,9 +365,11 @@ $user_id = $_SESSION['user_id'];
     <script src="../js/template.js"></script> 
     <script src="../vendors/chart.js/Chart.min.js"></script> 
     <!-- endinject --> 
-    <!-- Custom js for this page--> 
+    <!-- Custom js for this page-->  
+    <script src="../js/hoverable-collapse.js"></script>
     <script src="../js/file-upload.js"></script> 
     <script src="../js/dashboard.js"></script> 
+    <script src="../js/custom_dialogs.js"></script>
     <!-- End custom js for this page--> 
     <script src="../js/create_department.js"></script> 
 </body> 

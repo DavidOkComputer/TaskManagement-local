@@ -258,7 +258,7 @@ session_start();
             <div class="col-lg-6 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">Progreso sobre el tiempo</h4>
+                  <h4 class="card-title">Progreso sobre el tiempo (Proyectos completados)</h4>
                   <canvas id="lineChart"></canvas>
                 </div>
               </div>
@@ -333,10 +333,14 @@ session_start();
   <!-- endinject -->
   <!-- Custom js for this page-->
   <script src="../js/chart.js"></script>
-  <script src="../js/load_departments_dropdown.js"></script>
-  <script src="../js/dashboard_charts.js"></script>
-  <script src="../js/dashboard_charts_workload.js"></script>
+  <script src="../js/dashboard_charts_core.js"></script><!--funcion principal del graficaod, controla los demas-->
+  <script src="../js/load_departments_dropdown.js"></script><!--Manejo de menu de seleccion de departamentos-->
+  <script src="../js/dashboard_charts_doughnut.js"></script><!--Para grafica de proyectos por estado-->
+  <script src="../js/dashboard_charts_bar.js"></script><!--Para grafica de progreso de proyectos-->
+  <script src="../js/dashboard_charts_area.js"></script><!--Para grafica de avances por periodo de tiempo-->
+  <script src="../js/dashboard_charts_line.js"></script><!--Para grafica de progreso sobre el tiempo-->
+  <script src="../js/dashboard_charts_scatter.js"></script><!--Para grafica de medidas de eficiencia-->
+  <script src="../js/dashboard_charts_workload.js"></script><!--Para grafica de distribucion de carga-->
   <!-- End custom js for this page-->
 </body>
-
 </html>

@@ -1,15 +1,5 @@
 <?php
-/**
- * get_task_trends.php
- * Endpoint para obtener datos de tendencia de tareas completadas por semana
- * Soporta vista de departamento individual y comparación entre departamentos
- * 
- * Parameters:
- *   - id_departamento (optional): ID de departamento específico para vista individual
- *   - weeks (optional): Número de semanas a retornar (default: 12)
- * 
- * Response: JSON con etiquetas de semanas y datos de tareas completadas
- */
+/* get_task_trends.php para saber las tendencias de avances en tareas*/
 
 ob_start();
 header('Content-Type: application/json; charset=utf-8');
@@ -120,7 +110,6 @@ try {
         $response['data'] = $processed_data;
 
     } else {
-        // ===== MODO COMPARACIÓN: Todos los departamentos =====
         
         // Obtener lista de departamentos que tienen tareas completadas
         $dept_list_query = "
@@ -281,11 +270,6 @@ try {
 }
 
 ob_end_flush();
-
-/**
- * Procesa datos de departamento individual
- * Convierte conteos por semana en datos acumulativos
- */
 function processSingleDepartmentTaskData($data, $weeks) {
     // Crear mapa de semanas completo (últimas $weeks semanas)
     $all_weeks = [];

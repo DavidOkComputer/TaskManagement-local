@@ -524,9 +524,6 @@ function loadTaskTrendComparison() {
         .catch(error => {
             console.error('Error loading comparison task trends:', error.message);
             console.error('Full error:', error);
-            console.warn('DEBUG: Check the following:');
-            console.warn('1. Is get_task_trends.php deployed to /php/?');
-            console.warn('2. Open browser Network tab (F12) to see API response');
         });
 }
 
@@ -729,7 +726,7 @@ function loadProjectTrendComparison() {
             console.log('Raw API response:', text);
             
             if (!text || text.trim() === '') {
-                throw new Error('API returned empty response. Check: 1) Is get_project_trends.php deployed? 2) Is PHP file in correct location (/php/)?');
+                throw new Error('API returned empty response');
             }
             
             try {
