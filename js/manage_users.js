@@ -6,7 +6,6 @@ const Config = {
     } 
 }; 
 
-// AUTO-REFRESH CONFIGURATION
 const AUTO_REFRESH_CONFIG = {
     USERS_INTERVAL: 60000,      // minuto - refrescar lista de usuarios y progreso
     MODAL_INTERVAL: 60000,      // 1minuto - refrescar el modal de proyectos cuando este abierto
