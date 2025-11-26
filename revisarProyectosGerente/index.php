@@ -1,11 +1,12 @@
 <?php
 require_once('../php/check_auth.php');
+
 session_start();
 $user_name = $_SESSION['nombre']; 
 $user_apellido = $_SESSION['apellido']; 
 $user_email = $_SESSION['e_mail']; 
 $user_id = $_SESSION['user_id']; 
-// Gestion de empleados- vista de gerente
+/*revisar proyectos*/ 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +15,7 @@ $user_id = $_SESSION['user_id'];
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Administrador de proyectos </title>
+  <title>Administrador de proyectos</title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="../vendors/feather/feather.css">
   <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css">
@@ -50,15 +51,29 @@ $user_id = $_SESSION['user_id'];
       <div class="navbar-menu-wrapper d-flex align-items-top"> 
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-            <h1 class="welcome-text">Buenos dias, 
+            <h1 class="welcome-text">Buenos días, 
               <span class="text-black fw-bold">
                 <?php echo htmlspecialchars($user_name); ?>
               </span>
             </h1>
-            <h3 class="welcome-sub-text">Tu resumen de esta semana </h3>
+            <h3 class="welcome-sub-text">Gestiona los proyectos registrados</h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <form 
+                  class="search-form" 
+                  action="#"
+                  id="search-form">
+              <i class="icon-search"></i>
+              <input
+                    type="search" 
+                    class="form-control" 
+                    placeholder="Buscar proyecto" 
+                    title="Search here"
+                    id="searchInput">
+            </form>
+          </li>
           <li class="nav-item dropdown">
             <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
               <i class="icon-mail icon-lg"></i>
@@ -73,7 +88,7 @@ $user_id = $_SESSION['user_id'];
                   <i class="mdi mdi-settings m-auto text-primary"></i>
                 </div>
                 <div class="preview-item-content">
-                  <h6 class="preview-subject fw-normal text-dark mb-1">Configuracion</h6>
+                  <h6 class="preview-subject fw-normal text-dark mb-1">Configuración</h6>
                   <p class="fw-light small-text mb-0">Configurar distintos ajustes</p>
                 </div>
               </a>
@@ -86,7 +101,7 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="countDropdown">
               <a class="dropdown-item py-3">
-                <p class="mb-0 font-weight-medium float-left">Tienes nuevas notificaciones </p>
+                <p class="mb-0 font-weight-medium float-left">Tienes nuevas notificaciones</p>
                 <span class="badge badge-pill badge-primary float-right">Ver todo</span>
               </a>
               <div class="dropdown-divider"></div>
@@ -95,8 +110,8 @@ $user_id = $_SESSION['user_id'];
                   <img src="../images/faces/face10.jpg" alt="image" class="img-sm profile-pic">
                 </div>
                 <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">Marian Garner </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
+                  <p class="preview-subject ellipsis font-weight-medium text-dark">Marian Garner</p>
+                  <p class="fw-light small-text mb-0">Requiere de avances</p>
                 </div>
               </a>
               <a class="dropdown-item preview-item">
@@ -104,8 +119,8 @@ $user_id = $_SESSION['user_id'];
                   <img src="../images/faces/face12.jpg" alt="image" class="img-sm profile-pic">
                 </div>
                 <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">David Grey </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
+                  <p class="preview-subject ellipsis font-weight-medium text-dark">David Grey</p>
+                  <p class="fw-light small-text mb-0">Requiere de avances</p>
                 </div>
               </a>
               <a class="dropdown-item preview-item">
@@ -113,26 +128,30 @@ $user_id = $_SESSION['user_id'];
                   <img src="../images/faces/face1.jpg" alt="image" class="img-sm profile-pic">
                 </div>
                 <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">Desarrollo de calendario </p>
-                  <p class="fw-light small-text mb-0"> Requiere de avances </p>
+                  <p class="preview-subject ellipsis font-weight-medium text-dark">Desarrollo de calendario</p>
+                  <p class="fw-light small-text mb-0">Requiere de avances</p>
                 </div>
               </a>
             </div>
           </li>
           <li class="nav-item dropdown d-none d-lg-block user-dropdown">
             <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> </a>
+              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"></a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
                 <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
                 <p class="mb-1 mt-3 font-weight-semibold">
-                  <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
+                  <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>  
                 </p>
                 <p class="fw-light text-muted mb-0">
                   <?php echo htmlspecialchars($user_email); ?>
                 </p>
               </div>
-              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
+             
+              <a class="dropdown-item" href="../php/logout.php">
+                <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>
+                Cerrar sesión
+              </a>
             </div>
           </li>
         </ul>
@@ -143,23 +162,11 @@ $user_id = $_SESSION['user_id'];
     </nav>
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
-      <div id="right-sidebar" class="settings-panel">
-        <i class="settings-close ti-close"></i>
-        <ul class="nav nav-tabs border-top" id="setting-panel" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" id="todo-tab" data-bs-toggle="tab" href="#todo-section" role="tab" aria-controls="todo-section" aria-expanded="true">Lista de que hacer</a>
-          </li>
-        </ul>
-      <div class="tab-content" id="setting-content">
-          
-          <!-- chat tab ends -->
-        </div>
-      </div>
       <!-- partial -->
       <!-- partial:partials/_sidebar.html -->
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
-          <li class="nav-item nav-category">Gestion de usuarios</li>
+          <li class="nav-item nav-category">Gestión de usuarios</li>
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
               <i class="menu-icon mdi mdi-account-multiple"></i>
@@ -168,8 +175,8 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="collapse" id="ui-basic">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../gestionDeEmpleados/">Gestion de empleados</a></li>
-                <li class="nav-item"> <a class="nav-link" href="../registroDeEmpleados">Registrar nuevo empleado</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../gestionDeEmpleados/">Gestión de empleados</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../registroDeEmpleados/">Registrar nuevo empleado</a></li>
               </ul>
             </div>
           </li>
@@ -181,8 +188,8 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="collapse" id="departamentos">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../gestionDeDepartamentos/">Gestion de departamentos</a></li>
-                <li class="nav-item"> <a class="nav-link" href="../registroDeDepartamentos">Registrar departamento</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../gestionDeDepartamentos/">Gestión de departamentos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../registroDeDepartamentos/">Registrar departamento</a></li>
               </ul>
             </div>
           </li>
@@ -204,12 +211,12 @@ $user_id = $_SESSION['user_id'];
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
               <i class="menu-icon mdi mdi-chart-line"></i>
-              <span class="menu-title">Graficado</span>
+              <span class="menu-title">Gráficos</span>
               <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="charts">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarGraficos">Revisar graficos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarGraficos/">Revisar gráficos</a></li>
               </ul>
             </div>
           </li>
@@ -222,11 +229,7 @@ $user_id = $_SESSION['user_id'];
             <div class="collapse" id="tables">
               <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link" href="../revisarProyectos/">Revisar proyectos</a></li>
-              </ul>
-              <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link" href="../revisarObjetivos/">Revisar objetivos</a></li>
-              </ul>
-              <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link" href="../revisarTareas/">Revisar tareas</a></li>
               </ul>
             </div>
@@ -240,7 +243,7 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="collapse" id="auth">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href=""> Cerrar Sesión </a></li>
+                <li class="nav-item"> <a class="nav-link" href="">Cerrar Sesión</a></li>
               </ul>
             </div>
           </li>
@@ -249,103 +252,86 @@ $user_id = $_SESSION['user_id'];
       <!-- partial -->
       <div class="main-panel">
         <div class="content-wrapper">
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="home-tab">
-                <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-                  <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item">
-                      <a class="nav-link" id="home-tab" href="../adminDashboard" role="tab" aria-controls="overview" aria-selected="false">Resumen</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="true">Proyectos totales</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" id="contact-tab" href="../proyectosPendientes" role="tab" aria-selected="false">Proyectos pendientes</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link border-0 active ps-0" id="more-tab" href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
-                    </li>
-                  </ul>
-                  <div>
-                    <div class="btn-wrapper">
-                      <a href="#" class="btn btn-otline-dark align-items-center"><i class="icon-share"></i> Compartir</a>
-                      <a href="#" class="btn btn-primary text-white me-0"><i class="icon-printer"></i> Imprimir</a>
+          <div 
+              id="alertMessage" 
+              class="alert"
+              style="display:none;"
+              role="alert">
+          </div>
+          <div class="row flex-grow">
+            <div class="col-12 grid-margin stretch-card">
+              <div class="card card-rounded">
+                <div class="card-body">
+                  <div class="d-sm-flex justify-content-between align-items-start">
+                    <div>
+                      <h4 class="card-title card-title-dash">Gestión de proyectos</h4>
+                      <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los proyectos registrados</p>
+                    </div>
+                    <div>
+                      <a href="../nuevoProyecto/">
+                        <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i>Crear nuevo proyecto</button>
+                      </a>
                     </div>
                   </div>
-                </div>
-                <div class="tab-content tab-content-basic">
-                  <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview"> 
-                    <div class="row">
-                      <div class="col-sm-12">
-                        
-                      </div>
-                    </div> 
-                    
-                    <div class="row">
-                      <div class="col-lg-8 d-flex flex-column"> 
-                        <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="d-sm-flex justify-content-between align-items-start">
-                                  <div>
-                                    <h4 class="card-title card-title-dash">Proyectos Vencidos</h4>
-                                   <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
-                                  </div>
-                                  <div>
-                                    <a href="../nuevoProyecto/">
-                                      <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-folder-upload"></i>Agregar nuevo proyecto</button>
-                                    </a>
-                                    <a href="../revisarProyectos/">
-                                      <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
-                                    </a>
-                                    </div>
-                                </div>
-                                <div class="table-responsive  mt-3">
-                                  <table class="table select-table">
-                                    <thead>
-                                      <tr>
-                                        <th>Titulo</th>
-                                        <th>Descripcion</th>
-                                        <th>Progreso</th>
-                                        <th>Estado</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                    
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
+                  <!-- Rows Per Page Selector -->
+                  <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
+                    <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
+                    <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">
+                      <option value="5">5</option>
+                      <option value="10" selected>10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                    </select>
+                  </div>
+
+                  <div class="table-responsive mt-3">
+                    <table class="table select-table">
+                      <thead>
+                        <tr>
+                          <th class="sortable-header" data-sort="id_proyecto" style="cursor: pointer; user-select: none;">
+                            # <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
+                            Título <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="descripcion" style="cursor: pointer; user-select: none;">
+                            Descripción <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="area" style="cursor: pointer; user-select: none;">
+                            Área <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor: pointer; user-select: none;">
+                            Fecha de entrega <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="progreso" style="cursor: pointer; user-select: none;">
+                            Progreso <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="estado" style="cursor: pointer; user-select: none;">
+                            Estado <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th class="sortable-header" data-sort="participante" style="cursor: pointer; user-select: none;">
+                            Asignado a <i class="mdi mdi-sort-variant"></i>
+                          </th>
+                          <th>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody id="proyectosTableBody">
+                        <!--proyectos cargados automaticamente-->
+                        <tr>
+                          <td colspan="9" class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                              <span class="visually-hidden">Cargando...</span>
                             </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-lg-4 d-flex flex-column">
-                        <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="row">
-                                  <div class="col-lg-12">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                      <h4 class="card-title card-title-dash">Proyecto por estatus</h4>
-                                    </div>
-                                    <canvas class="my-auto" id="doughnutChart" height="200"></canvas>
-                                    <div id="doughnut-chart-legend" class="mt-5 text-center"></div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                            <p class="mt-2">Cargando proyectos...</p>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Pagination Controls -->
+                  <div class="pagination-container mt-4">
+                    <!-- Pagination info and buttons are dynamically inserted here -->
                   </div>
                 </div>
               </div>
@@ -363,12 +349,10 @@ $user_id = $_SESSION['user_id'];
   <!-- plugins:js -->
   <script src="../vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
-  <!-- Plugin js for this page -->
+   
   <script src="../vendors/chart.js/Chart.min.js"></script>
   <script src="../vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
   <script src="../vendors/progressbar.js/progressbar.min.js"></script>
-
-  <!-- End plugin js for this page -->
   <!-- inject:js -->
   <script src="../js/off-canvas.js"></script>
   <script src="../js/hoverable-collapse.js"></script>
@@ -379,8 +363,10 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/list_overdue_projects.js"></script>
   <!-- End custom js for this page-->
+  
+  <!-- Load projects script -->
+  <script src="../js/custom_dialogs.js"></script>
+  <script src="../js/manage_projects.js"></script>
 </body>
-
 </html>

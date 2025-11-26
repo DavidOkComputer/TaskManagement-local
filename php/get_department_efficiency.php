@@ -325,22 +325,11 @@ function getOfficialDashboardColors($count) {
         ['border' => 'rgba(45, 110, 80, 0.9)', 'background' => 'rgba(45, 110, 80, 0.6)'], 
     ]; 
 
-     
-
     // Ciclar colores si hay más departamentos 
-
     $result = []; 
-
     for ($i = 0; $i < $count; $i++) { 
-
         $result[] = $colors[$i % count($colors)]; 
-
     } 
-
-     
-
     return $result; 
-
 } 
-
 ?>

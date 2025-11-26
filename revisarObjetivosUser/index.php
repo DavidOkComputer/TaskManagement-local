@@ -1,11 +1,11 @@
 <?php
-require_once('../php/check_auth.php');
+require_once('../php/check_auth.php'); 
+  
 session_start();
 $user_name = $_SESSION['nombre']; 
 $user_apellido = $_SESSION['apellido']; 
 $user_email = $_SESSION['e_mail']; 
 $user_id = $_SESSION['user_id']; 
-// Gestion de empleados- vista de gerente
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +14,7 @@ $user_id = $_SESSION['user_id'];
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Administrador de proyectos </title>
+  <title>Administrador de objetivos</title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="../vendors/feather/feather.css">
   <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css">
@@ -55,10 +55,23 @@ $user_id = $_SESSION['user_id'];
                 <?php echo htmlspecialchars($user_name); ?>
               </span>
             </h1>
-            <h3 class="welcome-sub-text">Tu resumen de esta semana </h3>
+            <h3 class="welcome-sub-text">Gestiona los objetivos registrados</h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <form class="search-form" 
+                  action="#"
+                  id="search-form">
+              <i class="icon-search"></i>
+              <input type="search" 
+                     class="form-control" 
+                     placeholder="Buscar objetivos..." 
+                     title="Search here"
+                     class="form-control"
+                     id="searchInput">
+            </form>
+          </li>
           <li class="nav-item dropdown">
             <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
               <i class="icon-mail icon-lg"></i>
@@ -132,7 +145,10 @@ $user_id = $_SESSION['user_id'];
                   <?php echo htmlspecialchars($user_email); ?>
                 </p>
               </div>
-              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
+              <a class="dropdown-item" href="../php/logout.php">
+                <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>
+                Cerrar sesion
+              </a>
             </div>
           </li>
         </ul>
@@ -143,18 +159,6 @@ $user_id = $_SESSION['user_id'];
     </nav>
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
-      <div id="right-sidebar" class="settings-panel">
-        <i class="settings-close ti-close"></i>
-        <ul class="nav nav-tabs border-top" id="setting-panel" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" id="todo-tab" data-bs-toggle="tab" href="#todo-section" role="tab" aria-controls="todo-section" aria-expanded="true">Lista de que hacer</a>
-          </li>
-        </ul>
-      <div class="tab-content" id="setting-content">
-          
-          <!-- chat tab ends -->
-        </div>
-      </div>
       <!-- partial -->
       <!-- partial:partials/_sidebar.html -->
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
@@ -248,111 +252,84 @@ $user_id = $_SESSION['user_id'];
       </nav>
       <!-- partial -->
       <div class="main-panel">
-        <div class="content-wrapper">
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="home-tab">
-                <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-                  <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item">
-                      <a class="nav-link" id="home-tab" href="../adminDashboard" role="tab" aria-controls="overview" aria-selected="false">Resumen</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="true">Proyectos totales</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" id="contact-tab" href="../proyectosPendientes" role="tab" aria-selected="false">Proyectos pendientes</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link border-0 active ps-0" id="more-tab" href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
-                    </li>
-                  </ul>
-                  <div>
-                    <div class="btn-wrapper">
-                      <a href="#" class="btn btn-otline-dark align-items-center"><i class="icon-share"></i> Compartir</a>
-                      <a href="#" class="btn btn-primary text-white me-0"><i class="icon-printer"></i> Imprimir</a>
-                    </div>
-                  </div>
+      <div class="content-wrapper">
+      <div
+              id="alertMessage" 
+              class="alert"
+              style="display:none;"
+              role="alert">
+            </div>
+      <div class="row flex-grow">
+        <div class="col-12 grid-margin stretch-card">
+          <div class="card card-rounded">
+            <div class="card-body">
+              <div class="d-sm-flex justify-content-between align-items-start">
+                <div>
+                  <h4 class="card-title card-title-dash">Gestion de objetivos</h4>
+                    <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los objetivos</p>
                 </div>
-                <div class="tab-content tab-content-basic">
-                  <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview"> 
-                    <div class="row">
-                      <div class="col-sm-12">
-                        
-                      </div>
-                    </div> 
-                    
-                    <div class="row">
-                      <div class="col-lg-8 d-flex flex-column"> 
-                        <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="d-sm-flex justify-content-between align-items-start">
-                                  <div>
-                                    <h4 class="card-title card-title-dash">Proyectos Vencidos</h4>
-                                   <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
-                                  </div>
-                                  <div>
-                                    <a href="../nuevoProyecto/">
-                                      <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-folder-upload"></i>Agregar nuevo proyecto</button>
-                                    </a>
-                                    <a href="../revisarProyectos/">
-                                      <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
-                                    </a>
-                                    </div>
-                                </div>
-                                <div class="table-responsive  mt-3">
-                                  <table class="table select-table">
-                                    <thead>
-                                      <tr>
-                                        <th>Titulo</th>
-                                        <th>Descripcion</th>
-                                        <th>Progreso</th>
-                                        <th>Estado</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                    
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-lg-4 d-flex flex-column">
-                        <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="row">
-                                  <div class="col-lg-12">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                      <h4 class="card-title card-title-dash">Proyecto por estatus</h4>
-                                    </div>
-                                    <canvas class="my-auto" id="doughnutChart" height="200"></canvas>
-                                    <div id="doughnut-chart-legend" class="mt-5 text-center"></div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <div>
+                  <a href="../nuevoObjetivo">
+                    <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i>Crear nuevo objetivo</button>
+                  </a>
                 </div>
               </div>
+              <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
+                <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
+                  <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                  </select>
+              </div>
+              <div class="table-responsive  mt-3" id="tableContainer">  
+                <table class="table select-table">
+                  <thead>
+                    <tr>
+                      <th class="sortable-header" data-sort="id_objetivo" style="cursor:pointer; user-select:none;">
+                        # <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="nombre" style="cursor:pointer; user-select:none;">
+                        Titulo <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="descripcion" style="cursor:pointer; user-select: none;">
+                        Descripcion <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="area" style="cursor:pointer; user-select: none;">
+                        Área <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor:pointer; user-select: none">
+                        Fecha de entrega <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th class="sortable-header" data-sort="estado" style="cursor:pointer; user-select:none;">
+                        Estado <i class="mdi mdi-sort-variant"></i>
+                      </th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                    <tbody id="objetivosTableBody">
+                      <tr>
+                        <td colspan="9" class="text-center">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                          </div>
+                          <p class="mt-2">Cargando objetivos...</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                </table>
+              </div>
+              <div class="pagination-container mt-4"></div> 
             </div>
           </div>
         </div>
-        <!-- content-wrapper ends -->
+      </div>
+    </div>
+  </div>
+      <!-- main-panel ends -->
+    </div>
+        <!-- content-wrapper ends --> 
       </div>
       <!-- main-panel ends -->
     </div>
@@ -363,12 +340,10 @@ $user_id = $_SESSION['user_id'];
   <!-- plugins:js -->
   <script src="../vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
-  <!-- Plugin js for this page -->
+   
   <script src="../vendors/chart.js/Chart.min.js"></script>
   <script src="../vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
   <script src="../vendors/progressbar.js/progressbar.min.js"></script>
-
-  <!-- End plugin js for this page -->
   <!-- inject:js -->
   <script src="../js/off-canvas.js"></script>
   <script src="../js/hoverable-collapse.js"></script>
@@ -376,11 +351,13 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/settings.js"></script>
   <script src="../js/todolist.js"></script>
   <!-- endinject -->
+   
+   <script src="../js/custom_dialogs.js"></script>
+   <script src="../js/custom_dialog.js"></script>
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/list_overdue_projects.js"></script>
   <!-- End custom js for this page-->
+   <script src="../js/manage_objectives.js"> </script>
 </body>
-
 </html>

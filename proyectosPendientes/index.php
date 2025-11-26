@@ -1,8 +1,11 @@
 <?php
-/*
+/*Dashboard principal de admin proyectos pendientes*/
 require_once('php/check_auth.php');
-Dashboard principal de admin proyectos pendientes
-*/
+session_start();
+$user_name = $_SESSION['nombre']; 
+$user_apellido = $_SESSION['apellido']; 
+$user_email = $_SESSION['e_mail']; 
+$user_id = $_SESSION['user_id']; 
 
 ?>
 <!DOCTYPE html>
@@ -51,7 +54,11 @@ Dashboard principal de admin proyectos pendientes
       <div class="navbar-menu-wrapper d-flex align-items-top"> 
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-            <h1 class="welcome-text">Buenos dias, <span class="text-black fw-bold">David</span></h1>
+            <h1 class="welcome-text">Buenos dias, 
+              <span class="text-black fw-bold">
+                <?php echo htmlspecialchars($user_name); ?>
+              </span>
+            </h1>
             <h3 class="welcome-sub-text">Tu resumen de esta semana </h3>
           </li>
         </ul>
@@ -122,14 +129,15 @@ Dashboard principal de admin proyectos pendientes
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
                 <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
-                <p class="mb-1 mt-3 font-weight-semibold">David Barreto</p>
-                <p class="fw-light text-muted mb-0">david.barreto@nidec.com</p>
+                <p class="mb-1 mt-3 font-weight-semibold">
+                  <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
+                </p>
+                <p class="fw-light text-muted mb-0">
+                  <?php echo htmlspecialchars($user_email); ?>
+                </p>
               </div>
               <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> Mi Perfil <span class="badge badge-pill badge-danger">1</span></a>
-              <!--<a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-message-text-outline text-primary me-2"></i> Messages</a>-->
-              <!--<a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity</a>-->
-              <!--<a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-help-circle-outline text-primary me-2"></i> FAQ</a>-->
-              <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesion</a>
+              <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
             </div>
           </li>
         </ul>

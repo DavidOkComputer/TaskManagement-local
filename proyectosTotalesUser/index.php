@@ -1,11 +1,8 @@
 <?php
-require_once('../php/check_auth.php');
-session_start();
-$user_name = $_SESSION['nombre']; 
-$user_apellido = $_SESSION['apellido']; 
-$user_email = $_SESSION['e_mail']; 
-$user_id = $_SESSION['user_id']; 
-// Gestion de empleados- vista de gerente
+/*
+require_once('php/check_auth.php');
+Dashboard principal de admin proyectos totales
+*/
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,6 +20,8 @@ $user_id = $_SESSION['user_id'];
   <link rel="stylesheet" href="../vendors/simple-line-icons/css/simple-line-icons.css">
   <link rel="stylesheet" href="../vendors/css/vendor.bundle.base.css">
   <!-- endinject -->
+  <!-- Plugin css for this page -->
+  <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
   <!-- endinject -->
@@ -50,11 +49,7 @@ $user_id = $_SESSION['user_id'];
       <div class="navbar-menu-wrapper d-flex align-items-top"> 
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-            <h1 class="welcome-text">Buenos dias, 
-              <span class="text-black fw-bold">
-                <?php echo htmlspecialchars($user_name); ?>
-              </span>
-            </h1>
+            <h1 class="welcome-text">Buenos dias, <span class="text-black fw-bold">David</span></h1>
             <h3 class="welcome-sub-text">Tu resumen de esta semana </h3>
           </li>
         </ul>
@@ -125,14 +120,11 @@ $user_id = $_SESSION['user_id'];
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
                 <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
-                <p class="mb-1 mt-3 font-weight-semibold">
-                  <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
-                </p>
-                <p class="fw-light text-muted mb-0">
-                  <?php echo htmlspecialchars($user_email); ?>
-                </p>
+                <p class="mb-1 mt-3 font-weight-semibold">David Barreto</p>
+                <p class="fw-light text-muted mb-0">david.barreto@nidec.com</p>
               </div>
-              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
+              <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> Mi Perfil <span class="badge badge-pill badge-danger">1</span></a>
+              <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesion</a>
             </div>
           </li>
         </ul>
@@ -150,10 +142,6 @@ $user_id = $_SESSION['user_id'];
             <a class="nav-link active" id="todo-tab" data-bs-toggle="tab" href="#todo-section" role="tab" aria-controls="todo-section" aria-expanded="true">Lista de que hacer</a>
           </li>
         </ul>
-      <div class="tab-content" id="setting-content">
-          
-          <!-- chat tab ends -->
-        </div>
       </div>
       <!-- partial -->
       <!-- partial:partials/_sidebar.html -->
@@ -258,13 +246,13 @@ $user_id = $_SESSION['user_id'];
                       <a class="nav-link" id="home-tab" href="../adminDashboard" role="tab" aria-controls="overview" aria-selected="false">Resumen</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="true">Proyectos totales</a>
+                      <a class="nav-link active ps-0" id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="true">Proyectos totales</a>
                     </li>
                     <li class="nav-item">
                       <a class="nav-link" id="contact-tab" href="../proyectosPendientes" role="tab" aria-selected="false">Proyectos pendientes</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link border-0 active ps-0" id="more-tab" href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
+                      <a class="nav-link border-0" id="more-tab" href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
                     </li>
                   </ul>
                   <div>
@@ -277,12 +265,6 @@ $user_id = $_SESSION['user_id'];
                 <div class="tab-content tab-content-basic">
                   <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview"> 
                     <div class="row">
-                      <div class="col-sm-12">
-                        
-                      </div>
-                    </div> 
-                    
-                    <div class="row">
                       <div class="col-lg-8 d-flex flex-column"> 
                         <div class="row flex-grow">
                           <div class="col-12 grid-margin stretch-card">
@@ -290,7 +272,7 @@ $user_id = $_SESSION['user_id'];
                               <div class="card-body">
                                 <div class="d-sm-flex justify-content-between align-items-start">
                                   <div>
-                                    <h4 class="card-title card-title-dash">Proyectos Vencidos</h4>
+                                    <h4 class="card-title card-title-dash">Proyectos totales</h4>
                                    <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
                                   </div>
                                   <div>
@@ -305,23 +287,24 @@ $user_id = $_SESSION['user_id'];
                                 <div class="table-responsive  mt-3">
                                   <table class="table select-table">
                                     <thead>
-                                      <tr>
-                                        <th>Titulo</th>
-                                        <th>Descripcion</th>
-                                        <th>Progreso</th>
-                                        <th>Estado</th>
-                                      </tr>
+                                        <tr>
+                                            <th>Titulo</th>
+                                            <th>Descripcion</th>
+                                            <th>Progreso</th>
+                                            <th>Estado</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                    
+                                        <!-- Dynamic rows will be inserted here by JavaScript -->
                                     </tbody>
-                                  </table>
+                                </table>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
+                      <!--Grafica de proyectos por estatus-->
                       <div class="col-lg-4 d-flex flex-column">
                         <div class="row flex-grow">
                           <div class="col-12 grid-margin stretch-card">
@@ -353,6 +336,7 @@ $user_id = $_SESSION['user_id'];
           </div>
         </div>
         <!-- content-wrapper ends -->
+        <!-- partial -->
       </div>
       <!-- main-panel ends -->
     </div>
@@ -366,21 +350,17 @@ $user_id = $_SESSION['user_id'];
   <!-- Plugin js for this page -->
   <script src="../vendors/chart.js/Chart.min.js"></script>
   <script src="../vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-  <script src="../vendors/progressbar.js/progressbar.min.js"></script>
 
   <!-- End plugin js for this page -->
   <!-- inject:js -->
-  <script src="../js/off-canvas.js"></script>
-  <script src="../js/hoverable-collapse.js"></script>
   <script src="../js/template.js"></script>
   <script src="../js/settings.js"></script>
-  <script src="../js/todolist.js"></script>
   <!-- endinject -->
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
-  <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/list_overdue_projects.js"></script>
+  <script src="../js/list_projects.js"></script>
   <!-- End custom js for this page-->
 </body>
 
 </html>
+

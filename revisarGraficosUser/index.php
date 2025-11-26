@@ -1,11 +1,7 @@
 <?php
+/*Dashboard principal de admin*/
 require_once('../php/check_auth.php');
 session_start();
-$user_name = $_SESSION['nombre']; 
-$user_apellido = $_SESSION['apellido']; 
-$user_email = $_SESSION['e_mail']; 
-$user_id = $_SESSION['user_id']; 
-// Gestion de empleados- vista de gerente
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +10,7 @@ $user_id = $_SESSION['user_id'];
   <!-- Required meta tags -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <title>Administrador de proyectos </title>
+  <title>Administrador de proyectos</title>
   <!-- plugins:css -->
   <link rel="stylesheet" href="../vendors/feather/feather.css">
   <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css">
@@ -23,14 +19,17 @@ $user_id = $_SESSION['user_id'];
   <link rel="stylesheet" href="../vendors/simple-line-icons/css/simple-line-icons.css">
   <link rel="stylesheet" href="../vendors/css/vendor.bundle.base.css">
   <!-- endinject -->
+  <!-- Plugin css for this page -->
+  <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
   <!-- endinject -->
   <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
 </head>
+
 <body>
-  <div class="container-scroller"> 
-    <!-- partial:partials/_navbar.html -->
+  <div class="container-scroller">
+    <!-- partial:../../partials/_navbar.html -->
     <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
       <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
         <div class="me-3">
@@ -39,10 +38,10 @@ $user_id = $_SESSION['user_id'];
           </button>
         </div>
         <div>
-          <a class="navbar-brand brand-logo" href="../adminDashboard">
+          <a class="navbar-brand brand-logo" href="../adminDashboard/">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
-          <a class="navbar-brand brand-logo-mini" href="../adminDashboard">
+          <a class="navbar-brand brand-logo-mini" href="../adminDashboard/">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
         </div>
@@ -50,15 +49,25 @@ $user_id = $_SESSION['user_id'];
       <div class="navbar-menu-wrapper d-flex align-items-top"> 
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-            <h1 class="welcome-text">Buenos dias, 
-              <span class="text-black fw-bold">
-                <?php echo htmlspecialchars($user_name); ?>
-              </span>
-            </h1>
-            <h3 class="welcome-sub-text">Tu resumen de esta semana </h3>
+            <h1 class="welcome-text">Buenos dias, <span class="text-black fw-bold">
+              <?php
+                echo $_SESSION['nombre'];
+              ?>
+            </span></h1>
+            <h3 class="welcome-sub-text">Tu resumen de esta semana</h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
+          <li class="nav-item dropdown d-none d-lg-block">
+            <a class="nav-link dropdown-bordered dropdown-toggle dropdown-toggle-split" id="messageDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false"> Seleccionar área </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="messageDropdown">
+              <a class="dropdown-item py-3" >
+                <p class="mb-0 font-weight-medium float-left">Seleccionar área</p>
+              </a>
+              <div class="dropdown-divider"></div>
+              <!-- Los departamentos se cargarán dinámicamente aquí -->
+            </div>
+          </li>
           <li class="nav-item dropdown">
             <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
               <i class="icon-mail icon-lg"></i>
@@ -126,13 +135,21 @@ $user_id = $_SESSION['user_id'];
               <div class="dropdown-header text-center">
                 <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
                 <p class="mb-1 mt-3 font-weight-semibold">
-                  <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
+                  <?php
+                    echo $_SESSION["nombre"];
+                    echo ' ';
+                    echo $_SESSION["apellido"];
+                  ?>
                 </p>
                 <p class="fw-light text-muted mb-0">
-                  <?php echo htmlspecialchars($user_email); ?>
+                  <?php
+                    echo $_SESSION["e_mail"];
+                  ?>
                 </p>
               </div>
-              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
+              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>
+                Cerrar sesion
+              </a>
             </div>
           </li>
         </ul>
@@ -143,20 +160,8 @@ $user_id = $_SESSION['user_id'];
     </nav>
     <!-- partial -->
     <div class="container-fluid page-body-wrapper">
-      <div id="right-sidebar" class="settings-panel">
-        <i class="settings-close ti-close"></i>
-        <ul class="nav nav-tabs border-top" id="setting-panel" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" id="todo-tab" data-bs-toggle="tab" href="#todo-section" role="tab" aria-controls="todo-section" aria-expanded="true">Lista de que hacer</a>
-          </li>
-        </ul>
-      <div class="tab-content" id="setting-content">
-          
-          <!-- chat tab ends -->
-        </div>
-      </div>
       <!-- partial -->
-      <!-- partial:partials/_sidebar.html -->
+      <!-- partial:../partials/_sidebar.html -->
       <nav class="sidebar sidebar-offcanvas" id="sidebar">
         <ul class="nav">
           <li class="nav-item nav-category">Gestion de usuarios</li>
@@ -250,124 +255,74 @@ $user_id = $_SESSION['user_id'];
       <div class="main-panel">
         <div class="content-wrapper">
           <div class="row">
-            <div class="col-sm-12">
-              <div class="home-tab">
-                <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-                  <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item">
-                      <a class="nav-link" id="home-tab" href="../adminDashboard" role="tab" aria-controls="overview" aria-selected="false">Resumen</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="true">Proyectos totales</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link" id="contact-tab" href="../proyectosPendientes" role="tab" aria-selected="false">Proyectos pendientes</a>
-                    </li>
-                    <li class="nav-item">
-                      <a class="nav-link border-0 active ps-0" id="more-tab" href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
-                    </li>
-                  </ul>
-                  <div>
-                    <div class="btn-wrapper">
-                      <a href="#" class="btn btn-otline-dark align-items-center"><i class="icon-share"></i> Compartir</a>
-                      <a href="#" class="btn btn-primary text-white me-0"><i class="icon-printer"></i> Imprimir</a>
-                    </div>
-                  </div>
+            <div class="col-lg-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Progreso sobre el tiempo (Proyectos completados)</h4>
+                  <canvas id="lineChart"></canvas>
                 </div>
-                <div class="tab-content tab-content-basic">
-                  <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview"> 
-                    <div class="row">
-                      <div class="col-sm-12">
-                        
-                      </div>
-                    </div> 
-                    
-                    <div class="row">
-                      <div class="col-lg-8 d-flex flex-column"> 
-                        <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="d-sm-flex justify-content-between align-items-start">
-                                  <div>
-                                    <h4 class="card-title card-title-dash">Proyectos Vencidos</h4>
-                                   <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
-                                  </div>
-                                  <div>
-                                    <a href="../nuevoProyecto/">
-                                      <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-folder-upload"></i>Agregar nuevo proyecto</button>
-                                    </a>
-                                    <a href="../revisarProyectos/">
-                                      <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
-                                    </a>
-                                    </div>
-                                </div>
-                                <div class="table-responsive  mt-3">
-                                  <table class="table select-table">
-                                    <thead>
-                                      <tr>
-                                        <th>Titulo</th>
-                                        <th>Descripcion</th>
-                                        <th>Progreso</th>
-                                        <th>Estado</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                    
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-lg-4 d-flex flex-column">
-                        <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                            <div class="card card-rounded">
-                              <div class="card-body">
-                                <div class="row">
-                                  <div class="col-lg-12">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                      <h4 class="card-title card-title-dash">Proyecto por estatus</h4>
-                                    </div>
-                                    <canvas class="my-auto" id="doughnutChart" height="200"></canvas>
-                                    <div id="doughnut-chart-legend" class="mt-5 text-center"></div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row flex-grow">
-                          <div class="col-12 grid-margin stretch-card">
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              </div>
+            </div>
+            <div class="col-lg-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Progreso de proyectos</h4>
+                  <canvas id="barChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Avances por periodo de tiempo</h4>
+                  <canvas id="areaChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Proyectos por estado</h4>
+                  <canvas id="doughnutChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6 grid-margin grid-margin-lg-0 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Medidas de eficiencia</h4>
+                  <canvas id="scatterChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6 grid-margin grid-margin-lg-0 stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Distribución de Carga</h4>
+                  <canvas id="workloadChart"></canvas>
                 </div>
               </div>
             </div>
           </div>
         </div>
         <!-- content-wrapper ends -->
+        
       </div>
       <!-- main-panel ends -->
     </div>
     <!-- page-body-wrapper ends -->
   </div>
   <!-- container-scroller -->
-
   <!-- plugins:js -->
-  <script src="../vendors/js/vendor.bundle.base.js"></script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="../vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
   <!-- Plugin js for this page -->
   <script src="../vendors/chart.js/Chart.min.js"></script>
   <script src="../vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-  <script src="../vendors/progressbar.js/progressbar.min.js"></script>
-
   <!-- End plugin js for this page -->
   <!-- inject:js -->
   <script src="../js/off-canvas.js"></script>
@@ -377,10 +332,15 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/todolist.js"></script>
   <!-- endinject -->
   <!-- Custom js for this page-->
-  <script src="../js/dashboard.js"></script>
-  <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/list_overdue_projects.js"></script>
+  <script src="../js/chart.js"></script>
+  <script src="../js/dashboard_charts_core.js"></script><!--funcion principal del graficaod, controla los demas-->
+  <script src="../js/load_departments_dropdown.js"></script><!--Manejo de menu de seleccion de departamentos-->
+  <script src="../js/dashboard_charts_doughnut.js"></script><!--Para grafica de proyectos por estado-->
+  <script src="../js/dashboard_charts_bar.js"></script><!--Para grafica de progreso de proyectos-->
+  <script src="../js/dashboard_charts_area.js"></script><!--Para grafica de avances por periodo de tiempo-->
+  <script src="../js/dashboard_charts_line.js"></script><!--Para grafica de progreso sobre el tiempo-->
+  <script src="../js/dashboard_charts_scatter.js"></script><!--Para grafica de medidas de eficiencia-->
+  <script src="../js/dashboard_charts_workload.js"></script><!--Para grafica de distribucion de carga-->
   <!-- End custom js for this page-->
 </body>
-
 </html>

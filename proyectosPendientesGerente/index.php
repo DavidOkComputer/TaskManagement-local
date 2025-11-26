@@ -1,11 +1,10 @@
 <?php
-require_once('../php/check_auth.php');
-session_start();
+/*Dashboard principal de admin proyectos pendientes*/
+require_once('php/check_auth.php');
 $user_name = $_SESSION['nombre']; 
 $user_apellido = $_SESSION['apellido']; 
 $user_email = $_SESSION['e_mail']; 
 $user_id = $_SESSION['user_id']; 
-// Gestion de empleados- vista de gerente
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,6 +22,9 @@ $user_id = $_SESSION['user_id'];
   <link rel="stylesheet" href="../vendors/simple-line-icons/css/simple-line-icons.css">
   <link rel="stylesheet" href="../vendors/css/vendor.bundle.base.css">
   <!-- endinject -->
+  <!-- Plugin css for this page -->
+  <link rel="stylesheet" href="../js/select.dataTables.min.css">
+  <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
   <!-- endinject -->
@@ -132,7 +134,8 @@ $user_id = $_SESSION['user_id'];
                   <?php echo htmlspecialchars($user_email); ?>
                 </p>
               </div>
-              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
+              <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> Mi Perfil <span class="badge badge-pill badge-danger">1</span></a>
+              <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
             </div>
           </li>
         </ul>
@@ -150,10 +153,6 @@ $user_id = $_SESSION['user_id'];
             <a class="nav-link active" id="todo-tab" data-bs-toggle="tab" href="#todo-section" role="tab" aria-controls="todo-section" aria-expanded="true">Lista de que hacer</a>
           </li>
         </ul>
-      <div class="tab-content" id="setting-content">
-          
-          <!-- chat tab ends -->
-        </div>
       </div>
       <!-- partial -->
       <!-- partial:partials/_sidebar.html -->
@@ -168,21 +167,7 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="collapse" id="ui-basic">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../gestionDeEmpleados/">Gestion de empleados</a></li>
-                <li class="nav-item"> <a class="nav-link" href="../registroDeEmpleados">Registrar nuevo empleado</a></li>
-              </ul>
-            </div>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#departamentos" aria-expanded="false" aria-controls="ui-basic">
-              <i class="menu-icon mdi mdi-view-week"></i>
-              <span class="menu-title">Departamentos</span>
-              <i class="menu-arrow"></i> 
-            </a>
-            <div class="collapse" id="departamentos">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../gestionDeDepartamentos/">Gestion de departamentos</a></li>
-                <li class="nav-item"> <a class="nav-link" href="../registroDeDepartamentos">Registrar departamento</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../gestionDeEmpleados-Gerente/">Gestion de empleados</a></li>
               </ul>
             </div>
           </li>
@@ -195,9 +180,9 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="collapse" id="form-elements">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="../nuevoProyecto/">Crear nuevo proyecto</a></li>
-                <li class="nav-item"><a class="nav-link" href="../nuevoObjetivo/">Crear nuevo objetivo</a></li>
-                <li class="nav-item"><a class="nav-link" href="../nuevoTarea/">Crear nueva tarea</a></li>
+                <li class="nav-item"><a class="nav-link" href="../nuevoProyectoGerente/">Crear nuevo proyecto</a></li>
+                <li class="nav-item"><a class="nav-link" href="../nuevoObjetivoGerente/">Crear nuevo objetivo</a></li>
+                <li class="nav-item"><a class="nav-link" href="../nuevoTareaGerente/">Crear nueva tarea</a></li>
               </ul>
             </div>
           </li>
@@ -209,7 +194,7 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="collapse" id="charts">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarGraficos">Revisar graficos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarGraficosGerente">Revisar graficos</a></li>
               </ul>
             </div>
           </li>
@@ -221,13 +206,13 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="collapse" id="tables">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarProyectos/">Revisar proyectos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarProyectosGerente/">Revisar proyectos</a></li>
               </ul>
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarObjetivos/">Revisar objetivos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarObjetivosGerente/">Revisar objetivos</a></li>
               </ul>
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarTareas/">Revisar tareas</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarTareasGerente/">Revisar tareas</a></li>
               </ul>
             </div>
           </li>
@@ -240,7 +225,7 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="collapse" id="auth">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href=""> Cerrar Sesión </a></li>
+                <li class="nav-item"> <a class="nav-link" href="../php/logout.php"> Cerrar Sesión </a></li>
               </ul>
             </div>
           </li>
@@ -258,13 +243,13 @@ $user_id = $_SESSION['user_id'];
                       <a class="nav-link" id="home-tab" href="../adminDashboard" role="tab" aria-controls="overview" aria-selected="false">Resumen</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="true">Proyectos totales</a>
+                      <a class="nav-link " id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="true">Proyectos totales</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" id="contact-tab" href="../proyectosPendientes" role="tab" aria-selected="false">Proyectos pendientes</a>
+                      <a class="nav-link active ps-0" id="contact-tab" href="../proyectosPendientes" role="tab" aria-selected="false">Proyectos pendientes</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link border-0 active ps-0" id="more-tab" href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
+                      <a class="nav-link border-0" id="more-tab" href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
                     </li>
                   </ul>
                   <div>
@@ -277,12 +262,6 @@ $user_id = $_SESSION['user_id'];
                 <div class="tab-content tab-content-basic">
                   <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview"> 
                     <div class="row">
-                      <div class="col-sm-12">
-                        
-                      </div>
-                    </div> 
-                    
-                    <div class="row">
                       <div class="col-lg-8 d-flex flex-column"> 
                         <div class="row flex-grow">
                           <div class="col-12 grid-margin stretch-card">
@@ -290,8 +269,8 @@ $user_id = $_SESSION['user_id'];
                               <div class="card-body">
                                 <div class="d-sm-flex justify-content-between align-items-start">
                                   <div>
-                                    <h4 class="card-title card-title-dash">Proyectos Vencidos</h4>
-                                   <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
+                                    <h4 class="card-title card-title-dash">Proyectos pendientes</h4>
+                                   <p class="card-subtitle card-subtitle-dash">Tienes 50+ proyectos nuevos</p>
                                   </div>
                                   <div>
                                     <a href="../nuevoProyecto/">
@@ -300,7 +279,7 @@ $user_id = $_SESSION['user_id'];
                                     <a href="../revisarProyectos/">
                                       <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
                                     </a>
-                                    </div>
+                                  </div>
                                 </div>
                                 <div class="table-responsive  mt-3">
                                   <table class="table select-table">
@@ -313,7 +292,6 @@ $user_id = $_SESSION['user_id'];
                                       </tr>
                                     </thead>
                                     <tbody>
-                                    
                                     </tbody>
                                   </table>
                                 </div>
@@ -353,6 +331,7 @@ $user_id = $_SESSION['user_id'];
           </div>
         </div>
         <!-- content-wrapper ends -->
+        <!-- partial -->
       </div>
       <!-- main-panel ends -->
     </div>
@@ -379,8 +358,9 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/list_overdue_projects.js"></script>
+  <script src="../js/list_pending_projects.js"></script>
   <!-- End custom js for this page-->
 </body>
 
 </html>
+
