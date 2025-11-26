@@ -458,17 +458,9 @@ session_start();
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
-<<<<<<< HEAD
-  <script src="../js/user_list_projects.js"></script>
-  <script src="../js/custom_dialogs.js"></script>
-  <!-- End custom js for this page-->
-</body>
-</html>
-=======
   <script src="../js/list_projects_index.js"></script>
   <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->
 </body>
 
 </html>
->>>>>>> 546c160 (update of 26/11/25)
