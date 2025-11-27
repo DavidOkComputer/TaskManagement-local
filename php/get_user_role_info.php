@@ -1,23 +1,16 @@
 <?php
-<<<<<<< HEAD
-/*get_user_role_info.php devuelve el rol de usuario, departamento y permisos, se usa en el dashboard*/
-=======
 /**
  * get_user_role_info.php
  * Returns the current user's role, department, and permission level
  * Used by dashboard to determine if user should see all departments or only their own
  */
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
 
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once('db_config.php');
 
-<<<<<<< HEAD
-=======
 // Check if user is logged in
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
 if (!isset($_SESSION['id_usuario']) && !isset($_SESSION['user_id'])) {
     echo json_encode([
         'success' => false,
@@ -26,10 +19,7 @@ if (!isset($_SESSION['id_usuario']) && !isset($_SESSION['user_id'])) {
     exit;
 }
 
-<<<<<<< HEAD
-=======
 // Get user ID from session (handle both session variable names)
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
 $id_usuario = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : $_SESSION['user_id'];
 
 try {
@@ -39,10 +29,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-<<<<<<< HEAD
-=======
     // Get user's role and department information
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
     $query = "
         SELECT 
             u.id_usuario,
