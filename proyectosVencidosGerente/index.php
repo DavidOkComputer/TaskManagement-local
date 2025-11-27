@@ -369,5 +369,4 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/list_overdue_projects.js"></script>
   <!-- End custom js for this page-->
 </body>
-
 </html>

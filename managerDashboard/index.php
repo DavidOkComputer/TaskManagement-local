@@ -475,5 +475,4 @@ session_start();
   <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->
 </body>
-
 </html>

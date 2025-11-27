@@ -358,6 +358,4 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/list_projects.js"></script>
   <!-- End custom js for this page-->
 </body>
-
 </html>
-

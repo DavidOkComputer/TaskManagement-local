@@ -1,8 +1,6 @@
 <?php
-/*
+/*Dashboard principal de admin proyectos totales*/
 require_once('php/check_auth.php');
-Dashboard principal de admin proyectos totales
-*/
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -361,6 +359,4 @@ Dashboard principal de admin proyectos totales
   <script src="../js/list_projects.js"></script>
   <!-- End custom js for this page-->
 </body>
-
 </html>
-
