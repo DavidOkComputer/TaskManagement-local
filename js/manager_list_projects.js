@@ -1,15 +1,11 @@
-/*
- * list_projects_manager.js
- * JavaScript para cargar y mostrar datos del dashboard de gerente
- * Maneja proyectos, empleados y estadísticas del departamento
- */
+/*list_projects_manager.js JavaScript para cargar y mostrar datos del dashboard de gerente*/
 
 const ManagerConfig = { 
     API_ENDPOINTS: { 
-        GET_DASHBOARD_STATS: '../php/get_dashboard_stats_manager.php',
-        GET_PROJECTS: '../php/get_projects_manager.php',
-        GET_TOP_EMPLOYEES: '../php/get_top_employees_progress_manager.php',
-        GET_TOP_PROJECTS: '../php/get_top_projects_progress_manager.php',
+        GET_DASHBOARD_STATS: '../php/manager_get_dashboard_stats.php',
+        GET_PROJECTS: '../php/manager_get_projects.php',
+        GET_TOP_EMPLOYEES: '../php/manager_get_top_employees_progress.php',
+        GET_TOP_PROJECTS: '../php/manager_get_top_projects_progress\.php',
         GET_PROJECT_USERS: '../php/get_project_user.php'
     } 
 }; 
@@ -760,8 +756,6 @@ function createProjectRow(proyecto, index) {
         <td> 
             ${statusBadge} 
         </td> 
-        <td>${proyecto.participante || '-'}</td>
-        <td>${actionsButtons}</td>
     `; 
     return row; 
 } 
@@ -781,10 +775,6 @@ function displayEmptyState() {
         </tr> 
     `; 
 } 
-
-// ==========================================
-// ACCIONES DE PROYECTOS
-// ==========================================
 
 function editarProyecto(idProyecto) {
     window.location.href = `../editarProyecto/?id=${idProyecto}`;

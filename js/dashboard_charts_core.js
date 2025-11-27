@@ -1,9 +1,4 @@
-/*dashboard_charts_core.js base de control de los graficos con auto-refresh y manejo de datos vacíos 
- * Updated to support role-based restrictions:
- * - Admins (id_rol=1): Can view all departments and switch between them
- * - Managers (id_rol=2): Only see their department, no switching allowed
- * - Users (id_rol=3): Only see their department, no switching allowed
- */ 
+/*dashboard_charts_core.js base de control de los graficos con auto-refresh y manejo de datos vacíos */ 
 
 let dashboardChartsInstance = { 
     charts: {}, 
@@ -11,9 +6,8 @@ let dashboardChartsInstance = {
     refreshInterval: null, 
     refreshRate: 60000, // 60 segundos  
     isRefreshing: false,
-    // Role-based configuration
     userConfig: null,
-    isRoleLocked: false, // If true, user cannot switch departments
+    isRoleLocked: false, //cuando sea true el usuario no puede cambiar entre departamentos
     departmentColors: [ 
         'rgba(34, 139, 89, 0.7)',      // Green (Primary) 
         'rgba(80, 154, 108, 0.7)',     // Green Light 
@@ -43,12 +37,7 @@ function shortenProjectTitle(title, maxLength = 15) {
     return title.substring(0, maxLength) + '...'; 
 } 
 
-/**
- * Initialize user configuration from PHP-passed data
- * This determines if the user can view all departments or is restricted
- */
 function initializeUserRoleConfig() {
-    // Check for user config passed from PHP
     if (window.dashboardUserConfig) {
         dashboardChartsInstance.userConfig = window.dashboardUserConfig;
         dashboardChartsInstance.isRoleLocked = !window.dashboardUserConfig.canViewAllDepartments;
@@ -66,15 +55,11 @@ function initializeUserRoleConfig() {
         
         return true;
     } else {
-        // Fallback: fetch from API if not available
         console.log('User config not found in window, fetching from API...');
         return fetchUserRoleConfig();
     }
 }
 
-/**
- * Fetch user role configuration from API
- */
 function fetchUserRoleConfig() {
     return fetch('../php/get_user_role_info.php')
         .then(response => {
@@ -113,16 +98,14 @@ function fetchUserRoleConfig() {
 function initializeDashboardCharts() { 
     console.log('Inicializando gráficos del dashboard...'); 
     
-    // Initialize user role configuration first
     initializeUserRoleConfig();
-    
-    // Determine which view to load based on user role
+
     if (dashboardChartsInstance.isRoleLocked) {
-        // Manager or regular user - always load their department view
+        //cargar solo los datos del departamento del gerente
         console.log('User is role-locked - loading department-specific view only');
         loadUserDepartmentViewLocked();
     } else {
-        // Admin - can switch between views
+        //admin puede cambiar entre departamentos
         console.log('User is admin - loading with full department switching capability');
         loadUserDepartmentView();
     }
@@ -136,14 +119,9 @@ function initializeDashboardCharts() {
     console.log(`Auto-refresh activado: cada ${dashboardChartsInstance.refreshRate / 1000} segundos`); 
 }
 
-/**
- * Load department view for role-locked users (managers/users)
- * They can only see their own department and cannot switch
- */
 function loadUserDepartmentViewLocked() {
     console.log('Loading LOCKED department view for manager/user...');
     
-    // Use the department ID from the config passed by PHP
     const userDeptId = dashboardChartsInstance.userConfig.userDepartamento;
     
     if (!userDeptId || userDeptId === 0) {
@@ -152,7 +130,6 @@ function loadUserDepartmentViewLocked() {
         return;
     }
     
-    // Fetch department name and load the view
     fetch('../php/get_user_department.php')
         .then(response => {
             if (!response.ok) {
@@ -165,15 +142,14 @@ function loadUserDepartmentViewLocked() {
                 const userDept = data.department;
                 console.log('Manager/User department loaded:', userDept.nombre);
                 
-                // Lock the department - user cannot change it
                 dashboardChartsInstance.currentDepartment = {
                     id: userDept.id_departamento,
                     name: userDept.nombre,
                     isUserDept: true,
-                    isLocked: true // Mark as locked
+                    isLocked: true //marcar como bloqueado
                 };
                 
-                // Load department-specific data
+                //cargar info especifica del departamento
                 loadDepartmentView(userDept.id_departamento, userDept.nombre);
                 
             } else {
@@ -218,7 +194,7 @@ function refreshDashboardData() {
     dashboardChartsInstance.isRefreshing = true; 
     console.log('Actualizando datos del dashboard...', new Date().toLocaleTimeString()); 
 
-    // For role-locked users, always refresh department view
+    //para usuarios bloqueados, siempre refrescar la vista de departamentos
     if (dashboardChartsInstance.isRoleLocked && dashboardChartsInstance.currentDepartment) {
         const deptId = dashboardChartsInstance.currentDepartment.id;
         const deptName = dashboardChartsInstance.currentDepartment.name;
@@ -242,7 +218,7 @@ function refreshDashboardData() {
 } 
 
 function refreshComparisonView() { 
-    // Prevent comparison view for role-locked users
+    //prevenir la vista de comparacion para usuarios bloqueados
     if (dashboardChartsInstance.isRoleLocked) {
         console.log('Comparison view blocked for role-locked user');
         dashboardChartsInstance.isRefreshing = false;
@@ -404,7 +380,7 @@ function loadUserDepartmentView() {
 
             } else { 
                 console.warn('No se pudo obtener el departamento del usuario:', data.message); 
-                // Only load comparison view if user can view all departments
+                //sol;o cargar la vista de comparacion si el ususario puede ver todos los departamentos
                 if (!dashboardChartsInstance.isRoleLocked) {
                     loadComparisonView(); 
                 }
@@ -413,7 +389,6 @@ function loadUserDepartmentView() {
 
         .catch(error => { 
             console.error('Error loading user department:', error); 
-            // Only load comparison view if user can view all departments
             if (!dashboardChartsInstance.isRoleLocked) {
                 loadComparisonView(); 
             }
@@ -421,7 +396,6 @@ function loadUserDepartmentView() {
 }
 
 function loadComparisonView() { 
-    // Block comparison view for role-locked users
     if (dashboardChartsInstance.isRoleLocked) {
         console.log('═══════════════════════════════════════════════════════');
         console.log('COMPARISON VIEW BLOCKED - User is role-locked');
@@ -475,7 +449,7 @@ function loadDepartmentView(deptId, deptName) {
         id: deptId, 
         name: deptName, 
         updatedAt: new Date().getTime(),
-        isLocked: dashboardChartsInstance.isRoleLocked // Preserve lock status
+        isLocked: dashboardChartsInstance.isRoleLocked //mantener estado de bloqueado
     }; 
 
     console.log('Department state updated:', dashboardChartsInstance.currentDepartment); 
@@ -533,7 +507,7 @@ function processDepepartmentData(projects, deptName) {
 } 
 
 function clearDepartmentSelection() { 
-    // Block this function for role-locked users (managers)
+    // bloquear la funcion para los usuarios bloqueados
     if (dashboardChartsInstance.isRoleLocked) {
         console.log('═══════════════════════════════════════════════════════');
         console.log('CLEAR DEPARTMENT BLOCKED - User is role-locked');
@@ -574,7 +548,6 @@ function clearDepartmentSelection() {
 } 
 
 function selectDepartmentFromDropdown(deptId, deptName) { 
-    // Block this function for role-locked users (managers)
     if (dashboardChartsInstance.isRoleLocked) {
         console.log('═══════════════════════════════════════════════════════');
         console.log('DEPARTMENT SELECTION BLOCKED - User is role-locked');
@@ -604,17 +577,10 @@ function updateDropdownButtonText(text) {
     } 
 } 
 
-/**
- * Check if user can switch departments
- * Returns true for admins, false for managers/users
- */
 function canSwitchDepartments() {
     return !dashboardChartsInstance.isRoleLocked;
 }
 
-/**
- * Get current user role information
- */
 function getUserRoleInfo() {
     return dashboardChartsInstance.userConfig;
 }
