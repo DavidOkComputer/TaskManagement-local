@@ -41,10 +41,10 @@ $user_id = $_SESSION['user_id'];
           </button>
         </div>
         <div>
-          <a class="navbar-brand brand-logo" href="../adminDashboard">
+          <a class="navbar-brand brand-logo" href="../userDashboard">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
-          <a class="navbar-brand brand-logo-mini" href="../adminDashboard">
+          <a class="navbar-brand brand-logo-mini" href="../userDashboard">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
         </div>

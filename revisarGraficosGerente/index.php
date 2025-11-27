@@ -1,16 +1,8 @@
 <?php
-/**
- * Dashboard principal de admin
- * Modified to support role-based restrictions:
- * - Admins (id_rol=1): Can see all departments, dropdown visible
- * - Managers (id_rol=2): Only see their department, dropdown hidden
- * - Users (id_rol=3): Only see their department, dropdown hidden
- */
+/*Dashboard principal de admin*/
 require_once('../php/check_auth.php');
-// Ensure complete user data is in session (role, department, etc.)
 require_once('../php/session_user_data.php');
 
-// Get user information from session
 $user_id = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0);
 $user_name = isset($_SESSION['nombre']) ? $_SESSION['nombre'] : 'Usuario';
 $user_apellido = isset($_SESSION['apellido']) ? $_SESSION['apellido'] : '';
@@ -18,10 +10,9 @@ $user_email = isset($_SESSION['e_mail']) ? $_SESSION['e_mail'] : '';
 $user_rol = isset($_SESSION['id_rol']) ? (int)$_SESSION['id_rol'] : 3;
 $user_departamento = isset($_SESSION['id_departamento']) ? (int)$_SESSION['id_departamento'] : 0;
 
-// Determine if user can view all departments (only admins)
 $canViewAllDepartments = ($user_rol == 1);
 $isManager = ($user_rol == 2);
-$showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admins
+$showDepartmentDropdown = $canViewAllDepartments;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,8 +30,6 @@ $showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admi
   <link rel="stylesheet" href="../vendors/simple-line-icons/css/simple-line-icons.css">
   <link rel="stylesheet" href="../vendors/css/vendor.bundle.base.css">
   <!-- endinject -->
-  <!-- Plugin css for this page -->
-  <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
   <!-- endinject -->
@@ -55,9 +44,7 @@ $showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admi
 </head>
 
 <body>
-  <!-- Pass user role information to JavaScript -->
   <script>
-    // User role configuration for dashboard
     window.dashboardUserConfig = {
       userId: <?php echo json_encode($user_id); ?>,
       userName: <?php echo json_encode($user_name); ?>,
@@ -81,10 +68,10 @@ $showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admi
           </button>
         </div>
         <div>
-          <a class="navbar-brand brand-logo" href="../adminDashboard/">
+          <a class="navbar-brand brand-logo" href="../managerDashboard/">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
-          <a class="navbar-brand brand-logo-mini" href="../adminDashboard/">
+          <a class="navbar-brand brand-logo-mini" href="../managerDashboard/">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
         </div>
@@ -99,7 +86,6 @@ $showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admi
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
-          <!-- Department Dropdown - Only visible for Admins (id_rol=1) -->
           <?php if ($showDepartmentDropdown): ?>
           <li class="nav-item dropdown d-none d-lg-block" id="departmentDropdownContainer">
             <a class="nav-link dropdown-bordered dropdown-toggle dropdown-toggle-split" id="messageDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false"> Seleccionar área </a>
@@ -187,7 +173,7 @@ $showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admi
                 </p>
               </div>
               <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>
-                Cerrar sesion
+                Cerrar sesión
               </a>
             </div>
           </li>
@@ -212,21 +198,7 @@ $showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admi
             </a>
             <div class="collapse" id="ui-basic">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../gestionDeEmpleados/">Gestion de empleados</a></li>
-                <li class="nav-item"> <a class="nav-link" href="../registroDeEmpleados">Registrar nuevo empleado</a></li>
-              </ul>
-            </div>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="collapse" href="#departamentos" aria-expanded="false" aria-controls="ui-basic">
-              <i class="menu-icon mdi mdi-view-week"></i>
-              <span class="menu-title">Departamentos</span>
-              <i class="menu-arrow"></i> 
-            </a>
-            <div class="collapse" id="departamentos">
-              <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../gestionDeDepartamentos/">Gestion de departamentos</a></li>
-                <li class="nav-item"> <a class="nav-link" href="../registroDeDepartamentos">Registrar departamento</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../gestionDeEmpleados-Gerente/">Gestion de empleados</a></li>
               </ul>
             </div>
           </li>
@@ -239,9 +211,9 @@ $showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admi
             </a>
             <div class="collapse" id="form-elements">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"><a class="nav-link" href="../nuevoProyecto/">Crear nuevo proyecto</a></li>
-                <li class="nav-item"><a class="nav-link" href="../nuevoObjetivo/">Crear nuevo objetivo</a></li>
-                <li class="nav-item"><a class="nav-link" href="../nuevoTarea/">Crear nueva tarea</a></li>
+                <li class="nav-item"><a class="nav-link" href="../nuevoProyectoGerente/">Crear nuevo proyecto</a></li>
+                <li class="nav-item"><a class="nav-link" href="../nuevoObjetivoGerente/">Crear nuevo objetivo</a></li>
+                <li class="nav-item"><a class="nav-link" href="../nuevoTareaGerente/">Crear nueva tarea</a></li>
               </ul>
             </div>
           </li>
@@ -253,7 +225,7 @@ $showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admi
             </a>
             <div class="collapse" id="charts">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarGraficos">Revisar graficos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarGraficosGerente">Revisar graficos</a></li>
               </ul>
             </div>
           </li>
@@ -265,13 +237,13 @@ $showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admi
             </a>
             <div class="collapse" id="tables">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarProyectos/">Revisar proyectos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarProyectosGerente/">Revisar proyectos</a></li>
               </ul>
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarObjetivos/">Revisar objetivos</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarObjetivosGerente/">Revisar objetivos</a></li>
               </ul>
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href="../revisarTareas/">Revisar tareas</a></li>
+                <li class="nav-item"> <a class="nav-link" href="../revisarTareasGerente/">Revisar tareas</a></li>
               </ul>
             </div>
           </li>

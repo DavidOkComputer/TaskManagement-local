@@ -1,8 +1,4 @@
-/*
- * list_projects_manager.js
- * JavaScript para cargar y mostrar datos del dashboard de gerente
- * Maneja proyectos, empleados y estadísticas del departamento
- */
+/*list_projects_manager.js JavaScript para cargar y mostrar datos del dashboard de gerente*/
 
 const ManagerConfig = { 
     API_ENDPOINTS: { 

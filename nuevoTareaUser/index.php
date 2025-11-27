@@ -40,10 +40,10 @@ $user_id = $_SESSION['user_id'];
           </button>
         </div>
         <div>
-          <a class="navbar-brand brand-logo" href="../adminDashboard">
+          <a class="navbar-brand brand-logo" href="../userDashboard">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
-          <a class="navbar-brand brand-logo-mini" href="../adminDashboard">
+          <a class="navbar-brand brand-logo-mini" href="../userDashboard">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
         </div>
@@ -133,7 +133,7 @@ $user_id = $_SESSION['user_id'];
                  <?php echo htmlspecialchars($user_email); ?>
                 </p>
               </div>
-              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesion</a>
+              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
             </div>
           </li>
         </ul>

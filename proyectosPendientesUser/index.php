@@ -1,5 +1,5 @@
 <?php
-/*Dashboard principal de admin proyectos pendientes*/
+/*Dashboard principal de usuario, proyectos pendientes*/
 require_once('php/check_auth.php');
 session_start();
 $user_name = $_SESSION['nombre']; 
@@ -42,10 +42,10 @@ $user_id = $_SESSION['user_id'];
           </button>
         </div>
         <div>
-          <a class="navbar-brand brand-logo" href="../adminDashboard">
+          <a class="navbar-brand brand-logo" href="../userDashboard">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
-          <a class="navbar-brand brand-logo-mini" href="../adminDashboard">
+          <a class="navbar-brand brand-logo-mini" href="../uesrDashboard">
             <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
           </a>
         </div>
@@ -135,7 +135,7 @@ $user_id = $_SESSION['user_id'];
                   <?php echo htmlspecialchars($user_email); ?>
                 </p>
               </div>
-              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesion</a>
+              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
             </div>
           </li>
         </ul>
@@ -227,16 +227,16 @@ $user_id = $_SESSION['user_id'];
                 <div class="d-sm-flex align-items-center justify-content-between border-bottom">
                   <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item">
-                      <a class="nav-link" id="home-tab" href="../adminDashboard" role="tab" aria-controls="overview" aria-selected="false">Resumen</a>
+                      <a class="nav-link" id="home-tab" href="../userDashboard" role="tab" aria-controls="overview" aria-selected="false">Resumen</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link " id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="true">Proyectos totales</a>
+                      <a class="nav-link " id="profile-tab" href="../proyectosTotalesUser" role="tab" aria-selected="true">Proyectos totales</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link active ps-0" id="contact-tab" href="../proyectosPendientes" role="tab" aria-selected="false">Proyectos pendientes</a>
+                      <a class="nav-link active ps-0" id="contact-tab" href="../proyectosPendientesUser" role="tab" aria-selected="false">Proyectos pendientes</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link border-0" id="more-tab" href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
+                      <a class="nav-link border-0" id="more-tab" href="../proyectosVencidosUser" role="tab" aria-selected="false">Proyectos vencidos</a>
                     </li>
                   </ul>
                   <div>
