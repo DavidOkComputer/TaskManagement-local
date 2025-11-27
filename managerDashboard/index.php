@@ -471,7 +471,7 @@ session_start();
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/list_projects_index.js"></script>
+  <script src="../js/manager_list_projects.js"></script>
   <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->
 </body>
