@@ -1,16 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-/*list_projects_manager.js JavaScript para cargar y mostrar datos del dashboard de gerente*/
-
-const ManagerConfig = { 
-    API_ENDPOINTS: { 
-        GET_DASHBOARD_STATS: '../php/manager_get_dashboard_stats.php',
-        GET_PROJECTS: '../php/manager_get_projects.php',
-        GET_TOP_EMPLOYEES: '../php/manager_get_top_employees_progress.php',
-        GET_TOP_PROJECTS: '../php/manager_get_top_projects_progress\.php',
-=======
-=======
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
 /*
  * list_projects_manager.js
  * JavaScript para cargar y mostrar datos del dashboard de gerente
@@ -23,10 +10,6 @@ const ManagerConfig = {
         GET_PROJECTS: '../php/get_projects_manager.php',
         GET_TOP_EMPLOYEES: '../php/get_top_employees_progress_manager.php',
         GET_TOP_PROJECTS: '../php/get_top_projects_progress_manager.php',
-<<<<<<< HEAD
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
-=======
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
         GET_PROJECT_USERS: '../php/get_project_user.php'
     } 
 }; 
@@ -777,16 +760,8 @@ function createProjectRow(proyecto, index) {
         <td> 
             ${statusBadge} 
         </td> 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
         <td>${proyecto.participante || '-'}</td>
         <td>${actionsButtons}</td>
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
-=======
-        <td>${proyecto.participante || '-'}</td>
-        <td>${actionsButtons}</td>
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
     `; 
     return row; 
 } 
@@ -807,19 +782,10 @@ function displayEmptyState() {
     `; 
 } 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
 // ==========================================
 // ACCIONES DE PROYECTOS
 // ==========================================
 
-<<<<<<< HEAD
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
-=======
->>>>>>> 4119a0f (update of 26/11/25 at 18:08)
 function editarProyecto(idProyecto) {
     window.location.href = `../editarProyecto/?id=${idProyecto}`;
 }
