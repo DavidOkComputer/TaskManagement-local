@@ -1,11 +1,19 @@
-/*dashboard_charts_core.js base de control de los graficos con auto-refresh y manejo de datos vacíos */ 
+/*dashboard_charts_core.js base de control de los graficos con auto-refresh y manejo de datos vacíos 
+ * Updated to support role-based restrictions:
+ * - Admins (id_rol=1): Can view all departments and switch between them
+ * - Managers (id_rol=2): Only see their department, no switching allowed
+ * - Users (id_rol=3): Only see their department, no switching allowed
+ */ 
 
 let dashboardChartsInstance = { 
     charts: {}, 
     currentDepartment: null, 
     refreshInterval: null, 
     refreshRate: 60000, // 60 segundos  
-    isRefreshing: false, 
+    isRefreshing: false,
+    // Role-based configuration
+    userConfig: null,
+    isRoleLocked: false, // If true, user cannot switch departments
     departmentColors: [ 
         'rgba(34, 139, 89, 0.7)',      // Green (Primary) 
         'rgba(80, 154, 108, 0.7)',     // Green Light 
@@ -35,16 +43,149 @@ function shortenProjectTitle(title, maxLength = 15) {
     return title.substring(0, maxLength) + '...'; 
 } 
 
+/**
+ * Initialize user configuration from PHP-passed data
+ * This determines if the user can view all departments or is restricted
+ */
+function initializeUserRoleConfig() {
+    // Check for user config passed from PHP
+    if (window.dashboardUserConfig) {
+        dashboardChartsInstance.userConfig = window.dashboardUserConfig;
+        dashboardChartsInstance.isRoleLocked = !window.dashboardUserConfig.canViewAllDepartments;
+        
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('USER ROLE CONFIGURATION LOADED');
+        console.log('User:', dashboardChartsInstance.userConfig.userName);
+        console.log('Role ID:', dashboardChartsInstance.userConfig.userRol);
+        console.log('Is Admin:', dashboardChartsInstance.userConfig.isAdmin);
+        console.log('Is Manager:', dashboardChartsInstance.userConfig.isManager);
+        console.log('Can View All Departments:', dashboardChartsInstance.userConfig.canViewAllDepartments);
+        console.log('Role Locked:', dashboardChartsInstance.isRoleLocked);
+        console.log('User Department ID:', dashboardChartsInstance.userConfig.userDepartamento);
+        console.log('═══════════════════════════════════════════════════════');
+        
+        return true;
+    } else {
+        // Fallback: fetch from API if not available
+        console.log('User config not found in window, fetching from API...');
+        return fetchUserRoleConfig();
+    }
+}
+
+/**
+ * Fetch user role configuration from API
+ */
+function fetchUserRoleConfig() {
+    return fetch('../php/get_user_role_info.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error fetching user role info');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.data) {
+                dashboardChartsInstance.userConfig = {
+                    userId: data.data.id_usuario,
+                    userName: data.data.nombre,
+                    userRol: data.data.id_rol,
+                    userDepartamento: data.data.id_departamento,
+                    canViewAllDepartments: data.data.can_view_all_departments,
+                    isAdmin: data.data.is_admin,
+                    isManager: data.data.is_manager,
+                    showDepartmentDropdown: data.data.show_department_dropdown
+                };
+                dashboardChartsInstance.isRoleLocked = !data.data.can_view_all_departments;
+                
+                console.log('User role config fetched from API:', dashboardChartsInstance.userConfig);
+                return true;
+            } else {
+                console.error('Error in user role config:', data.message);
+                return false;
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching user role config:', error);
+            return false;
+        });
+}
+
 function initializeDashboardCharts() { 
     console.log('Inicializando gráficos del dashboard...'); 
-    loadUserDepartmentView(); 
+    
+    // Initialize user role configuration first
+    initializeUserRoleConfig();
+    
+    // Determine which view to load based on user role
+    if (dashboardChartsInstance.isRoleLocked) {
+        // Manager or regular user - always load their department view
+        console.log('User is role-locked - loading department-specific view only');
+        loadUserDepartmentViewLocked();
+    } else {
+        // Admin - can switch between views
+        console.log('User is admin - loading with full department switching capability');
+        loadUserDepartmentView();
+    }
+    
     initializeLineChart(); 
     initializeAreaChart(); 
     initializeScatterChart(); 
+    
     // Iniciar auto-refresh 
     startAutoRefresh(); 
     console.log(`Auto-refresh activado: cada ${dashboardChartsInstance.refreshRate / 1000} segundos`); 
-} 
+}
+
+/**
+ * Load department view for role-locked users (managers/users)
+ * They can only see their own department and cannot switch
+ */
+function loadUserDepartmentViewLocked() {
+    console.log('Loading LOCKED department view for manager/user...');
+    
+    // Use the department ID from the config passed by PHP
+    const userDeptId = dashboardChartsInstance.userConfig.userDepartamento;
+    
+    if (!userDeptId || userDeptId === 0) {
+        console.error('No department assigned to this user!');
+        showNoDepartmentData('Sin departamento asignado');
+        return;
+    }
+    
+    // Fetch department name and load the view
+    fetch('../php/get_user_department.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error fetching user department');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.department) {
+                const userDept = data.department;
+                console.log('Manager/User department loaded:', userDept.nombre);
+                
+                // Lock the department - user cannot change it
+                dashboardChartsInstance.currentDepartment = {
+                    id: userDept.id_departamento,
+                    name: userDept.nombre,
+                    isUserDept: true,
+                    isLocked: true // Mark as locked
+                };
+                
+                // Load department-specific data
+                loadDepartmentView(userDept.id_departamento, userDept.nombre);
+                
+            } else {
+                console.error('Could not get user department:', data.message);
+                showNoDepartmentData('Error al cargar departamento');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading user department:', error);
+            showNoDepartmentData('Error de conexión');
+        });
+}
 
 function startAutoRefresh() { 
     // Limpiar intervalo existente si hay uno 
@@ -77,6 +218,15 @@ function refreshDashboardData() {
     dashboardChartsInstance.isRefreshing = true; 
     console.log('Actualizando datos del dashboard...', new Date().toLocaleTimeString()); 
 
+    // For role-locked users, always refresh department view
+    if (dashboardChartsInstance.isRoleLocked && dashboardChartsInstance.currentDepartment) {
+        const deptId = dashboardChartsInstance.currentDepartment.id;
+        const deptName = dashboardChartsInstance.currentDepartment.name;
+        console.log(`Refrescando vista del departamento (locked): ${deptName}`);
+        refreshDepartmentView(deptId, deptName);
+        return;
+    }
+
     // Determinar qué vista refrescar basado en el estado actual 
     if (dashboardChartsInstance.currentDepartment) { 
         // Si hay un departamento seleccionado, refrescar vista de departamento 
@@ -92,6 +242,13 @@ function refreshDashboardData() {
 } 
 
 function refreshComparisonView() { 
+    // Prevent comparison view for role-locked users
+    if (dashboardChartsInstance.isRoleLocked) {
+        console.log('Comparison view blocked for role-locked user');
+        dashboardChartsInstance.isRefreshing = false;
+        return;
+    }
+
     Promise.all([ 
         fetch('../php/get_departments.php').then(r => r.json()), 
         fetch('../php/get_projects.php').then(r => r.json()) 
@@ -247,17 +404,32 @@ function loadUserDepartmentView() {
 
             } else { 
                 console.warn('No se pudo obtener el departamento del usuario:', data.message); 
-                loadComparisonView(); 
+                // Only load comparison view if user can view all departments
+                if (!dashboardChartsInstance.isRoleLocked) {
+                    loadComparisonView(); 
+                }
             } 
         }) 
 
         .catch(error => { 
             console.error('Error loading user department:', error); 
-            loadComparisonView(); 
+            // Only load comparison view if user can view all departments
+            if (!dashboardChartsInstance.isRoleLocked) {
+                loadComparisonView(); 
+            }
         }); 
 }
 
 function loadComparisonView() { 
+    // Block comparison view for role-locked users
+    if (dashboardChartsInstance.isRoleLocked) {
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('COMPARISON VIEW BLOCKED - User is role-locked');
+        console.log('Managers can only view their own department');
+        console.log('═══════════════════════════════════════════════════════');
+        return;
+    }
+
     console.log('Cargando vista de comparación (todos los departamentos)'); 
     console.log('Reseteando estado a comparación...'); 
     dashboardChartsInstance.currentDepartment = null; 
@@ -302,7 +474,8 @@ function loadDepartmentView(deptId, deptName) {
     dashboardChartsInstance.currentDepartment = { 
         id: deptId, 
         name: deptName, 
-        updatedAt: new Date().getTime() 
+        updatedAt: new Date().getTime(),
+        isLocked: dashboardChartsInstance.isRoleLocked // Preserve lock status
     }; 
 
     console.log('Department state updated:', dashboardChartsInstance.currentDepartment); 
@@ -360,6 +533,15 @@ function processDepepartmentData(projects, deptName) {
 } 
 
 function clearDepartmentSelection() { 
+    // Block this function for role-locked users (managers)
+    if (dashboardChartsInstance.isRoleLocked) {
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('CLEAR DEPARTMENT BLOCKED - User is role-locked');
+        console.log('Managers cannot switch to comparison view');
+        console.log('═══════════════════════════════════════════════════════');
+        return;
+    }
+
     console.log('CLEARING DEPARTMENT SELECTION - SWITCHING TO COMPARISON MODE'); 
     console.log('Reseteando state y cargando vista de comparación para TODOS los gráficos...'); 
 
@@ -392,6 +574,15 @@ function clearDepartmentSelection() {
 } 
 
 function selectDepartmentFromDropdown(deptId, deptName) { 
+    // Block this function for role-locked users (managers)
+    if (dashboardChartsInstance.isRoleLocked) {
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('DEPARTMENT SELECTION BLOCKED - User is role-locked');
+        console.log('Managers cannot switch departments');
+        console.log('═══════════════════════════════════════════════════════');
+        return;
+    }
+
     console.log('═══════════════════════════════════════════════════════'); 
     console.log('DEPARTMENT SELECTION FROM DROPDOWN'); 
     console.log('Department:', deptName, '(ID:', deptId + ')'); 
@@ -413,6 +604,21 @@ function updateDropdownButtonText(text) {
     } 
 } 
 
+/**
+ * Check if user can switch departments
+ * Returns true for admins, false for managers/users
+ */
+function canSwitchDepartments() {
+    return !dashboardChartsInstance.isRoleLocked;
+}
+
+/**
+ * Get current user role information
+ */
+function getUserRoleInfo() {
+    return dashboardChartsInstance.userConfig;
+}
+
 // Limpiar intervalo cuando se cierra la página 
 window.addEventListener('beforeunload', function() { 
     stopAutoRefresh(); 
@@ -420,4 +626,4 @@ window.addEventListener('beforeunload', function() {
 
 document.addEventListener('DOMContentLoaded', function() { 
     initializeDashboardCharts(); 
-}); 
+});

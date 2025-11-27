@@ -1,11 +1,67 @@
-/*load_departments_dropdown.js carga dinamica de los departamentos en el dropdown */
+/*load_departments_dropdown.js carga dinamica de los departamentos en el dropdown 
+ * Updated to support role-based restrictions:
+ * - Admins (id_rol=1): Full dropdown functionality
+ * - Managers (id_rol=2): Dropdown hidden, department switching blocked
+ * - Users (id_rol=3): Dropdown hidden, department switching blocked
+ */
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Inicializando dropdown de departamentos...');
+    
+    // Check if user can view all departments before loading dropdown
+    if (!canUserViewAllDepartments()) {
+        console.log('Usuario con rol restringido - dropdown de departamentos deshabilitado');
+        return; // Don't load dropdown for managers/users
+    }
+    
     loadDepartmentsIntoDropdown();
 });
 
+/**
+ * Check if current user can view all departments
+ * Returns true for admins, false for managers/users
+ */
+function canUserViewAllDepartments() {
+    // Check PHP-passed configuration first
+    if (window.dashboardUserConfig) {
+        console.log('Verificando permisos de usuario:', window.dashboardUserConfig);
+        return window.dashboardUserConfig.canViewAllDepartments === true;
+    }
+    
+    // Fallback: check dashboardChartsInstance if available
+    if (typeof dashboardChartsInstance !== 'undefined' && dashboardChartsInstance.userConfig) {
+        return dashboardChartsInstance.userConfig.canViewAllDepartments === true;
+    }
+    
+    // If no config available, assume restricted (safer default)
+    console.warn('No se encontró configuración de usuario - asumiendo acceso restringido');
+    return false;
+}
+
+/**
+ * Check if user is role-locked (cannot switch departments)
+ */
+function isUserRoleLocked() {
+    // Check PHP-passed configuration
+    if (window.dashboardUserConfig) {
+        return !window.dashboardUserConfig.canViewAllDepartments;
+    }
+    
+    // Fallback: check dashboardChartsInstance
+    if (typeof dashboardChartsInstance !== 'undefined') {
+        return dashboardChartsInstance.isRoleLocked === true;
+    }
+    
+    return true; // Default to locked for safety
+}
+
 function loadDepartmentsIntoDropdown() {
+    // Safety check - don't load if user is role-locked
+    if (isUserRoleLocked()) {
+        console.log('Carga de departamentos bloqueada - usuario con rol restringido');
+        return;
+    }
+    
     console.log('Cargando departamentos para dropdown...');
     
     fetch('../php/get_departments.php')
@@ -30,6 +86,12 @@ function loadDepartmentsIntoDropdown() {
 }
 
 function populateDepartmentDropdown(departamentos) {
+    // Safety check
+    if (isUserRoleLocked()) {
+        console.log('Población de dropdown bloqueada - usuario con rol restringido');
+        return;
+    }
+    
     const dropdownMenu = document.querySelector('[aria-labelledby="messageDropdown"]');
     
     if (!dropdownMenu) {
@@ -70,9 +132,22 @@ function populateDepartmentDropdown(departamentos) {
         
         link.addEventListener('click', function(e) {
             e.preventDefault();
+            
+            // Block department selection for role-locked users
+            if (isUserRoleLocked()) {
+                console.log('═══════════════════════════════════════════════════════');
+                console.log('SELECCIÓN DE DEPARTAMENTO BLOQUEADA');
+                console.log('Los gerentes solo pueden ver su propio departamento');
+                console.log('═══════════════════════════════════════════════════════');
+                return;
+            }
+            
             const deptId = parseInt(this.getAttribute('data-department-id'));
             const deptName = this.getAttribute('data-department-name');
             
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('DEPARTAMENTO SELECCIONADO:', deptName, '(ID:', deptId + ')');
+            console.log('═══════════════════════════════════════════════════════');
             
             console.log('Step 1: Updating main dashboard charts (bar, doughnut, line, area, scatter)...');
             if (typeof selectDepartmentFromDropdown === 'function') {
@@ -80,7 +155,7 @@ function populateDepartmentDropdown(departamentos) {
                 selectDepartmentFromDropdown(deptId, deptName);
             } else {
                 console.error('  ERROR: selectDepartmentFromDropdown() NOT FOUND!');
-                console.error('  Make sure dashboard_charts.js is loaded BEFORE this file');
+                console.error('  Make sure dashboard_charts_core.js is loaded BEFORE this file');
             }
             
             console.log('Step 2: Updating workload chart...');
@@ -93,23 +168,7 @@ function populateDepartmentDropdown(departamentos) {
             }
             
             // Cerrar el dropdown de forma segura
-            try {
-                const dropdown = document.getElementById('messageDropdown');
-                if (dropdown && dropdown.classList.contains('show')) {
-                    const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
-                    if (bsDropdown) {
-                        bsDropdown.hide();
-                    } else {
-                        dropdown.classList.remove('show');//volver y de manera manual quitar la claes
-                        const dropdownMenu = dropdown.nextElementSibling;
-                        if (dropdownMenu) {
-                            dropdownMenu.classList.remove('show');
-                        }
-                    }
-                }
-            } catch (err) {
-                console.error('Error closing dropdown:', err);
-            }
+            closeDropdownSafely();
         });
         
         dropdownMenu.appendChild(link);
@@ -128,13 +187,28 @@ function populateDepartmentDropdown(departamentos) {
     
     allLink.addEventListener('click', function(e) {
         e.preventDefault();
+        
+        // Block "view all" for role-locked users
+        if (isUserRoleLocked()) {
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('VISTA DE COMPARACIÓN BLOQUEADA');
+            console.log('Los gerentes solo pueden ver su propio departamento');
+            console.log('═══════════════════════════════════════════════════════');
+            return;
+        }
+        
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('VISTA DE COMPARACIÓN SELECCIONADA');
+        console.log('Cargando todos los departamentos...');
+        console.log('═══════════════════════════════════════════════════════');
+        
         console.log('Step 1: Clearing main dashboard charts...');
         if (typeof clearDepartmentSelection === 'function') {
             console.log('  Calling clearDepartmentSelection()');
             clearDepartmentSelection();
         } else {
             console.error('  ERROR: clearDepartmentSelection() NOT FOUND!');
-            console.error('  Make sure dashboard_charts.js is loaded BEFORE this file');
+            console.error('  Make sure dashboard_charts_core.js is loaded BEFORE this file');
         }
         
         console.log('Step 2: Clearing workload chart...');
@@ -147,28 +221,35 @@ function populateDepartmentDropdown(departamentos) {
         }
         
         // Cerrar el dropdown de forma segura
-        try {
-            const dropdown = document.getElementById('messageDropdown');
-            if (dropdown && dropdown.classList.contains('show')) {
-                const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
-                if (bsDropdown) {
-                    bsDropdown.hide();
-                } else {
-                    dropdown.classList.remove('show');//eliminar la clase de manera manual
-                    const dropdownMenu = dropdown.nextElementSibling;
-                    if (dropdownMenu) {
-                        dropdownMenu.classList.remove('show');
-                    }
-                }
-            }
-        } catch (err) {
-            console.error('Error closing dropdown:', err);
-        }
+        closeDropdownSafely();
     });
     
     dropdownMenu.appendChild(allLink);
     
     console.log(`Dropdown poblado con ${departamentos.length} departamentos\n`);
+}
+
+/**
+ * Safely close the dropdown
+ */
+function closeDropdownSafely() {
+    try {
+        const dropdown = document.getElementById('messageDropdown');
+        if (dropdown && dropdown.classList.contains('show')) {
+            const bsDropdown = bootstrap.Dropdown.getInstance(dropdown);
+            if (bsDropdown) {
+                bsDropdown.hide();
+            } else {
+                dropdown.classList.remove('show'); // Eliminar la clase de manera manual
+                const dropdownMenu = dropdown.nextElementSibling;
+                if (dropdownMenu) {
+                    dropdownMenu.classList.remove('show');
+                }
+            }
+        }
+    } catch (err) {
+        console.error('Error closing dropdown:', err);
+    }
 }
 
 function escapeHtml(text) {
@@ -184,7 +265,26 @@ function escapeHtml(text) {
     
     return text.replace(/[&<>"']/g, m => map[m]);
 }
+
+// Public function to refresh departments list
 window.refreshDepartmentsList = function() {
+    // Check permissions before refreshing
+    if (isUserRoleLocked()) {
+        console.log('Refresh bloqueado - usuario con rol restringido');
+        return;
+    }
+    
     console.log('Refrescando lista de departamentos...');
     loadDepartmentsIntoDropdown();
+};
+
+// Export role check functions for use by other scripts
+window.departmentDropdownUtils = {
+    canViewAllDepartments: canUserViewAllDepartments,
+    isRoleLocked: isUserRoleLocked,
+    refresh: function() {
+        if (!isUserRoleLocked()) {
+            loadDepartmentsIntoDropdown();
+        }
+    }
 };

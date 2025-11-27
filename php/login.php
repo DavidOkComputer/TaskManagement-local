@@ -1,4 +1,9 @@
 <?php
+/*
+ * login.php
+ * Maneja la autenticación de usuarios y redirecciona según el rol
+ */
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
@@ -31,7 +36,7 @@ function getDBConnection() {
 }
  
 // Función para enviar respuesta JSON
-function sendResponse($success, $message, $redirect = null) {
+function sendResponse($success, $message, $redirect = null, $additionalData = []) {
     $response = [
         'success' => $success,
         'message' => $message
@@ -41,12 +46,39 @@ function sendResponse($success, $message, $redirect = null) {
         $response['redirect'] = $redirect;
     }
     
+    // Agregar datos adicionales a la respuesta
+    foreach ($additionalData as $key => $value) {
+        $response[$key] = $value;
+    }
+    
     echo json_encode($response);
     exit;
 }
 
+// Función para obtener la URL de redirección según el rol
+function getRedirectByRole($id_rol) {
+    $redirects = [
+        1 => '/taskManagement/adminDashboard/',    // Administrador
+        2 => '/taskManagement/managerDashboard/',  // Gerente
+        3 => '/taskManagement/userDashboard/'      // Usuario
+    ];
+    
+    // Retorna la URL correspondiente o la de usuario por defecto
+    return $redirects[$id_rol] ?? '/taskManagement/userDashboard/';
+}
+
+// Función para obtener el nombre del rol
+function getRoleName($id_rol) {
+    $roles = [
+        1 => 'Administrador',
+        2 => 'Gerente',
+        3 => 'Usuario'
+    ];
+    
+    return $roles[$id_rol] ?? 'Usuario';
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { 
-// Verificar que sea una petición POST
     sendResponse(false, 'Método no permitido');
 }
  
@@ -67,7 +99,6 @@ if (empty($usuario) || empty($password)) {
     sendResponse(false, 'Por favor completa todos los campos');
 }
  
- 
 try {
     // Conectar a la base de datos
     $conn = getDBConnection();
@@ -76,22 +107,28 @@ try {
         sendResponse(false, 'Error de conexión con la base de datos');
     }
     
-    // Preparar la consulta para buscar el usuario
+    // Preparar la consulta para buscar el usuario con información del rol y departamento
     $stmt = $conn->prepare("
-        SELECT id_usuario, 
-               usuario, 
-               acceso, 
-               nombre,
-               apellido,
-               id_departamento,
-               id_rol,
-               e_mail
-        FROM tbl_usuarios
-        WHERE usuario = :usuario
+        SELECT 
+            u.id_usuario, 
+            u.usuario, 
+            u.acceso, 
+            u.nombre,
+            u.apellido,
+            u.id_departamento,
+            u.id_rol,
+            u.e_mail,
+            u.num_empleado,
+            r.nombre AS nombre_rol,
+            d.nombre AS nombre_departamento
+        FROM tbl_usuarios u
+        LEFT JOIN tbl_roles r ON u.id_rol = r.id_rol
+        LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento
+        WHERE u.usuario = :usuario
         LIMIT 1
     ");
     
-    $stmt->bindParam(':usuario', $usuario, PDO::PARAM_INT);
+    $stmt->bindParam(':usuario', $usuario, PDO::PARAM_STR);
     $stmt->execute();
     
     $user = $stmt->fetch();
@@ -101,7 +138,8 @@ try {
         sendResponse(false, 'Usuario o contraseña incorrectos');
     }
     
-    // Verificar la contraseña (comparación directa - sin hash)
+    // Verificar la contraseña
+    // Nota: En producción, usar password_verify() con contraseñas hasheadas
     if ($password === $user['acceso']) {
         // Contraseña correcta - iniciar sesión
         session_start();
@@ -116,11 +154,25 @@ try {
         $_SESSION['nombre'] = $user['nombre'];
         $_SESSION['apellido'] = $user['apellido'];
         $_SESSION['user_department'] = $user['id_departamento'];
+        $_SESSION['nombre_departamento'] = $user['nombre_departamento'];
         $_SESSION['id_rol'] = $user['id_rol'];
+        $_SESSION['nombre_rol'] = $user['nombre_rol'] ?? getRoleName($user['id_rol']);
         $_SESSION['e_mail'] = $user['e_mail'];
+        $_SESSION['num_empleado'] = $user['num_empleado'];
         $_SESSION['login_time'] = time();
         
-        sendResponse(true, 'Inicio de sesión exitoso', '/taskManagement/adminDashboard');
+        // Obtener la URL de redirección según el rol del usuario
+        $redirectUrl = getRedirectByRole($user['id_rol']);
+        
+        sendResponse(
+            true, 
+            'Inicio de sesión exitoso', 
+            $redirectUrl,
+            [
+                'rol' => $user['nombre_rol'] ?? getRoleName($user['id_rol']),
+                'nombre' => $user['nombre'] . ' ' . $user['apellido']
+            ]
+        );
         
     } else {
         // Contraseña incorrecta

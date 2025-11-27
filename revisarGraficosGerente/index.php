@@ -1,7 +1,27 @@
 <?php
-/*Dashboard principal de admin*/
+/**
+ * Dashboard principal de admin
+ * Modified to support role-based restrictions:
+ * - Admins (id_rol=1): Can see all departments, dropdown visible
+ * - Managers (id_rol=2): Only see their department, dropdown hidden
+ * - Users (id_rol=3): Only see their department, dropdown hidden
+ */
 require_once('../php/check_auth.php');
-session_start();
+// Ensure complete user data is in session (role, department, etc.)
+require_once('../php/session_user_data.php');
+
+// Get user information from session
+$user_id = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0);
+$user_name = isset($_SESSION['nombre']) ? $_SESSION['nombre'] : 'Usuario';
+$user_apellido = isset($_SESSION['apellido']) ? $_SESSION['apellido'] : '';
+$user_email = isset($_SESSION['e_mail']) ? $_SESSION['e_mail'] : '';
+$user_rol = isset($_SESSION['id_rol']) ? (int)$_SESSION['id_rol'] : 3;
+$user_departamento = isset($_SESSION['id_departamento']) ? (int)$_SESSION['id_departamento'] : 0;
+
+// Determine if user can view all departments (only admins)
+$canViewAllDepartments = ($user_rol == 1);
+$isManager = ($user_rol == 2);
+$showDepartmentDropdown = $canViewAllDepartments; // Only show dropdown for admins
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,9 +45,32 @@ session_start();
   <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
   <!-- endinject -->
   <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
+  
+  <style>
+    /* Hide dropdown for managers/users */
+    .department-dropdown-hidden {
+      display: none !important;
+    }
+  </style>
 </head>
 
 <body>
+  <!-- Pass user role information to JavaScript -->
+  <script>
+    // User role configuration for dashboard
+    window.dashboardUserConfig = {
+      userId: <?php echo json_encode($user_id); ?>,
+      userName: <?php echo json_encode($user_name); ?>,
+      userRol: <?php echo json_encode($user_rol); ?>,
+      userDepartamento: <?php echo json_encode($user_departamento); ?>,
+      canViewAllDepartments: <?php echo $canViewAllDepartments ? 'true' : 'false'; ?>,
+      isManager: <?php echo $isManager ? 'true' : 'false'; ?>,
+      isAdmin: <?php echo ($user_rol == 1) ? 'true' : 'false'; ?>,
+      showDepartmentDropdown: <?php echo $showDepartmentDropdown ? 'true' : 'false'; ?>
+    };
+    console.log('Dashboard User Config:', window.dashboardUserConfig);
+  </script>
+
   <div class="container-scroller">
     <!-- partial:../../partials/_navbar.html -->
     <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
@@ -50,24 +93,26 @@ session_start();
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
             <h1 class="welcome-text">Buenos dias, <span class="text-black fw-bold">
-              <?php
-                echo $_SESSION['nombre'];
-              ?>
+              <?php echo htmlspecialchars($user_name); ?>
             </span></h1>
             <h3 class="welcome-sub-text">Tu resumen de esta semana</h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item dropdown d-none d-lg-block">
+          <!-- Department Dropdown - Only visible for Admins (id_rol=1) -->
+          <?php if ($showDepartmentDropdown): ?>
+          <li class="nav-item dropdown d-none d-lg-block" id="departmentDropdownContainer">
             <a class="nav-link dropdown-bordered dropdown-toggle dropdown-toggle-split" id="messageDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false"> Seleccionar área </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="messageDropdown">
-              <a class="dropdown-item py-3" >
+              <a class="dropdown-item py-3">
                 <p class="mb-0 font-weight-medium float-left">Seleccionar área</p>
               </a>
               <div class="dropdown-divider"></div>
               <!-- Los departamentos se cargarán dinámicamente aquí -->
             </div>
           </li>
+          <?php endif; ?>
+          
           <li class="nav-item dropdown">
             <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
               <i class="icon-mail icon-lg"></i>
@@ -135,16 +180,10 @@ session_start();
               <div class="dropdown-header text-center">
                 <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
                 <p class="mb-1 mt-3 font-weight-semibold">
-                  <?php
-                    echo $_SESSION["nombre"];
-                    echo ' ';
-                    echo $_SESSION["apellido"];
-                  ?>
+                  <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
                 </p>
                 <p class="fw-light text-muted mb-0">
-                  <?php
-                    echo $_SESSION["e_mail"];
-                  ?>
+                  <?php echo htmlspecialchars($user_email); ?>
                 </p>
               </div>
               <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>
@@ -245,7 +284,7 @@ session_start();
             </a>
             <div class="collapse" id="auth">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href=""> Cerrar Sesión </a></li>
+                <li class="nav-item"> <a class="nav-link" href="../php/logout.php"> Cerrar Sesión </a></li>
               </ul>
             </div>
           </li>
@@ -333,8 +372,10 @@ session_start();
   <!-- endinject -->
   <!-- Custom js for this page-->
   <script src="../js/chart.js"></script>
-  <script src="../js/dashboard_charts_core.js"></script><!--funcion principal del graficaod, controla los demas-->
-  <script src="../js/load_departments_dropdown.js"></script><!--Manejo de menu de seleccion de departamentos-->
+  <script src="../js/dashboard_charts_core.js"></script><!--funcion principal del graficado, controla los demas-->
+  <?php if ($showDepartmentDropdown): ?>
+  <script src="../js/load_departments_dropdown.js"></script><!--Manejo de menu de seleccion de departamentos - Solo para admins-->
+  <?php endif; ?>
   <script src="../js/dashboard_charts_doughnut.js"></script><!--Para grafica de proyectos por estado-->
   <script src="../js/dashboard_charts_bar.js"></script><!--Para grafica de progreso de proyectos-->
   <script src="../js/dashboard_charts_area.js"></script><!--Para grafica de avances por periodo de tiempo-->
