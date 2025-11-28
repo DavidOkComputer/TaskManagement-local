@@ -250,7 +250,7 @@ $user_id = $_SESSION['user_id'];
                       <a class="nav-link" id="contact-tab" href="../proyectosPendientesGerente" role="tab" aria-selected="false">Proyectos pendientes</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link border-0 active ps-0" id="more-tab" href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
+                      <a class="nav-link border-0 active ps-0" id="more-tab" href="../proyectosVencidosGerente" role="tab" aria-selected="false">Proyectos vencidos</a>
                     </li>
                   </ul>
                   <div>

@@ -232,7 +232,7 @@ $user_id = $_SESSION['user_id'];
                     <p class="card-subtitle card-subtitle-dash">Completa el formulario para crear un nuevo proyecto</p>
                   </div>
                   <div>
-                    <a href="../revisarProyectos">
+                    <a href="../revisarProyectosGerente">
                       <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
                     </a>
                   </div>
@@ -505,7 +505,7 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/custom_dialogs.js"></script>
-  <script src="../js/create_project.js"></script>
+  <script src="../js/manager_create_project.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

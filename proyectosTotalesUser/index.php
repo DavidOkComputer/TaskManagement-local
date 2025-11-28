@@ -1,6 +1,6 @@
 <?php
 /*Dashboard principal de usuario, proyectos totales*/
-require_once('php/check_auth.php');
+require_once('../php/check_auth.php');
 
 session_start();
 $user_name = $_SESSION['nombre']; 
@@ -262,10 +262,10 @@ $user_id = $_SESSION['user_id'];
                                    <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
                                   </div>
                                   <div>
-                                    <a href="../nuevoProyecto/">
+                                    <a href="../nuevoProyectoUser/">
                                       <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-folder-upload"></i>Agregar nuevo proyecto</button>
                                     </a>
-                                    <a href="../revisarProyectos/">
+                                    <a href="../revisarProyectosUser/">
                                       <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
                                     </a>
                                     </div>
@@ -344,7 +344,8 @@ $user_id = $_SESSION['user_id'];
   <!-- endinject -->
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
-  <script src="../js/list_projects.js"></script>
+  <script src="../js/user_list_projects.js"></script>
+  <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

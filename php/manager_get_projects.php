@@ -1,9 +1,5 @@
 <?php
-/*
- * get_projects_manager.php
- * Obtiene todos los proyectos del departamento del gerente
- * El gerente puede ver y gestionar todos los proyectos de su departamento
- */
+/*get_projects_manager.php Obtiene todos los proyectos del departamento del gerente*/
 
 header('Content-Type: application/json');
 session_start();

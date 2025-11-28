@@ -231,13 +231,13 @@ session_start();
                       <a class="nav-link active ps-0" id="home-tab" data-bs-toggle="tab" href="#overview" role="tab" aria-controls="overview" aria-selected="true">Resumen</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="false">Proyectos totales</a>
+                      <a class="nav-link" id="profile-tab" href="../proyectosTotalesUser" role="tab" aria-selected="false">Proyectos totales</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" id="contact-tab" href="../proyectosPendientes" role="tab" aria-selected="false">Proyectos pendientes</a>
+                      <a class="nav-link" id="contact-tab" href="../proyectosPendientesUser" role="tab" aria-selected="false">Proyectos pendientes</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link border-0" id="more-tab"  href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
+                      <a class="nav-link border-0" id="more-tab"  href="../proyectosVencidosUser" role="tab" aria-selected="false">Proyectos vencidos</a>
                     </li>
                   </ul>
                   <div>

@@ -10480,27 +10480,27 @@ progress {
 }
 
 .table-info {
-  --bs-table-bg: #cff4fc;
-  --bs-table-striped-bg: #c5e8ef;
-  --bs-table-striped-color: #000;
-  --bs-table-active-bg: #badce3;
-  --bs-table-active-color: #000;
-  --bs-table-hover-bg: #bfe2e9;
-  --bs-table-hover-color: #000;
-  color: #000;
-  border-color: #badce3;
+  --bs-table-bg: #e9e9e9;
+  --bs-table-striped-bg: #e9e9e9;
+  --bs-table-striped-color: #000000;
+  --bs-table-active-bg: #e9e9e9;
+  --bs-table-active-color: #000000;
+  --bs-table-hover-bg: #e9e9e9;
+  --bs-table-hover-color: #000000;
+  color: #000000;
+  border-color: #666666;
 }
 
 .table-warning {
-  --bs-table-bg: #fff3cd;
-  --bs-table-striped-bg: #f2e7c3;
-  --bs-table-striped-color: #000;
-  --bs-table-active-bg: #e6dbb9;
-  --bs-table-active-color: #000;
-  --bs-table-hover-bg: #ece1be;
-  --bs-table-hover-color: #000;
-  color: #000;
-  border-color: #e6dbb9;
+  --bs-table-bg: #e9e9e9;
+  --bs-table-striped-bg: #e9e9e9;
+  --bs-table-striped-color: #000000;
+  --bs-table-active-bg: #e9e9e9;
+  --bs-table-active-color: #000000;
+  --bs-table-hover-bg: #e9e9e9;
+  --bs-table-hover-color: #000000;
+  color: #000000;
+  border-color: #e9e9e9;
 }
 
 .table-danger {
@@ -20925,8 +20925,8 @@ code {
 }
 
 .badge-info, .preview-list .preview-item .preview-thumbnail .badge.badge-offline {
-  color: #52CDFF;
-  border: 1px solid #52CDFF;
+  color: #666666;
+  border: 1px solid #666666;
 }
 
 .badge-warning, .preview-list .preview-item .preview-thumbnail .badge.badge-busy {

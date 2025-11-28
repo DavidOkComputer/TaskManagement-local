@@ -219,7 +219,7 @@ $user_id = $_SESSION['user_id'];
                     <p class="card-subtitle card-subtitle-dash">Completa el formulario para crear un nuevo proyecto</p>
                   </div>
                   <div>
-                    <a href="../revisarProyectos">
+                    <a href="../revisarProyectosUser">
                       <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
                     </a>
                   </div>

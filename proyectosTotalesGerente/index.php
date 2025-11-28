@@ -1,6 +1,6 @@
 <?php
 /*Dashboard principal de gerente, proyectos totales*/
-require_once('php/check_auth.php');
+require_once('../php/check_auth.php');
 session_start();
 $user_name = $_SESSION['nombre']; 
 $user_apellido = $_SESSION['apellido']; 
@@ -273,10 +273,10 @@ $user_id = $_SESSION['user_id'];
                                    <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
                                   </div>
                                   <div>
-                                    <a href="../nuevoProyecto/">
+                                    <a href="../nuevoProyectoGerente/">
                                       <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-folder-upload"></i>Agregar nuevo proyecto</button>
                                     </a>
-                                    <a href="../revisarProyectos/">
+                                    <a href="../revisarProyectosGerente/">
                                       <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
                                     </a>
                                     </div>

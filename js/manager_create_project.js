@@ -557,7 +557,7 @@ function submitForm(formData, btnCrear, action) {
       showAlert(successMessage, 'success');
      
       setTimeout(function() {//redirigir a lista de proyectos
-       window.location.href = '../revisarProyectos/';
+       window.location.href = '../revisarProyectosGerente/';
       }, 1500);
     } else {
       showAlert('Error: ' + data.message, 'danger');

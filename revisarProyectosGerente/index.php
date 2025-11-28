@@ -258,7 +258,7 @@ $user_id = $_SESSION['user_id'];
                       <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los proyectos registrados</p>
                     </div>
                     <div>
-                      <a href="../nuevoProyecto/">
+                      <a href="../nuevoProyectoGerente/">
                         <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i>Crear nuevo proyecto</button>
                       </a>
                     </div>

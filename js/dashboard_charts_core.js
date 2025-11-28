@@ -1,9 +1,4 @@
-/*dashboard_charts_core.js base de control de los graficos con auto-refresh y manejo de datos vacíos 
- * Updated to support role-based restrictions:
- * - Admins (id_rol=1): Can view all departments and switch between them
- * - Managers (id_rol=2): Only see their department, no switching allowed
- * - Users (id_rol=3): Only see their department, no switching allowed
- */ 
+/*dashboard_charts_core.js base de control de los graficos con auto-refresh y manejo de datos vacíos*/ 
 
 let dashboardChartsInstance = { 
     charts: {}, 

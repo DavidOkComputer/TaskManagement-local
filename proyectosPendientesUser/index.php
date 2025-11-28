@@ -1,6 +1,6 @@
 <?php
 /*Dashboard principal de usuario, proyectos pendientes*/
-require_once('php/check_auth.php');
+require_once('../php/check_auth.php');
 session_start();
 $user_name = $_SESSION['nombre']; 
 $user_apellido = $_SESSION['apellido']; 
@@ -345,7 +345,8 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/list_pending_projects.js"></script>
+  <script src="../js/user_list_projects.js"></script>
+  <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

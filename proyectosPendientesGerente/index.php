@@ -1,6 +1,6 @@
 <?php
 /*Dashboard principal de manager, proyectos pendientes*/
-require_once('php/check_auth.php');
+require_once('../php/check_auth.php');
 $user_name = $_SESSION['nombre']; 
 $user_apellido = $_SESSION['apellido']; 
 $user_email = $_SESSION['e_mail']; 

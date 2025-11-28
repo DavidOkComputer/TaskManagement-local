@@ -244,13 +244,13 @@ session_start();
                       <a class="nav-link active ps-0" id="home-tab" data-bs-toggle="tab" href="#overview" role="tab" aria-controls="overview" aria-selected="true">Resumen</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" id="profile-tab" href="../proyectosTotales" role="tab" aria-selected="false">Proyectos totales</a>
+                      <a class="nav-link" id="profile-tab" href="../proyectosTotalesGerente" role="tab" aria-selected="false">Proyectos totales</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" id="contact-tab" href="../proyectosPendientes" role="tab" aria-selected="false">Proyectos pendientes</a>
+                      <a class="nav-link" id="contact-tab" href="../proyectosPendientesGerente" role="tab" aria-selected="false">Proyectos pendientes</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link border-0" id="more-tab"  href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
+                      <a class="nav-link border-0" id="more-tab"  href="../proyectosVencidosGerente" role="tab" aria-selected="false">Proyectos vencidos</a>
                     </li>
                   </ul>
                   <div>
@@ -471,6 +471,7 @@ session_start();
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
+  <script src="../js/manager_dashboard_stats.js"></script>
   <script src="../js/manager_list_projects.js"></script>
   <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->

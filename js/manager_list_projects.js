@@ -2,10 +2,10 @@
 
 const ManagerConfig = { 
     API_ENDPOINTS: { 
-        GET_DASHBOARD_STATS: '../php/get_dashboard_stats_manager.php',
-        GET_PROJECTS: '../php/get_projects_manager.php',
-        GET_TOP_EMPLOYEES: '../php/get_top_employees_progress_manager.php',
-        GET_TOP_PROJECTS: '../php/get_top_projects_progress_manager.php',
+        GET_DASHBOARD_STATS: '../php/manager_get_dashboard_stats.php',
+        GET_PROJECTS: '../php/manager_get_projects.php',
+        GET_TOP_EMPLOYEES: '../php/manager_get_top_employees_progress.php',
+        GET_TOP_PROJECTS: '../php/manager_get_top_projects_progress.php',
         GET_PROJECT_USERS: '../php/get_project_user.php'
     } 
 }; 
@@ -65,10 +65,6 @@ function stopAutoRefresh() {
         console.log('Auto-refresh detenido'); 
     } 
 } 
-
-// ==========================================
-// CARGAR ESTADÍSTICAS DEL DEPARTAMENTO
-// ==========================================
 
 function loadManagerDashboardStats() { 
     fetch(ManagerConfig.API_ENDPOINTS.GET_DASHBOARD_STATS) 
@@ -153,10 +149,6 @@ function updateManagerDashboardStats(stats) {
     }
 }
 
-// ==========================================
-// CARGAR TOP EMPLEADOS DEL DEPARTAMENTO
-// ==========================================
-
 function loadTopEmployeesProgress() {
     fetch(ManagerConfig.API_ENDPOINTS.GET_TOP_EMPLOYEES)
         .then(response => {
@@ -234,10 +226,6 @@ function displayEmptyEmployeesState() {
         </tr>
     `;
 }
-
-// ==========================================
-// CARGAR TOP PROYECTOS DEL DEPARTAMENTO
-// ==========================================
 
 function loadTopProjectsProgress() {
     fetch(ManagerConfig.API_ENDPOINTS.GET_TOP_PROJECTS)
@@ -317,10 +305,6 @@ function displayEmptyTopProjectsState() {
         </tr>
     `;
 }
-
-// ==========================================
-// CARGAR PROYECTOS DEL DEPARTAMENTO
-// ==========================================
 
 function cargarProyectos() { 
     const tableBody = document.querySelector('#proyectosTableBody'); 
@@ -441,10 +425,6 @@ function refreshProjectUsersData() {
         });
 }
 
-// ==========================================
-// BÚSQUEDA
-// ==========================================
-
 function setupSearch() {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -482,10 +462,6 @@ function performSearch(query) {
         filteredProjects;
     displayProjects(sorted); 
 }
-
-// ==========================================
-// ORDENAMIENTO
-// ==========================================
 
 function setupSorting() { 
     const headers = document.querySelectorAll('th.sortable-header'); 
@@ -548,10 +524,6 @@ function sortProjects(projects, column, direction) {
     }); 
     return sorted; 
 } 
-
-// ==========================================
-// PAGINACIÓN
-// ==========================================
 
 function setupPagination() { 
     const rowsPerPageSelect = document.getElementById('rowsPerPageSelect'); 
@@ -674,10 +646,6 @@ function updatePaginationControls() {
     paginationContainer.appendChild(buttonContainer); 
 } 
 
-// ==========================================
-// MOSTRAR PROYECTOS
-// ==========================================
-
 function displayProjects(proyectos) { 
     const tableBody = document.querySelector('#proyectosTableBody'); 
     if(!tableBody) return; 
@@ -756,8 +724,7 @@ function createProjectRow(proyecto, index) {
         <td> 
             ${statusBadge} 
         </td> 
-        <td>${proyecto.participante || '-'}</td>
-        <td>${actionsButtons}</td>
+        <td>${proyecto.participante || '-'}</td>\
     `; 
     return row; 
 } 
@@ -777,10 +744,6 @@ function displayEmptyState() {
         </tr> 
     `; 
 } 
-
-// ==========================================
-// ACCIONES DE PROYECTOS
-// ==========================================
 
 function editarProyecto(idProyecto) {
     window.location.href = `../editarProyecto/?id=${idProyecto}`;
@@ -890,10 +853,6 @@ function displayProjectUsersInModal(usuarios) {
     
     contentDiv.innerHTML = html;
 }
-
-// ==========================================
-// FUNCIONES DE UTILIDAD
-// ==========================================
 
 function createProgressBar(progress) { 
     const progressValue = parseFloat(progress) || 0; 
