@@ -253,104 +253,126 @@ session_start();
                       <div class="col-sm-12">
                         <div class="statistics-details d-flex align-items-center justify-content-between">
                           <div>
-                            <p class="statistics-title">Total de objetivos</p>
-                            <h3 class="rate-percentage">20</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>-0.5% productividad</span></p>
+                            <p class="statistics-title">Mis Proyectos</p>
+                            <h3 class="rate-percentage" id="stat-mis-proyectos">0</h3>
+                            <p class="text-muted d-flex"><span>Proyectos asignados</span></p>
                           </div>
                           <div>
-                            <p class="statistics-title">Total de proyectos</p>
-                            <h3 class="rate-percentage">24</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+0.1%</span></p>
+                            <p class="statistics-title">Mis Tareas</p>
+                            <h3 class="rate-percentage" id="stat-mis-tareas">0</h3>
+                            <p class="text-muted d-flex"><span>Total de tareas</span></p>
                           </div>
                           <div>
-                            <p class="statistics-title">Total de Tareas</p>
-                            <h3 class="rate-percentage">50%</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>20% fehca esperada</span></p>
+                            <p class="statistics-title">Tareas Completadas</p>
+                            <h3 class="rate-percentage" id="stat-tareas-completadas">0%</h3>
+                            <p class="text-success d-flex"><i class="mdi mdi-check-circle"></i><span>Completadas</span></p>
                           </div>
                           <div class="d-none d-md-block">
-                            <p class="statistics-title">Proyectos completados</p>
-                            <h3 class="rate-percentage">30</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                            <p class="statistics-title">Tareas Pendientes</p>
+                            <h3 class="rate-percentage" id="stat-tareas-pendientes">0</h3>
+                            <p class="text-warning d-flex"><i class="mdi mdi-clock"></i><span>Por hacer</span></p>
                           </div>
                           <div class="d-none d-md-block">
-                            <p class="statistics-title">Proyectos en proceso</p>
-                            <h3 class="rate-percentage">12</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>2 asignaciones</span></p>
-                          </div>
-                          <div class="d-none d-md-block">
-                            <p class="statistics-title">Proyectos pendientes</p>
-                            <h3 class="rate-percentage">10</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
-                          </div>
-                          <div class="d-none d-md-block">
-                            <p class="statistics-title">Proyectos vencidos</p>
-                            <h3 class="rate-percentage">5</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                            <p class="statistics-title">Tareas Vencidas</p>
+                            <h3 class="rate-percentage" id="stat-tareas-vencidas">0</h3>
+                            <p class="text-danger d-flex"><i class="mdi mdi-alert"></i><span>Retrasadas</span></p>
                           </div>
                         </div>
                       </div>
                     </div> 
                     <div class="row">
-                      <!--Progreso por responsable-->
-                      <div class="col-sm-4 grid-margin stretch-card">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">
-                                    Empleados por Progreso
-                                </h4>
-                                <div class="table-responsive pt-3">
-                                    <table class="table table-bordered table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th style="width: 10%;">
-                                                    #
-                                                </th>
-                                                <th style="width: 40%;">
-                                                    Nombre
-                                                </th>
-                                                <th style="width: 50%;">
-                                                    Progreso
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="topEmployeesTableBody">
-                                            <!-- Contenido cargado dinámicamente -->
-                                            <tr>
-                                                <td colspan="3" class="text-center py-4">
-                                                    <div class="spinner-border text-primary" role="status">
-                                                        <span class="visually-hidden">Cargando...</span>
-                                                    </div>
-                                                    <p class="mt-2">Cargando empleados...</p>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                      </div>
-                      <!--Progreso por proyecto/tareas-->
-                      <div class="col-sm-4 grid-margin stretch-card">
+                      <!-- Mi progreso en proyectos -->
+                      <div class="col-sm-6 grid-margin stretch-card">
                         <div class="card">
                           <div class="card-body">
-                            <h4 class="card-title">Progreso por proyecto</h4>
+                            <h4 class="card-title">Mi Progreso en Proyectos</h4>
+                            <p class="card-description">Tus tareas completadas por proyecto</p>
                             <div class="table-responsive pt-3">
                               <table class="table table-bordered table-hover">
                                 <thead>
                                   <tr>
-                                    <th style="width: 10%;">
-                                      #
-                                    </th>
-                                    <th style="width: 50%;">
-                                      Proyecto
-                                    </th>
-                                    <th style="width: 40%;">
-                                      Progreso
-                                    </th>
+                                    <th style="width: 50%;">Proyecto</th>
+                                    <th style="width: 50%;">Mi Progreso</th>
+                                  </tr>
+                                </thead>
+                                <tbody id="misProyectosProgresoTableBody">
+                                  <tr>
+                                    <td colspan="2" class="text-center py-4">
+                                      <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                      </div>
+                                      <p class="mt-2">Cargando progreso...</p>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Mis tareas recientes -->
+                      <div class="col-sm-6 grid-margin stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <h4 class="card-title">Mis Tareas Recientes</h4>
+                            <p class="card-description">Últimas tareas asignadas</p>
+                            <div class="table-responsive pt-3">
+                              <table class="table table-bordered table-hover">
+                                <thead>
+                                  <tr>
+                                    <th style="width: 70%;">Tarea</th>
+                                    <th style="width: 30%;">Estado</th>
+                                  </tr>
+                                </thead>
+                                <tbody id="misTareasTableBody">
+                                  <tr>
+                                    <td colspan="2" class="text-center py-4">
+                                      <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                      </div>
+                                      <p class="mt-2">Cargando tareas...</p>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <!-- Gráfico de dona de tareas -->
+                      <div class="col-sm-6 grid-margin stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <h4 class="card-title">Mis Tareas por Estado</h4>
+                            <div class="chart-container" style="width: 100%; display: flex; flex-direction: column;">
+                              <div class="chart-wrapper" style="flex: 1; display: flex; justify-content: center; align-items: center; min-height: 250px;">
+                                <canvas id="doughnutChart" style="max-width: 100%; max-height: 250px;"></canvas>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Tabla de todos los proyectos del departamento -->
+                      <div class="col-lg-6 grid-margin-stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <h4 class="card-title">Proyectos del Departamento</h4>
+                            <p class="card-description">Resumen de proyectos activos</p>
+                            <div class="table-responsive mt-3">
+                              <table class="table table-hover">
+                                <thead>
+                                  <tr>
+                                    <th>Proyecto</th>
+                                    <th>Estado</th>
+                                    <th>Progreso</th>
                                   </tr>
                                 </thead>
                                 <tbody id="topProjectsTableBody">
-                                  <!-- Contenido cargado dinámicamente -->
                                   <tr>
                                     <td colspan="3" class="text-center py-4">
                                       <div class="spinner-border text-primary" role="status">
@@ -365,66 +387,56 @@ session_start();
                           </div>
                         </div>
                       </div>
-                      <!--Fin de progreso por proyecto/tarea-->
-                      <div class="col-sm-4 grid-margin stretch-card">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title">Proyectos por estado</h4>
-                                <div class="chart-container" style="width: 100%; display: flex; flex-direction: column;">
-                                    <div class="chart-wrapper" style="flex: 1; display: flex; justify-content: center; align-items: center;">
-                                        <canvas id="doughnutChart" height="200" style="max-width: 100%;"></canvas>
-                                    </div>
-                                    <div id="doughnut-chart-legend" class="mt-5 text-center" style="width: 100%; overflow-x: auto;"></div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-                        <div class="col-lg-12 grid-margin-stretch-card">
-                          <div class="card">
-                            <div class="card-body">
-                              <h4 class="card-title">Detalles de los proyectos</h4>
-                              <div class="table-responsive mt-3">
-                                <table class="table select-table">
-                                  <thead>
-                                    <tr>            
-                                      <th class="sortable-header" data-sort="id_proyecto" style="cursor: pointer; user-select: none;">
-                                        # <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
-                                        Título <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="descripcion" style="cursor: pointer; user-select: none;">
-                                        Descripción <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor: pointer; user-select: none;">
-                                        Fecha de entrega <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="progreso" style="cursor: pointer; user-select: none;">
-                                        Progreso <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="estado" style="cursor: pointer; user-select: none;">
-                                        Estado <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="participante" style="cursor: pointer; user-select: none;">
-                                        Responsable <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody id="proyectosTableBody">
-                                    <!--proyectos cargados automaticamente-->
-                                    <tr>
-                                      <td colspan="9" class="text-center">
-                                        <div class="spinner-border text-primary" role="status">
-                                          <span class="visually-hidden">Cargando...</span>
-                                        </div>
-                                        <p class="mt-2">Cargando proyectos...</p>
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>  
+
+                    <div class="row">
+                      <div class="col-lg-12 grid-margin-stretch-card">
+                        <div class="card">
+                          <div class="card-body">
+                            <h4 class="card-title">Detalles de los proyectos</h4>
+                            <div class="table-responsive mt-3">
+                              <table class="table select-table">
+                                <thead>
+                                  <tr>            
+                                    <th class="sortable-header" data-sort="id_proyecto" style="cursor: pointer; user-select: none;">
+                                      # <i class="mdi mdi-sort-variant"></i>
+                                    </th>
+                                    <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;">
+                                      Título <i class="mdi mdi-sort-variant"></i>
+                                    </th>
+                                    <th class="sortable-header" data-sort="descripcion" style="cursor: pointer; user-select: none;">
+                                      Descripción <i class="mdi mdi-sort-variant"></i>
+                                    </th>
+                                    <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor: pointer; user-select: none;">
+                                      Fecha de entrega <i class="mdi mdi-sort-variant"></i>
+                                    </th>
+                                    <th class="sortable-header" data-sort="progreso" style="cursor: pointer; user-select: none;">
+                                      Progreso <i class="mdi mdi-sort-variant"></i>
+                                    </th>
+                                    <th class="sortable-header" data-sort="estado" style="cursor: pointer; user-select: none;">
+                                      Estado <i class="mdi mdi-sort-variant"></i>
+                                    </th>
+                                    <th class="sortable-header" data-sort="participante" style="cursor: pointer; user-select: none;">
+                                      Responsable <i class="mdi mdi-sort-variant"></i>
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody id="proyectosTableBody">
+                                  <tr>
+                                    <td colspan="7" class="text-center">
+                                      <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                      </div>
+                                      <p class="mt-2">Cargando proyectos...</p>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                            <!-- Paginación -->
+                            <div class="pagination-container mt-4"></div>
                           </div>  
+                        </div>  
                       </div>
                     </div>
                   </div>
@@ -456,7 +468,7 @@ session_start();
   <script src="../js/settings.js"></script>
   <!-- endinject -->
   <!-- Custom js for this page-->
-  <script src="../js/dashboard.js"></script>
+  <!--<script src="../js/dashboard.js"></script>-->
   <script src="../js/Chart.roundedBarCharts.js"></script>
   <script src="../js/user_list_projects.js"></script>
   <script src="../js/custom_dialogs.js"></script>

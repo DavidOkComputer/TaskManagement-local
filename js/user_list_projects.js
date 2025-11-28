@@ -1,8 +1,4 @@
-/*
- * list_projects_user.js
- * JavaScript para cargar y mostrar datos del dashboard de usuario
- * Maneja proyectos, tareas y estadísticas del usuario actual
- */
+/*list_projects_user.js JavaScript para cargar y mostrar datos del dashboard de usuario*/
 
 const UserConfig = { 
     API_ENDPOINTS: { 
@@ -26,12 +22,16 @@ let totalPages = 0;
 // Variable para el auto-refresh 
 let autoRefreshInterval = null; 
 
+// Variable para el gráfico
+let userTasksChart = null;
+
 document.addEventListener('DOMContentLoaded', function() { 
     setupSorting(); 
     setupPagination(); 
     loadUserDashboardStats();
     loadMyTasks();
     loadMyProjectsProgress();
+    loadTopProjects();
     cargarProyectos(); 
     startAutoRefresh();
 }); 
@@ -45,6 +45,7 @@ function startAutoRefresh() {
         loadUserDashboardStats();
         loadMyTasks();
         loadMyProjectsProgress();
+        loadTopProjects();
         refreshProjectsData(); 
     }, 60000); // 60000 ms = 1 minuto 
 } 
@@ -56,10 +57,6 @@ function stopAutoRefresh() {
         console.log('Auto-refresh detenido'); 
     } 
 } 
-
-// ==========================================
-// CARGAR ESTADÍSTICAS DEL USUARIO
-// ==========================================
 
 function loadUserDashboardStats() { 
     fetch(UserConfig.API_ENDPOINTS.GET_DASHBOARD_STATS) 
@@ -114,18 +111,91 @@ function updateUserDashboardStats(stats) {
     }
 
     // Actualizar gráfico de dona
-    if (typeof updateUserTasksChart === 'function') {
-        updateUserTasksChart(
-            stats.tareas_pendientes || 0,
-            stats.tareas_completadas || 0,
-            stats.tareas_vencidas || 0
-        );
-    }
+    updateUserTasksChart(
+        stats.tareas_pendientes || 0,
+        stats.tareas_completadas || 0,
+        stats.tareas_vencidas || 0
+    );
 }
 
-// ==========================================
-// CARGAR MIS TAREAS RECIENTES
-// ==========================================
+function updateUserTasksChart(pendientes, completadas, vencidas) {
+    const chartElement = document.getElementById('doughnutChart');
+    
+    if (!chartElement) {
+        console.warn('Elemento doughnutChart no encontrado');
+        return;
+    }
+
+    const ctx = chartElement.getContext('2d');
+    
+    // Destruir gráfico existente si existe
+    if (userTasksChart !== null) {
+        userTasksChart.destroy();
+    }
+
+    // Si no hay datos, mostrar gráfico vacío
+    const total = pendientes + completadas + vencidas;
+    let data, labels;
+    
+    if (total === 0) {
+        // Mostrar un gráfico con mensaje "Sin datos"
+        data = [1];
+        labels = ['Sin tareas asignadas'];
+    } else {
+        data = [pendientes, completadas, vencidas];
+        labels = ['Pendientes', 'Completadas', 'Vencidas'];
+    }
+
+    const chartData = {
+        labels: labels,
+        datasets: [{
+            data: data,
+            backgroundColor: total === 0 ? ['#e0e0e0'] : ['#666666', '#009b4a', '#000000'],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '70%',
+        plugins: {
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12
+                    },
+                    usePointStyle: true
+                }
+            },
+            tooltip: {
+                enabled: total > 0,
+                callbacks: {
+                    label: function(context) {
+                        let label = context.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        label += context.parsed;
+                        return label;
+                    }
+                }
+            }
+        }
+    };
+
+    userTasksChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: chartData,
+        options: options
+    });
+
+    console.log('Gráfico de tareas actualizado:', {pendientes, completadas, vencidas, total});
+}
 
 function loadMyTasks() {
     fetch(UserConfig.API_ENDPOINTS.GET_MY_TASKS + '?limit=5')
@@ -199,10 +269,6 @@ function displayEmptyTasksState() {
     `;
 }
 
-// ==========================================
-// CARGAR MI PROGRESO POR PROYECTO
-// ==========================================
-
 function loadMyProjectsProgress() {
     fetch(UserConfig.API_ENDPOINTS.GET_MY_PROJECTS_PROGRESS)
         .then(response => {
@@ -271,16 +337,88 @@ function displayEmptyProjectsProgressState() {
     tableBody.innerHTML = `
         <tr>
             <td colspan="2" class="text-center text-muted py-4">
-                <i class="mdi mdi-folder-off" style="font-size: 32px; opacity: 0.5;"></i>
+                <i class="mdi mdi-folder-open-outline" style="font-size: 32px; opacity: 0.5;"></i>
                 <p class="mt-2">No participas en proyectos activos</p>
             </td>
         </tr>
     `;
 }
 
-// ==========================================
-// CARGAR PROYECTOS DEL DEPARTAMENTO
-// ==========================================
+function loadTopProjects() {
+    fetch(UserConfig.API_ENDPOINTS.GET_PROJECTS)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta de red');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success && data.proyectos) {
+                displayTopProjects(data.proyectos.slice(0, 10));
+                console.log('Top proyectos cargados:', data.proyectos.length);
+            } else {
+                console.warn('Aviso al cargar top proyectos:', data.message);
+                displayEmptyTopProjectsState();
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar top proyectos:', error);
+            displayEmptyTopProjectsState();
+        });
+}
+
+function displayTopProjects(proyectos) {
+    const tableBody = document.getElementById('topProjectsTableBody');
+    
+    if (!tableBody) {
+        console.warn('Elemento #topProjectsTableBody no encontrado');
+        return;
+    }
+
+    tableBody.innerHTML = '';
+
+    if (!proyectos || proyectos.length === 0) {
+        displayEmptyTopProjectsState();
+        return;
+    }
+
+    proyectos.forEach(proyecto => {
+        const row = document.createElement('tr');
+        const statusBadge = getStatusBadge(proyecto.estado);
+        const progressBar = createProgressBar(proyecto.progreso || 0);
+        
+        row.innerHTML = `
+            <td>
+                <strong>${escapeHtml(truncateText(proyecto.nombre, 30))}</strong>
+                <br>
+                <small class="text-muted">${escapeHtml(proyecto.participante || 'Sin asignar')}</small>
+            </td>
+            <td>
+                ${statusBadge}
+            </td>
+            <td>
+                ${progressBar}
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+}
+
+function displayEmptyTopProjectsState() {
+    const tableBody = document.getElementById('topProjectsTableBody');
+    
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="3" class="text-center text-muted py-4">
+                <i class="mdi mdi-folder-open-outline" style="font-size: 32px; opacity: 0.5;"></i>
+                <p class="mt-2">No hay proyectos disponibles</p>
+            </td>
+        </tr>
+    `;
+}
 
 function cargarProyectos() { 
     const tableBody = document.querySelector('#proyectosTableBody'); 
@@ -367,10 +505,6 @@ function refreshProjectsData() {
         }); 
 } 
 
-// ==========================================
-// ORDENAMIENTO
-// ==========================================
-
 function setupSorting() { 
     const headers = document.querySelectorAll('th.sortable-header'); 
     headers.forEach(header => { 
@@ -397,7 +531,7 @@ function updateSortIndicators() {
         if (header.dataset.sort === currentSortColumn) { 
             icon.className = sortDirection === 'asc' ? 'mdi mdi-sort-ascending' : 'mdi mdi-sort-descending'; 
             header.style.fontWeight = 'bold'; 
-            header.style.color = '#0094ba'; 
+            header.style.color = '#666666'; 
         } else { 
             icon.className = 'mdi mdi-sort-variant'; 
             header.style.fontWeight = 'normal'; 
@@ -432,10 +566,6 @@ function sortProjects(projects, column, direction) {
     }); 
     return sorted; 
 } 
-
-// ==========================================
-// PAGINACIÓN
-// ==========================================
 
 function setupPagination() { 
     const rowsPerPageSelect = document.getElementById('rowsPerPageSelect'); 
@@ -556,10 +686,6 @@ function updatePaginationControls() {
     paginationContainer.appendChild(buttonContainer); 
 } 
 
-// ==========================================
-// MOSTRAR PROYECTOS
-// ==========================================
-
 function displayProjects(proyectos) { 
     const tableBody = document.querySelector('#proyectosTableBody'); 
     if(!tableBody) return; 
@@ -678,10 +804,6 @@ function displayEmptyState() {
         </tr> 
     `; 
 } 
-
-// ==========================================
-// FUNCIONES DE UTILIDAD
-// ==========================================
 
 function truncateText(text, length) { 
     if (!text) return '-'; 
