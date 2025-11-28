@@ -1,4 +1,4 @@
-/**objetivo_form.js - Maneja creacion y edicion de objetivos */
+/**objetivo_form.js - Maneja creacion y edicion de objetivos de gerente */
 const editMode = { isEditing: false, objectiveId: null }; 
 document.addEventListener('DOMContentLoaded', function() { 
     // Detectar si estamos en modo edición

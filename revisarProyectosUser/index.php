@@ -344,6 +344,6 @@ $user_id = $_SESSION['user_id'];
   
   <!-- Load projects script -->
   <script src="../js/custom_dialogs.js"></script>
-  <script src="../js/manage_projects.js"></script>
+  <script src="../js/user_manage_projects.js"></script>
 </body>
 </html>

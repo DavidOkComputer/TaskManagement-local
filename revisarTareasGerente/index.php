@@ -304,6 +304,6 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/dashboard.js"></script>
   <script src="../js/hoverable-collapse.js"></script>
   <!-- End custom js for this page-->
-  <script src="../js/manage_tasks.js"></script>
+  <script src="../js/manager_manage_tasks.js"></script>
 </body>
 </html>

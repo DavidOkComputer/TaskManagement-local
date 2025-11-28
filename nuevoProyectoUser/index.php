@@ -492,7 +492,7 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/custom_dialogs.js"></script>
-  <script src="../js/create_project.js"></script>
+  <script src="../js/user_create_project.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>
