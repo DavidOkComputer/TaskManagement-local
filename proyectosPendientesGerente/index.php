@@ -358,7 +358,7 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/list_pending_projects.js"></script>
+  <script src="../js/manager_list_pending_projects.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

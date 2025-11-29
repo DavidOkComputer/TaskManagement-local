@@ -229,11 +229,6 @@ $user_id = $_SESSION['user_id'];
                       <h4 class="card-title card-title-dash">Gestion de empleados</h4>
                       <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los empleados</p>
                     </div>
-                    <div>
-                      <a href="../registroDeEmpleados">
-                        <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-account-plus"></i>Agregar nuevo usuario</button>
-                      </a>
-                    </div>
                   </div>
                   <!-- Rows Per Page Selector-->
                   <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
@@ -274,10 +269,9 @@ $user_id = $_SESSION['user_id'];
                       </tbody>
                     </table>
                   </div>
-
-                  <!-- Pagination Controls - NEW -->
+                  <!-- Pagination Controls-->
                   <div class="pagination-container mt-4">
-                    <!-- Pagination info and buttons are dynamically inserted here -->
+                    <!-- la info de paginacion se carga automaticamente -->
                   </div>
                 </div>
               </div>
@@ -293,7 +287,7 @@ $user_id = $_SESSION['user_id'];
 </div>
 <!-- container-scroller -->
 
-<!-- Edit User Modal-->
+<!--Modal de editar usuarios-->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -391,10 +385,10 @@ $user_id = $_SESSION['user_id'];
                     </div> 
                     <!-- Projects List --> 
                     <div id="projectsList"> 
-                        <!-- Projects will be loaded here dynamically --> 
+                        <!--los proyectos se cargan de manera automatica --> 
                     </div> 
                 </div> 
-                <!-- No Projects State --> 
+                <!--mensaje de proyectos no encontrados --> 
                 <div id="noProjects" style="display: none;" class="text-center py-4"> 
                     <i class="mdi mdi-folder-open" style="font-size: 48px; color: #ccc;"></i> 
                     <p class="text-muted mt-2">Este empleado no tiene proyectos asignados</p> 

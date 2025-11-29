@@ -253,6 +253,19 @@ session_start();
                       <a class="nav-link border-0" id="more-tab"  href="../proyectosVencidosGerente" role="tab" aria-selected="false">Proyectos vencidos</a>
                     </li>
                   </ul>
+                  <div class="auto-refresh-controls me-3"> 
+                    <span class="text-muted small" id="autoRefreshStatus"> 
+                        <i class="mdi mdi-sync me-1"></i>Auto-actualizar activo 
+                    </span> 
+
+                    <button class="btn btn-sm btn-outline-primary" onclick="refreshAllData()" title="Actualizar ahora"> 
+                        <i class="mdi mdi-refresh"></i> 
+                    </button> 
+
+                    <button class="btn btn-sm btn-outline-secondary" id="toggleAutoRefreshBtn" onclick="toggleAutoRefresh()" title="Pausar/Reanudar"> 
+                        <i class="mdi mdi-pause"></i> 
+                    </button> 
+                  </div> 
                   <div>
                     <div class="btn-wrapper">
                       <a href="#" class="btn btn-otline-dark align-items-center"><i class="icon-share"></i> Compartir</a>
@@ -469,10 +482,10 @@ session_start();
   <script src="../js/settings.js"></script>
   <!-- endinject -->
   <!-- Custom js for this page-->
-  <script src="../js/dashboard.js"></script>
-  <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/manager_dashboard_stats.js"></script>
   <script src="../js/manager_list_projects.js"></script>
+  <script src="../js/manager_dashboard_stats.js"></script>
+  <script src="../js/manager_dashboard.js"></script>
+  <script src="../js/Chart.roundedBarCharts.js"></script>
   <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->
 </body>
