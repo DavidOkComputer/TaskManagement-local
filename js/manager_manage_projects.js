@@ -57,7 +57,7 @@ function stopAutoRefresh() {
 } 
 
 function refreshProjectsData() { 
-    fetch('../php/get_projects.php') 
+    fetch('../php/manager_get_projects.php') 
         .then(response => { 
             if (!response.ok) { 
                 throw new Error('La respuesta de red no fue ok'); 
@@ -143,7 +143,7 @@ function cargarProyectos() {
             </td> 
         </tr> 
     `; 
-    fetch('../php/get_projects.php') 
+    fetch('../php/manager_get_projects.php') 
         .then(response => {
             if (!response.ok) { 
                 throw new Error('La respuesta de red no fue ok'); 

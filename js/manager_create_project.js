@@ -1,4 +1,4 @@
-/**create_proyect.js creacion y edicion de proyectos*/
+/**manager_create_project.js - Creación y edición de proyectos para gerentes con restricciones de departamento*/
  
 const editMode = {
     isEditing: false,
@@ -10,6 +10,12 @@ const grupalState = {
     selectedUsers: [],
     usuariosModal: null
 };
+
+// Estado del departamento del gerente
+const managerState = {
+    departmentId: null,
+    departmentName: null
+};
  
 //inicializar pagina al cargar
 document.addEventListener('DOMContentLoaded', function() {
@@ -20,13 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
  
   // Cambiar título y botón si estamos editando
   if (editMode.isEditing) {
-    document.querySelector('h4.card-title')?.textContent == 'Editar Proyecto';
-    document.querySelector('p.card-subtitle')?.textContent == 'Actualiza la información del proyecto';
-    document.getElementById('btnCrear').textContent == 'Actualizar';
+    document.querySelector('h4.card-title').textContent = 'Editar Proyecto';
+    document.querySelector('p.card-subtitle').textContent = 'Actualiza la información del proyecto';
+    document.getElementById('btnCrear').textContent = 'Actualizar';
   }
  
-  cargarDepartamentos();
-  loadUsuarios();
+  cargarDepartamentoGerente(); // Cargar departamento del gerente primero
   setupFormHandlers();
   setupGrupalHandlers();
  
@@ -40,8 +45,8 @@ const app = {
     usuarios: []
 };
  
-function cargarDepartamentos() {
-  fetch('../php/get_departments.php')
+function cargarDepartamentoGerente() {
+  fetch('../php/manager_get_departments.php')
     .then(response => {
       if (!response.ok) {
         throw new Error('La respuesta de red no fue ok');
@@ -49,39 +54,62 @@ function cargarDepartamentos() {
       return response.json();
     })
     .then(data => {
-      if (data.success && data.departamentos) {
+      if (data.success && data.departamentos && data.departamentos.length > 0) {
+        const departamento = data.departamentos[0]; // Solo debería haber uno para el gerente
         const select = document.getElementById('id_departamento');
-        data.departamentos.forEach(dept => {
-          const option = document.createElement('option');
-          option.value = dept.id_departamento;
-          option.textContent = dept.nombre;
-          select.appendChild(option);
-        });
+        const hiddenInput = document.getElementById('id_departamento_hidden');
+        
+        // Guardar información del departamento
+        managerState.departmentId = departamento.id_departamento;
+        managerState.departmentName = departamento.nombre;
+        
+        // Limpiar y configurar el select
+        select.innerHTML = '';
+        const option = document.createElement('option');
+        option.value = departamento.id_departamento;
+        option.textContent = departamento.nombre;
+        option.selected = true;
+        select.appendChild(option);
+        
+        // Establecer el valor en el campo oculto
+        hiddenInput.value = departamento.id_departamento;
+        
+        console.log('Departamento del gerente cargado:', departamento.nombre);
+        
+        // Ahora cargar los usuarios del mismo departamento
+        loadUsuariosDepartamento();
       } else {
-        showAlert('Error al cargar departamentos', 'warning');
+        showAlert('Error: No se pudo determinar tu departamento', 'danger');
       }
     })
     .catch(error => {
-      console.error('Error al cargar los departamentos:', error);
-      showAlert('Error al cargar departamentos', 'danger');
+      console.error('Error al cargar el departamento:', error);
+      showAlert('Error al cargar el departamento', 'danger');
     });
 }
- 
-function loadUsuarios() {
-  fetch('../php/get_users.php')
+
+function loadUsuariosDepartamento() {
+  if (!managerState.departmentId) {
+    console.error('No se ha establecido el ID del departamento');
+    return;
+  }
+
+  fetch('../php/manager_get_users.php')
     .then(response => response.json())
     .then(data => {
       if (data.success && data.usuarios) {
         app.usuarios = data.usuarios;
         populateUsuariosSelect(data.usuarios);
         populateGrupalModal(data.usuarios);
-        console.log(`${data.usuarios.length} usuarios cargados`);
+        console.log(`${data.usuarios.length} usuarios del departamento cargados`);
       } else {
         console.error('Error al cargar usuarios:', data.message);
+        showAlert('Error al cargar usuarios del departamento', 'warning');
       }
     })
     .catch(error => {
       console.error('Error en fetch de usuarios:', error);
+      showAlert('Error al cargar usuarios', 'danger');
     });
 }
  
@@ -119,6 +147,7 @@ function populateGrupalModal(usuarios) {
           <strong class="d-block mb-1">${usuario.nombre_completo}</strong>
           <small class="text-muted d-block">Empleado #${usuario.num_empleado}</small>
           <small class="text-muted d-block">${usuario.e_mail}</small>
+          <small class="text-muted d-block"><i class="mdi mdi-domain"></i> ${usuario.area || 'Sin área'}</small>
         </div>
         <div class="ms-3 d-flex align-items-center">
           <i class="mdi mdi-checkbox-blank-circle-outline usuario-selection-icon" 
@@ -294,7 +323,11 @@ function cargarProyectoParaEditar(projectId) {
                 
                 document.getElementById('nombre').value = proyecto.nombre || '';
                 document.getElementById('descripcion').value = proyecto.descripcion || '';
-                document.getElementById('id_departamento').value = proyecto.id_departamento || '';
+                
+                // El departamento ya está preseleccionado, solo verificar que coincida
+                if (proyecto.id_departamento && proyecto.id_departamento != managerState.departmentId) {
+                    showAlert('Advertencia: Este proyecto pertenece a otro departamento', 'warning');
+                }
                 
                 //convertir datetime de sql a formato local
                 if (proyecto.fecha_inicio) {
@@ -350,13 +383,13 @@ function cargarProyectoParaEditar(projectId) {
                 showAlert('Proyecto cargado correctamente', 'success');
             } else {
                 showAlert('Error al cargar el proyecto: ' + data.message, 'danger');
-                window.location.href = '../revisarProyectos/';
+                window.location.href = '../revisarProyectosGerente/';
             }
         })
         .catch(error => {
             console.error('Error al cargar proyecto:', error);
             showAlert('Error al cargar el proyecto: ' + error.message, 'danger');
-            window.location.href = '../revisarProyectos/';
+            window.location.href = '../revisarProyectosGerente/';
         });
 }
  
@@ -376,7 +409,7 @@ function setupFormHandlers() {
     showConfirm(
       '¿Estás seguro de que deseas cancelar? Los cambios no guardados se perderán.',
       function() {
-        window.location.href = '../revisarProyectos/';
+        window.location.href = '../revisarProyectosGerente/';
       },
       'Cancelar cambios',
       {
@@ -408,6 +441,13 @@ function crearProyecto() {
     form.classList.add('was-validated');
     return;
   }
+  
+  // Validar que el departamento esté establecido
+  if (!managerState.departmentId) {
+    showAlert('Error: No se ha establecido el departamento', 'danger');
+    return;
+  }
+  
   //revisar que se seleccionen usuarios para el poryecto grupal
   if (tipoProyecto == '1' && grupalState.selectedUsers.length === 0) {
     showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
@@ -418,6 +458,9 @@ function crearProyecto() {
   btnCrear.disabled = true;
   btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creando...';
  
+  // Asegurar que el departamento correcto esté en el formData
+  formData.set('id_departamento', managerState.departmentId);
+  
   if (archivoInput.files.length > 0) {
     uploadFile(archivoInput.files[0], function(filePath) {
       if (filePath) {
@@ -457,6 +500,12 @@ function editarProyecto() {
     form.classList.add('was-validated');
     return;
   }
+  
+  // Validar que el departamento esté establecido
+  if (!managerState.departmentId) {
+    showAlert('Error: No se ha establecido el departamento', 'danger');
+    return;
+  }
  
   if (tipoProyecto == '1' && grupalState.selectedUsers.length === 0) {
     showAlert('Debes seleccionar al menos un usuario para el proyecto grupal', 'danger');
@@ -467,6 +516,9 @@ function editarProyecto() {
   btnCrear.disabled = true;
   btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Actualizando...';
  
+  // Asegurar que el departamento correcto esté en el formData
+  formData.set('id_departamento', managerState.departmentId);
+  
   // Si hay archivo nuevo, subirlo
   if (archivoInput.files.length > 0) {
     uploadFile(archivoInput.files[0], function(filePath) {

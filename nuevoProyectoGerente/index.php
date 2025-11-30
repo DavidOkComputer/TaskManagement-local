@@ -278,16 +278,24 @@ $user_id = $_SESSION['user_id'];
                   </div>
 
                   <div class="row">
+                    <!-- Modified department field for manager - replace existing department field -->
                     <div class="col-md-6">
                       <div class="form-group row">
                         <label class="col-sm-3 col-form-label">Departamento<span class="text-danger">*</span></label>
                         <div class="col-sm-9">
                           <select id="id_departamento" 
-                                  name="id_departamento" 
+                                  name="id_departamento_display" 
                                   class="form-control" 
-                                  required>
-                            <option value="">Seleccione un departamento</option>
+                                  disabled
+                                  style="background-color: #ffffff; cursor: not-allowed;">
+                            <option value="">Cargando departamento...</option>
                           </select>
+                          <!-- Hidden field para enviar el ID real del departamento -->
+                          <input type="hidden" id="id_departamento_hidden" name="id_departamento">
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information-outline"></i> 
+                            Tu departamento está asignado automáticamente
+                          </small>
                         </div>
                       </div>
                     </div>

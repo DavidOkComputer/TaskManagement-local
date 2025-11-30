@@ -255,7 +255,7 @@ $user_id = $_SESSION['user_id'];
                     <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los objetivos</p>
                 </div>
                 <div>
-                  <a href="../nuevoObjetivo">
+                  <a href="../nuevoObjetivoGerente">
                     <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i>Crear nuevo objetivo</button>
                   </a>
                 </div>
@@ -344,6 +344,6 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
   <!-- End custom js for this page-->
-   <script src="../js/manage_objectives.js"> </script>
+   <script src="../js/manager_manage_objectives.js"> </script>
 </body>
 </html>

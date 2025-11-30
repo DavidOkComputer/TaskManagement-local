@@ -278,8 +278,8 @@ $user_id = $_SESSION['user_id'];
                           <input 
                             type="date" 
                             class="form-control"
-                            id="fecha_cumplimiento"
-                            name="fecha_cumplimiento"
+                            id="fecha_inicio"
+                            name="fecha_inicio"
                             required
                           />
                           <small class="form-text text-muted">Seleccione la fecha de inicio de este objetivo</small>
@@ -351,12 +351,20 @@ $user_id = $_SESSION['user_id'];
                           <select 
                             class="form-control"
                             id="id_departamento"
-                            name="id_departamento"
+                            name="id_departamento_display"
+                            disabled
+                            style="background-color: #ffffff; cursor: not-allowed;"
                             required
                           >
-                            <option value="">Seleccione un departamento</option>
-                            <!-- Las opciones se muestran con JavaScript -->
+                            <option value="">Cargando departamento...</option>
+                            <!-- El departamento se carga automáticamente vía JavaScript -->
                           </select>
+                          <!-- Hidden field para enviar el ID real del departamento -->
+                          <input type="hidden" id="id_departamento_hidden" name="id_departamento">
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information-outline"></i> 
+                            Tu departamento está asignado automáticamente
+                          </small>
                         </div>
                       </div>
                     </div>
@@ -401,7 +409,7 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <!-- Custom js for objective form -->
-  <script src="../js/objetivo_form.js"></script>
+  <script src="../js/manager_objetivo_form.js"></script>
   <!-- End custom js for this page-->
   
   <script>
