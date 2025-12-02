@@ -1,23 +1,42 @@
 <?php
 /*get_user_department.php Obtiene el departamento del usuario actual*/
 
+// Start session only if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 header('Content-Type: application/json');
 require_once 'db_config.php';
 
 $response = ['success' => false, 'department' => null];
 
 try {
-  
+    // Debug: Log what's in the session (remove this after fixing)
+    error_log('SESSION DATA: ' . print_r($_SESSION, true));
+    
     $id_usuario = null;
     
-    if (isset($_SESSION['id_usuario'])) {//obtener la variable de usuario desde la sesion
+    // Try multiple session variable names (your system uses different ones)
+    if (isset($_SESSION['id_usuario'])) {
         $id_usuario = (int)$_SESSION['id_usuario'];
     } 
+    elseif (isset($_SESSION['user_id'])) {
+        $id_usuario = (int)$_SESSION['user_id'];
+    }
     elseif (isset($_REQUEST['id_usuario'])) {
         $id_usuario = (int)$_REQUEST['id_usuario'];
     }
-    if (!$id_usuario) {//si no hay id disponible, devolver error pero no fallar completamente
+    
+    // Add debug info to response
+    if (!$id_usuario) {
         $response['message'] = 'ID de usuario no disponible';
+        $response['debug'] = [
+            'session_id_usuario' => isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : 'not set',
+            'session_user_id' => isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'not set',
+            'session_started' => session_status() === PHP_SESSION_ACTIVE ? 'yes' : 'no',
+            'session_id' => session_id()
+        ];
         echo json_encode($response);
         exit();
     }
@@ -28,13 +47,13 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    //obtener los departamentos
+    // Get user's department with better error handling
     $query = "SELECT 
                 u.id_usuario,
                 u.nombre,
                 u.apellido,
                 u.id_departamento,
-                d.id_departamento,
+                d.id_departamento as dept_id,
                 d.nombre as departamento_nombre,
                 d.descripcion as departamento_descripcion
               FROM tbl_usuarios u
@@ -48,6 +67,7 @@ try {
     }
 
     $stmt->bind_param("i", $id_usuario);
+    
     if (!$stmt->execute()) {
         throw new Exception('Error al ejecutar la consulta: ' . $stmt->error);
     }
@@ -56,12 +76,15 @@ try {
     $user = $result->fetch_assoc();
 
     if (!$user) {
-        throw new Exception('Usuario no encontrado');
+        throw new Exception('Usuario no encontrado con ID: ' . $id_usuario);
     }
 
-    //revisar si el usuario tiene departamentos asignados
-    if (!$user['id_departamento'] || !$user['departamento_nombre']) {
-        throw new Exception('Usuario no tiene departamento asignado');
+    // Debug: log the user data
+    error_log('USER DATA: ' . print_r($user, true));
+
+    // Check if user has a department assigned
+    if (!$user['id_departamento'] || $user['id_departamento'] == 0) {
+        throw new Exception('Usuario no tiene departamento asignado en la base de datos');
     }
 
     $response['success'] = true;

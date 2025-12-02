@@ -1,16 +1,12 @@
 <?php
-/**
- * get_user_role_info.php
- * Returns the current user's role, department, and permission level
- * Used by dashboard to determine if user should see all departments or only their own
- */
+/*get_user_role_info.php*/
 
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once('db_config.php');
 
-// Check if user is logged in
+//revisar si el usuario esta logeado
 if (!isset($_SESSION['id_usuario']) && !isset($_SESSION['user_id'])) {
     echo json_encode([
         'success' => false,
@@ -19,7 +15,7 @@ if (!isset($_SESSION['id_usuario']) && !isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Get user ID from session (handle both session variable names)
+//obtener id de usuario desde la sesion
 $id_usuario = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : $_SESSION['user_id'];
 
 try {
@@ -29,7 +25,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // Get user's role and department information
+    //obtener info del usuario y su departamento
     $query = "
         SELECT 
             u.id_usuario,
@@ -65,11 +61,9 @@ try {
         throw new Exception('Usuario no encontrado');
     }
     
-    // Determine permission level based on role
-    // id_rol: 1 = administrador (can see all), 2 = gerente (only own dept), 3 = usuario (only own dept)
-    $canViewAllDepartments = ($user['id_rol'] == 1); // Only admin can view all departments
-    $isManager = ($user['id_rol'] == 2); // Manager role
-    $isAdmin = ($user['id_rol'] == 1); // Admin role
+    $canViewAllDepartments = ($user['id_rol'] == 1); // solo el admin puede ver todos los departamentos
+    $isManager = ($user['id_rol'] == 2); // rol de gerente
+    $isAdmin = ($user['id_rol'] == 1); // Admin rol
     
     echo json_encode([
         'success' => true,
@@ -84,7 +78,7 @@ try {
             'can_view_all_departments' => $canViewAllDepartments,
             'is_admin' => $isAdmin,
             'is_manager' => $isManager,
-            'show_department_dropdown' => $canViewAllDepartments // Only show dropdown for admins
+            'show_department_dropdown' => $canViewAllDepartments //mostrar el dorpdown solo para el admin
         ]
     ]);
     
