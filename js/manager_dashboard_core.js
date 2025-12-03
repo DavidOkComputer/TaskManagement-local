@@ -1,21 +1,12 @@
-/*
- * manager_dashboard_core.js
- * Core controller for manager dashboard charts
- * 
- * This file is specifically for MANAGER role (id_rol = 2)
- * - Only shows data from manager's assigned department
- * - No department switching functionality
- * - Auto-refresh enabled
- */
+/*manager_dashboard_core.js controlador de todos los graficaos*/
 
 let managerDashboard = {
     charts: {},
     department: null,
     refreshInterval: null,
-    refreshRate: 60000, // 60 seconds
+    refreshRate: 60000, // 60 segundos o un minuto
     isRefreshing: false,
     
-    // Color palette for charts (Nidec brand colors)
     colors: {
         primary: 'rgba(34, 139, 89, 0.7)',
         primarySolid: 'rgba(34, 139, 89, 1)',
@@ -31,7 +22,6 @@ let managerDashboard = {
         blackSolid: 'rgba(50, 50, 50, 1)'
     },
     
-    // Status colors
     statusColors: {
         completado: 'rgba(34, 139, 89, 0.7)',
         'en proceso': 'rgba(130, 140, 150, 0.7)',
@@ -47,15 +37,10 @@ let managerDashboard = {
     }
 };
 
-/**
- * Initialize the manager dashboard
- */
 function initializeManagerDashboard() {
-    console.log('═══════════════════════════════════════════════════════');
     console.log('INICIALIZANDO DASHBOARD DE GERENTE');
-    console.log('═══════════════════════════════════════════════════════');
     
-    // Load manager's department first, then initialize charts
+    //cargar el departamento del gerente luego los graficso
     loadManagerDepartment()
         .then(() => {
             console.log('Departamento cargado:', managerDashboard.department.nombre);
@@ -68,10 +53,6 @@ function initializeManagerDashboard() {
         });
 }
 
-/**
- * Load manager's department from session
- * @returns {Promise}
- */
 function loadManagerDepartment() {
     return fetch('../php/manager_get_department.php')
         .then(response => {
@@ -91,37 +72,30 @@ function loadManagerDepartment() {
                 descripcion: data.department.descripcion
             };
             
-            // Update page title with department name
+            //actualizar titulo de pagina con nombre de departamento
             updateDepartmentDisplay(managerDashboard.department.nombre);
             
             return managerDashboard.department;
         });
 }
 
-/**
- * Update department name display in the UI
- */
 function updateDepartmentDisplay(deptName) {
-    // Update any elements that show department name
+    //cargar todos los elementos que muestren el nombre del departamento
     const deptDisplayElements = document.querySelectorAll('.manager-department-name');
     deptDisplayElements.forEach(el => {
         el.textContent = deptName;
     });
     
-    // Update welcome subtitle if exists
+    //actualizar subtitulo si es que existe
     const welcomeSubtext = document.querySelector('.welcome-sub-text');
     if (welcomeSubtext) {
         welcomeSubtext.textContent = `Departamento: ${deptName}`;
     }
 }
 
-/**
- * Initialize all charts
- */
 function initializeAllCharts() {
     console.log('Inicializando todas las gráficas...');
     
-    // Initialize each chart with slight delays to prevent overwhelming the server
     initializeManagerDoughnutChart();
     
     setTimeout(() => {
@@ -145,9 +119,6 @@ function initializeAllCharts() {
     }, 500);
 }
 
-/**
- * Refresh all dashboard data
- */
 function refreshAllCharts() {
     if (managerDashboard.isRefreshing) {
         console.log('Refresh en progreso, saltando...');
@@ -160,8 +131,7 @@ function refreshAllCharts() {
     const deptId = managerDashboard.department.id;
     const deptName = managerDashboard.department.nombre;
     
-    // Refresh each chart
-    Promise.all([
+    Promise.all([//refrescar
         refreshManagerDoughnutChart(deptId, deptName),
         refreshManagerBarChart(deptId, deptName),
         refreshManagerLineChart(deptId, deptName),
@@ -180,9 +150,6 @@ function refreshAllCharts() {
     });
 }
 
-/**
- * Start auto-refresh interval
- */
 function startAutoRefresh() {
     if (managerDashboard.refreshInterval) {
         clearInterval(managerDashboard.refreshInterval);
@@ -195,9 +162,6 @@ function startAutoRefresh() {
     console.log(`Auto-refresh iniciado: cada ${managerDashboard.refreshRate / 1000} segundos`);
 }
 
-/**
- * Stop auto-refresh
- */
 function stopAutoRefresh() {
     if (managerDashboard.refreshInterval) {
         clearInterval(managerDashboard.refreshInterval);
@@ -206,27 +170,18 @@ function stopAutoRefresh() {
     }
 }
 
-/**
- * Set refresh rate
- */
 function setRefreshRate(milliseconds) {
     managerDashboard.refreshRate = milliseconds;
     console.log(`Intervalo actualizado a ${milliseconds / 1000} segundos`);
     startAutoRefresh();
 }
 
-/**
- * Utility: Shorten project title for display
- */
 function shortenTitle(title, maxLength = 15) {
     if (!title) return '';
     if (title.length <= maxLength) return title;
     return title.substring(0, maxLength) + '...';
 }
 
-/**
- * Utility: Show "no data" message on a canvas
- */
 function showNoDataMessage(canvasId, title, message) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) {
@@ -234,8 +189,7 @@ function showNoDataMessage(canvasId, title, message) {
         return;
     }
     
-    // Destroy existing chart
-    if (managerDashboard.charts[canvasId]) {
+    if (managerDashboard.charts[canvasId]) {//destruir graficas existentes
         managerDashboard.charts[canvasId].destroy();
         managerDashboard.charts[canvasId] = null;
     }
@@ -243,44 +197,33 @@ function showNoDataMessage(canvasId, title, message) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw background
-    ctx.fillStyle = '#f8f9fa';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw icon
-    ctx.fillStyle = '#6c757d';
+    ctx.fillStyle = '#666666';
     ctx.font = '48px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('📊', canvas.width / 2, canvas.height / 2 - 30);
-    
-    // Draw title
+    ctx.fillText('', canvas.width / 2, canvas.height / 2 - 30);
+    //titulo
     ctx.fillStyle = '#495057';
     ctx.font = 'bold 16px Arial';
     ctx.fillText(title, canvas.width / 2, canvas.height / 2 + 20);
-    
-    // Draw message
+    //mensaje
     ctx.fillStyle = '#6c757d';
     ctx.font = '14px Arial';
     ctx.fillText(message, canvas.width / 2, canvas.height / 2 + 45);
 }
 
-/**
- * Utility: Show global error message
- */
 function showGlobalError(message) {
     console.error('Error global:', message);
     
-    // Show error on all canvases
     const canvasIds = ['lineChart', 'barChart', 'areaChart', 'doughnutChart', 'scatterChart', 'workloadChart'];
     canvasIds.forEach(id => {
         showNoDataMessage(id, 'Error', message);
     });
 }
 
-/**
- * Utility: Get color by index (cycling through palette)
- */
 function getColorByIndex(index, opacity = 0.7) {
     const colorPalette = [
         `rgba(34, 139, 89, ${opacity})`,
@@ -295,9 +238,6 @@ function getColorByIndex(index, opacity = 0.7) {
     return colorPalette[index % colorPalette.length];
 }
 
-/**
- * Utility: Get progress color based on percentage
- */
 function getProgressColor(progress) {
     if (progress === 100) return managerDashboard.colors.primary;
     if (progress >= 75) return managerDashboard.colors.secondary;
@@ -305,12 +245,10 @@ function getProgressColor(progress) {
     return managerDashboard.colors.light;
 }
 
-// Cleanup on page unload
 window.addEventListener('beforeunload', function() {
     stopAutoRefresh();
 });
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     initializeManagerDashboard();
 });

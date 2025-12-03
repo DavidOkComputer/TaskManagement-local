@@ -1,12 +1,7 @@
 /*
- * manager_charts_workload.js
- * Doughnut chart for workload distribution by project
- * Manager view - shows task distribution across projects in manager's department
+ * manager_charts_workload.js grafica de dona para la distribucion de carga de proyectos
  */
 
-/**
- * Initialize the workload chart
- */
 function initializeManagerWorkloadChart() {
     console.log('Inicializando gráfica de carga de trabajo...');
     
@@ -16,9 +11,6 @@ function initializeManagerWorkloadChart() {
     loadWorkloadData(deptId, deptName);
 }
 
-/**
- * Load data for workload chart
- */
 function loadWorkloadData(deptId, deptName) {
     fetch(`../php/manager_get_workload.php?id_departamento=${deptId}`)
         .then(response => {
@@ -41,9 +33,6 @@ function loadWorkloadData(deptId, deptName) {
         });
 }
 
-/**
- * Render the workload chart
- */
 function renderWorkloadChart(data, deptName) {
     const ctx = document.getElementById('workloadChart');
     
@@ -52,18 +41,17 @@ function renderWorkloadChart(data, deptName) {
         return;
     }
     
-    // Destroy existing chart
+    //destruir graficas existentes
     if (managerDashboard.charts.workloadChart) {
         managerDashboard.charts.workloadChart.destroy();
     }
     
-    // Check if there's data
+    //revisar si existe la info
     if (!data.labels || data.labels.length === 0) {
         showNoDataMessage('workloadChart', `Sin datos - ${deptName}`, 'No hay proyectos con tareas');
         return;
     }
     
-    // Generate colors for each project
     const backgroundColors = data.labels.map((_, index) => getColorByIndex(index, 0.7));
     const borderColors = data.labels.map((_, index) => getColorByIndex(index, 1));
     
@@ -153,17 +141,13 @@ function renderWorkloadChart(data, deptName) {
         options: options
     });
     
-    // Add summary below chart
     addWorkloadSummary(ctx.parentElement, data, deptName);
     
     console.log('Gráfica de carga de trabajo actualizada - Total tareas:', data.total_tareas);
 }
 
-/**
- * Add summary information below workload chart
- */
 function addWorkloadSummary(container, data, deptName) {
-    // Remove existing summary
+    //remover resumen existente
     const existingSummary = container.querySelector('.workload-summary');
     if (existingSummary) {
         existingSummary.remove();
@@ -172,7 +156,7 @@ function addWorkloadSummary(container, data, deptName) {
     const totalTareas = data.total_tareas || data.data.reduce((a, b) => a + b, 0);
     const totalProyectos = data.labels.length;
     
-    // Calculate overall stats if details are available
+    //calcular estadisticas generales si no hay info
     let completadas = 0, enProceso = 0, pendientes = 0, vencidas = 0;
     if (data.details) {
         data.details.forEach(d => {
@@ -221,9 +205,6 @@ function addWorkloadSummary(container, data, deptName) {
     container.appendChild(summaryDiv);
 }
 
-/**
- * Refresh workload chart data
- */
 function refreshManagerWorkloadChart(deptId, deptName) {
     return new Promise((resolve, reject) => {
         fetch(`../php/manager_get_workload.php?id_departamento=${deptId}`)

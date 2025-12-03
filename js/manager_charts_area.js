@@ -1,12 +1,5 @@
-/*
- * manager_charts_area.js
- * Area chart for task completion trends over time
- * Manager view - shows task trends for manager's department only
- */
+/*manager_charts_area.js  grafica de area para las tareas completadas */
 
-/**
- * Initialize the area chart
- */
 function initializeManagerAreaChart() {
     console.log('Inicializando gráfica de área (tendencia de tareas)...');
     
@@ -16,9 +9,6 @@ function initializeManagerAreaChart() {
     loadAreaData(deptId, deptName);
 }
 
-/**
- * Load data for area chart
- */
 function loadAreaData(deptId, deptName) {
     fetch(`../php/manager_get_task_trends.php?id_departamento=${deptId}&weeks=12`)
         .then(response => {
@@ -64,18 +54,18 @@ function renderAreaChart(data, deptName) {
         return;
     }
     
-    // Destroy existing chart
+    //destruir graficas existentes
     if (managerDashboard.charts.areaChart) {
         managerDashboard.charts.areaChart.destroy();
     }
     
-    // Check if there's data
+    //revisar si hay informacion
     if (!data.labels || data.labels.length === 0) {
         showNoDataMessage('areaChart', `Sin datos - ${deptName}`, 'No hay datos de tendencias de tareas');
         return;
     }
     
-    // Style each dataset for area display
+    //darle estilo a cada set de informacion 
     const styledDatasets = data.datasets.map((dataset, index) => ({
         ...dataset,
         borderColor: getColorByIndex(index, 1),

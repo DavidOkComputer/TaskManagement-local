@@ -198,7 +198,7 @@ function refreshDashboardData() {
     dashboardChartsInstance.isRefreshing = true; 
     console.log('Actualizando datos del dashboard...', new Date().toLocaleTimeString()); 
 
-    // For role-locked users, always refresh department view
+    //para usuarios bloqueados, siempre refrescar la vista de departamento
     if (dashboardChartsInstance.isRoleLocked && dashboardChartsInstance.currentDepartment) {
         const deptId = dashboardChartsInstance.currentDepartment.id;
         const deptName = dashboardChartsInstance.currentDepartment.name;

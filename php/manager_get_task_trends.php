@@ -1,9 +1,5 @@
 <?php
-/**
- * manager_get_task_trends.php
- * Gets task completion trends over time for manager's department
- * Used by area chart
- */
+/*manager_get_task_trends.php obtener la completacion de tareas atraves del tiempo*/
 
 ob_start();
 if (session_status() === PHP_SESSION_NONE) {
@@ -100,13 +96,13 @@ try {
         // Query completed tasks for this project
         $task_query = "
             SELECT 
-                DATE(fecha_actualizacion) as fecha,
+                DATE(fecha_inicio) as fecha,
                 COUNT(*) as cantidad
             FROM tbl_tareas
             WHERE id_proyecto = ?
               AND estado = 'completado'
-              AND fecha_actualizacion >= DATE_SUB(CURDATE(), INTERVAL ? WEEK)
-            GROUP BY YEARWEEK(fecha_actualizacion, 1)
+              AND fecha_inicio >= DATE_SUB(CURDATE(), INTERVAL ? WEEK)
+            GROUP BY YEARWEEK(fecha_inicio, 1)
             ORDER BY fecha ASC
         ";
         

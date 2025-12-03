@@ -1,12 +1,5 @@
-/*
- * manager_charts_scatter.js
- * Scatter/Bubble chart for person efficiency metrics
- * Manager view - shows efficiency of people within manager's department
- */
+/*manager_charts_scatter.js grafica de medidas de eficiencia departamental*/
 
-/**
- * Initialize the scatter chart
- */
 function initializeManagerScatterChart() {
     console.log('Inicializando gráfica de dispersión (eficiencia de personas)...');
     
@@ -16,9 +9,6 @@ function initializeManagerScatterChart() {
     loadScatterData(deptId, deptName);
 }
 
-/**
- * Load data for scatter chart
- */
 function loadScatterData(deptId, deptName) {
     fetch(`../php/manager_get_person_efficiency.php?id_departamento=${deptId}`)
         .then(response => {
@@ -53,9 +43,6 @@ function loadScatterData(deptId, deptName) {
         });
 }
 
-/**
- * Render the scatter chart
- */
 function renderScatterChart(data, deptName) {
     const ctx = document.getElementById('scatterChart');
     
@@ -64,12 +51,12 @@ function renderScatterChart(data, deptName) {
         return;
     }
     
-    // Destroy existing chart
+    //destruir graficas existentes
     if (managerDashboard.charts.scatterChart) {
         managerDashboard.charts.scatterChart.destroy();
     }
     
-    // Check if there's data
+    //revisar si hay informacion
     if (!data.datasets || data.datasets.length === 0) {
         showNoDataMessage('scatterChart', `Sin datos - ${deptName}`, 'No hay datos de eficiencia del personal');
         return;
@@ -218,18 +205,14 @@ function renderScatterChart(data, deptName) {
         options: options
     });
     
-    // Add legend below chart
+    //agregar pie de grafica
     addScatterLegend(ctx.parentElement, deptName);
     
     console.log('Gráfica de dispersión actualizada');
 }
 
-/**
- * Add interpretive legend to scatter chart
- */
 function addScatterLegend(container, deptName) {
-    // Remove existing legend
-    const existingLegend = container.querySelector('.scatter-legend');
+    const existingLegend = container.querySelector('.scatter-legend');//eliminar pie de pagina existente
     if (existingLegend) {
         existingLegend.remove();
     }
@@ -250,7 +233,7 @@ function addScatterLegend(container, deptName) {
     legendDiv.innerHTML = `
         <div style="margin-bottom: 10px;">
             <strong style="color: ${managerDashboard.colors.primarySolid}; font-size: 14px;">
-                📊 Guía de Interpretación - Eficiencia Individual
+                Guía de Interpretación - Eficiencia Individual
             </strong>
         </div>
         <div style="margin-left: 15px; display: grid; gap: 8px;">
@@ -272,16 +255,13 @@ function addScatterLegend(container, deptName) {
             </div>
         </div>
         <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(200, 205, 210, 0.3); font-size: 12px; color: ${managerDashboard.colors.graySolid};">
-            <em>💡 Tip: Pasa el cursor sobre cada punto para ver detalles completos</em>
+            <em>Tip: Pasa el cursor sobre cada punto para ver detalles completos</em>
         </div>
     `;
     
     container.appendChild(legendDiv);
 }
 
-/**
- * Refresh scatter chart data
- */
 function refreshManagerScatterChart(deptId, deptName) {
     return new Promise((resolve, reject) => {
         fetch(`../php/manager_get_person_efficiency.php?id_departamento=${deptId}`)

@@ -66,24 +66,24 @@ try {
         $weeklyData[$weekLabel] = 0;
     }
     
-    // Query to get completed projects by week
+    //query para tener los proyectos completados por semana
     $query = "
         SELECT 
-            DATE(fecha_completado) as fecha,
+            DATE(fecha_inicio) as fecha,
             COUNT(*) as cantidad
         FROM tbl_proyectos
         WHERE id_departamento = ?
           AND estado = 'completado'
-          AND fecha_completado IS NOT NULL
-          AND fecha_completado >= DATE_SUB(CURDATE(), INTERVAL ? WEEK)
-        GROUP BY YEARWEEK(fecha_completado, 1)
+          AND fecha_inicio IS NOT NULL
+          AND fecha_inicio >= DATE_SUB(CURDATE(), INTERVAL ? WEEK)
+        GROUP BY YEARWEEK(fecha_inicio, 1)
         ORDER BY fecha ASC
     ";
     
     $stmt = $conn->prepare($query);
     
     if (!$stmt) {
-        // If fecha_completado doesn't exist, try with fecha_actualizacion
+        // If fecha_inicio doesn't exist, try with fecha_actualizacion
         $query = "
             SELECT 
                 DATE(fecha_actualizacion) as fecha,

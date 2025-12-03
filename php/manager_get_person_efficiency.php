@@ -1,9 +1,5 @@
 <?php
-/**
- * manager_get_person_efficiency.php
- * Gets efficiency metrics for each person in manager's department
- * Used by scatter/bubble chart
- */
+/*manager_get_person_efficiency.php calculo de eficiencia de perssonas usado por el scatter chart*/
 
 ob_start();
 if (session_status() === PHP_SESSION_NONE) {
@@ -22,7 +18,7 @@ $response = [
 ];
 
 try {
-    // Validate department ID
+    //validar id del departamento
     if (!isset($_GET['id_departamento']) || empty($_GET['id_departamento'])) {
         throw new Exception('ID de departamento requerido');
     }
@@ -39,7 +35,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // Get all users in this department with their task statistics
+    // obtener todos los usuarios del departamento
     $query = "
         SELECT 
             u.id_usuario,
@@ -53,7 +49,6 @@ try {
         FROM tbl_usuarios u
         LEFT JOIN tbl_tareas t ON u.id_usuario = t.id_participante
         WHERE u.id_departamento = ?
-          AND u.activo = 1
         GROUP BY u.id_usuario, u.nombre, u.apellido
         HAVING total_tareas > 0
         ORDER BY total_tareas DESC
@@ -76,7 +71,6 @@ try {
     $datasets = [];
     $details = [];
     
-    // Color palette for bubbles
     $colors = [
         ['bg' => 'rgba(34, 139, 89, 0.6)', 'border' => 'rgba(34, 139, 89, 1)'],
         ['bg' => 'rgba(80, 154, 108, 0.6)', 'border' => 'rgba(80, 154, 108, 1)'],
@@ -95,15 +89,15 @@ try {
         $completadas = (int)$row['completadas'];
         $nombreCompleto = $row['nombre'] . ' ' . $row['apellido'];
         
-        // Calculate efficiency (completion rate)
+        //calcular la eficiciencia de la persona dependiendo de las tareas completadas
         $efficiency = $totalTareas > 0 ? round(($completadas / $totalTareas) * 100, 1) : 0;
         
-        // Bubble size based on total tasks (scaled)
+        //el tamanio de la burbuja depende del total de tareas
         $bubbleSize = max(8, min(25, 8 + ($totalTareas * 2)));
         
         $color = $colors[$colorIndex % count($colors)];
         
-        // Add dataset for this person
+        //agregar informacion para la persona
         $datasets[] = [
             'label' => $nombreCompleto,
             'data' => [
@@ -119,7 +113,7 @@ try {
             'borderWidth' => 2
         ];
         
-        // Store details for tooltips
+        //guardar detalles para tooltips
         $details[] = [
             'nombre_completo' => $nombreCompleto,
             'total_tareas' => $totalTareas,
@@ -140,7 +134,7 @@ try {
         exit;
     }
     
-    // Calculate average efficiency
+    //calcular la eficiencia promedio
     $avgEfficiency = 0;
     if (!empty($details)) {
         $totalEfficiency = array_sum(array_column($details, 'efficiency'));

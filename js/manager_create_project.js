@@ -277,7 +277,7 @@ function setupGrupalHandlers() {
       } else { // Individual (value 2)
         grupalState.selectedUsers = [];
         
-        // Clear visual state from previously selected items
+        //limpiar estado visual del previamente escogido
         document.querySelectorAll('.usuario-item').forEach(item => {
           const icon = item.querySelector('.usuario-selection-icon');
           if (icon) {

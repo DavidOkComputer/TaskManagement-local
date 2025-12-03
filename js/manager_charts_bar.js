@@ -1,12 +1,5 @@
-/*
- * manager_charts_bar.js
- * Bar chart for project progress
- * Manager view - shows project progress within manager's department
- */
+/*manager_charts_bar.js grafica de barras para el progreso de los proyectos del departamento*/
 
-/**
- * Initialize the bar chart
- */
 function initializeManagerBarChart() {
     console.log('Inicializando gráfica de barras (progreso de proyectos)...');
     
@@ -16,9 +9,6 @@ function initializeManagerBarChart() {
     loadBarData(deptId, deptName);
 }
 
-/**
- * Load data for bar chart
- */
 function loadBarData(deptId, deptName) {
     fetch(`../php/manager_get_projects.php?id_departamento=${deptId}`)
         .then(response => {
@@ -41,9 +31,6 @@ function loadBarData(deptId, deptName) {
         });
 }
 
-/**
- * Render the bar chart
- */
 function renderBarChart(projects, deptName) {
     const ctx = document.getElementById('barChart');
     
@@ -52,12 +39,12 @@ function renderBarChart(projects, deptName) {
         return;
     }
     
-    // Destroy existing chart
+    //destruir graficas existentes
     if (managerDashboard.charts.barChart) {
         managerDashboard.charts.barChart.destroy();
     }
     
-    // Sort by progress and take top 8 projects
+    //ordenar por progreso y tomar los top 8 proyectos
     const sortedProjects = [...projects]
         .sort((a, b) => b.progreso - a.progreso)
         .slice(0, 8);
@@ -67,7 +54,7 @@ function renderBarChart(projects, deptName) {
         return;
     }
     
-    // Prepare data
+    //preparar datos
     const labels = sortedProjects.map(p => shortenTitle(p.nombre, 20));
     const progressData = sortedProjects.map(p => p.progreso);
     const backgroundColors = sortedProjects.map(p => getProgressColor(p.progreso));
@@ -86,7 +73,7 @@ function renderBarChart(projects, deptName) {
     };
     
     const options = {
-        indexAxis: 'y', // Horizontal bar chart
+        indexAxis: 'y', //grafica de barras horizontal
         responsive: true,
         maintainAspectRatio: true,
         scales: {
@@ -119,7 +106,7 @@ function renderBarChart(projects, deptName) {
         },
         plugins: {
             legend: {
-                display: false // Hide legend for cleaner look
+                display: false //ocultar pie de grafica
             },
             title: {
                 display: true,
@@ -134,7 +121,7 @@ function renderBarChart(projects, deptName) {
             tooltip: {
                 callbacks: {
                     title: function(context) {
-                        // Show full project name on hover
+                        //mostrar el nombre completo del proyecto al pasar encima
                         const index = context[0].dataIndex;
                         return sortedProjects[index].nombre;
                     },
@@ -172,9 +159,6 @@ function renderBarChart(projects, deptName) {
     console.log('Gráfica de barras actualizada');
 }
 
-/**
- * Refresh bar chart data
- */
 function refreshManagerBarChart(deptId, deptName) {
     return new Promise((resolve, reject) => {
         fetch(`../php/manager_get_projects.php?id_departamento=${deptId}`)

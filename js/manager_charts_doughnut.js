@@ -1,12 +1,5 @@
-/*
- * manager_charts_doughnut.js
- * Doughnut chart for project status distribution
- * Manager view - shows only manager's department data
- */
+/*manager_charts_doughnut.js grafica de dona para distribucion de estatus de proyectos*/
 
-/**
- * Initialize the doughnut chart
- */
 function initializeManagerDoughnutChart() {
     console.log('Inicializando gráfica de dona (estados de proyectos)...');
     
@@ -16,9 +9,6 @@ function initializeManagerDoughnutChart() {
     loadDoughnutData(deptId, deptName);
 }
 
-/**
- * Load data for doughnut chart
- */
 function loadDoughnutData(deptId, deptName) {
     fetch(`../php/manager_get_project_status.php?id_departamento=${deptId}`)
         .then(response => {
@@ -41,9 +31,6 @@ function loadDoughnutData(deptId, deptName) {
         });
 }
 
-/**
- * Render the doughnut chart
- */
 function renderDoughnutChart(data, deptName) {
     const ctx = document.getElementById('doughnutChart');
     
@@ -52,12 +39,12 @@ function renderDoughnutChart(data, deptName) {
         return;
     }
     
-    // Destroy existing chart
+    //destruir grafica existente
     if (managerDashboard.charts.doughnutChart) {
         managerDashboard.charts.doughnutChart.destroy();
     }
     
-    // Check if there's any data
+    //revisar si hay datos existentes
     const totalProjects = data.data.reduce((a, b) => a + b, 0);
     if (totalProjects === 0) {
         showNoDataMessage('doughnutChart', `Sin proyectos - ${deptName}`, 'No hay proyectos en este departamento');
@@ -124,7 +111,7 @@ function renderDoughnutChart(data, deptName) {
                 padding: 12
             }
         },
-        cutout: '60%' // Makes it a doughnut instead of pie
+        cutout: '60%' 
     };
     
     managerDashboard.charts.doughnutChart = new Chart(ctx, {
@@ -136,9 +123,6 @@ function renderDoughnutChart(data, deptName) {
     console.log('Gráfica de dona actualizada');
 }
 
-/**
- * Refresh doughnut chart data
- */
 function refreshManagerDoughnutChart(deptId, deptName) {
     return new Promise((resolve, reject) => {
         fetch(`../php/manager_get_project_status.php?id_departamento=${deptId}`)

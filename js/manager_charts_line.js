@@ -1,12 +1,5 @@
-/*
- * manager_charts_line.js
- * Line chart for project completion trends over time
- * Manager view - shows trends for manager's department only
- */
+/*manager_charts_line.js grafica lineal para ver el progreso de los proyectos sobre el tiempo*/
 
-/**
- * Initialize the line chart
- */
 function initializeManagerLineChart() {
     console.log('Inicializando gráfica de línea (tendencia de proyectos)...');
     
@@ -16,9 +9,6 @@ function initializeManagerLineChart() {
     loadLineData(deptId, deptName);
 }
 
-/**
- * Load data for line chart
- */
 function loadLineData(deptId, deptName) {
     fetch(`../php/manager_get_project_trends.php?id_departamento=${deptId}&weeks=12`)
         .then(response => {
@@ -53,9 +43,6 @@ function loadLineData(deptId, deptName) {
         });
 }
 
-/**
- * Render the line chart
- */
 function renderLineChart(data, deptName) {
     const ctx = document.getElementById('lineChart');
     
@@ -64,12 +51,12 @@ function renderLineChart(data, deptName) {
         return;
     }
     
-    // Destroy existing chart
+    //destruir graficas existentes
     if (managerDashboard.charts.lineChart) {
         managerDashboard.charts.lineChart.destroy();
     }
     
-    // Check if there's data
+    //revisar si hay informacion
     if (!data.labels || data.labels.length === 0) {
         showNoDataMessage('lineChart', `Sin datos - ${deptName}`, 'No hay datos de tendencias');
         return;
@@ -179,9 +166,6 @@ function renderLineChart(data, deptName) {
     console.log('Gráfica de línea actualizada');
 }
 
-/**
- * Refresh line chart data
- */
 function refreshManagerLineChart(deptId, deptName) {
     return new Promise((resolve, reject) => {
         fetch(`../php/manager_get_project_trends.php?id_departamento=${deptId}&weeks=12`)
