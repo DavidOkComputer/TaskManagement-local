@@ -195,14 +195,10 @@ function getProjectWorkloadColors($count) {
         ['border' => 'rgba(24, 97, 62, 1)', 'background' => 'rgba(24, 97, 62, 0.7)'],
         // Verde secundario
         ['border' => 'rgba(45, 110, 80, 1)', 'background' => 'rgba(45, 110, 80, 0.7)'],
-        // Azul
-        ['border' => 'rgba(52, 152, 219, 1)', 'background' => 'rgba(52, 152, 219, 0.7)'],
-        // Naranja
-        ['border' => 'rgba(230, 126, 34, 1)', 'background' => 'rgba(230, 126, 34, 0.7)'],
-        // Rojo
-        ['border' => 'rgba(192, 57, 43, 1)', 'background' => 'rgba(192, 57, 43, 0.7)'],
-        // Púrpura
-        ['border' => 'rgba(142, 68, 173, 1)', 'background' => 'rgba(142, 68, 173, 0.7)'],
+        ['border' => 'rgb(217, 220, 223)', 'background' => 'rgb(217, 220, 223)'],
+        ['border' => 'rgb(167, 174, 181)', 'background' => 'rgb(167, 174, 181)'],
+        ['border' => 'rgb(166, 175, 180)', 'background' => 'rgb(166, 175, 180)'],
+        ['border' => 'rgb(110, 110, 110)', 'background' => 'rgb(110, 110, 110)'],
     ];
 
     // Ciclar si hay más proyectos que colores

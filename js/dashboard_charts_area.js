@@ -1,32 +1,21 @@
-/**
- * dashboard_charts_area.js
- * Task completion trends over time (area/stacked chart)
- * Admin only - Comparison view vs Department view
- */
+/*dashboard_charts_area.js tendencias de completacion de tareas, usado por el grafico de area*/
 
-/**
- * Initialize area chart
- * Starts with comparison view (all departments)
- */
 function initializeAreaChart() {
     console.log('Inicializando gráfico de área de tendencias de tareas...');
     
     const currentDept = dashboardChartsInstance.currentDepartment;
     
     if (currentDept && currentDept.id && currentDept.id > 0) {
-        // Department is selected - show that department's trend
-        console.log('Loading task trend for department:', currentDept.name);
+        //si el departamento es seleccionado mostrar info del depa
+        console.log('Cargando tendencias de tareas para el departamento:', currentDept.name);
         loadTaskTrendForDepartment(currentDept.id, currentDept.name);
     } else {
-        // No department selected - show comparison
-        console.log('Loading task trend comparison (all departments)');
+        //sino se selecciona un departamento mostrar el modo de comparacion
+        console.log('Cargando tendencias de tareas para todos los departamentos');
         loadTaskTrendComparison();
     }
 }
 
-/**
- * Load task trend for a specific department
- */
 function loadTaskTrendForDepartment(deptId, deptName) {
     console.log(`Cargando tendencia de tareas para: ${deptName}`);
 
@@ -66,9 +55,6 @@ function loadTaskTrendForDepartment(deptId, deptName) {
         });
 }
 
-/**
- * Load task trend comparison (all departments)
- */
 function loadTaskTrendComparison() {
     console.log('Cargando vista de comparación de tendencias de tareas (todos los departamentos)');
 
@@ -104,26 +90,23 @@ function loadTaskTrendComparison() {
             }
         })
         .catch(error => {
-            console.error('Error loading comparison task trends:', error.message);
+            console.error('Error al cargar el modo de comparacion:', error.message);
         });
 }
 
-/**
- * Update area chart with data
- */
 function updateAreaChart(data, mode, deptName = null) {
     const ctx = document.getElementById('areaChart');
     if (!ctx) {
-        console.warn('Area chart canvas not found');
+        console.warn('El canvas para el grafico de area no se encontro');
         return;
     }
 
-    // Destroy existing chart
+    //destruir graficas existentes
     if (dashboardChartsInstance.charts.areaChart) {
         dashboardChartsInstance.charts.areaChart.destroy();
     }
 
-    // Prepare chart title
+    //preparar titulo del grafico
     let chartTitle = 'Tendencia de Tareas Completadas';
     if (mode === 'single' && deptName) {
         chartTitle = `Tareas Completadas - ${deptName}`;
@@ -146,7 +129,7 @@ function updateAreaChart(data, mode, deptName = null) {
         scales: {
             y: {
                 beginAtZero: true,
-                stacked: mode === 'comparison', // Stack for comparison view
+                stacked: mode === 'comparison', //stack para modo de compracaion
                 ticks: {
                     stepSize: mode === 'single' ? 1 : undefined,
                     font: { size: 11 }
@@ -157,7 +140,7 @@ function updateAreaChart(data, mode, deptName = null) {
                 }
             },
             x: {
-                stacked: mode === 'comparison', // Stack for comparison view
+                stacked: mode === 'comparison', //stack para el modo de comparacion
                 ticks: {
                     font: { size: 10 }
                 },

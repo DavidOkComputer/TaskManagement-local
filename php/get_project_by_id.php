@@ -1,5 +1,5 @@
 <?php
-/** get_project_by_id.php - Obtener detalles de un proyecto incluyendo usuarios para proyectos grupales*/
+/** get_project_by_id.php saber detalles de un proyecto incluyendo usuarios para proyectos grupales*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');

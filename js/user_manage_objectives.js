@@ -1,9 +1,10 @@
-/* manager_manage_objectives.js para todos los objetivos de la tabla con botones de acción*/ 
+/*user_manage_objectives.js para todos los objetivos del usuario con botones de acción*/ 
+
 const Config = { 
     API_ENDPOINTS: { 
         DELETE: '../php/delete_objective.php', 
-        GET_ALL: '../php/manager_get_objectives.php',
-        UPDATE_STATUS: '../php/update_objective_status.php'
+        GET_ALL: '../php/user_get_objectives.php', 
+        UPDATE_STATUS: '../php/update_objective_status.php' 
     } 
 }; 
 
@@ -11,17 +12,17 @@ let allObjectives = [];
 let currentSortColumn = null; 
 let sortDirection = 'asc'; 
 let filteredObjectives = []; 
-
+ 
 // Variables de paginación 
 let currentPage = 1; 
 let rowsPerPage = 10; 
 let totalPages = 0; 
 
 document.addEventListener('DOMContentLoaded', function() { 
-    if (typeof createCustomDialogSystem === 'function') {//inicializar el sistema de dialogo de la app
-        createCustomDialogSystem();//crear el modal si no existe aun
-    }
-    
+    if (typeof createCustomDialogSystem === 'function') {//inicializar el sistema de dialogo de la app 
+        createCustomDialogSystem();//crear el modal si no existe aun 
+    } 
+
     setupSearch(); 
     setupSorting(); 
     setupPagination(); 
@@ -30,6 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function cargarObjetivos() { 
     const tableBody = document.querySelector('#objetivosTableBody'); 
+
     if(!tableBody) { 
         console.error('El elemento de cuerpo de tabla no fue encontrado'); 
         return; 
@@ -45,6 +47,7 @@ function cargarObjetivos() {
             </td> 
         </tr> 
     `; 
+
     fetch(Config.API_ENDPOINTS.GET_ALL) 
         .then(response => { 
             if (!response.ok) { 
@@ -52,13 +55,16 @@ function cargarObjetivos() {
             } 
             return response.json(); 
         }) 
+
         .then(data => { 
             console.log('Información recibida:', data); 
+
             if (data.success && data.objetivos) { 
                 allObjectives = data.objetivos; 
                 filteredObjectives = [...allObjectives]; 
                 currentPage = 1; 
                 displayObjectives(filteredObjectives); 
+
             } else { 
                 tableBody.innerHTML = ` 
                     <tr> 
@@ -84,6 +90,7 @@ function cargarObjetivos() {
 
 function setupSorting() { 
     const headers = document.querySelectorAll('th.sortable-header'); 
+
     headers.forEach(header => { 
         header.addEventListener('click', function() { 
             const column = this.dataset.sort; 
@@ -93,16 +100,18 @@ function setupSorting() {
                 currentSortColumn = column; 
                 sortDirection = 'asc'; 
             } 
+
             updateSortIndicators(); 
             currentPage = 1; 
             const sorted = sortObjectives(filteredObjectives, column, sortDirection); 
             displayObjectives(sorted); 
         }); 
     }); 
-} 
+}
 
 function updateSortIndicators() { 
     const headers = document.querySelectorAll('th.sortable-header'); 
+
     headers.forEach(header => { 
         const icon = header.querySelector('i'); 
         if (header.dataset.sort === currentSortColumn) { 
@@ -121,11 +130,13 @@ function updateSortIndicators() {
 
 function sortObjectives(objectives, column, direction) { 
     const sorted = [...objectives]; 
+
     sorted.sort((a, b) => { 
         let valueA = a[column]; 
         let valueB = b[column]; 
         if (valueA === null || valueA === undefined) valueA = ''; 
         if (valueB === null || valueB === undefined) valueB = ''; 
+
         if (column === 'id_objetivo') { 
             valueA = parseInt(valueA) || 0; 
             valueB = parseInt(valueB) || 0; 
@@ -136,22 +147,25 @@ function sortObjectives(objectives, column, direction) {
             valueA = String(valueA).toLowerCase(); 
             valueB = String(valueB).toLowerCase(); 
         } 
+
         if (valueA < valueB) return direction === 'asc' ? -1 : 1; 
         if (valueA > valueB) return direction === 'asc' ? 1 : -1; 
         return 0; 
     }); 
+
     return sorted; 
 } 
 
 function setupPagination() { 
     const rowsPerPageSelect = document.getElementById('rowsPerPageSelect'); 
+
     if (rowsPerPageSelect) { 
         rowsPerPageSelect.addEventListener('change', function() { 
             rowsPerPage = parseInt(this.value); 
             currentPage = 1; 
             displayObjectives(filteredObjectives); 
         }); 
-    }
+    } 
 } 
 
 function calculatePages(objectives) { 
@@ -167,15 +181,15 @@ function getPaginatedObjectives(objectives) {
 function changePage(pageNumber) { 
     if (pageNumber >= 1 && pageNumber <= totalPages) { 
         currentPage = pageNumber; 
-       displayObjectives(filteredObjectives); 
+        displayObjectives(filteredObjectives); 
     } 
 } 
 
 function updatePaginationControls() { 
     const paginationContainer = document.querySelector('.pagination-container'); 
-    if (!paginationContainer) return; 
 
-    paginationContainer.innerHTML = '';//para limpiar la paginacion existente
+    if (!paginationContainer) return; 
+    paginationContainer.innerHTML = '';//para limpiar la paginacion existente 
 
     // Crear texto de info de paginación 
     const infoText = document.createElement('div'); 
@@ -185,6 +199,7 @@ function updatePaginationControls() {
     infoText.innerHTML = ` 
         <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredObjectives.length}</strong> objetivos</p> 
     `; 
+
     paginationContainer.appendChild(infoText); 
 
     // Crear contenedor de botones de paginación 
@@ -203,24 +218,25 @@ function updatePaginationControls() {
     const pageButtonsContainer = document.createElement('div'); 
     pageButtonsContainer.className = 'page-buttons'; 
 
-    //calcular que paginas se mostrar
+    //calcular que paginas se mostrar 
     let startPage = Math.max(1, currentPage - 2); 
-    let endPage = Math.min(totalPages, currentPage + 2);
-    
+    let endPage = Math.min(totalPages, currentPage + 2); 
+
     if (currentPage <= 3) {//ajustar si esta cerca del principio o final 
         endPage = Math.min(totalPages, 5); 
     } 
+
     if (currentPage > totalPages - 3) { 
         startPage = Math.max(1, totalPages - 4); 
     } 
 
-    if (startPage > 1) { //boton de primera pagina
+    if (startPage > 1) { //boton de primera pagina 
         const firstBtn = document.createElement('button'); 
         firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn'; 
         firstBtn.textContent = '1'; 
         firstBtn.addEventListener('click', () => changePage(1)); 
         pageButtonsContainer.appendChild(firstBtn); 
-        
+
         if (startPage > 2) { 
             const ellipsis = document.createElement('span'); 
             ellipsis.className = 'pagination-ellipsis'; 
@@ -238,7 +254,7 @@ function updatePaginationControls() {
         pageButtonsContainer.appendChild(pageBtn); 
     } 
 
-    if (endPage < totalPages) { //boton de ultima pagina
+    if (endPage < totalPages) { //boton de ultima pagina 
         if (endPage < totalPages - 1) { 
             const ellipsis = document.createElement('span'); 
             ellipsis.className = 'pagination-ellipsis'; 
@@ -255,7 +271,7 @@ function updatePaginationControls() {
 
     buttonContainer.appendChild(pageButtonsContainer); 
 
-    // Botón siguiente
+    // Botón siguiente 
     const nextBtn = document.createElement('button'); 
     nextBtn.className = 'btn btn-sm btn-outline-primary'; 
     nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>'; 
@@ -267,27 +283,28 @@ function updatePaginationControls() {
 
 function displayObjectives(objetivos) { 
     const tableBody = document.querySelector('#objetivosTableBody'); 
+
     if(!tableBody) return; 
 
     // Calcular paginación 
     totalPages = calculatePages(objetivos); 
     if (currentPage > totalPages && totalPages > 0) { 
-        currentPage = totalPages;
+        currentPage = totalPages; 
     } 
 
     // Obtener objetivos paginados 
     const paginatedObjectives = getPaginatedObjectives(objetivos); 
-    
     tableBody.innerHTML = ''; 
+
     if(!objetivos || objetivos.length === 0) { 
-        displayEmptyState();
+        displayEmptyState(); 
         updatePaginationControls(); 
         return; 
     } 
 
     if (paginatedObjectives.length === 0) { 
         tableBody.innerHTML = ` 
-            <tr> 
+            <tr>
                 <td colspan="9" class="text-center empty-state"> 
                     <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
                     <h5 class="mt-3">No se encontraron resultados en esta página</h5> 
@@ -303,30 +320,33 @@ function displayObjectives(objetivos) {
         const row = createObjectiveRow(objective, actualIndex); 
         tableBody.appendChild(row); 
     }); 
-    updatePaginationControls(); //actualizar controles de pagina
+
+    updatePaginationControls(); //actualizar controles de pagina 
 } 
 
 function createObjectiveRow(objetivo, index) { 
     const row = document.createElement('tr'); 
-    const statusColor = getStatusColor(objetivo.estado);
-    const isCompleted = objetivo.estado === 'completado';
-    const nextState = isCompleted ? 'pendiente' : 'completado';
-    const buttonClass = isCompleted ? 'btn-secondary' : 'btn-info';
-    const buttonIcon = isCompleted ? 'mdi-undo-variant' : 'mdi-check-circle-outline';
-    const buttonTitle = isCompleted ? 'Marcar como pendiente' : 'Marcar como completado';
-    
+    const statusColor = getStatusColor(objetivo.estado); 
+    const isCompleted = objetivo.estado === 'completado'; 
+    const nextState = isCompleted ? 'pendiente' : 'completado'; 
+    const buttonClass = isCompleted ? 'btn-secondary' : 'btn-info'; 
+    const buttonIcon = isCompleted ? 'mdi-undo-variant' : 'mdi-check-circle-outline'; 
+    const buttonTitle = isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'; 
+
     const actionsButtons = ` 
         <div class="action-buttons"> 
             <button class="btn btn-sm ${buttonClass} btn-action"  
                     onclick="toggleObjectiveCompletion(${objetivo.id_objetivo}, '${nextState}')"  
                     title="${buttonTitle}"> 
                 <i class="mdi ${buttonIcon}"></i> 
-            </button>
+            </button> 
+
             <button class="btn btn-sm btn-success btn-action"  
                     onclick="editarObjetivo(${objetivo.id_objetivo})"  
                     title="Editar"> 
                 <i class="mdi mdi-pencil"></i> 
             </button> 
+
             <button class="btn btn-sm btn-danger btn-action"  
                     onclick="confirmDelete(${objetivo.id_objetivo}, '${escapeHtml(objetivo.nombre)}')"  
                     title="Eliminar"> 
@@ -334,8 +354,7 @@ function createObjectiveRow(objetivo, index) {
             </button> 
         </div> 
     `; 
-    
-    
+
     row.innerHTML = ` 
         <td>${index}</td> 
         <td> 
@@ -349,6 +368,7 @@ function createObjectiveRow(objetivo, index) {
             ${actionsButtons} 
         </td> 
     `; 
+
     return row; 
 } 
 
@@ -368,9 +388,9 @@ function displayEmptyState() {
         <tr> 
             <td colspan="9" class="text-center empty-state"> 
                 <i class="mdi mdi-folder-open" style="font-size: 48px; color: #ccc;"></i> 
-                <h5 class="mt-3">No hay objetivos registrados</h5> 
+                <h5 class="mt-3">No tienes objetivos registrados</h5> 
                 <p>Comienza creando un nuevo objetivo</p> 
-                <a href="../nuevoObjetivoGerente/" class="btn btn-success mt-3"> 
+                <a href="../nuevoObjetivoUser/" class="btn btn-success mt-3"> 
                     <i class="mdi mdi-plus-circle-outline"></i> Crear objetivo 
                 </a> 
             </td> 
@@ -381,15 +401,18 @@ function displayEmptyState() {
 function setupSearch() { 
     const searchInput = document.getElementById('searchInput'); 
     const searchForm = document.getElementById('search-form'); 
+
     if (!searchInput) { 
         console.warn('Search input not found'); 
         return; 
     } 
+
     if (searchForm) { 
         searchForm.addEventListener('submit', function(e) { 
             e.preventDefault(); 
         }); 
     } 
+
     let searchTimeout; 
     searchInput.addEventListener('input', function() { 
         clearTimeout(searchTimeout); 
@@ -401,37 +424,42 @@ function setupSearch() {
 
 function performSearch(query) { 
     const normalizedQuery = query.toLowerCase().trim(); 
+
     if (normalizedQuery === '') { 
         filteredObjectives = [...allObjectives]; 
         currentPage = 1; 
         const sorted = currentSortColumn  
             ? sortObjectives(filteredObjectives, currentSortColumn, sortDirection) 
-            : filteredObjectives;
+            : filteredObjectives; 
         displayObjectives(sorted); 
         return; 
     } 
+
     const filtered = allObjectives.filter(objective => { 
         return objective.nombre.toLowerCase().includes(normalizedQuery) || 
                (objective.descripcion && objective.descripcion.toLowerCase().includes(normalizedQuery)) || 
                (objective.area && objective.area.toLowerCase().includes(normalizedQuery)) || 
-               (objective.estado && objective.estado.toLowerCase().includes(normalizedQuery)); 
+               (objective.estado && objective.estado.toLowerCase().includes(normalizedQuery));
     }); 
+
     filteredObjectives = filtered; 
     currentPage = 1; 
-    const sorted = currentSortColumn 
+
+    const sorted = currentSortColumn  
         ? sortObjectives(filteredObjectives, currentSortColumn, sortDirection) 
-        : filteredObjectives;
+        : filteredObjectives; 
     displayObjectives(sorted); 
+
     if (sorted.length === 0) { 
         const tableBody = document.querySelector('#objetivosTableBody'); 
         tableBody.innerHTML = ` 
-            <tr> 
+            <tr>
                 <td colspan="9" class="text-center empty-state"> 
                     <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
                     <h5 class="mt-3">No se encontraron resultados</h5> 
                     <p>No hay objetivos que coincidan con "${escapeHtml(query)}"</p> 
                 </td> 
-            </tr> 
+            </tr>
         `; 
     } 
 } 
@@ -449,72 +477,77 @@ function formatDate(dateString) {
 } 
 
 function editarObjetivo(idObjetivo) { 
-    window.location.href = `../nuevoObjetivo/?edit=${idObjetivo}`; 
-}
+    window.location.href = `../nuevoObjetivoUser/?edit=${idObjetivo}`; 
+} 
 
-function toggleObjectiveCompletion(idObjetivo, nuevoEstado) {
-    const objetivo = allObjectives.find(obj => obj.id_objetivo === idObjetivo);
-    if (!objetivo) return;
-
-    const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';
+function toggleObjectiveCompletion(idObjetivo, nuevoEstado) { 
+    const objetivo = allObjectives.find(obj => obj.id_objetivo === idObjetivo); 
+    if (!objetivo) return; 
+    const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente'; 
     const confirmMessage = nuevoEstado === 'completado' 
-        ? `¿Marcar el objetivo "${escapeHtml(objetivo.nombre)}" como completado?`
-        : `¿Marcar el objetivo "${escapeHtml(objetivo.nombre)}" como pendiente?`;
+        ? `¿Marcar el objetivo "${escapeHtml(objetivo.nombre)}" como completado?` 
+        : `¿Marcar el objetivo "${escapeHtml(objetivo.nombre)}" como pendiente?`; 
 
-    showConfirm(
-        confirmMessage,
-        function() {
-            updateObjectiveStatus(idObjetivo, nuevoEstado);
-        },
-        `Cambiar estado a ${statusText}`,
-        {
-            type: nuevoEstado === 'completado' ? 'success' : 'info',
-            confirmText: 'Confirmar',
-            cancelText: 'Cancelar'
-        }
-    );
-}
+    showConfirm( 
+        confirmMessage, 
+        function() { 
+            updateObjectiveStatus(idObjetivo, nuevoEstado); 
+        }, 
 
-function updateObjectiveStatus(idObjetivo, nuevoEstado) {
-    fetch(Config.API_ENDPOINTS.UPDATE_STATUS, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            id_objetivo: idObjetivo,
-            estado: nuevoEstado
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const objective = allObjectives.find(obj => obj.id_objetivo === idObjetivo);//actualizar info local
-            if (objective) {
-                objective.estado = nuevoEstado;
-            }
-            
-            const filteredObjective = filteredObjectives.find(obj => obj.id_objetivo === idObjetivo);
-            if (filteredObjective) {
-                filteredObjective.estado = nuevoEstado;
-            }
+        `Cambiar estado a ${statusText}`, 
+        { 
+            type: nuevoEstado === 'completado' ? 'success' : 'info', 
+            confirmText: 'Confirmar', 
+            cancelText: 'Cancelar' 
+        } 
+    ); 
+} 
 
-            const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';//mensaje de exito
-            showSuccessAlert(`Objetivo marcado como ${statusText}`);
-            
-            const sorted = currentSortColumn//actualizar el display
-                ? sortObjectives(filteredObjectives, currentSortColumn, sortDirection)
-                : filteredObjectives;
-            displayObjectives(sorted);
-        } else {
-            showErrorAlert(data.message || 'Error al actualizar el estado del objetivo');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showErrorAlert('Error al conectar con el servidor');
-    });
-}
+function updateObjectiveStatus(idObjetivo, nuevoEstado) { 
+    fetch(Config.API_ENDPOINTS.UPDATE_STATUS, { 
+        method: 'POST', 
+        headers: { 
+            'Content-Type': 'application/json' 
+        }, 
+
+        body: JSON.stringify({ 
+            id_objetivo: idObjetivo, 
+            estado: nuevoEstado 
+        }) 
+    }) 
+
+    .then(response => response.json()) 
+
+    .then(data => { 
+        if (data.success) { 
+            const objective = allObjectives.find(obj => obj.id_objetivo === idObjetivo);//actualizar info local 
+            if (objective) { 
+                objective.estado = nuevoEstado; 
+            } 
+
+            const filteredObjective = filteredObjectives.find(obj => obj.id_objetivo === idObjetivo); 
+            if (filteredObjective) { 
+                filteredObjective.estado = nuevoEstado; 
+            } 
+
+            const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';//mensaje de exito 
+            showSuccessAlert(`Objetivo marcado como ${statusText}`); 
+
+            const sorted = currentSortColumn//actualizar el display 
+                ? sortObjectives(filteredObjectives, currentSortColumn, sortDirection) 
+                : filteredObjectives; 
+            displayObjectives(sorted); 
+
+        } else { 
+            showErrorAlert(data.message || 'Error al actualizar el estado del objetivo'); 
+        } 
+    }) 
+
+    .catch(error => { 
+        console.error('Error:', error); 
+        showErrorAlert('Error al conectar con el servidor'); 
+    }); 
+} 
 
 function confirmDelete(id, nombre) { 
     showConfirm( 
@@ -539,18 +572,21 @@ function deleteObjective(id) {
         }, 
         body: JSON.stringify({ id_objetivo: id }) 
     }) 
+
     .then(response => response.json()) 
     .then(data => { 
         if (data.success) { 
             showSuccessAlert(data.message || 'Objetivo eliminado exitosamente'); 
             allObjectives = allObjectives.filter(obj => obj.id_objetivo != id); 
             filteredObjectives = filteredObjectives.filter(obj => obj.id_objetivo != id); 
+
             // Recalcular páginas después de eliminar 
             totalPages = calculatePages(filteredObjectives); 
             if (currentPage > totalPages && totalPages > 0) { 
                 currentPage = totalPages; 
             } 
-            const sorted = currentSortColumn  
+
+            const sorted = currentSortColumn 
                 ? sortObjectives(filteredObjectives, currentSortColumn, sortDirection) 
                 : filteredObjectives; 
             displayObjectives(sorted); 
@@ -574,20 +610,24 @@ function showErrorAlert(message) {
 
 function showAlert(message, type) { 
     const alertDiv = document.getElementById('alertMessage'); 
+
     if (!alertDiv) { 
         console.warn('Alert div not found'); 
         return; 
     } 
+
     const alertClass = type === 'success' ? 'alert-success' : 'alert-danger'; 
-    const icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle';
-    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`; 
+    const icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle'; 
+    alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
     alertDiv.innerHTML = ` 
         <i class="mdi ${icon} me-2"></i> 
         ${message} 
         <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button> 
     `; 
+
     alertDiv.style.display = 'block'; 
     alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
+
     setTimeout(() => { 
         if (alertDiv.style.display !== 'none') { 
             alertDiv.style.display = 'none'; 
@@ -602,36 +642,37 @@ function escapeHtml(text) {
         '>': '&gt;', 
         '"': '&quot;', 
         "'": '&#039;' 
-    }; 
+    };
     return String(text).replace(/[&<>"']/g, function(m) { return map[m]; }); 
 } 
 
 function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) { 
-    if (typeof createCustomDialogSystem === 'function') {//revisar que esta inicializado el sistema de dialogo
-        createCustomDialogSystem();
+    if (typeof createCustomDialogSystem === 'function') {//revisar que esta inicializado el sistema de dialogo 
+        createCustomDialogSystem(); 
     }
-    
-    const modal = document.getElementById('customConfirmModal');
-    
-    if (!modal) {//si aun no existe el modal en este punto,mostrar alerta
-        console.error('ERROR: Modal element #customConfirmModal not found');
-        const confirmAction = confirm(title + '\n\n' + message);
-        if (confirmAction && onConfirm && typeof onConfirm === 'function') {
-            onConfirm();
-        }
-        return;
-    }
-    
+
+    const modal = document.getElementById('customConfirmModal'); 
+
+    if (!modal) {//si aun no existe el modal en este punto,mostrar alerta 
+        console.error('ERROR: Modal element #customConfirmModal not found'); 
+        const confirmAction = confirm(title + '\n\n' + message); 
+        if (confirmAction && onConfirm && typeof onConfirm === 'function') { 
+            onConfirm(); 
+        } 
+        return; 
+    } 
+
     const titleElement = document.getElementById('confirmTitle'); 
     const messageElement = document.getElementById('confirmMessage'); 
     const headerElement = modal.querySelector('.modal-header'); 
     const iconElement = modal.querySelector('.modal-title i'); 
     const confirmBtn = document.getElementById('confirmOkBtn'); 
     const cancelBtn = document.getElementById('confirmCancelBtn'); 
+
     const config = { 
         confirmText: 'Aceptar', 
         cancelText: 'Cancelar', 
-        type: 'warning',
+        type: 'warning', 
         ...options 
     }; 
 
@@ -639,12 +680,34 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     messageElement.innerHTML = message.replace(/\n/g, '<br>'); 
     confirmBtn.textContent = config.confirmText; 
     cancelBtn.textContent = config.cancelText; 
-    headerElement.className = 'modal-header';
+    headerElement.className = 'modal-header'; 
+
     const iconMap = { 
-        'info': { icon: 'mdi-information-outline', class: 'bg-info text-white', btnClass: 'btn-info' }, 
-        'warning': { icon: 'mdi-alert-outline', class: 'bg-warning text-white', btnClass: 'btn-warning' }, 
-        'danger': { icon: 'mdi-alert-octagon-outline', class: 'bg-danger text-white', btnClass: 'btn-danger' }, 
-        'success': { icon: 'mdi-check-circle-outline', class: 'bg-success text-white', btnClass: 'btn-success' } 
+
+        'info': { 
+            icon: 'mdi-information-outline', 
+            class: 'bg-info text-white', 
+            btnClass: 'btn-info' 
+        }, 
+
+        'warning': { 
+            icon: 'mdi-alert-outline', 
+            class: 'bg-warning text-white', 
+            btnClass: 'btn-warning' 
+        }, 
+
+        'danger': { 
+            icon: 'mdi-alert-octagon-outline', 
+            class: 'bg-danger text-white', 
+            btnClass: 'btn-danger' 
+        }, 
+
+        'success': { 
+            icon: 'mdi-check-circle-outline', 
+            class: 'bg-success text-white', 
+            btnClass: 'btn-success' 
+        } 
+
     }; 
 
     const typeConfig = iconMap[config.type] || iconMap['warning']; 
@@ -658,18 +721,20 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     newConfirmBtn.addEventListener('click', function() { 
         const confirmModal = bootstrap.Modal.getInstance(modal); 
         confirmModal.hide(); 
+
         if (onConfirm && typeof onConfirm === 'function') { 
-            onConfirm(); 
+          onConfirm(); 
         } 
     }); 
+
     const confirmModal = new bootstrap.Modal(modal); 
     confirmModal.show(); 
 } 
 
 // Hacer funciones globalmente disponibles 
-window.confirmDelete = confirmDelete; 
+window.confirmDelete = confirmDelete;
 window.editarObjetivo = editarObjetivo; 
 window.changePage = changePage; 
 window.showConfirm = showConfirm;
-window.toggleObjectiveCompletion = toggleObjectiveCompletion;
-window.updateObjectiveStatus = updateObjectiveStatus;
+window.toggleObjectiveCompletion = toggleObjectiveCompletion; 
+window.updateObjectiveStatus = updateObjectiveStatus; 

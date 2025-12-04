@@ -211,7 +211,7 @@ $user_id = $_SESSION['user_id'];
                     <p class="card-subtitle card-subtitle-dash">Crea un nuevo objetivo para tu departamento</p>
                   </div>
                   <div>
-                    <a href="../revisarObjetivos">
+                    <a href="../revisarObjetivosUser">
                       <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button">
                         <i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de objetivos
                       </button>
@@ -219,7 +219,6 @@ $user_id = $_SESSION['user_id'];
                   </div>
                 </div>
                 <div><br></div>
-                
                 <!-- FORM START -->
                 <form id="formCrearObjetivo" method="POST" enctype="multipart/form-data">
                   <div class="row">
@@ -265,8 +264,8 @@ $user_id = $_SESSION['user_id'];
                           <input 
                             type="date" 
                             class="form-control"
-                            id="fecha_cumplimiento"
-                            name="fecha_cumplimiento"
+                            id="fecha_inicio"
+                            name="fecha_inicio"
                             required
                           />
                           <small class="form-text text-muted">Seleccione la fecha de inicio de este objetivo</small>
@@ -344,6 +343,12 @@ $user_id = $_SESSION['user_id'];
                             <option value="">Seleccione un departamento</option>
                             <!-- Las opciones se muestran con JavaScript -->
                           </select>
+                          <!-- Hidden field para enviar el ID real del departamento -->
+                          <input type="hidden" id="id_departamento_hidden" name="id_departamento">
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-information-outline"></i> 
+                            Tu departamento está asignado automáticamente
+                          </small>
                         </div>
                       </div>
                     </div>
@@ -360,12 +365,10 @@ $user_id = $_SESSION['user_id'];
                       </div>
                     </div>
                   </div>
-                  
                   <!-- Hidden field for user ID -->
                   <input type="hidden" name="id_creador" value="<?php echo $user_id; ?>" />
                 </form>
                 <!-- FORM END -->
-                
               </div>
             </div>
           </div>
@@ -388,11 +391,11 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <!-- Custom js for objective form -->
-  <script src="../js/objetivo_form.js"></script>
+  <script src="../js/user_objetivo_form.js"></script>
   <!-- End custom js for this page-->
   
   <script>
-    // Set user ID in JavaScript for form submission
+    //agregar el user id cuando se sube el form
     function getUserId() {
       return <?php echo $user_id; ?>;
     }

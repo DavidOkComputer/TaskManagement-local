@@ -1,13 +1,10 @@
-/*dashboard_charts_core.js - Admin Dashboard Controller
- * Simplified version: Comparison view vs Department view only
- * No role-based restrictions
- */
+/*dashboard_charts_core.js controlador de todos los graficos version de admin*/
 
 let dashboardChartsInstance = {
     charts: {},
     currentDepartment: null,
     refreshInterval: null,
-    refreshRate: 60000, // 60 seconds
+    refreshRate: 60000, // 60 segundos
     isRefreshing: false,
     
     departmentColors: [
@@ -33,38 +30,25 @@ let dashboardChartsInstance = {
     ]
 };
 
-/**
- * Shorten project titles for display
- */
 function shortenProjectTitle(title, maxLength = 15) {
     if (!title) return '';
     if (title.length <= maxLength) return title;
     return title.substring(0, maxLength) + '...';
 }
 
-/**
- * Initialize all dashboard charts
- * Starts with comparison view (all departments)
- */
 function initializeDashboardCharts() {
     console.log('Inicializando gráficos del dashboard (Admin)...');
     
-    // Load comparison view by default
-    loadComparisonView();
+    loadComparisonView();//cargar vista de comparacion por default
     
-    // Initialize other charts
-    initializeLineChart();
+    initializeLineChart();//incializar los graficos
     initializeAreaChart();
     initializeScatterChart();
     
-    // Start auto-refresh
     startAutoRefresh();
     console.log(`Auto-refresh activado: cada ${dashboardChartsInstance.refreshRate / 1000} segundos`);
 }
 
-/**
- * Start auto-refresh interval
- */
 function startAutoRefresh() {
     if (dashboardChartsInstance.refreshInterval) {
         clearInterval(dashboardChartsInstance.refreshInterval);
@@ -77,9 +61,6 @@ function startAutoRefresh() {
     console.log('Auto-refresh iniciado');
 }
 
-/**
- * Stop auto-refresh interval
- */
 function stopAutoRefresh() {
     if (dashboardChartsInstance.refreshInterval) {
         clearInterval(dashboardChartsInstance.refreshInterval);
@@ -88,9 +69,6 @@ function stopAutoRefresh() {
     }
 }
 
-/**
- * Refresh dashboard data based on current view
- */
 function refreshDashboardData() {
     if (dashboardChartsInstance.isRefreshing) {
         console.log('Refresh ya en progreso, saltando...');
@@ -101,21 +79,18 @@ function refreshDashboardData() {
     console.log('Actualizando datos del dashboard...', new Date().toLocaleTimeString());
 
     if (dashboardChartsInstance.currentDepartment) {
-        // Refresh department view
+        //refrescar la vista de departamento
         const deptId = dashboardChartsInstance.currentDepartment.id;
         const deptName = dashboardChartsInstance.currentDepartment.name;
         console.log(`Refrescando vista del departamento: ${deptName}`);
         refreshDepartmentView(deptId, deptName);
     } else {
-        // Refresh comparison view
+        //refrescar la vista de comparacion
         console.log('Refrescando vista de comparación');
         refreshComparisonView();
     }
 }
 
-/**
- * Refresh comparison view data
- */
 function refreshComparisonView() {
     Promise.all([
         fetch('../php/get_departments.php').then(r => r.json()),
@@ -144,9 +119,6 @@ function refreshComparisonView() {
     });
 }
 
-/**
- * Refresh department view data
- */
 function refreshDepartmentView(deptId, deptName) {
     fetch(`../php/get_projects_by_department.php?id_departamento=${deptId}`)
         .then(response => response.json())
@@ -175,18 +147,12 @@ function refreshDepartmentView(deptId, deptName) {
         });
 }
 
-/**
- * Change refresh rate (in milliseconds)
- */
 function setRefreshRate(milliseconds) {
     dashboardChartsInstance.refreshRate = milliseconds;
     console.log(`Intervalo de refresh actualizado a ${milliseconds / 1000} segundos`);
     startAutoRefresh();
 }
 
-/**
- * Show "no data" message for a department
- */
 function showNoDepartmentData(deptName) {
     console.log(`Mostrando mensaje de "sin datos" para ${deptName}`);
     
@@ -198,9 +164,6 @@ function showNoDepartmentData(deptName) {
     showNoDataMessage('workloadChart', `Sin datos - ${deptName}`, 'No hay distribución de carga para mostrar');
 }
 
-/**
- * Display "no data" message on a canvas
- */
 function showNoDataMessage(canvasId, title, message) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) {
@@ -208,8 +171,7 @@ function showNoDataMessage(canvasId, title, message) {
         return;
     }
 
-    // Destroy existing chart if exists
-    if (dashboardChartsInstance.charts[canvasId]) {
+    if (dashboardChartsInstance.charts[canvasId]) {//destruir graficas existentes
         dashboardChartsInstance.charts[canvasId].destroy();
         dashboardChartsInstance.charts[canvasId] = null;
     }
@@ -217,18 +179,18 @@ function showNoDataMessage(canvasId, title, message) {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Background
+
     ctx.fillStyle = '#e0e0e0';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Title
+    // Titul0
     ctx.fillStyle = '#555';
     ctx.font = 'bold 18px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(title, canvas.width / 2, canvas.height / 2 + 20);
 
-    // Message
+    // mensaje
     ctx.fillStyle = '#777';
     ctx.font = '14px Arial';
     ctx.fillText(message, canvas.width / 2, canvas.height / 2 + 45);
@@ -236,9 +198,6 @@ function showNoDataMessage(canvasId, title, message) {
     console.log(`Mensaje "sin datos" mostrado en ${canvasId}`);
 }
 
-/**
- * Load comparison view (all departments)
- */
 function loadComparisonView() {
     console.log('Cargando vista de comparación (todos los departamentos)');
     dashboardChartsInstance.currentDepartment = null;
@@ -262,9 +221,6 @@ function loadComparisonView() {
     });
 }
 
-/**
- * Process data for comparison view
- */
 function processComparisonData(departments, projects) {
     console.log('Procesando datos de comparación...');
     console.log('Departamentos:', departments.length);
@@ -277,9 +233,6 @@ function processComparisonData(departments, projects) {
     updateDoughnutChart(statusDistribution);
 }
 
-/**
- * Load department-specific view
- */
 function loadDepartmentView(deptId, deptName) {
     console.log('Cambiando a vista de departamento:', deptName);
     
@@ -308,7 +261,7 @@ function loadDepartmentView(deptId, deptName) {
                     return;
                 }
 
-                // Process data and update charts
+                //procesar datos y actualizar graficas
                 processDepartmentData(data.proyectos, deptName);
                 loadProjectTrendForDepartment(deptId, deptName);
                 loadTaskTrendForDepartment(deptId, deptName);
@@ -325,9 +278,6 @@ function loadDepartmentView(deptId, deptName) {
         });
 }
 
-/**
- * Process data for department view
- */
 function processDepartmentData(projects, deptName) {
     console.log(`Procesando datos del departamento: ${deptName}`);
     console.log(`Total de proyectos: ${projects.length}`);
@@ -337,16 +287,12 @@ function processDepartmentData(projects, deptName) {
     updateBarChartForDepartment(projects, deptName);
 }
 
-/**
- * Clear department selection and return to comparison view
- */
 function clearDepartmentSelection() {
     console.log('Limpiando selección de departamento...');
     dashboardChartsInstance.currentDepartment = null;
     updateDropdownButtonText('Seleccionar área');
 
-    // Load comparison view for all charts
-    loadComparisonView();
+    loadComparisonView();//cargar a vista de comparacion para todas las graficas
 
     setTimeout(() => {
         loadProjectTrendComparison();
@@ -365,18 +311,12 @@ function clearDepartmentSelection() {
     }, 1200);
 }
 
-/**
- * Select department from dropdown
- */
 function selectDepartmentFromDropdown(deptId, deptName) {
     console.log(`Departamento seleccionado: ${deptName} (ID: ${deptId})`);
     updateDropdownButtonText(deptName);
     loadDepartmentView(deptId, deptName);
 }
 
-/**
- * Update dropdown button text
- */
 function updateDropdownButtonText(text) {
     const dropdownButton = document.querySelector('#messageDropdown');
     if (dropdownButton) {
@@ -389,26 +329,18 @@ function updateDropdownButtonText(text) {
     }
 }
 
-/**
- * Get current department info
- */
 function getCurrentDepartment() {
     return dashboardChartsInstance.currentDepartment;
 }
 
-/**
- * Check if currently in comparison view
- */
 function isComparisonView() {
     return dashboardChartsInstance.currentDepartment === null;
 }
 
-// Clean up on page unload
 window.addEventListener('beforeunload', function() {
     stopAutoRefresh();
 });
 
-// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     initializeDashboardCharts();
 });

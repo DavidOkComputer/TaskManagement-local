@@ -1,17 +1,10 @@
-/**
- * load_departments_dropdown.js
- * Dynamic loading of departments into dropdown
- * Admin dashboard - simplified version (no role restrictions)
- */
+/*load_departments_dropdown.js cargar dropdown de seleccion de departamentoss*/
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Inicializando dropdown de departamentos...');
     loadDepartmentsIntoDropdown();
 });
 
-/**
- * Load departments from API into dropdown
- */
 function loadDepartmentsIntoDropdown() {
     console.log('Cargando departamentos para dropdown...');
     
@@ -36,9 +29,6 @@ function loadDepartmentsIntoDropdown() {
         });
 }
 
-/**
- * Populate dropdown menu with department items
- */
 function populateDepartmentDropdown(departamentos) {
     const dropdownMenu = document.querySelector('[aria-labelledby="messageDropdown"]');
     
@@ -47,24 +37,21 @@ function populateDepartmentDropdown(departamentos) {
         return;
     }
     
-    // Find the divider
-    const divider = dropdownMenu.querySelector('.dropdown-divider');
+    const divider = dropdownMenu.querySelector('.dropdown-divider');//para encontrar el divisor
     
     if (!divider) {
         console.warn('Divider no encontrado en dropdown');
         return;
     }
     
-    // Clear existing items after divider
-    let nextElement = divider.nextElementSibling;
+    let nextElement = divider.nextElementSibling;//limpiar items existenes despues de division
     while (nextElement) {
         const toRemove = nextElement;
         nextElement = nextElement.nextElementSibling;
         toRemove.remove();
     }
     
-    // Add each department
-    departamentos.forEach(dept => {
+    departamentos.forEach(dept => {//agreagar cada departamento individual
         const link = document.createElement('a');
         link.className = 'dropdown-item preview-item department-item';
         link.href = '#';
@@ -84,24 +71,22 @@ function populateDepartmentDropdown(departamentos) {
             const deptId = parseInt(this.getAttribute('data-department-id'));
             const deptName = this.getAttribute('data-department-name');
             
-            console.log('═══════════════════════════════════════════════════════');
             console.log('DEPARTAMENTO SELECCIONADO:', deptName, '(ID:', deptId + ')');
-            console.log('═══════════════════════════════════════════════════════');
             
-            // Update main dashboard charts
-            console.log('Step 1: Updating main dashboard charts...');
+            //actualizar estadisticas del dashboard
+            console.log('Actualizando estadisticas del dashboard principal...');
             if (typeof selectDepartmentFromDropdown === 'function') {
                 selectDepartmentFromDropdown(deptId, deptName);
             } else {
-                console.error('ERROR: selectDepartmentFromDropdown() NOT FOUND!');
+                console.error('ERROR: selectDepartmentFromDropdown() NO ENCONTRADO!');
             }
             
-            // Update workload chart
-            console.log('Step 2: Updating workload chart...');
+            //actualizr grafico de carga de trabajo
+            console.log('Actualizando grafico de deistribucion de carga de trabajo...');
             if (typeof selectDepartmentWorkload === 'function') {
                 selectDepartmentWorkload(deptId, deptName);
             } else {
-                console.warn('selectDepartmentWorkload() not found');
+                console.warn('selectDepartmentWorkload() no encontrado');
             }
             
             closeDropdownSafely();
@@ -110,13 +95,11 @@ function populateDepartmentDropdown(departamentos) {
         dropdownMenu.appendChild(link);
     });
     
-    // Add divider before "View all" option
-    const dividerEnd = document.createElement('div');
+    const dividerEnd = document.createElement('div');//agregar divisor despues de la opcion ver todos
     dividerEnd.className = 'dropdown-divider';
     dropdownMenu.appendChild(dividerEnd);
     
-    // Add "View all departments" option
-    const allLink = document.createElement('a');
+    const allLink = document.createElement('a');//agregar opcion de todos los departamentos
     allLink.className = 'dropdown-item text-center';
     allLink.href = '#';
     allLink.innerHTML = '<small class="text-muted">Ver todos los departamentos</small>';
@@ -124,25 +107,23 @@ function populateDepartmentDropdown(departamentos) {
     allLink.addEventListener('click', function(e) {
         e.preventDefault();
         
-        console.log('═══════════════════════════════════════════════════════');
         console.log('VISTA DE COMPARACIÓN SELECCIONADA');
         console.log('Cargando todos los departamentos...');
-        console.log('═══════════════════════════════════════════════════════');
         
-        // Clear main dashboard charts
-        console.log('Step 1: Clearing main dashboard charts...');
+        //limpiar dashboard principal graficas
+        console.log('Limpiando estadisticas del dashboard principal...');
         if (typeof clearDepartmentSelection === 'function') {
             clearDepartmentSelection();
         } else {
-            console.error('ERROR: clearDepartmentSelection() NOT FOUND!');
+            console.error('ERROR: clearDepartmentSelection() NO ENCONTRADO!');
         }
         
         // Clear workload chart
-        console.log('Step 2: Clearing workload chart...');
+        console.log('Limpieando grafica de distribucion de carga...');
         if (typeof resetWorkloadView === 'function') {
             resetWorkloadView();
         } else {
-            console.warn('resetWorkloadView() not found');
+            console.warn('resetWorkloadView() no encontrado');
         }
         
         closeDropdownSafely();
@@ -153,9 +134,6 @@ function populateDepartmentDropdown(departamentos) {
     console.log(`Dropdown poblado con ${departamentos.length} departamentos`);
 }
 
-/**
- * Safely close the dropdown
- */
 function closeDropdownSafely() {
     try {
         const dropdown = document.getElementById('messageDropdown');
@@ -176,9 +154,6 @@ function closeDropdownSafely() {
     }
 }
 
-/**
- * Escape HTML to prevent XSS
- */
 function escapeHtml(text) {
     if (!text) return '';
     
@@ -193,9 +168,6 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-/**
- * Public function to refresh departments list
- */
 window.refreshDepartmentsList = function() {
     console.log('Refrescando lista de departamentos...');
     loadDepartmentsIntoDropdown();

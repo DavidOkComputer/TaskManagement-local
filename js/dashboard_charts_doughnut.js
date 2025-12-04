@@ -1,12 +1,5 @@
-/**
- * dashboard_charts_doughnut.js
- * Project status distribution doughnut chart
- * Shows: Completado, En Proceso, Pendiente, Vencido
- */
+/**dashboard_charts_doughnut.js grafica de estados del proyecto para admin*/
 
-/**
- * Prepare project status distribution data (comparison view - all projects)
- */
 function prepareProjectStatusDistribution(projects) {
     console.log('Preparando: Distribución de estados de proyectos');
 
@@ -17,8 +10,7 @@ function prepareProjectStatusDistribution(projects) {
         'vencido': 0
     };
 
-    // Count projects by status
-    projects.forEach(proj => {
+    projects.forEach(proj => {//contar prouectos segun su estado
         const status = proj.estado.toLowerCase();
         if (statusCounts.hasOwnProperty(status)) {
             statusCounts[status]++;
@@ -51,9 +43,6 @@ function prepareProjectStatusDistribution(projects) {
     return data;
 }
 
-/**
- * Prepare department-specific status distribution
- */
 function prepareDepartmentStatusDistribution(projects) {
     const statusCounts = {
         'completado': 0,
@@ -92,9 +81,6 @@ function prepareDepartmentStatusDistribution(projects) {
     };
 }
 
-/**
- * Update doughnut chart for comparison view (all projects)
- */
 function updateDoughnutChart(data) {
     const ctx = document.getElementById('doughnutChart');
     if (!ctx) {
@@ -102,7 +88,7 @@ function updateDoughnutChart(data) {
         return;
     }
 
-    // Destroy existing chart
+    //destruir graficas existentes
     if (dashboardChartsInstance.charts.doughnutChart) {
         dashboardChartsInstance.charts.doughnutChart.destroy();
     }
@@ -152,9 +138,6 @@ function updateDoughnutChart(data) {
     console.log('Doughnut chart actualizado (comparación)');
 }
 
-/**
- * Update doughnut chart for department view
- */
 function updateDoughnutChartForDepartment(data, deptName) {
     const ctx = document.getElementById('doughnutChart');
 
@@ -163,8 +146,7 @@ function updateDoughnutChartForDepartment(data, deptName) {
         return;
     }
 
-    // Destroy existing chart
-    if (dashboardChartsInstance.charts.doughnutChart) {
+    if (dashboardChartsInstance.charts.doughnutChart) {//destruir graficas existentes
         dashboardChartsInstance.charts.doughnutChart.destroy();
     }
 

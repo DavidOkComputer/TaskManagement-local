@@ -1,7 +1,6 @@
 <?php
-/*get_user_department.php Obtiene el departamento del usuario actual*/
+/*get_user_department.php saber el departamento del usuario actual*/
 
-// Start session only if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -12,12 +11,8 @@ require_once 'db_config.php';
 $response = ['success' => false, 'department' => null];
 
 try {
-    // Debug: Log what's in the session (remove this after fixing)
-    error_log('SESSION DATA: ' . print_r($_SESSION, true));
-    
     $id_usuario = null;
     
-    // Try multiple session variable names (your system uses different ones)
     if (isset($_SESSION['id_usuario'])) {
         $id_usuario = (int)$_SESSION['id_usuario'];
     } 
@@ -28,7 +23,7 @@ try {
         $id_usuario = (int)$_REQUEST['id_usuario'];
     }
     
-    // Add debug info to response
+    //info de debug a la respuesta
     if (!$id_usuario) {
         $response['message'] = 'ID de usuario no disponible';
         $response['debug'] = [
@@ -47,7 +42,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Get user's department with better error handling
+    //obtener departamento del usuario 
     $query = "SELECT 
                 u.id_usuario,
                 u.nombre,
@@ -79,10 +74,9 @@ try {
         throw new Exception('Usuario no encontrado con ID: ' . $id_usuario);
     }
 
-    // Debug: log the user data
     error_log('USER DATA: ' . print_r($user, true));
 
-    // Check if user has a department assigned
+    //revisar si el usuario tiene un departamento asignado
     if (!$user['id_departamento'] || $user['id_departamento'] == 0) {
         throw new Exception('Usuario no tiene departamento asignado en la base de datos');
     }

@@ -1,27 +1,17 @@
-/**
- * dashboard_charts_workload.js
- * Workload distribution chart (doughnut/pie)
- * Admin only - Comparison view vs Department view
- */
+/*dashboard_charts_workload.js grafica de distribucion de carga para admin*/
 
 let workloadChartState = {
-    currentMode: 'departments', // 'departments' or 'projects'
+    currentMode: 'departments', // 'comparacion' o 'departamento'
     selectedDepartmentId: null,
     selectedDepartmentName: null
 };
 
-/**
- * Initialize workload chart
- */
 function initializeWorkloadChart() {
     console.log('Inicializando gráfico de distribución de carga de trabajo...');
     setupWorkloadDropdownListener();
     loadWorkloadDistribution();
 }
 
-/**
- * Setup listener for department dropdown changes
- */
 function setupWorkloadDropdownListener() {
     const dropdown = document.getElementById('messageDropdown');
     
@@ -52,9 +42,6 @@ function setupWorkloadDropdownListener() {
     console.log('Listener de dropdown configurado para workload chart');
 }
 
-/**
- * Select a department for workload view
- */
 function selectDepartmentForWorkload(deptId, deptName) {
     workloadChartState.selectedDepartmentId = deptId;
     workloadChartState.selectedDepartmentName = deptName;
@@ -64,9 +51,6 @@ function selectDepartmentForWorkload(deptId, deptName) {
     loadProjectWorkload(deptId, deptName);
 }
 
-/**
- * Reset to all departments view
- */
 function resetWorkloadToComparison() {
     workloadChartState.selectedDepartmentId = null;
     workloadChartState.selectedDepartmentName = null;
@@ -76,9 +60,6 @@ function resetWorkloadToComparison() {
     loadWorkloadDistribution();
 }
 
-/**
- * Load workload distribution by department (comparison view)
- */
 function loadWorkloadDistribution() {
     console.log('Cargando distribución de carga de trabajo por departamento...');
     
@@ -104,9 +85,6 @@ function loadWorkloadDistribution() {
         });
 }
 
-/**
- * Load workload by project within a department
- */
 function loadProjectWorkload(deptId, deptName) {
     console.log(`Cargando carga de trabajo por proyectos del departamento: ${deptName}...`);
     
@@ -132,9 +110,6 @@ function loadProjectWorkload(deptId, deptName) {
         });
 }
 
-/**
- * Update workload chart with data
- */
 function updateWorkloadChart(data, chartTitle) {
     const ctx = document.getElementById('workloadChart');
     
@@ -143,19 +118,19 @@ function updateWorkloadChart(data, chartTitle) {
         return;
     }
     
-    // Destroy existing chart
+    //destruir graficas existentes
     if (dashboardChartsInstance && dashboardChartsInstance.charts && dashboardChartsInstance.charts.workloadChart) {
         dashboardChartsInstance.charts.workloadChart.destroy();
     }
     
-    // Check for empty data
+    //revisar si hay info vacia
     if (!data.labels || data.labels.length === 0) {
         console.warn('No data available for chart');
         showWorkloadChartError('No hay datos disponibles para mostrar');
         return;
     }
     
-    // Show canvas and remove any error messages
+    //mostrar canva y quitar mensajes de error
     ctx.style.display = 'block';
     const parent = ctx.parentElement;
     const errorDiv = parent.querySelector('.chart-error');
@@ -230,7 +205,7 @@ function updateWorkloadChart(data, chartTitle) {
         }
     };
     
-    // Ensure dashboardChartsInstance exists
+    //revisar que exista
     if (!dashboardChartsInstance) {
         dashboardChartsInstance = { charts: {} };
     }
@@ -247,9 +222,6 @@ function updateWorkloadChart(data, chartTitle) {
     console.log('Gráfico de carga de trabajo actualizado - Total de tareas: ' + data.total_tareas);
 }
 
-/**
- * Show error message on workload chart
- */
 function showWorkloadChartError(message) {
     const ctx = document.getElementById('workloadChart');
     if (!ctx) return;
@@ -257,22 +229,17 @@ function showWorkloadChartError(message) {
     ctx.style.display = 'none';
     const parent = ctx.parentElement;
     
-    // Remove existing error
-    let errorDiv = parent.querySelector('.chart-error');
+    let errorDiv = parent.querySelector('.chart-error');//eliminar errores existentes
     if (errorDiv) {
         errorDiv.remove();
     }
     
-    // Create error message
-    errorDiv = document.createElement('div');
+    errorDiv = document.createElement('div');//crear mensaje de error
     errorDiv.className = 'chart-error alert alert-warning';
     errorDiv.innerHTML = `<i class="mdi mdi-alert-circle"></i> ${message}`;
     parent.appendChild(errorDiv);
 }
 
-/**
- * Refresh workload chart based on current state
- */
 function refreshWorkloadChart() {
     console.log('Refrescando gráfico de carga de trabajo...');
     
@@ -283,9 +250,6 @@ function refreshWorkloadChart() {
     }
 }
 
-/**
- * Sync workload chart with main dashboard state
- */
 function syncWorkloadWithDashboard() {
     if (dashboardChartsInstance.currentDepartment) {
         const dept = dashboardChartsInstance.currentDepartment;
@@ -295,12 +259,10 @@ function syncWorkloadWithDashboard() {
     }
 }
 
-// Export functions for external use
-window.selectDepartmentWorkload = selectDepartmentForWorkload;
+window.selectDepartmentWorkload = selectDepartmentForWorkload;//exportar funciones para uso externo
 window.resetWorkloadView = resetWorkloadToComparison;
 window.refreshWorkloadChart = refreshWorkloadChart;
 
-// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     const workloadCanvas = document.getElementById('workloadChart');
     if (workloadCanvas) {

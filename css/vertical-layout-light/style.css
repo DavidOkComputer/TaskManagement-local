@@ -12096,14 +12096,14 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .btn-outline-secondary, .editable-container.editable-inline .editableform .control-group .editable-buttons .editable-cancel {
-  color: #e9e9e9;
-  border-color: #e9e9e9;
+  color: white;
+  border-color: #009b4a;
 }
 
 .btn-outline-secondary:hover, .editable-container.editable-inline .editableform .control-group .editable-buttons .editable-cancel:hover {
-  color: #000000;
-  background-color: #e9e9e9;
-  border-color: #e9e9e9;
+  color: white;
+  background-color: #009b4a;
+  border-color: #009b4a;
 }
 
 .btn-check:focus + .btn-outline-secondary, .editable-container.editable-inline .editableform .control-group .editable-buttons .btn-check:focus + .editable-cancel, .btn-outline-secondary:focus, .editable-container.editable-inline .editableform .control-group .editable-buttons .editable-cancel:focus {
@@ -12113,9 +12113,9 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 .btn-check:checked + .btn-outline-secondary, .editable-container.editable-inline .editableform .control-group .editable-buttons .btn-check:checked + .editable-cancel,
 .btn-check:active + .btn-outline-secondary,
 .editable-container.editable-inline .editableform .control-group .editable-buttons .btn-check:active + .editable-cancel, .btn-outline-secondary:active, .editable-container.editable-inline .editableform .control-group .editable-buttons .editable-cancel:active, .btn-outline-secondary.active, .editable-container.editable-inline .editableform .control-group .editable-buttons .active.editable-cancel, .btn-outline-secondary.dropdown-toggle.show, .editable-container.editable-inline .editableform .control-group .editable-buttons .dropdown-toggle.show.editable-cancel {
-  color: #000000;
-  background-color: #e9e9e9;
-  border-color: #e9e9e9;
+  color: white;
+  background-color: #009b4a;
+  border-color: #009b4a;
 }
 
 .btn-check:checked + .btn-outline-secondary:focus, .editable-container.editable-inline .editableform .control-group .editable-buttons .btn-check:checked + .editable-cancel:focus,
@@ -12125,8 +12125,8 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .btn-outline-secondary:disabled, .editable-container.editable-inline .editableform .control-group .editable-buttons .editable-cancel:disabled, .btn-outline-secondary.disabled, .editable-container.editable-inline .editableform .control-group .editable-buttons .disabled.editable-cancel {
-  color: #e9e9e9;
-  background-color: transparent;
+  color: white;
+  background-color: #009b4a;
 }
 
 .btn-outline-success, .editable-container.editable-inline .editableform .control-group .editable-buttons .editable-submit {
@@ -23712,13 +23712,13 @@ select.border-dark.tt-hint:focus {
 
 .page-btn.btn-outline-secondary {
     border-color: #009B4A;
-    color: #FFFFFF;
+    color: white;
 }
 
 .page-btn.btn-outline-secondary:hover:not(:disabled) {
     background-color: #009B4A;
     border-color: #009B4A;
-    color: #FFFFFF;
+    color: white;
 }
 
 /* Previous and Next buttons */

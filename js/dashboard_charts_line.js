@@ -1,32 +1,21 @@
-/**
- * dashboard_charts_line.js
- * Project completion trends over time (line chart)
- * Admin only - Comparison view vs Department view
- */
+/*dashboard_charts_line.js completacion de prouyectos sobre el tiempo, para admin*/
 
-/**
- * Initialize line chart
- * Starts with comparison view (all departments)
- */
 function initializeLineChart() {
     console.log('Inicializando gráfico de línea de tendencias...');
     
     const currentDept = dashboardChartsInstance.currentDepartment;
     
     if (currentDept && currentDept.id && currentDept.id > 0) {
-        // Department is selected - show that department's trend
-        console.log('Loading project trend for department:', currentDept.name);
+        //el departamento es seleccionado mostrar info del depar
+        console.log('Cargar tendencias de proyecto por departamento:', currentDept.name);
         loadProjectTrendForDepartment(currentDept.id, currentDept.name);
     } else {
-        // No department selected - show comparison
-        console.log('Loading project trend comparison (all departments)');
+        //sino hoay departamento seleccionado mostrar el modo de comparacin
+        console.log('Cargando tendencias de completacion de tendencias, todos los departamentos');
         loadProjectTrendComparison();
     }
 }
 
-/**
- * Load project trend for a specific department
- */
 function loadProjectTrendForDepartment(deptId, deptName) {
     console.log(`Cargando tendencia de proyectos para: ${deptName}`);
     
@@ -66,9 +55,6 @@ function loadProjectTrendForDepartment(deptId, deptName) {
         });
 }
 
-/**
- * Load project trend comparison (all departments)
- */
 function loadProjectTrendComparison() {
     console.log('Cargando vista de comparación de tendencias (todos los departamentos)');
     
@@ -108,9 +94,6 @@ function loadProjectTrendComparison() {
         });
 }
 
-/**
- * Update line chart with data
- */
 function updateLineChart(data, mode, deptName = null) {
     const ctx = document.getElementById('lineChart');
     if (!ctx) {
@@ -118,13 +101,11 @@ function updateLineChart(data, mode, deptName = null) {
         return;
     }
 
-    // Destroy existing chart
-    if (dashboardChartsInstance.charts.lineChart) {
+    if (dashboardChartsInstance.charts.lineChart) {//destruir graficas existentes
         dashboardChartsInstance.charts.lineChart.destroy();
     }
 
-    // Prepare chart title
-    let chartTitle = 'Tendencia de Proyectos Completados';
+    let chartTitle = 'Tendencia de Proyectos Completados';//preparar titulo del graficos
     if (mode === 'single' && deptName) {
         chartTitle = `Tendencia - ${deptName}`;
     } else if (mode === 'comparison') {

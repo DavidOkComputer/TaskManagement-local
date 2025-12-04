@@ -1,180 +1,202 @@
-<?php
-/**create_project.php - Crear proyectos con manejo robusto de errores*/
+<?php 
 
-ob_start();
+/*user_create_project.php - Crear proyectos para usuarios */ 
 
-header('Content-Type: application/json; charset=UTF-8');
-require_once 'db_config.php';
+ob_start(); 
+header('Content-Type: application/json; charset=UTF-8'); 
+require_once 'db_config.php'; 
 
-$response = ['success' => false, 'message' => ''];
+if (session_status() === PHP_SESSION_NONE) { 
+    session_start(); 
+} 
 
-try {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Método de solicitud inválido');
-    }
+$response = ['success' => false, 'message' => '']; 
 
+try { 
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') { 
+        throw new Exception('Método de solicitud inválido'); 
+    } 
+
+    // Obtener ID de usuario desde la sesión (soportar múltiples nombres de variable) 
+    $id_usuario = null; 
+    if (isset($_SESSION['user_id'])) { 
+        $id_usuario = intval($_SESSION['user_id']); 
+    } elseif (isset($_SESSION['id_usuario'])) { 
+        $id_usuario = intval($_SESSION['id_usuario']); 
+    } 
+
+    // Validar que tenemos un ID de usuario 
+    if (!$id_usuario) { 
+        throw new Exception('Sesión no válida. Por favor, inicie sesión nuevamente'); 
+    } 
+
+    // Conectar a la base de datos PRIMERO para obtener el departamento del usuario 
+    $conn = getDBConnection(); 
+    if (!$conn) { 
+        throw new Exception('Error de conexión a la base de datos'); 
+    } 
+
+    // Obtener el departamento del usuario desde la base de datos 
+    $query_user = "SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?"; 
+    $stmt_user = $conn->prepare($query_user); 
+    if (!$stmt_user) { 
+        throw new Exception('Error al preparar consulta de usuario: ' . $conn->error); 
+    } 
+
+    $stmt_user->bind_param("i", $id_usuario); 
+    if (!$stmt_user->execute()) { 
+        throw new Exception('Error al obtener datos del usuario: ' . $stmt_user->error); 
+    } 
+
+    $result_user = $stmt_user->get_result(); 
+    $user_data = $result_user->fetch_assoc(); 
+    $stmt_user->close(); 
+
+    if (!$user_data) { 
+        throw new Exception('Usuario no encontrado en la base de datos'); 
+    } 
+
+    if (!$user_data['id_departamento'] || $user_data['id_departamento'] == 0) { 
+        throw new Exception('El usuario no tiene un departamento asignado. Por favor contacte al administrador.'); 
+    } 
+
+    // Ahora tenemos el departamento del usuario desde la BD 
+    $id_creador = $id_usuario; 
+    $id_departamento = intval($user_data['id_departamento']); 
+    $id_participante = $id_creador; // El usuario se asigna a sí mismo 
+
+    // Validar campos requeridos 
     $required_fields = [
-        'nombre',
-        'descripcion',
-        'id_departamento',
-        'fecha_creacion',
-        'fecha_cumplimiento',
-        'estado',
-        'id_creador',
-        'id_tipo_proyecto',
-        'puede_editar_otros'
-    ];
+        'nombre', 
+        'descripcion', 
+        'fecha_creacion', 
+        'fecha_cumplimiento', 
+        'estado' 
+    ]; 
 
-    foreach ($required_fields as $field) {
-        if (!isset($_POST[$field])) {
-            throw new Exception("El campo {$field} es requerido");
-        }
-        
-        if (empty(trim($_POST[$field])) && $field !== 'puede_editar_otros' && $field !== 'ar') {
-            throw new Exception("El campo {$field} no puede estar vacío");
-        }
-    }
+    foreach ($required_fields as $field) { 
+        if (!isset($_POST[$field])) { 
+            throw new Exception("El campo {$field} es requerido"); 
+        } 
 
-    $nombre = trim($_POST['nombre']);
-    $descripcion = trim($_POST['descripcion']);
-    $id_departamento = intval($_POST['id_departamento']);
-    $fecha_creacion = trim($_POST['fecha_creacion']);
-    $fecha_cumplimiento = trim($_POST['fecha_cumplimiento']);
-    $progreso = isset($_POST['progreso']) ? intval($_POST['progreso']) : 0;
-    $ar = isset($_POST['ar']) ? trim($_POST['ar']) : '';
-    $estado = trim($_POST['estado']);
-    $archivo_adjunto = isset($_POST['archivo_adjunto']) ? trim($_POST['archivo_adjunto']) : '';
-    $id_creador = intval($_POST['id_creador']);
-    $id_tipo_proyecto = intval($_POST['id_tipo_proyecto']);
-    $puede_editar_otros = intval($_POST['puede_editar_otros']);
-    
-    if (strlen($nombre) > 100) {
-        throw new Exception('El nombre no puede exceder 100 caracteres');
-    }
-    if (strlen($descripcion) > 200) {
-        throw new Exception('La descripción no puede exceder 200 caracteres');
-    }
-    if (strlen($archivo_adjunto) > 300) {
-        throw new Exception('La ruta del archivo no puede exceder 300 caracteres');
-    }
+        if (empty(trim($_POST[$field]))) { 
+            throw new Exception("El campo {$field} no puede estar vacío"); 
+        } 
+    } 
 
-    $estados_validos = ['pendiente', 'en proceso', 'vencido', 'completado'];
-    if (!in_array($estado, $estados_validos)) {
-        throw new Exception('El estado debe ser: pendiente, en proceso, vencido o completado');
-    }
-    if (strpos($fecha_creacion, 'T') !== false) {
-        $fecha_creacion = str_replace('T', ' ', $fecha_creacion);
-    }
-    if (strtotime($fecha_creacion) === false) {
-        throw new Exception('La fecha de creación no es válida');
-    }
-    if (strtotime($fecha_cumplimiento) === false) {
-        throw new Exception('La fecha de cumplimiento no es válida');
-    }
-    if (strtotime($fecha_cumplimiento) < strtotime($fecha_creacion)) {
-        throw new Exception('La fecha de entrega debe ser posterior o igual a la fecha de inicio');
-    }
+    // Limpiar y validar inputs 
+    $nombre = trim($_POST['nombre']); 
+    $descripcion = trim($_POST['descripcion']); 
+    $fecha_creacion = trim($_POST['fecha_creacion']); 
+    $fecha_cumplimiento = trim($_POST['fecha_cumplimiento']); 
+    $progreso = isset($_POST['progreso']) ? intval($_POST['progreso']) : 0; 
+    $ar = isset($_POST['ar']) ? trim($_POST['ar']) : ''; 
+    $estado = trim($_POST['estado']); 
+    $archivo_adjunto = isset($_POST['archivo_adjunto']) ? trim($_POST['archivo_adjunto']) : ''; 
 
-    $conn = getDBConnection();
-    if (!$conn) {
-        throw new Exception('Error de conexión a la base de datos');
-    }
+    // Para usuarios regulares, siempre es proyecto individual y solo el creador puede editar 
+    $id_tipo_proyecto = 2; // Individual 
+    $puede_editar_otros = 0; // Solo el creador puede editar 
 
-    $usuarios_grupo = [];
-    $id_participante = 0;
-    
-    if ($id_tipo_proyecto == 1) {
-        if (isset($_POST['usuarios_grupo'])) {
-            $usuarios_grupo = json_decode($_POST['usuarios_grupo'], true);
-            if (!is_array($usuarios_grupo) || empty($usuarios_grupo)) {
-                throw new Exception('Debes seleccionar al menos un usuario para el proyecto grupal');
-            }
-        } else {
-            throw new Exception('Debes seleccionar usuarios para el proyecto grupal');
-        }
-    } else {
-        if (isset($_POST['id_participante'])) {//para proyecto individual usar participante y no grupo
-            $id_participante = intval($_POST['id_participante']);
-        }
-    }
+    // Validaciones de longitud 
+    if (strlen($nombre) > 100) { 
+        throw new Exception('El nombre no puede exceder 100 caracteres'); 
+    } 
 
-    $sql = "INSERT INTO tbl_proyectos (
-                nombre,
-                descripcion,
-                id_departamento,
-                fecha_inicio,
-                fecha_cumplimiento,
-                progreso,
-                ar,
-                estado,
-                archivo_adjunto,
-                id_creador,
-                id_participante,
-                id_tipo_proyecto,
-                puede_editar_otros
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    if (strlen($descripcion) > 200) { 
+        throw new Exception('La descripción no puede exceder 200 caracteres'); 
+    } 
 
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        throw new Exception('Error al preparar la consulta: ' . $conn->error);
-    }
+    if (strlen($archivo_adjunto) > 300) { 
+        throw new Exception('La ruta del archivo no puede exceder 300 caracteres'); 
+    } 
 
-    $stmt->bind_param(
-        "ssissississii",
-        $nombre,              // s-1
-        $descripcion,         // s-2
-        $id_departamento,     // i-3
-        $fecha_creacion,      // s-4
-        $fecha_cumplimiento,  // s-5
-        $progreso,            // i-6
-        $ar,                  // s-7
-        $estado,              // s-8
-        $archivo_adjunto,     // s-9
-        $id_creador,          // i-10
-        $id_participante,     // i-11
-        $id_tipo_proyecto,    // i-12
-        $puede_editar_otros   // i-13
-    );
+    // Validar estado 
+    $estados_validos = ['pendiente', 'en proceso', 'vencido', 'completado']; 
+    if (!in_array($estado, $estados_validos)) { 
+        throw new Exception('El estado debe ser: pendiente, en proceso, vencido o completado'); 
+    } 
 
-    if (!$stmt->execute()) {
-        throw new Exception('Error al crear el proyecto: ' . $stmt->error);
-    }
+    // Formato de fecha de creación
+    if (strpos($fecha_creacion, 'T') !== false) { 
+        $fecha_creacion = str_replace('T', ' ', $fecha_creacion); 
+    } 
 
-    $id_proyecto = $stmt->insert_id;
-    $stmt->close();
+    // Validar fechas 
+    if (strtotime($fecha_creacion) === false) { 
+        throw new Exception('La fecha de creación no es válida'); 
+    } 
 
-    if ($id_tipo_proyecto == 1 && !empty($usuarios_grupo)) {
-        $sql_usuarios = "INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)";
-        $stmt_usuarios = $conn->prepare($sql_usuarios);
+    if (strtotime($fecha_cumplimiento) === false) { 
+        throw new Exception('La fecha de cumplimiento no es válida'); 
+    } 
 
-        if (!$stmt_usuarios) {
-            throw new Exception('Error al preparar consulta de usuarios: ' . $conn->error);
-        }
+    if (strtotime($fecha_cumplimiento) < strtotime($fecha_creacion)) { 
+        throw new Exception('La fecha de entrega debe ser posterior o igual a la fecha de inicio'); 
+    } 
 
-        foreach ($usuarios_grupo as $id_usuario) {
-            $id_usuario = intval($id_usuario);
-            $stmt_usuarios->bind_param("ii", $id_proyecto, $id_usuario);
-            
-            if (!$stmt_usuarios->execute()) {
-                throw new Exception('Error al asignar usuarios al proyecto: ' . $stmt_usuarios->error);
-            }
-        }
-        $stmt_usuarios->close();
-    }
+    // Conectar a la base de datos 
+    $conn = getDBConnection(); 
+    if (!$conn) { 
+        throw new Exception('Error de conexión a la base de datos'); 
+    } 
 
-    $response['success'] = true;
-    $response['message'] = 'Proyecto registrado exitosamente';
-    $response['id_proyecto'] = $id_proyecto;
+    // Insertar proyecto 
+    $sql = "INSERT INTO tbl_proyectos ( 
+        nombre, 
+        descripcion, 
+        id_departamento, 
+        fecha_inicio, 
+        fecha_cumplimiento, 
+        progreso, 
+        ar, 
+        estado, 
+        archivo_adjunto, 
+        id_creador, 
+        id_participante, 
+        id_tipo_proyecto, 
+        puede_editar_otros 
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; 
 
-    $conn->close();
+    $stmt = $conn->prepare($sql); 
+    if (!$stmt) { 
+        throw new Exception('Error al preparar la consulta: ' . $conn->error); 
+    } 
 
-} catch (Exception $e) {
-    $response['success'] = false;
-    $response['message'] = $e->getMessage();
-    error_log('Error in create_project.php: ' . $e->getMessage());
-}
+    $stmt->bind_param( 
+        "ssissississii", 
+        $nombre,                // s-1 
+        $descripcion,           // s-2 
+        $id_departamento,       // i-3 (desde sesión) 
+        $fecha_creacion,        // s-4 
+        $fecha_cumplimiento,    // s-5 
+        $progreso,              // i-6 
+        $ar,                    // s-7 
+        $estado,                // s-8 
+        $archivo_adjunto,       // s-9 
+        $id_creador,            // i-10 (desde sesión) 
+        $id_participante,       // i-11 (mismo que creador) 
+        $id_tipo_proyecto,      // i-12 (siempre 2 - individual) 
+        $puede_editar_otros     // i-13 (siempre 0 - solo creador) 
+    ); 
 
-ob_end_clean();
-echo json_encode($response);
-exit;
+    if (!$stmt->execute()) { 
+        throw new Exception('Error al crear el proyecto: ' . $stmt->error); 
+    } 
+
+    $id_proyecto = $stmt->insert_id; 
+    $stmt->close(); 
+    $conn->close(); 
+    $response['success'] = true; 
+    $response['message'] = 'Proyecto creado exitosamente'; 
+    $response['id_proyecto'] = $id_proyecto; 
+
+} catch (Exception $e) { 
+    $response['success'] = false; 
+    $response['message'] = $e->getMessage(); 
+    error_log('Error in user_create_project.php: ' . $e->getMessage()); 
+} 
+ob_end_clean(); 
+echo json_encode($response); 
+exit; 
 ?>

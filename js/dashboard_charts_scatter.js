@@ -1,32 +1,21 @@
-/**
- * dashboard_charts_scatter.js
- * Efficiency matrix (bubble chart)
- * Admin only - Department comparison vs Person efficiency within department
- */
+/*dashboard_charts_scatter.js grafica de medidas de eficiencia para el admin*/
 
-/**
- * Initialize scatter chart
- * Starts with department efficiency comparison
- */
 function initializeScatterChart() {
     console.log('Inicializando gráfico de dispersión...');
     
     const currentDept = dashboardChartsInstance.currentDepartment;
     
     if (currentDept && currentDept.id && currentDept.id > 0) {
-        // Department is selected - show person efficiency
+        // se selecciona el departamento, mostrar info del depa
         console.log('Loading person efficiency for:', currentDept.name);
         loadPersonEfficiencyByDepartment(currentDept.id, currentDept.name);
     } else {
-        // No department selected - show department comparison
+        //sino se selecciona departamento mostrar info de comparacion
         console.log('Loading department efficiency comparison');
         loadDepartmentEfficiency();
     }
 }
 
-/**
- * Load person efficiency for a specific department
- */
 function loadPersonEfficiencyByDepartment(deptId, deptName) {
     console.log(`Loading person efficiency for department: ${deptName} (ID: ${deptId})`);
 
@@ -59,7 +48,7 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
                 updateScatterChart(data.data, 'person', deptName);
             } else {
                 console.warn('Error in person efficiency data:', data.message);
-                // Fallback to department view
+                //volver a vista de departamento individual
                 loadDepartmentEfficiency();
             }
         })
@@ -70,9 +59,6 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
         });
 }
 
-/**
- * Load department efficiency comparison
- */
 function loadDepartmentEfficiency() {
     console.log('Cargando datos de eficiencia departamental...');
     
@@ -111,9 +97,6 @@ function loadDepartmentEfficiency() {
         });
 }
 
-/**
- * Update scatter chart with data
- */
 function updateScatterChart(data, mode = 'department', deptName = null) {
     const ctx = document.getElementById('scatterChart');
     if (!ctx) {
@@ -121,13 +104,11 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
         return;
     }
 
-    // Destroy existing chart
-    if (dashboardChartsInstance.charts.scatterChart) {
+    if (dashboardChartsInstance.charts.scatterChart) {//destriuir graficas existentes
         dashboardChartsInstance.charts.scatterChart.destroy();
     }
 
-    // Prepare title and labels based on mode
-    let chartTitle = 'Matriz de Eficiencia Departamental';
+    let chartTitle = 'Matriz de Eficiencia Departamental';//preparar titulo y leyenda dependiendo
     let xAxisLabel = 'Carga de Trabajo (Total de Tareas)';
     let yAxisLabel = 'Tasa de Completación (%)';
 
@@ -265,7 +246,7 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
         }
     };
 
-    // Add average line annotation for department mode
+    //agregar linea de promedio para modo departamento
     if (mode === 'department' && data.avg_completion) {
         options.plugins.annotation = {
             annotations: {
@@ -300,19 +281,16 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
     console.log(`Gráfico de dispersión actualizado: ${chartTitle}`);
 }
 
-/**
- * Add custom legend below scatter chart
- */
 function addScatterChartLegend(mode, deptName, data) {
     const canvasContainer = document.getElementById('scatterChart').parentElement;
     
-    // Remove existing legend
+    //eliminar leyenda existente
     const oldLegend = canvasContainer.querySelector('.scatter-chart-legend');
     if (oldLegend) {
         oldLegend.remove();
     }
 
-    // Create legend div
+    //crear div de leyenda
     const legendDiv = document.createElement('div');
     legendDiv.className = 'scatter-chart-legend';
     legendDiv.style.cssText = `
