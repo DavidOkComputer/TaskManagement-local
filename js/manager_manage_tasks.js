@@ -1,4 +1,4 @@
-/*task-management.js - manejo de tareas, creacion, actualizacion y asignacion de usuarios */
+/*manager_manage_tasks.js - manejo de tareas para gerentes, filtrado por departamento */
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -8,13 +8,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const addBtn = document.querySelector('.todo-list-add-btn');
     const projectPermissionNote = document.getElementById('projectPermissionNote');
     
-    let currentProjectId = null; //seguir el proyecto seleccionado actualmente
-    let currentUserId = 1; //id del usuario actual - remplazar con sesion real
-    let currentProjectData = null; //almacenar datos del proyecto actual
+    let currentProjectId = null; // seguir el proyecto seleccionado actualmente
+    let currentUserId = window.currentUserId || 1; // obtener desde variable global definida en PHP
+    let currentDepartmentId = window.currentDepartmentId || null; // departamento del usuario
+    let currentProjectData = null; // almacenar datos del proyecto actual
     
+    // Inicializar sistema
     createCustomDialogSystem();
     createTaskModal();
-    loadUsers(); //cargar usuarios para dropdown
+    
+    // Cargar proyectos del departamento del gerente
+    loadManagerProjects();
     
     function createTaskModal() {
         const modalHTML = `
@@ -42,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <select class="form-control" id="taskProject" required>
                                         <option value="">Seleccione un proyecto</option>
                                     </select>
-                                    <small class="form-text text-muted">Seleccionar un proyecto para ver usuarios disponibles</small>
+                                    <small class="form-text text-muted">Solo proyectos de su departamento</small>
                                 </div>
                                 <div class="mb-3">
                                     <label for="taskDate" class="form-label">Fecha de Vencimiento</label>
@@ -135,12 +139,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.insertAdjacentHTML('beforeend', dialogHTML);
     }
     
-    //mostrar dialogo de alrta de la app y no navegador
+    // Mostrar dialogo de alerta de la app
     function showAlert(message, type) {
         const alertContainer = document.getElementById('alertContainer');
         const alertDiv = document.createElement('div');
         
-        //agreagar clases de una en una
         alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show');
         alertDiv.setAttribute('role', 'alert');
         alertDiv.innerHTML = `
@@ -153,12 +156,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         setTimeout(function() {
             if (alertDiv.parentNode) {
-            alertDiv.remove();
+                alertDiv.remove();
             }
         }, 5000);
     }
 
-    // mostrar dialogo de confiracion de la app y no buscador
+    // Mostrar dialogo de confirmacion
     function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) {
         const modal = document.getElementById('customConfirmModal');
         const titleElement = document.getElementById('confirmTitle');
@@ -168,7 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const confirmBtn = document.getElementById('confirmOkBtn');
         const cancelBtn = document.getElementById('confirmCancelBtn');
         
-        //opciones default
         const config = {
             confirmText: 'Aceptar',
             cancelText: 'Cancelar',
@@ -176,55 +178,31 @@ document.addEventListener('DOMContentLoaded', function() {
             ...options
         };
         
-        //titulo y mensaje
         titleElement.textContent = title;
         messageElement.textContent = message;
-        
-        //cambiar el texto de los botones
         confirmBtn.textContent = config.confirmText;
         cancelBtn.textContent = config.cancelText;
         
-        //clases del header
         headerElement.className = 'modal-header';
         
         const iconMap = {
-            'info': {
-                icon: 'mdi-information-outline',
-                class: 'bg-info text-white',
-                btnClass: 'btn-info'
-            },
-            'warning': {
-                icon: 'mdi-alert-outline',
-                class: 'bg-warning text-white',
-                btnClass: 'btn-warning'
-            },
-            'danger': {
-                icon: 'mdi-alert-octagon-outline',
-                class: 'bg-danger text-white',
-                btnClass: 'btn-danger'
-            },
-            'success': {
-                icon: 'mdi-check-circle-outline',
-                class: 'bg-success text-white',
-                btnClass: 'btn-success'
-            }
+            'info': { icon: 'mdi-information-outline', class: 'bg-info text-white', btnClass: 'btn-info' },
+            'warning': { icon: 'mdi-alert-outline', class: 'bg-warning text-white', btnClass: 'btn-warning' },
+            'danger': { icon: 'mdi-alert-octagon-outline', class: 'bg-danger text-white', btnClass: 'btn-danger' },
+            'success': { icon: 'mdi-check-circle-outline', class: 'bg-success text-white', btnClass: 'btn-success' }
         };
         
         const typeConfig = iconMap[config.type] || iconMap['warning'];
         iconElement.className = `mdi ${typeConfig.icon} me-2`;
         headerElement.classList.add(typeConfig.class);
-        
-        //actualizar el estilo del boton confirmar
         confirmBtn.className = `btn ${typeConfig.btnClass}`;
         
-        //eliminar listeners anteriores clonando y remplazando
         const newConfirmBtn = confirmBtn.cloneNode(true);
         confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
         
         const newCancelBtn = cancelBtn.cloneNode(true);
         cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
         
-        //agregar nuevo event listener
         newConfirmBtn.addEventListener('click', function() {
             const confirmModal = bootstrap.Modal.getInstance(modal);
             confirmModal.hide();
@@ -233,16 +211,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        //mostrar modal
         const confirmModal = new bootstrap.Modal(modal);
         confirmModal.show();
     }
 
-    loadProjects();
-    
-    // cargar proyectos y mostrarlos en la lista dropdown
-    function loadProjects() {
-        fetch('../php/get_projects.php')
+    // ============================================================
+    // CARGAR PROYECTOS DEL DEPARTAMENTO DEL GERENTE
+    // ============================================================
+    function loadManagerProjects() {
+        // Usar el endpoint específico para gerentes que filtra por departamento
+        fetch('../php/manager_api_get_projects.php')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('La respuesta de red no fue ok');
@@ -250,42 +228,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
-                if (data.success && data.proyectos) {
-                    populateProjectSelect(projectSelect, data.proyectos);
+                if (data.success && data.data) {
+                    // Guardar el department_id para uso posterior
+                    if (data.department_id) {
+                        currentDepartmentId = data.department_id;
+                    }
+                    if (data.user_id) {
+                        currentUserId = data.user_id;
+                    }
+                    
+                    populateProjectSelect(projectSelect, data.data);
+                    console.log(`✓ ${data.total} proyectos cargados del departamento ${currentDepartmentId}`);
                 } else {
-                    showNotification('Error al cargar proyectos', 'warning');
+                    showNotification(data.message || 'Error al cargar proyectos del departamento', 'warning');
                 }
             })
             .catch(error => {
                 console.error('Error al cargar los proyectos:', error);
-                showNotification('Error al cargar proyectos', 'danger');
+                showNotification('Error al cargar proyectos del departamento', 'danger');
             });
     }
     
-    // cargar usuarios para el dropdown (ya no usado para lista general, solo para referencia)
-    function loadUsers() {
-        // Este método ahora solo se usa si necesitamos datos de todos los usuarios
-        // Los usuarios del assignee se cargan dinámicamente basado en el proyecto
-        fetch('../php/get_users.php')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error cargando usuarios');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success && data.usuarios) {
-                    // Ya no poblamos el dropdown global, esperamos a que se seleccione un proyecto
-                    console.log('Usuarios disponibles cargados');
-                }
-            })
-            .catch(error => {
-                console.error('Error al cargar usuarios:', error);
-            });
-    }
-    
+    // Cargar usuarios del proyecto específico
     function loadProjectUsers(projectId) {
-        fetch(`../php/get_project_user_two.php?id_proyecto=${projectId}`)
+        fetch(`../php/manager_get_project_users.php?id_proyecto=${projectId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Error cargando usuarios del proyecto');
@@ -295,9 +261,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success && data.usuarios && data.usuarios.length > 0) {
                     populateUserSelect(document.getElementById('taskAssignee'), data.usuarios);
-                    console.log(` ${data.usuarios.length} usuarios cargados para el proyecto ${projectId}`);
+                    console.log(`✓ ${data.usuarios.length} usuarios cargados para el proyecto ${projectId}`);
                 } else {
-                    // Si no hay usuarios, mostrar mensaje y limpiar dropdown
                     populateUserSelect(document.getElementById('taskAssignee'), []);
                     showNotification('No hay usuarios asignados a este proyecto', 'warning');
                 }
@@ -309,14 +274,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    //popular el dropdown de usuarios con nombre completo y numero de empleado
+    // Popular el dropdown de usuarios
     function populateUserSelect(selectElement, users) {
         if (!selectElement) return;
         
-        //limpiar opciones previas
         selectElement.innerHTML = '';
         
-        //mantener la opcion default
         if (users.length === 0) {
             selectElement.innerHTML = '<option value="">No hay usuarios en este proyecto</option>';
             selectElement.disabled = true;
@@ -329,33 +292,37 @@ document.addEventListener('DOMContentLoaded', function() {
             users.forEach(user => {
                 const option = document.createElement('option');
                 option.value = user.id_usuario;
-                //mostrar: Nombre Apellido (#NumEmpleado)
                 option.textContent = `${user.nombre} ${user.apellido} (#${user.num_empleado})`;
-                option.dataset.userId = user.id_usuario; // Agregar atributo data para referencia
+                option.dataset.userId = user.id_usuario;
                 selectElement.appendChild(option);
             });
         }
     }
     
-    //popular el elemento con proyectos
+    // Popular el elemento con proyectos (adaptado para estructura de manager_api_get_projects)
     function populateProjectSelect(selectElement, projects) {
-        //quedarse con la opcion default
         selectElement.innerHTML = '<option value="">Seleccione un proyecto</option>';
         
         projects.forEach(project => {
             const option = document.createElement('option');
+            // manager_api_get_projects usa 'id_proyecto', no 'id'
             option.value = project.id_proyecto;
             option.textContent = project.nombre;
+            // Agregar indicador de estado
+            if (project.estado === 'completado') {
+                option.textContent += ' ✓';
+            } else if (project.estado === 'vencido') {
+                option.textContent += ' ⚠';
+            }
             selectElement.appendChild(option);
         });
     }
     
-    //cambio de proyecto  aqui se verifica el permiso para asignar tareas
+    // Evento de cambio de proyecto
     projectSelect.addEventListener('change', function() {
         if (this.value) {
             currentProjectId = this.value;
             
-            //obtener detalles del proyecto para verificar permisos de asignacion
             fetchProjectDetails(this.value, function(projectData) {
                 currentProjectData = projectData;
                 updateTaskAssignmentPermissions(projectData);
@@ -369,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    //obtener detalles del proyecto incluyendo permisos y fecha de inicio
+    // Obtener detalles del proyecto
     function fetchProjectDetails(projectId, callback) {
         fetch(`../php/get_project_by_id.php?id=${projectId}`)
             .then(response => response.json())
@@ -385,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    //establecer la fecha minima del proyecto en el input de fecha
+    // Establecer fecha mínima del proyecto
     function setTaskDateMinimum(projectData) {
         const taskDateInput = document.getElementById('taskDate');
         const taskDateNoteDiv = document.getElementById('taskDateNote');
@@ -414,31 +381,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    //actualizar permisos de asignacion de tareas basado en los permisos del proyecto
+    // Actualizar permisos de asignación de tareas
     function updateTaskAssignmentPermissions(projectData) {
         const canAssignTasks = canAssignTasksToProject(projectData);
         
         if (!canAssignTasks) {
-            // Usuario no puede asignar tareas a este proyecto
             projectPermissionNote.innerHTML = `
                 <i class="mdi mdi-lock text-warning"></i>
                 <strong>Nota:</strong> Solo el creador del proyecto puede asignar tareas
             `;
             projectPermissionNote.style.display = 'block';
         } else {
-            // Usuario puede asignar tareas
             projectPermissionNote.style.display = 'none';
         }
     }
     
-    //verificar si el usuario puede asignar tareas a este proyecto
+    // Verificar si el usuario puede asignar tareas
     function canAssignTasksToProject(projectData) {
-        //si el proyecto permite edicion por otros, todos pueden asignar tareas
         if (projectData.puede_editar_otros == 1) {
             return true;
         }
         
-        //si solo el creador puede editar, verificar si el usuario actual es el creador
         if (projectData.puede_editar_otros == 0) {
             return projectData.id_creador == currentUserId;
         }
@@ -446,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return false;
     }
     
-    //actualizar el estado de asignacion de tareas en el modal cuando se carga
+    // Actualizar estado de asignación en el modal
     function updateModalTaskAssignmentPermissions() {
         if (!currentProjectData) return;
         
@@ -468,12 +431,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    //cargar tareas de un proyecto especifico
+    // Cargar tareas de un proyecto
     function loadTasks(projectId) {
         tasksLoading.style.display = 'block';
         tasksList.style.display = 'none';
         
-        fetch(`../php/get_tasks_by_project.php?id_proyecto=${projectId}`)
+        fetch(`../php/manager_get_tasks_by_project.php?id_proyecto=${projectId}`)
             .then(response => response.json())
             .then(data => {
                 tasksLoading.style.display = 'none';
@@ -493,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    //cargar tareas en la lista
+    // Renderizar tareas en la lista
     function renderTasks(tasks) {
         tasksList.innerHTML = '';
         
@@ -503,11 +466,10 @@ document.addEventListener('DOMContentLoaded', function() {
             tasksList.insertAdjacentHTML('beforeend', taskElement);
         });
         
-        //agregar event listeners a todas las checkboxes y botones de edicion
         attachTaskListeners();
     }
     
-    //parsear fecha en formato YYYY-MM-DD correctamente (evitando problema de timezone UTC)
+    // Parsear fecha correctamente
     function parseDateStringToLocal(dateString) {
         if (!dateString) return null;
         
@@ -515,14 +477,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (parts.length !== 3) return null;
         
         const year = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // mes es 0-indexed
+        const month = parseInt(parts[1], 10) - 1;
         const day = parseInt(parts[2], 10);
         
-        // crear fecha en timezone local, no UTC
         return new Date(year, month, day);
     }
 
-    //formatear fecha a formato local (es-MX)
+    // Formatear fecha para mostrar
     function formatDateForDisplay(dateString) {
         const dateObj = parseDateStringToLocal(dateString);
         if (!dateObj) return 'Sin fecha';
@@ -534,23 +495,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    //crear un html para un solo elemento de tarea - FIXED: usando MDI icons para checkbox
+    // Crear elemento HTML de tarea
     function createTaskElement(task, isLast = false) {
-        //formato de fecha - USAR HELPER FUNCTION PARA EVITAR PROBLEMA DE TIMEZONE
         const formattedDate = formatDateForDisplay(task.fecha_cumplimiento);
-        
-        //estilo de la insignia basado en estatus
         const badgeInfo = getTaskBadgeInfo(task.estado);
-        
-        //revisar si la tarea es completada
         const isCompleted = task.estado === 'completado';
         const borderClass = isLast ? 'border-bottom-0' : '';
-        
-        //icono basado en si esta completado o no
         const checkboxIcon = isCompleted ? 'mdi-checkbox-marked-circle-outline' : 'mdi-checkbox-blank-circle-outline';
         const checkboxColor = isCompleted ? 'text-success' : 'text-muted';
-        
-        //mostrar el participante asignado si existe - ESCAPAR EL HTML para prevenir rotura de estructura
         const assigneeDisplay = task.participante ? ` <small class="text-muted">(Asignado a: ${escapeHtml(task.participante)})</small>` : '';
         
         return `
@@ -589,35 +541,21 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 
-    //obtener la clase y texto de la insigniaa basado en el estado de la tarea
+    // Obtener info de badge según estado
     function getTaskBadgeInfo(status) {
         const statusMap = {
-            'completado': {
-                class: 'badge-opacity-success',
-                text: 'Completado'
-            },
-            'en proceso': {
-                class: 'badge-opacity-info',
-                text: 'En Progreso'
-            },
-            'en-progreso': {
-                class: 'badge-opacity-info',
-                text: 'En Progreso'
-            },
-            'vencido': {
-                class: 'badge-opacity-danger',
-                text: 'Vencido'
-            },
-            'pendiente': {
-                class: 'badge-opacity-warning',
-                text: 'Pendiente'
-            }
+            'completado': { class: 'badge-opacity-success', text: 'Completado' },
+            'en proceso': { class: 'badge-opacity-info', text: 'En Progreso' },
+            'en-progreso': { class: 'badge-opacity-info', text: 'En Progreso' },
+            'vencido': { class: 'badge-opacity-danger', text: 'Vencido' },
+            'pendiente': { class: 'badge-opacity-warning', text: 'Pendiente' }
         };
         
         return statusMap[status] || statusMap['pendiente'];
     }
     
     function escapeHtml(text) {
+        if (!text) return '';
         const map = {
             '&': '&amp;',
             '<': '&lt;',
@@ -628,7 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return text.replace(/[&<>"']/g, m => map[m]);
     }
 
-    //agregar event listeners a todas las checkboxes y botones de edicion
+    // Agregar event listeners a checkboxes y botones
     function attachTaskListeners() {
         const checkboxIcons = document.querySelectorAll('.task-checkbox-icon');
         checkboxIcons.forEach(icon => {
@@ -641,31 +579,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    //manejo de cambio de estado cuando se hace clic en el icono checkbox
+    // Manejar cambio de estado de tarea
     function handleTaskStatusChange(event) {
         const icon = event.target;
         const taskId = icon.getAttribute('data-task-id');
-        
-        //determinar si esta actualmente marcado o no basado en la clase del icono
         const isCurrentlyChecked = icon.classList.contains('mdi-checkbox-marked-circle-outline');
-        
-        //Checado = completado, sin checar = pendiente 
         const newStatus = isCurrentlyChecked ? 'pendiente' : 'completado';
-        
-        //obtener el item de la lista de tareas
         const taskLi = icon.closest('li');
         
-        //mostrar estado de carga
         taskLi.style.opacity = '0.6';
         taskLi.style.pointerEvents = 'none';
         icon.style.pointerEvents = 'none';
         
-        //preparar info para la actualizacion
         const updateData = new FormData();
         updateData.append('id_tarea', taskId);
         updateData.append('estado', newStatus);
         
-        //enviar actualizacion al servidor
         fetch('../php/update_task_status.php', {
             method: 'POST',
             body: updateData
@@ -673,7 +602,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                //actualizar icono basado en el nuevo estado
                 if (newStatus === 'completado') {
                     icon.classList.remove('mdi-checkbox-blank-circle-outline');
                     icon.classList.add('mdi-checkbox-marked-circle-outline');
@@ -686,7 +614,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     icon.classList.add('text-muted');
                 }
                 
-                //actualizar insignia
                 const badge = taskLi.querySelector('.task-badge');
                 const badgeInfo = getTaskBadgeInfo(newStatus);
                 
@@ -695,7 +622,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     badge.textContent = badgeInfo.text;
                 }
                 
-                //actualizar decoracion del texto
                 const label = taskLi.querySelector('label');
                 if (label) {
                     if (newStatus === 'completado') {
@@ -707,7 +633,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-                //devolver a estado normal
                 taskLi.style.opacity = '1';
                 taskLi.style.pointerEvents = 'auto';
                 icon.style.pointerEvents = 'auto';
@@ -715,7 +640,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const statusMessage = newStatus === 'completado' ? 'Tarea marcada como completada' : 'Tarea marcada como pendiente';
                 showNotification(statusMessage, 'success');
             } else {
-                //revertir en caso de error
                 taskLi.style.opacity = '1';
                 taskLi.style.pointerEvents = 'auto';
                 icon.style.pointerEvents = 'auto';
@@ -734,12 +658,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    //manejo de boton de editar tarea
+    // Manejar edición de tarea
     function handleEditTask(event) {
         event.preventDefault();
         const button = event.currentTarget;
         
-        //obtener atributos del boton
         const taskId = button.getAttribute('data-task-id');
         const taskName = button.getAttribute('data-task-name');
         const taskDescription = button.getAttribute('data-task-description');
@@ -748,50 +671,41 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskProject = button.getAttribute('data-task-project');
         const taskAssignee = button.getAttribute('data-task-assignee');
         
-        //llenar el modal con la info de la tarea
         document.getElementById('taskName').value = taskName;
         document.getElementById('taskDescription').value = taskDescription;
         document.getElementById('taskDate').value = taskDate;
         document.getElementById('taskStatus').value = taskStatus;
         
-        //guardar id de tarea para actualizar
         const form = document.getElementById('addTaskForm');
         form.setAttribute('data-task-id', taskId);
         form.setAttribute('data-mode', 'edit');
         
-        //cambiar el titulo del modal
         document.getElementById('addTaskModalLabel').textContent = 'Editar Tarea';
         document.querySelector('#saveTaskBtn .btn-text').textContent = 'Actualizar Tarea';
         
-        //cargar proyecto y preseleccionar el proyecto de la tarea
         loadProjectsForModal(() => {
             document.getElementById('taskProject').value = taskProject;
             
-            // Cargar usuarios del proyecto de la tarea
             loadProjectUsersForModal(taskProject, () => {
-                //preseleccionar el usuario asignado
                 if (taskAssignee) {
                     document.getElementById('taskAssignee').value = taskAssignee;
                 }
             });
             
-            //establecer la fecha minima basada en el proyecto de la tarea
             if (currentProjectData && currentProjectData.id_proyecto == taskProject) {
                 setTaskDateMinimum(currentProjectData);
             } else {
-                //si es diferente proyecto, obtener los detalles
                 fetchProjectDetails(taskProject, function(projectData) {
                     setTaskDateMinimum(projectData);
                 });
             }
         });
         
-        //mostrar modal
         const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
         modal.show();
     }
     
-    //inicializar event listeners del modal con filtrado mejorado
+    // Inicializar event listeners del modal
     function initializeModalEventListeners() {
         const modal = document.getElementById('addTaskModal');
         const saveBtn = document.getElementById('saveTaskBtn');
@@ -799,14 +713,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const projectSelect = document.getElementById('taskProject');
         const assigneeSelect = document.getElementById('taskAssignee');
         
-        //Evento cuando cambia la selección de proyecto en el modal
         projectSelect.addEventListener('change', function() {
             if (this.value) {
-                // Cargar y mostrar SOLO usuarios del proyecto seleccionado
                 console.log(`Proyecto seleccionado: ${this.value}`);
                 loadProjectUsersForModal(this.value, () => {
-                    // Verificar permisos de asignación
                     fetchProjectDetails(this.value, function(projectData) {
+                        setTaskDateMinimum(projectData);
+                        
                         const canAssign = canAssignTasksToProject(projectData);
                         const assigneeNote = document.getElementById('taskAssigneeNote');
                         
@@ -824,53 +737,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     });
                 });
             } else {
-                // Si no hay proyecto seleccionado, deshabilitar y limpiar assignee
                 assigneeSelect.innerHTML = '<option value="">Seleccione un proyecto primero</option>';
                 assigneeSelect.disabled = true;
                 document.getElementById('taskAssigneeNote').style.display = 'none';
+                document.getElementById('taskDateNote').style.display = 'none';
             }
         });
         
-        // cargar proyectos cuando se muestra el modal
         modal.addEventListener('show.bs.modal', function() {
             const mode = form.getAttribute('data-mode');
             
-            //si no se esta en modo de edicion cargar proyectos y preselccionar proyecto actual
             if (mode !== 'edit') {
                 loadProjectsForModal(() => {
                     if (currentProjectId) {
                         document.getElementById('taskProject').value = currentProjectId;
-                        //cargar usuarios del proyecto actual
                         loadProjectUsersForModal(currentProjectId);
-                        //establecer fecha minima y actualizar permisos de asignacion basado en el proyecto actual
                         setTaskDateMinimum(currentProjectData);
                         updateModalTaskAssignmentPermissions();
                     }
                 });
-            } else {
-                //en modo edicion, cargar permisos basado en el proyecto de la tarea
-                const taskProject = form.getAttribute('data-task-project');
-                if (taskProject) {
-                    fetchProjectDetails(taskProject, function(projectData) {
-                        const canAssign = canAssignTasksToProject(projectData);
-                        
-                        if (!canAssign) {
-                            assigneeSelect.disabled = true;
-                            document.getElementById('taskAssigneeNote').innerHTML = `
-                                <i class="mdi mdi-lock"></i>
-                                Solo el creador del proyecto puede asignar tareas
-                            `;
-                            document.getElementById('taskAssigneeNote').style.display = 'block';
-                        } else {
-                            assigneeSelect.disabled = false;
-                            document.getElementById('taskAssigneeNote').style.display = 'none';
-                        }
-                    });
-                }
             }
         });
         
-        //limpiar el form y reiniciar modal cuando se esconde
         modal.addEventListener('hidden.bs.modal', function() {
             form.reset();
             form.removeAttribute('data-task-id');
@@ -878,11 +766,9 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('taskMessage').style.display = 'none';
             document.getElementById('taskDateNote').style.display = 'none';
             
-            //reiniciar titulo del modal y texto del botn
             document.getElementById('addTaskModalLabel').textContent = 'Agregar Nueva Tarea';
             document.querySelector('#saveTaskBtn .btn-text').textContent = 'Guardar Tarea';
             
-            // Reiniciar assignee select
             assigneeSelect.innerHTML = '<option value="">Seleccione un proyecto primero</option>';
             assigneeSelect.disabled = true;
         });
@@ -892,15 +778,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    //cargar proyectos para el dropdown del modal
+    // Cargar proyectos para el modal (usando endpoint de gerente)
     function loadProjectsForModal(callback) {
-        fetch('../php/get_projects.php')
+        fetch('../php/manager_api_get_projects.php')
             .then(response => response.json())
             .then(data => {
                 const modalProjectSelect = document.getElementById('taskProject');
                 
-                if (data.success && data.proyectos) {
-                    populateProjectSelect(modalProjectSelect, data.proyectos);
+                if (data.success && data.data) {
+                    populateProjectSelect(modalProjectSelect, data.data);
                     
                     if (callback && typeof callback === 'function') {
                         callback();
@@ -915,11 +801,11 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    //cargar usuarios del proyecto en el modal SOLO usuarios del proyecto
+    // Cargar usuarios del proyecto en el modal
     function loadProjectUsersForModal(projectId, callback) {
         console.log(`Cargando usuarios para el proyecto ${projectId}...`);
         
-        fetch(`../php/get_project_user_two.php?id_proyecto=${projectId}`)
+        fetch(`../php/manager_get_project_users.php?id_proyecto=${projectId}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -948,17 +834,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    //maneja crear una nueva tarea y actualizar las que ya existen
+    // Manejar guardado de tarea
     function handleSaveTask() {
         const form = document.getElementById('addTaskForm');
         
-        //validar form
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
         
-        //obtener valores del form
         const taskName = document.getElementById('taskName').value;
         const taskDescription = document.getElementById('taskDescription').value;
         const taskProject = document.getElementById('taskProject').value;
@@ -967,7 +851,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const taskAssignee = document.getElementById('taskAssignee').value;
         const taskDateInput = document.getElementById('taskDate');
         
-        //validar que la fecha no es anterior a la fecha de inicio del proyecto
         if (taskDate && taskDateInput.min) {
             if (taskDate < taskDateInput.min) {
                 showModalMessage(
@@ -978,25 +861,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        //revisar si esta en modo de edicion
         const mode = form.getAttribute('data-mode');
         const taskId = form.getAttribute('data-task-id');
         const isEditMode = mode === 'edit' && taskId;
         
         setModalLoading(true);
         
-        //preparar info
         const formData = new FormData();
         formData.append('nombre', taskName);
         formData.append('descripcion', taskDescription);
         formData.append('id_proyecto', taskProject);
         formData.append('fecha_vencimiento', taskDate);
         formData.append('estado', taskStatus);
-        formData.append('id_participante', taskAssignee || null);
+        formData.append('id_participante', taskAssignee || '');
         formData.append('id_creador', currentUserId);
         
         if (isEditMode) {
-            //modo de edicion, actualizar tarea existente
             formData.append('id_tarea', taskId);
             
             fetch('../php/update_task.php', {
@@ -1010,15 +890,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showModalMessage('Tarea actualizada exitosamente', 'success');
                     
-                    //actualizar la tarea en la lista si pertenece al pryecto actual
                     if (currentProjectId && taskProject == currentProjectId) {
                         updateTaskInList(taskId, taskName, taskDescription, taskDate, taskStatus, taskAssignee);
                     } else if (currentProjectId) {
-                        //si la tarea fue movida a un proyecto diferente se elimina de esta lista
                         removeTaskFromList(taskId);
                     }
                     
-                    //si el proyecto actual esta vacia y se mueve la tarea a otro, recargar
                     if (currentProjectId && taskProject != currentProjectId) {
                         loadTasks(currentProjectId);
                     }
@@ -1038,8 +915,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 showModalMessage('Error al conectar con el servidor', 'danger');
             });
         } else {
-            //modo crear, nueva tarea
-            
             fetch('../php/save_task.php', {
                 method: 'POST',
                 body: formData
@@ -1051,7 +926,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showModalMessage('Tarea guardada exitosamente', 'success');
                     
-                    //si la nueva tarea pertenece al proyecto seleccionado agregarlo a la lista
                     if (currentProjectId && taskProject == currentProjectId) {
                         addTaskToList(data.task_id, taskName, taskDescription, taskDate, taskStatus, taskProject, taskAssignee);
                     }
@@ -1073,9 +947,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    //agregar nueva tarea creada a la lista actual
+    // Agregar tarea a la lista
     function addTaskToList(taskId, taskName, taskDescription, taskDate, taskStatus, taskProject, taskAssignee) {
-        //quitar el mensaje de no hay tareas si es que existe
         const noTasksMessage = tasksList.querySelector('.text-center');
         if (noTasksMessage) {
             tasksList.innerHTML = '';
@@ -1083,7 +956,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const formattedDate = formatDateForDisplay(taskDate);
         const badgeInfo = getTaskBadgeInfo(taskStatus);
-        
         const isCompleted = taskStatus === 'completado';
         const checkboxIcon = isCompleted ? 'mdi-checkbox-marked-circle-outline' : 'mdi-checkbox-blank-circle-outline';
         const checkboxColor = isCompleted ? 'text-success' : 'text-muted';
@@ -1125,7 +997,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         tasksList.insertAdjacentHTML('beforeend', newTaskHTML);
         
-        //agregar event listener a nueva tarea
         const newTaskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
         if (newTaskLi) {
             const checkboxIcon = newTaskLi.querySelector('.task-checkbox-icon');
@@ -1140,17 +1011,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    //actualizar una tarea en la lista
+    // Actualizar tarea en la lista
     function updateTaskInList(taskId, taskName, taskDescription, taskDate, taskStatus, taskAssignee) {
         const taskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
         if (!taskLi) return;
         
         const formattedDate = formatDateForDisplay(taskDate);
-        
-        //info de la insignia
         const badgeInfo = getTaskBadgeInfo(taskStatus);
         
-        //actualizar icono checkbox basado en el nuevo estado
         const icon = taskLi.querySelector('.task-checkbox-icon');
         if (icon) {
             const isCompleted = taskStatus === 'completado';
@@ -1167,7 +1035,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        //actualizar nombre de la tarea en el label
         const label = taskLi.querySelector('label');
         if (label) {
             const isCompleted = taskStatus === 'completado';
@@ -1181,26 +1048,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        //actualizar fecha 
         const dateDiv = taskLi.querySelector('.text-small');
         if (dateDiv) {
             dateDiv.textContent = formattedDate;
         }
         
-        //actualizar insignia
         const badge = taskLi.querySelector('.task-badge');
         if (badge) {
             badge.className = `badge ${badgeInfo.class} me-3 task-badge`;
             badge.textContent = badgeInfo.text;
         }
         
-        //actualizar descripcion
         const descDiv = taskLi.querySelector('.text-muted.small');
         if (descDiv) {
             descDiv.textContent = taskDescription;
         }
         
-        //actualizar boton de edicion
         const editBtn = taskLi.querySelector('.task-edit-btn');
         if (editBtn) {
             editBtn.setAttribute('data-task-name', escapeHtml(taskName));
@@ -1213,20 +1076,19 @@ document.addEventListener('DOMContentLoaded', function() {
         showNotification('Tarea actualizada en la lista', 'success');
     }
     
-    //quitar una tarea de la lista
+    // Quitar tarea de la lista
     function removeTaskFromList(taskId) {
         const taskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
         if (taskLi) {
             taskLi.remove();
             
-            // revisar si la lista esta vacia
             if (tasksList.children.length === 0) {
                 showNoTasksMessage();
             }
         }
     }
     
-    //asignar estado de carga
+    // Establecer estado de carga del modal
     function setModalLoading(isLoading) {
         const saveBtn = document.getElementById('saveTaskBtn');
         const btnText = saveBtn.querySelector('.btn-text');
@@ -1243,16 +1105,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Botón agregar tarea
     if (addBtn) {
         addBtn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            //revisar si el proyecto esta seleccionado
             if (!currentProjectId) {
-                showAlert(
-                    'Por favor seleccione un proyecto primero',
-                    'warning'
-                );
+                showAlert('Por favor seleccione un proyecto primero', 'warning');
                 return;
             }
             
@@ -1260,7 +1119,8 @@ document.addEventListener('DOMContentLoaded', function() {
             modal.show();
         });
     }
-    //mostrar mensaje default cuando no hay ningun proyecto seleccionado
+    
+    // Mensajes de estado
     function showDefaultMessage() {
         tasksList.innerHTML = `
             <li class="d-block text-center py-4">
@@ -1269,7 +1129,6 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
     
-    //mostrar mensaje cuando el proyecto no tiene tareas
     function showNoTasksMessage() {
         tasksList.innerHTML = `
             <li class="d-block text-center py-4">
@@ -1287,10 +1146,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showNotification(message, type) {
-        // agregar notificacion de tipo tostada
         console.log(`[${type.toUpperCase()}] ${message}`);
         
-        // mejorar notificacion
         const toast = document.createElement('div');
         toast.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
         toast.style.zIndex = '9999';
@@ -1303,7 +1160,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    //mostrar mensaje en el modal
     function showModalMessage(message, type) {
         const messageDiv = document.getElementById('taskMessage');
         messageDiv.className = `alert alert-${type}`;

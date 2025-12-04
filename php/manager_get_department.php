@@ -1,19 +1,13 @@
 <?php
-/**
- * manager_get_department.php
- * Gets the department information for the logged-in manager
- * Used by manager dashboard to load department-specific data
- */
+/*manager_get_department.php obtener el departamento del usuario*/
 
-// Prevent any output before JSON
+//prevenir output antes del json
 ob_start();
 
-// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Clean any previous output
 ob_end_clean();
 
 header('Content-Type: application/json; charset=utf-8');
@@ -27,8 +21,7 @@ $response = [
 ];
 
 try {
-    // Get user ID from session (support multiple session variable names)
-    $id_usuario = null;
+    $id_usuario = null;//obtener id de la sesion
     
     if (isset($_SESSION['id_usuario'])) {
         $id_usuario = (int)$_SESSION['id_usuario'];
@@ -40,11 +33,10 @@ try {
         throw new Exception('Usuario no autenticado');
     }
     
-    // Verify user is a manager (id_rol = 2)
-    // This is a safety check - the page should only be accessible to managers
+    //verificar el rol del usuario
     $id_rol = isset($_SESSION['id_rol']) ? (int)$_SESSION['id_rol'] : 0;
     
-    if ($id_rol !== 2 && $id_rol !== 1) { // Allow admin for testing
+    if ($id_rol !== 2 && $id_rol !== 1) { 
         throw new Exception('Acceso no autorizado - Solo gerentes');
     }
     
@@ -54,7 +46,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // Get user's department information
+    //obtener info del departamento del usuario
     $query = "
         SELECT 
             u.id_usuario,

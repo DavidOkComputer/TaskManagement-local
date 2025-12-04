@@ -1,7 +1,5 @@
 <?php
-/** update_task_status.php 
- *actualizar el estatus de la tarea y recalcular el progreso del proyecto
- *cuando el estado de una tarea cambia, se recalcula automaticamente */
+/** update_task_status.php para actualizar el estado de las tareas cuando se marca completado */
 
 header('Content-Type: application/json');
 require_once('db_config.php');

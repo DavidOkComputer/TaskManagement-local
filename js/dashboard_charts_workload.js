@@ -1,83 +1,32 @@
 /**
- * dashboard_charts_workload.js 
- * Maneja el gráfico de pastel de distribución de carga de trabajo
- * 
- * Role-based restrictions:
- * - Admins: Can view all departments and switch between them
- * - Managers: Only see their department's workload distribution
+ * dashboard_charts_workload.js
+ * Workload distribution chart (doughnut/pie)
+ * Admin only - Comparison view vs Department view
  */
 
-let currentViewMode = 'departments'; // 'departments' o 'projects'
-let selectedDepartmentId = null;
-let selectedDepartmentName = null;
+let workloadChartState = {
+    currentMode: 'departments', // 'departments' or 'projects'
+    selectedDepartmentId: null,
+    selectedDepartmentName: null
+};
 
+/**
+ * Initialize workload chart
+ */
 function initializeWorkloadChart() {
     console.log('Inicializando gráfico de distribución de carga de trabajo...');
-    
-    // Check user role configuration
-    const userConfig = window.dashboardUserConfig;
-    const isRoleLocked = userConfig && !userConfig.canViewAllDepartments;
-    
-    if (isRoleLocked) {
-        // Manager or user - load only their department's workload
-        console.log('Workload chart: User is role-locked, loading department-specific view');
-        loadDepartmentWorkloadLocked();
-    } else {
-        // Admin - can switch between views
-        setupDepartmentDropdownListener();
-        loadWorkloadDistribution();
-    }
+    setupWorkloadDropdownListener();
+    loadWorkloadDistribution();
 }
 
 /**
- * Load workload for role-locked users (managers/users)
- * They can only see their own department's projects
+ * Setup listener for department dropdown changes
  */
-function loadDepartmentWorkloadLocked() {
-    const userConfig = window.dashboardUserConfig;
-    
-    if (!userConfig || !userConfig.userDepartamento) {
-        console.error('No department configured for locked user');
-        showChartError('No se pudo determinar el departamento');
-        return;
-    }
-    
-    // Fetch department name first
-    fetch('../php/get_user_department.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.department) {
-                const deptId = data.department.id_departamento;
-                const deptName = data.department.nombre;
-                
-                // Set as locked - cannot change
-                selectedDepartmentId = deptId;
-                selectedDepartmentName = deptName;
-                currentViewMode = 'projects';
-                
-                console.log(`Loading locked workload for department: ${deptName}`);
-                loadProjectWorkload(deptId, deptName);
-            } else {
-                showChartError('Error al obtener departamento');
-            }
-        })
-        .catch(error => {
-            console.error('Error loading department for workload:', error);
-            showChartError('Error de conexión');
-        });
-}
-
-function setupDepartmentDropdownListener() {
-    // Check if user is role-locked (safety check)
-    if (dashboardChartsInstance && dashboardChartsInstance.isRoleLocked) {
-        console.log('Workload dropdown listener: Skipped - user is role-locked');
-        return;
-    }
-
+function setupWorkloadDropdownListener() {
     const dropdown = document.getElementById('messageDropdown');
     
     if (!dropdown) {
-        console.warn('Dropdown de departamentos no encontrado con ID "messageDropdown"');
+        console.warn('Dropdown de departamentos no encontrado');
         return;
     }
 
@@ -96,91 +45,41 @@ function setupDepartmentDropdownListener() {
             const deptName = departmentItem.getAttribute('data-department-name') || 'Departamento';
             
             console.log('Departamento seleccionado para workload:', deptId, deptName);
-            selectDepartment(deptId, deptName);
+            selectDepartmentForWorkload(deptId, deptName);
         }
     });
 
-    console.log('Listener de dropdown de departamentos configurado para workload');
+    console.log('Listener de dropdown configurado para workload chart');
 }
 
-function selectDepartment(deptId, deptName) {
-    // Check if role-locked (safety check)
-    if (dashboardChartsInstance && dashboardChartsInstance.isRoleLocked) {
-        console.log('Department selection blocked for workload - user is role-locked');
-        return;
-    }
-
-    selectedDepartmentId = deptId;
-    selectedDepartmentName = deptName;
-    currentViewMode = 'projects';
+/**
+ * Select a department for workload view
+ */
+function selectDepartmentForWorkload(deptId, deptName) {
+    workloadChartState.selectedDepartmentId = deptId;
+    workloadChartState.selectedDepartmentName = deptName;
+    workloadChartState.currentMode = 'projects';
     
     console.log(`Cargando proyectos para departamento: ${deptName} (ID: ${deptId})`);
     loadProjectWorkload(deptId, deptName);
-    
-    updateDropdownButtonText(deptName);
 }
 
-function resetToAllDepartments() {
-    // Check if role-locked (block this action for managers)
-    if (dashboardChartsInstance && dashboardChartsInstance.isRoleLocked) {
-        console.log('Reset to all departments blocked - user is role-locked');
-        return;
-    }
-
-    selectedDepartmentId = null;
-    selectedDepartmentName = null;
-    currentViewMode = 'departments';
+/**
+ * Reset to all departments view
+ */
+function resetWorkloadToComparison() {
+    workloadChartState.selectedDepartmentId = null;
+    workloadChartState.selectedDepartmentName = null;
+    workloadChartState.currentMode = 'departments';
     
     console.log('Volviendo a vista de departamentos...');
     loadWorkloadDistribution();
-    
-    resetDropdownButtonText();
 }
 
-function updateDropdownButtonText(deptName) {
-    // Don't update if role-locked (dropdown is hidden anyway)
-    if (dashboardChartsInstance && dashboardChartsInstance.isRoleLocked) {
-        return;
-    }
-
-    const dropdownButton = document.getElementById('messageDropdown');
-    if (!dropdownButton) return;
-    
-    let textSpan = dropdownButton.querySelector('.dropdown-text');
-    
-    if (!textSpan) {
-        const originalText = dropdownButton.textContent.trim();
-        textSpan = document.createElement('span');
-        textSpan.className = 'dropdown-text';
-        textSpan.textContent = originalText;
-        
-        dropdownButton.innerHTML = '';
-        dropdownButton.appendChild(textSpan);
-    }
-    
-    textSpan.textContent = deptName;
-}
-
-function resetDropdownButtonText() {
-    const dropdownButton = document.getElementById('messageDropdown');
-    if (!dropdownButton) return;
-    
-    let textSpan = dropdownButton.querySelector('.dropdown-text');
-    
-    if (textSpan) {
-        textSpan.textContent = 'Seleccionar Categoría';
-    } else {
-        dropdownButton.textContent = 'Seleccionar Categoría';
-    }
-}
-
+/**
+ * Load workload distribution by department (comparison view)
+ */
 function loadWorkloadDistribution() {
-    // For role-locked users, redirect to department-specific view
-    if (dashboardChartsInstance && dashboardChartsInstance.isRoleLocked) {
-        loadDepartmentWorkloadLocked();
-        return;
-    }
-
     console.log('Cargando distribución de carga de trabajo por departamento...');
     
     fetch('../php/get_task_workload_by_department.php')
@@ -196,15 +95,18 @@ function loadWorkloadDistribution() {
                 updateWorkloadChart(data.data, 'Distribución de Carga de Trabajo por Departamento');
             } else {
                 console.error('Error en datos de carga de trabajo:', data.message);
-                showChartError('No hay datos disponibles');
+                showWorkloadChartError('No hay datos disponibles');
             }
         })
         .catch(error => {
             console.error('Error loading workload distribution:', error.message);
-            showChartError('Error al cargar datos');
+            showWorkloadChartError('Error al cargar datos');
         });
 }
 
+/**
+ * Load workload by project within a department
+ */
 function loadProjectWorkload(deptId, deptName) {
     console.log(`Cargando carga de trabajo por proyectos del departamento: ${deptName}...`);
     
@@ -218,24 +120,22 @@ function loadProjectWorkload(deptId, deptName) {
         .then(data => {
             console.log('Datos de proyectos cargados:', data);
             if (data.success && data.data) {
-                // Update title based on role
-                let chartTitle = deptName;
-                if (dashboardChartsInstance && dashboardChartsInstance.isRoleLocked) {
-                    chartTitle = `Carga de Trabajo - ${deptName}`;
-                }
-                updateWorkloadChart(data.data, chartTitle);
+                updateWorkloadChart(data.data, `Carga de Trabajo - ${deptName}`);
             } else {
                 console.error('Error en datos de proyectos:', data.message);
-                showChartError(data.message || 'No hay proyectos con tareas en este departamento');
+                showWorkloadChartError(data.message || 'No hay proyectos con tareas en este departamento');
             }
         })
         .catch(error => {
             console.error('Error loading project workload:', error.message);
-            showChartError('Error al cargar proyectos');
+            showWorkloadChartError('Error al cargar proyectos');
         });
 }
 
-function updateWorkloadChart(data, chartTitle = 'Distribución de Carga de Trabajo por Departamento') {
+/**
+ * Update workload chart with data
+ */
+function updateWorkloadChart(data, chartTitle) {
     const ctx = document.getElementById('workloadChart');
     
     if (!ctx) {
@@ -243,25 +143,19 @@ function updateWorkloadChart(data, chartTitle = 'Distribución de Carga de Traba
         return;
     }
     
+    // Destroy existing chart
     if (dashboardChartsInstance && dashboardChartsInstance.charts && dashboardChartsInstance.charts.workloadChart) {
         dashboardChartsInstance.charts.workloadChart.destroy();
     }
     
+    // Check for empty data
     if (!data.labels || data.labels.length === 0) {
         console.warn('No data available for chart');
-        ctx.style.display = 'none';
-        const parent = ctx.parentElement;
-        let errorDiv = parent.querySelector('.chart-error');
-        if (errorDiv) {
-            errorDiv.remove();
-        }
-        errorDiv = document.createElement('div');
-        errorDiv.className = 'chart-error alert alert-info';
-        errorDiv.textContent = 'No hay datos disponibles para mostrar';
-        parent.appendChild(errorDiv);
+        showWorkloadChartError('No hay datos disponibles para mostrar');
         return;
     }
     
+    // Show canvas and remove any error messages
     ctx.style.display = 'block';
     const parent = ctx.parentElement;
     const errorDiv = parent.querySelector('.chart-error');
@@ -328,21 +222,20 @@ function updateWorkloadChart(data, chartTitle = 'Distribución de Carga de Traba
                     }
                 },
                 backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                titleFont: {
-                    size: 12
-                },
-                bodyFont: {
-                    size: 11
-                },
+                titleFont: { size: 12 },
+                bodyFont: { size: 11 },
                 padding: 12,
-                displayColors: true,
-                multiKeyBackground: 'rgba(0, 0, 0, 0.8)'
+                displayColors: true
             }
         }
     };
     
+    // Ensure dashboardChartsInstance exists
     if (!dashboardChartsInstance) {
         dashboardChartsInstance = { charts: {} };
+    }
+    if (!dashboardChartsInstance.charts) {
+        dashboardChartsInstance.charts = {};
     }
     
     dashboardChartsInstance.charts.workloadChart = new Chart(ctx, {
@@ -354,81 +247,64 @@ function updateWorkloadChart(data, chartTitle = 'Distribución de Carga de Traba
     console.log('Gráfico de carga de trabajo actualizado - Total de tareas: ' + data.total_tareas);
 }
 
-function showChartError(message) {
+/**
+ * Show error message on workload chart
+ */
+function showWorkloadChartError(message) {
     const ctx = document.getElementById('workloadChart');
     if (!ctx) return;
     
     ctx.style.display = 'none';
     const parent = ctx.parentElement;
     
+    // Remove existing error
     let errorDiv = parent.querySelector('.chart-error');
     if (errorDiv) {
         errorDiv.remove();
     }
     
+    // Create error message
     errorDiv = document.createElement('div');
     errorDiv.className = 'chart-error alert alert-warning';
     errorDiv.innerHTML = `<i class="mdi mdi-alert-circle"></i> ${message}`;
     parent.appendChild(errorDiv);
 }
 
+/**
+ * Refresh workload chart based on current state
+ */
 function refreshWorkloadChart() {
     console.log('Refrescando gráfico de carga de trabajo...');
     
-    // For role-locked users, always refresh department view
-    if (dashboardChartsInstance && dashboardChartsInstance.isRoleLocked) {
-        if (selectedDepartmentId) {
-            loadProjectWorkload(selectedDepartmentId, selectedDepartmentName);
-        } else {
-            loadDepartmentWorkloadLocked();
-        }
-        return;
-    }
-    
-    if (currentViewMode === 'projects' && selectedDepartmentId) {
-        loadProjectWorkload(selectedDepartmentId, selectedDepartmentName);
+    if (workloadChartState.currentMode === 'projects' && workloadChartState.selectedDepartmentId) {
+        loadProjectWorkload(workloadChartState.selectedDepartmentId, workloadChartState.selectedDepartmentName);
     } else {
         loadWorkloadDistribution();
     }
 }
 
-function initializeDashboardChartsWithWorkload() {
-    initializeDashboardCharts();
-    initializeWorkloadChart();
+/**
+ * Sync workload chart with main dashboard state
+ */
+function syncWorkloadWithDashboard() {
+    if (dashboardChartsInstance.currentDepartment) {
+        const dept = dashboardChartsInstance.currentDepartment;
+        selectDepartmentForWorkload(dept.id, dept.name);
+    } else {
+        resetWorkloadToComparison();
+    }
 }
 
-function startWorkloadChartAutoRefresh(intervalSeconds = 60) {
-    console.log('Iniciando auto-actualización de gráfico de carga de trabajo cada ' + intervalSeconds + ' segundos');
-    
-    setInterval(function() {
-        refreshWorkloadChart();
-    }, intervalSeconds * 1000);
-}
+// Export functions for external use
+window.selectDepartmentWorkload = selectDepartmentForWorkload;
+window.resetWorkloadView = resetWorkloadToComparison;
+window.refreshWorkloadChart = refreshWorkloadChart;
 
-// Export functions - but block department switching for managers
-window.selectDepartmentWorkload = function(deptId, deptName) {
-    // Check if role-locked
-    if (dashboardChartsInstance && dashboardChartsInstance.isRoleLocked) {
-        console.log('selectDepartmentWorkload blocked - user is role-locked');
-        return;
-    }
-    selectDepartment(deptId, deptName);
-};
-
-window.resetWorkloadView = function() {
-    // Check if role-locked
-    if (dashboardChartsInstance && dashboardChartsInstance.isRoleLocked) {
-        console.log('resetWorkloadView blocked - user is role-locked');
-        return;
-    }
-    resetToAllDepartments();
-};
-
+// Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', function() {
     const workloadCanvas = document.getElementById('workloadChart');
     if (workloadCanvas) {
         console.log('Workload chart canvas detectado, inicializando...');
         initializeWorkloadChart();
-        startWorkloadChartAutoRefresh(60);
     }
 });

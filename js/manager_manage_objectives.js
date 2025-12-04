@@ -1,4 +1,4 @@
-/* manager manage_objectives.js para todos los objetivos de la tabla con botones de acción*/ 
+/* manager_manage_objectives.js para todos los objetivos de la tabla con botones de acción*/ 
 const Config = { 
     API_ENDPOINTS: { 
         DELETE: '../php/delete_objective.php', 

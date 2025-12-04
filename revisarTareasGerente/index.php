@@ -6,6 +6,26 @@ $user_name = $_SESSION['nombre'];
 $user_apellido = $_SESSION['apellido']; 
 $user_email = $_SESSION['e_mail']; 
 $user_id = $_SESSION['user_id']; 
+
+// Obtener el departamento del usuario si no está en la sesión
+$user_department = $_SESSION['id_departamento'] ?? null;
+
+if (!$user_department) {
+    require_once('../php/db_config.php');
+    $conn = getDBConnection();
+    if ($conn) {
+        $dept_stmt = $conn->prepare("SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?");
+        $dept_stmt->bind_param("i", $user_id);
+        $dept_stmt->execute();
+        $dept_result = $dept_stmt->get_result();
+        if ($dept_row = $dept_result->fetch_assoc()) {
+            $user_department = $dept_row['id_departamento'];
+            $_SESSION['id_departamento'] = $user_department;
+        }
+        $dept_stmt->close();
+        $conn->close();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -233,7 +253,7 @@ $user_id = $_SESSION['user_id'];
                 <div class="card-body">
                   <div id="alertContainer">
                     <h4 class="card-title">Asignación de tareas para proyectos</h4>
-                    <p class="card-description">Asigne las tareas a desarrollar dentro del proyecto</p>
+                    <p class="card-description">Asigne las tareas a desarrollar dentro del proyecto <small class="text-muted">(Solo proyectos de su departamento)</small></p>
                   </div>
                   <hr>
                   <div class="row">
@@ -304,6 +324,16 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/dashboard.js"></script>
   <script src="../js/hoverable-collapse.js"></script>
   <!-- End custom js for this page-->
+  
+  <!-- IMPORTANTE: Variables de sesión para JavaScript -->
+  <script>
+    // Pasar datos de sesión a JavaScript para uso en manager_manage_tasks.js
+    window.currentUserId = <?php echo json_encode((int)$user_id); ?>;
+    window.currentDepartmentId = <?php echo json_encode($user_department ? (int)$user_department : null); ?>;
+    window.currentUserName = <?php echo json_encode($user_name); ?>;
+  </script>
+  
+  <!-- Manager Task Management Script -->
   <script src="../js/manager_manage_tasks.js"></script>
 </body>
 </html>

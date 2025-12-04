@@ -1,9 +1,5 @@
 <?php
-/**
- * manager_get_project.php sin s
- * Gets all projects for manager's department
- * Used by bar chart for project progress
- */
+/*manager_get_project.php usado por la grafica de barras, obtiene los proyectos del departamento*/
 
 ob_start();
 if (session_status() === PHP_SESSION_NONE) {
@@ -22,7 +18,7 @@ $response = [
 ];
 
 try {
-    // Validate department ID
+    //validar id del departamento
     if (!isset($_GET['id_departamento']) || empty($_GET['id_departamento'])) {
         throw new Exception('ID de departamento requerido');
     }
@@ -39,7 +35,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // Get all projects for the department
+    //obtener todos los proyectos del departamento
     $query = "
         SELECT 
             p.id_proyecto,
@@ -82,7 +78,7 @@ try {
     $proyectos = [];
     
     while ($row = $result->fetch_assoc()) {
-        // Determine participant text
+        //detarminar texto del participante
         if ((int)$row['id_tipo_proyecto'] === 1) {
             $participante = 'Grupo';
         } elseif ($row['participante_nombre']) {

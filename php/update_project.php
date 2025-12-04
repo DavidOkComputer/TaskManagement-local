@@ -26,7 +26,6 @@ try {//validaciones
         'id_departamento',
         'fecha_creacion',
         'fecha_cumplimiento',
-        'id_creador',
         'id_tipo_proyecto',
         'puede_editar_otros'
     ];
@@ -50,7 +49,6 @@ try {//validaciones
     $progreso = isset($_POST['progreso']) ? intval($_POST['progreso']) : 0;
     $ar = isset($_POST['ar']) ? trim($_POST['ar']) : '';
     $archivo_adjunto = isset($_POST['archivo_adjunto']) ? trim($_POST['archivo_adjunto']) : '';
-    $id_creador = intval($_POST['id_creador']);
     $id_tipo_proyecto = intval($_POST['id_tipo_proyecto']);
     $puede_editar_otros = intval($_POST['puede_editar_otros']);
     

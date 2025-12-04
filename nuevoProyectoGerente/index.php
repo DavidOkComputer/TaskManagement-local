@@ -451,7 +451,7 @@ $user_id = $_SESSION['user_id'];
                     </div>
                   </div>
                   <!-- Hidden fields -->
-                  <input type="hidden" id="id_creador" name="id_creador" value="1"/> <!-- Will be set to current user ID -->
+                  <input type="hidden" id="id_creador" name="id_creador" value="<?php echo htmlspecialchars($user_id); ?>"/>
                   <input type="hidden" id="progreso" name="progreso" value="0"/>
                   <input type="hidden" id="estado" name="estado" value="pendiente"/>
                   <input type="hidden" id="archivo_adjunto_ruta" name="archivo_adjunto"/>
