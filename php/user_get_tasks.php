@@ -1,8 +1,5 @@
 <?php
-/*
- * get_my_tasks.php
- * Obtiene las tareas asignadas al usuario actual
- */
+/* user_get_tasks.php Obtiene las tareas asignadas al usuario actual*/
 
 header('Content-Type: application/json');
 session_start();

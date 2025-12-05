@@ -1,5 +1,5 @@
 <?php
-// get_projects.php 
+// get_projects.php  para obtener los proyctos del usurio que esta con sesion iniciada
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
@@ -31,9 +31,9 @@ try {
               LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento
               LEFT JOIN tbl_usuarios u ON p.id_participante = u.id_usuario
               ORDER BY p.fecha_cumplimiento ASC";
-    
+
     $result = $conn->query($query);
-    
+
     if (!$result) {
         throw new Exception("Error en la consulta: " . $conn->error);
     }

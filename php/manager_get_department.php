@@ -35,10 +35,7 @@ try {
     
     //verificar el rol del usuario
     $id_rol = isset($_SESSION['id_rol']) ? (int)$_SESSION['id_rol'] : 0;
-    
-    if ($id_rol !== 2 && $id_rol !== 1) { 
-        throw new Exception('Acceso no autorizado - Solo gerentes');
-    }
+   
     
     $conn = getDBConnection();
     

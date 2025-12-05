@@ -1,5 +1,5 @@
 <?php
-/* get_project_users.php - Obtener usuarios asignados a un proyecto específico con cálculo de progreso */
+/* get_project_users.php para usuarios asignados a un proyecto específico con cálculo de progreso */
  
 header('Content-Type: application/json');
 require_once('db_config.php');
@@ -9,7 +9,6 @@ ini_set('display_errors', 0);
  
 // Iniciar buffer de salida para evitar problemas con JSON
 ob_start();
- 
 $response = ['success' => false, 'usuarios' => []];
  
 try {
@@ -58,7 +57,6 @@ try {
     $id_participante_individual = $proyecto['id_participante'];
     
     $stmt->close();
- 
     $usuarios = [];
  
     // Si es proyecto grupal (id_tipo_proyecto = 1), obtener todos los usuarios del grupo
@@ -109,6 +107,7 @@ try {
         $result_usuarios->free();
         $stmt_usuarios->close();
     }
+
     // Si es proyecto individual (id_tipo_proyecto = 2), obtener solo el usuario asignado
     elseif ($id_tipo_proyecto == 2 && !empty($id_participante_individual)) {
         $sql_usuario = "
@@ -173,9 +172,7 @@ try {
 }
  
 ob_clean();
- 
 echo json_encode($response);
- 
 ob_end_flush();
 
 function calcularProgresoUsuario($conn, $id_proyecto, $id_usuario) {

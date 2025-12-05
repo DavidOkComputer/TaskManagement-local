@@ -1,9 +1,5 @@
 <?php
-/*
- * get_dashboard_stats_user.php
- * Obtiene estadísticas del dashboard filtradas por el usuario actual
- * Muestra solo proyectos/tareas donde el usuario es participante o de su departamento
- */
+/*get_dashboard_stats_user.php obtiene estadisticas del dashboard para el usuario actual*/
 
 ob_start();
 
@@ -38,12 +34,8 @@ try {
         'message' => '',
         'stats' => []
     ];
-
-    // ==========================================
-    // ESTADÍSTICAS DE PROYECTOS DEL USUARIO
-    // ==========================================
     
-    // Proyectos donde el usuario es participante directo O es parte del grupo
+    // Proyectos donde el usuario es participante directo o es parte del grupo
     $queryMisProyectos = "
         SELECT COUNT(DISTINCT p.id_proyecto) as total
         FROM tbl_proyectos p
@@ -66,10 +58,6 @@ try {
     }
     $stmtMisProyectos->close();
 
-    // ==========================================
-    // ESTADÍSTICAS DE TAREAS DEL USUARIO
-    // ==========================================
-    
     // Total de tareas asignadas al usuario
     $queryMisTareas = "
         SELECT 
@@ -103,10 +91,6 @@ try {
     $porcentajeTareasCompletadas = $totalTareas > 0 
         ? round(($tareasCompletadas / $totalTareas) * 100, 1) 
         : 0;
-
-    // ==========================================
-    // ESTADÍSTICAS DEL DEPARTAMENTO
-    // ==========================================
     
     // Total de proyectos del departamento
     $queryProyectosDept = "

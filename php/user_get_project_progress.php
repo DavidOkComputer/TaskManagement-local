@@ -1,8 +1,5 @@
 <?php
-/*
- * get_my_projects_progress.php
- * Obtiene el progreso del usuario en los proyectos donde participa
- */
+/* get_my_projects_progress.php para saber el progreso del usuario en los proyectos*/
 
 header('Content-Type: application/json');
 session_start();

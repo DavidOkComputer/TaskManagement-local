@@ -215,295 +215,147 @@ $user_id = $_SESSION['user_id'];
                     </li> 
                 </ul> 
             </nav> 
-
-             
-
             <!-- partial --> 
-
             <div class="main-panel"> 
-
                 <div class="content-wrapper"> 
-
                     <div class="col-12 grid-margin stretch-card"> 
-
                         <div class="card card-rounded"> 
-
                             <div class="card-body"> 
-
                                 <div class="d-sm-flex justify-content-between align-items-start"> 
-
                                     <div> 
-
                                         <h4 class="card-title card-title-dash">Crear nuevo proyecto</h4> 
-
                                         <p class="card-subtitle card-subtitle-dash">Completa el formulario para crear un nuevo proyecto personal</p> 
-
                                     </div> 
-
                                     <div> 
-
                                         <a href="../revisarProyectosUser"> 
-
                                             <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button> 
-
                                         </a> 
-
                                     </div> 
-
                                 </div> 
-
                                 <div><br></div> 
-
-                                 
-
                                 <!-- Alert messages --> 
-
                                 <div id="alertContainer"></div> 
-
-                                 
-
-                                <!-- Project Form --> 
-
+                                <!-- Project Form -->
                                 <form id="proyectoForm"> 
-
                                     <div class="row"> 
-
                                         <div class="col-md-6"> 
-
                                             <div class="form-group row"> 
-
                                                 <label class="col-sm-3 col-form-label">Nombre <span class="text-danger">*</span></label> 
-
                                                 <div class="col-sm-9"> 
-
                                                     <input type="text" id="nombre" name="nombre" class="form-control" maxlength="100" placeholder="Ingrese el nombre del proyecto" required/> 
-
                                                 </div> 
-
                                             </div> 
-
                                         </div> 
-
                                         <div class="col-md-6"> 
-
                                             <div class="form-group row"> 
-
                                                 <label class="col-sm-3 col-form-label">Departamento</label> 
-
                                                 <div class="col-sm-9"> 
-
                                                     <input type="text" id="departamento_display" class="form-control" disabled placeholder="Cargando departamento..." style="background-color: #f8f9fa;"/> 
-
                                                     <small class="form-text text-muted">Tu departamento asignado</small> 
-
                                                 </div> 
-
                                             </div> 
-
                                         </div> 
-
                                     </div> 
 
-                                     
-
                                     <div class="row"> 
-
                                         <div class="col-md-12"> 
-
                                             <div class="form-group row"> 
-
                                                 <label class="col-sm-3 col-md-1 col-lg-1 col-form-label">Descripción<span class="text-danger">*</span></label> 
-
                                                 <div class="col-sm-9 col-md-11 col-lg-11"> 
-
                                                     <textarea type="text" id="descripcion" name="descripcion" class="form-control" placeholder="Ingrese la descripción del proyecto" maxlength="200" rows="3" required ></textarea> 
-
                                                 </div> 
-
                                             </div> 
-
                                         </div> 
-
                                     </div> 
 
-                                     
-
                                     <div class="row"> 
-
                                         <div class="col-md-6"> 
-
                                             <div class="form-group row"> 
-
                                                 <label class="col-sm-3 col-form-label">Fecha de inicio <span class="text-danger">*</span></label> 
-
                                                 <div class="col-sm-9"> 
-
                                                     <input type="datetime-local" id="fecha_creacion" name="fecha_creacion" class="form-control" required/> 
-
                                                     <small class="form-text text-muted">Seleccione la fecha de inicio del proyecto</small> 
-
                                                 </div> 
-
                                             </div> 
-
                                         </div> 
-
                                         <div class="col-md-6"> 
-
                                             <div class="form-group row"> 
-
                                                 <label class="col-sm-3 col-form-label">Fecha de entrega <span class="text-danger">*</span></label> 
-
                                                 <div class="col-sm-9"> 
-
                                                     <input type="date" id="fecha_cumplimiento" name="fecha_cumplimiento" class="form-control" required/> 
-
                                                     <small class="form-text text-muted">Seleccione la fecha límite para el proyecto</small> 
-
                                                 </div> 
-
                                             </div> 
-
                                         </div> 
-
                                     </div> 
-
-                                     
 
                                     <div class="row"> 
-
                                         <div class="col-md-6"> 
-
                                             <div class="form-group row"> 
-
                                                 <label for="subirArchivo" class="col-sm-3 col-form-label">Subir archivo</label> 
-
                                                 <input type="file" id="archivoInput" name="archivo_adjunto" class="file-upload-default"> 
-
                                                 <div class="col-sm-6"> 
-
                                                     <input type="text" id="nombreArchivo" class="form-control" disabled placeholder="Seleccione el archivo para subir"> 
-
                                                     <span class="input-group-append"> 
-
                                                         <button class="file-upload-browse btn btn-success" type="button" id="btnSubirArchivo">Subir</button> 
-
                                                     </span> 
-
                                                 </div> 
-
                                             </div> 
-
                                         </div> 
 
                                         <div class="col-md-6"> 
-
                                             <div class="form-group row"> 
-
                                                 <label class="col-sm-3 col-form-label">AR (Opcional)</label> 
-
                                                 <div class="col-sm-9"> 
-
                                                     <input type="text" id="ar" name="ar" class="form-control" maxlength="200" placeholder="Ingrese el código AR si aplica" /> 
-
                                                     <small class="form-text text-muted">Código de referencia adicional</small> 
-
                                                 </div> 
-
                                             </div> 
-
                                         </div> 
-
                                     </div> 
 
-                                     
-
-                                    <!-- Hidden fields - automatically populated --> 
+                                    <!-- Hidden fields - automaticamente llenados--> 
 
                                     <input type="hidden" id="id_departamento" name="id_departamento" value=""/> 
-
                                     <input type="hidden" id="id_participante" name="id_participante" value="<?php echo htmlspecialchars($user_id); ?>"/> 
-
                                     <input type="hidden" id="id_creador" name="id_creador" value="<?php echo htmlspecialchars($user_id); ?>"/> 
-
                                     <input type="hidden" id="id_tipo_proyecto" name="id_tipo_proyecto" value="2"/> <!-- Siempre individual para usuarios --> 
-
                                     <input type="hidden" id="puede_editar_otros" name="puede_editar_otros" value="0"/> <!-- Solo el creador puede editar --> 
-
                                     <input type="hidden" id="progreso" name="progreso" value="0"/> 
-
                                     <input type="hidden" id="estado" name="estado" value="pendiente"/> 
-
                                     <input type="hidden" id="archivo_adjunto_ruta" name="archivo_adjunto"/> 
 
-                                     
-
                                     <div class="row"> 
-
                                         <div class="col-md-6"> 
-
                                             <button type="submit" class="btn btn-success" id="btnCrear">Crear</button> 
-
                                             <button type="button" class="btn btn-light" id="btnCancelar">Cancelar</button> 
-
                                         </div> 
-
                                     </div> 
-
                                 </form> 
-
                             </div> 
-
                         </div> 
-
                     </div> 
-
                 </div> 
-
                 <!-- content-wrapper ends --> 
-
             </div> 
-
             <!-- main-panel ends --> 
-
         </div> 
-
         <!-- page-body-wrapper ends --> 
-
     </div> 
-
     <!-- container-scroller --> 
 
-     
-
     <!-- plugins:js --> 
-
     <script src="../vendors/js/vendor.bundle.base.js"></script> 
-
     <!-- endinject --> 
-
-     
 
     <!-- inject:js --> 
-
     <script src="../js/template.js"></script> 
-
     <!-- endinject --> 
-
-     
-
+    
     <!-- Custom js for this page--> 
-
     <script src="../js/dashboard.js"></script> 
-
     <script src="../js/custom_dialogs.js"></script> 
-
     <script src="../js/user_create_project.js"></script> 
-
     <!-- End custom js for this page--> 
-
-</body> 
-
+</body>
 </html> 
-
- 

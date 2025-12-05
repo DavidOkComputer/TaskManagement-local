@@ -1,5 +1,5 @@
 <?php
-/*Dashboard principal de admin*/
+/*Dashboard principal de usuario*/
 require_once('../php/check_auth.php');
 session_start();
 ?>
@@ -58,16 +58,6 @@ session_start();
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item dropdown d-none d-lg-block">
-            <a class="nav-link dropdown-bordered dropdown-toggle dropdown-toggle-split" id="messageDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false"> Seleccionar área </a>
-            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="messageDropdown">
-              <a class="dropdown-item py-3" >
-                <p class="mb-0 font-weight-medium float-left">Seleccionar área</p>
-              </a>
-              <div class="dropdown-divider"></div>
-              <!-- Los departamentos se cargarán dinámicamente aquí -->
-            </div>
-          </li>
           <li class="nav-item dropdown">
             <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
               <i class="icon-mail icon-lg"></i>
@@ -306,14 +296,13 @@ session_start();
   <!-- endinject -->
   <!-- Custom js for this page-->
   <script src="../js/chart.js"></script>
-  <script src="../js/dashboard_charts_core.js"></script><!--funcion principal del graficaod, controla los demas-->
-  <script src="../js/load_departments_dropdown.js"></script><!--Manejo de menu de seleccion de departamentos-->
-  <script src="../js/dashboard_charts_doughnut.js"></script><!--Para grafica de proyectos por estado-->
-  <script src="../js/dashboard_charts_bar.js"></script><!--Para grafica de progreso de proyectos-->
-  <script src="../js/dashboard_charts_area.js"></script><!--Para grafica de avances por periodo de tiempo-->
-  <script src="../js/dashboard_charts_line.js"></script><!--Para grafica de progreso sobre el tiempo-->
-  <script src="../js/dashboard_charts_scatter.js"></script><!--Para grafica de medidas de eficiencia-->
-  <script src="../js/dashboard_charts_workload.js"></script><!--Para grafica de distribucion de carga-->
+  <script src="../js/manager_dashboard_core.js"></script><!--funcion principal del graficaod, controla los demas-->
+  <script src="../js/manager_charts_doughnut.js"></script><!--Para grafica de proyectos por estado-->
+  <script src="../js/manager_charts_bar.js"></script><!--Para grafica de progreso de proyectos-->
+  <script src="../js/manager_charts_area.js"></script><!--Para grafica de avances por periodo de tiempo-->
+  <script src="../js/manager_charts_line.js"></script><!--Para grafica de progreso sobre el tiempo-->
+  <script src="../js/manager_charts_scatter.js"></script><!--Para grafica de medidas de eficiencia-->
+  <script src="../js/manager_charts_workload.js"></script><!--Para grafica de distribucion de carga-->
   <!-- End custom js for this page-->
 </body>
 </html>

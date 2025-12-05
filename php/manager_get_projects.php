@@ -19,11 +19,6 @@ try {
         throw new Exception('Usuario no autenticado');
     }
 
-    // Verificar rol de gerente
-    if ($_SESSION['id_rol'] != 2) {
-        throw new Exception('Acceso no autorizado');
-    }
-
     $id_usuario = (int)$_SESSION['user_id'];
     $id_departamento = (int)$_SESSION['user_department'];
 

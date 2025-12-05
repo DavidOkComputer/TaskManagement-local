@@ -828,6 +828,7 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, function(m) { return map[m]; }); 
 } 
 
+
 // Hacer funciones globalmente disponibles 
 window.changePage = changePage; 
 window.stopAutoRefresh = stopAutoRefresh;
