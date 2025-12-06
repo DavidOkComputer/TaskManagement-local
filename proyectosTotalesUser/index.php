@@ -344,7 +344,7 @@ $user_id = $_SESSION['user_id'];
   <!-- endinject -->
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
-  <script src="../js/user_list_projects.js"></script>
+  <script src="../js/user_list_total_projects.js"></script>
   <script src="../js/custom_dialogs.js"></script>
   <!-- End custom js for this page-->
 </body>

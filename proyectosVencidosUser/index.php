@@ -250,10 +250,8 @@ $user_id = $_SESSION['user_id'];
                   <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview"> 
                     <div class="row">
                       <div class="col-sm-12">
-                        
                       </div>
                     </div> 
-                    
                     <div class="row">
                       <div class="col-lg-8 d-flex flex-column"> 
                         <div class="row flex-grow">
@@ -266,10 +264,10 @@ $user_id = $_SESSION['user_id'];
                                    <p class="card-subtitle card-subtitle-dash">Cargando proyectos...</p>
                                   </div>
                                   <div>
-                                    <a href="../nuevoProyecto/">
+                                    <a href="../nuevoProyectoUser/">
                                       <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-folder-upload"></i>Agregar nuevo proyecto</button>
                                     </a>
-                                    <a href="../revisarProyectos/">
+                                    <a href="../revisarProyectosUser/">
                                       <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
                                     </a>
                                     </div>
@@ -351,7 +349,6 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/dashboard.js"></script>
   <script src="../js/Chart.roundedBarCharts.js"></script>
-  <script src="../js/user_list_projects.js"></script>
   <script src="../js/custom_dialogs.js"></script>
   <script src="../js/user_list_overdue_projects.js"></script>
   <!-- End custom js for this page-->
