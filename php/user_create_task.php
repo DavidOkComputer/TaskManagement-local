@@ -5,6 +5,7 @@
 header('Content-Type: application/json'); 
 session_start(); 
 require_once 'db_config.php'; 
+require_once 'notification_triggers.php';
 
 // Buffer de salida para evitar problemas con JSON 
 ob_start(); 
@@ -312,4 +313,4 @@ function determineProjectStatus($progress, $id_proyecto, $conn) {
         return 'pendiente'; 
     } 
 } 
-?> 
+?>

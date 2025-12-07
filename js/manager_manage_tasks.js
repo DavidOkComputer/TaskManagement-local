@@ -13,11 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentDepartmentId = window.currentDepartmentId || null; // departamento del usuario
     let currentProjectData = null; // almacenar datos del proyecto actual
     
-    // Inicializar sistema
     createCustomDialogSystem();
     createTaskModal();
-    
-    // Cargar proyectos del departamento del gerente
     loadManagerProjects();
     
     function createTaskModal() {
@@ -215,9 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmModal.show();
     }
 
-    // ============================================================
-    // CARGAR PROYECTOS DEL DEPARTAMENTO DEL GERENTE
-    // ============================================================
     function loadManagerProjects() {
         // Usar el endpoint específico para gerentes que filtra por departamento
         fetch('../php/manager_api_get_projects.php')
@@ -299,7 +293,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Popular el elemento con proyectos (adaptado para estructura de manager_api_get_projects)
     function populateProjectSelect(selectElement, projects) {
         selectElement.innerHTML = '<option value="">Seleccione un proyecto</option>';
         

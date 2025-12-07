@@ -1,46 +1,40 @@
 <?php
-/*update_project.php Actualizar proyectos*/
+/*update_project.php para actualizar proyectos existentes
+*/
+
+header('Content-Type: application/json');
+require_once 'db_config.php';
+require_once 'notification_triggers.php'; 
+
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
 
 ob_start();
 
-header('Content-Type: application/json; charset=UTF-8');
-require_once 'db_config.php';
-
 $response = ['success' => false, 'message' => ''];
 
-try {//validaciones
+try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Método de solicitud inválido');
     }
-    if (!isset($_POST['id_proyecto'])) {
-        throw new Exception('ID de proyecto requerido');
-    }
-    $id_proyecto = intval($_POST['id_proyecto']);
-    if ($id_proyecto <= 0) {
-        throw new Exception('ID de proyecto inválido');
-    }
-
+    
     $required_fields = [
+        'id_proyecto',
         'nombre',
         'descripcion',
         'id_departamento',
         'fecha_creacion',
         'fecha_cumplimiento',
-        'id_tipo_proyecto',
-        'puede_editar_otros'
+        'id_tipo_proyecto'
     ];
 
     foreach ($required_fields as $field) {
-        if (!isset($_POST[$field])) {
+        if (!isset($_POST[$field]) || (empty($_POST[$field]) && $_POST[$field] !== '0')) {
             throw new Exception("El campo {$field} es requerido");
-        }
-        
-        if (empty(trim($_POST[$field])) && $field !== 'puede_editar_otros' && $field !== 'ar') {
-            throw new Exception("El campo {$field} no puede estar vacío");
         }
     }
 
-    //limpiar y validar inputs
+    $id_proyecto = intval($_POST['id_proyecto']);
     $nombre = trim($_POST['nombre']);
     $descripcion = trim($_POST['descripcion']);
     $id_departamento = intval($_POST['id_departamento']);
@@ -50,7 +44,7 @@ try {//validaciones
     $ar = isset($_POST['ar']) ? trim($_POST['ar']) : '';
     $archivo_adjunto = isset($_POST['archivo_adjunto']) ? trim($_POST['archivo_adjunto']) : '';
     $id_tipo_proyecto = intval($_POST['id_tipo_proyecto']);
-    $puede_editar_otros = intval($_POST['puede_editar_otros']);
+    $puede_editar_otros = isset($_POST['puede_editar_otros']) ? intval($_POST['puede_editar_otros']) : 0;
     
     if (strlen($nombre) > 100) {
         throw new Exception('El nombre no puede exceder 100 caracteres');
@@ -62,7 +56,7 @@ try {//validaciones
         throw new Exception('La ruta del archivo no puede exceder 300 caracteres');
     }
 
-    //formato de fechas para la base de datos
+    // Formato de fechas
     if (strpos($fecha_creacion, 'T') !== false) {
         $fecha_creacion = str_replace('T', ' ', $fecha_creacion);
     }
@@ -77,9 +71,9 @@ try {//validaciones
         throw new Exception('La fecha de entrega debe ser posterior o igual a la fecha de inicio');
     }
 
-    //autocalcular estado basado en la fecha de entrega para que funcione al actualizar
+    // Autocalcular estado basado en la fecha de entrega
     $today = date('Y-m-d');
-    $deadline = substr($fecha_cumplimiento, 0, 10); //sacar parte de fecha
+    $deadline = substr($fecha_cumplimiento, 0, 10);
     
     if ($progreso >= 100) {
         $estado = 'completado';
@@ -94,6 +88,34 @@ try {//validaciones
     $conn = getDBConnection();
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
+    }
+
+    $stmt_old = $conn->prepare("SELECT id_participante, estado, id_tipo_proyecto FROM tbl_proyectos WHERE id_proyecto = ?");
+    $stmt_old->bind_param("i", $id_proyecto);
+    $stmt_old->execute();
+    $result_old = $stmt_old->get_result();
+    
+    if ($result_old->num_rows === 0) {
+        throw new Exception('El proyecto no existe');
+    }
+    
+    $old_data = $result_old->fetch_assoc();
+    $old_id_participante = (int)$old_data['id_participante'];
+    $old_estado = $old_data['estado'];
+    $old_tipo_proyecto = (int)$old_data['id_tipo_proyecto'];
+    $stmt_old->close();
+    
+    // Obtener usuarios anteriores del proyecto grupal
+    $old_usuarios_grupo = [];
+    if ($old_tipo_proyecto == 1) {
+        $stmt_old_users = $conn->prepare("SELECT id_usuario FROM tbl_proyecto_usuarios WHERE id_proyecto = ?");
+        $stmt_old_users->bind_param("i", $id_proyecto);
+        $stmt_old_users->execute();
+        $result_old_users = $stmt_old_users->get_result();
+        while ($row = $result_old_users->fetch_assoc()) {
+            $old_usuarios_grupo[] = (int)$row['id_usuario'];
+        }
+        $stmt_old_users->close();
     }
 
     $usuarios_grupo = [];
@@ -114,7 +136,7 @@ try {//validaciones
         }
     }
 
-    //actualizar el proyecto con estado auto calculado
+    // Actualizar el proyecto
     $sql = "UPDATE tbl_proyectos SET
             nombre = ?,
             descripcion = ?,
@@ -137,19 +159,19 @@ try {//validaciones
 
     $stmt->bind_param(
         "ssissississii",
-        $nombre,              // s-1
-        $descripcion,         // s-2
-        $id_departamento,     // i-3
-        $fecha_creacion,      // s-4
-        $fecha_cumplimiento,  // s-5
-        $progreso,            // i-6
-        $ar,                  // s-7
-        $estado,              // s-8 
-        $archivo_adjunto,     // s-9
-        $id_participante,     // i-10
-        $id_tipo_proyecto,    // i-11
-        $puede_editar_otros,  // i-12
-        $id_proyecto          // i-13 
+        $nombre,
+        $descripcion,
+        $id_departamento,
+        $fecha_creacion,
+        $fecha_cumplimiento,
+        $progreso,
+        $ar,
+        $estado,
+        $archivo_adjunto,
+        $id_participante,
+        $id_tipo_proyecto,
+        $puede_editar_otros,
+        $id_proyecto
     );
 
     if (!$stmt->execute()) {
@@ -158,9 +180,18 @@ try {//validaciones
 
     $stmt->close();
 
-    //manejo de usuarios en poryecto grupal
+    if ($old_estado !== 'vencido' && $estado === 'vencido') {
+        triggerNotificacionProyectoVencido($conn, $id_proyecto, $old_estado);
+    }
+
+    if ($id_tipo_proyecto == 2 && $id_participante > 0 && $id_participante != $old_id_participante) {
+        triggerNotificacionProyectoAsignado($conn, $id_proyecto, $id_participante, $old_id_participante);
+        error_log("Notificación enviada: Proyecto {$id_proyecto} reasignado de usuario {$old_id_participante} a {$id_participante}");
+    }
+
+    // Manejo de usuarios en proyecto grupal
     if ($id_tipo_proyecto == 1) {
-        //eliminar proyectos existentes
+        // Eliminar asignaciones existentes
         $sql_delete = "DELETE FROM tbl_proyecto_usuarios WHERE id_proyecto = ?";
         $stmt_delete = $conn->prepare($sql_delete);
         
@@ -174,7 +205,7 @@ try {//validaciones
         }
         $stmt_delete->close();
 
-        //insertar nuevos proyectos
+        // Insertar nuevos usuarios
         if (!empty($usuarios_grupo)) {
             $sql_insert = "INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)";
             $stmt_insert = $conn->prepare($sql_insert);
@@ -189,6 +220,11 @@ try {//validaciones
                 
                 if (!$stmt_insert->execute()) {
                     throw new Exception('Error al asignar usuarios: ' . $stmt_insert->error);
+                }
+                
+                if (!in_array($id_usuario, $old_usuarios_grupo)) {
+                    triggerNotificacionProyectoGrupal($conn, $id_proyecto, $id_usuario);
+                    error_log("Notificación enviada: Usuario {$id_usuario} agregado al proyecto grupal {$id_proyecto}");
                 }
             }
             $stmt_insert->close();

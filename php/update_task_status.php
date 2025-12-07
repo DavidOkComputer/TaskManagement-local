@@ -1,8 +1,9 @@
 <?php
-/** update_task_status.php para actualizar el estado de las tareas cuando se marca completado */
+/*update_task_status.php para actualizar el estado de las tareas cuando se marca completado*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');
+require_once('notifications/notification_triggers.php'); 
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
@@ -51,6 +52,8 @@ try {
     $id_proyecto = $row['id_proyecto'];
     $stmt->close();
 
+    $estado_anterior_proyecto = getProjectState($conn, $id_proyecto);
+
     //actualizar el estado de la tarea
     $stmt = $conn->prepare("UPDATE tbl_tareas SET estado = ? WHERE id_tarea = ?");
     $stmt->bind_param("si", $nuevo_estado, $id_tarea);
@@ -61,8 +64,14 @@ try {
 
     $stmt->close();
 
-    // Recalculate project progres recalcular el progreso del proyecto
+    // Recalcular el progreso del proyecto
     recalculateProjectProgress($conn, $id_proyecto);
+
+    $estado_nuevo_proyecto = getProjectState($conn, $id_proyecto);
+    if ($estado_anterior_proyecto !== 'vencido' && $estado_nuevo_proyecto === 'vencido') {
+        triggerNotificacionProyectoVencido($conn, $id_proyecto, $estado_anterior_proyecto);
+        error_log("Notificación enviada: Proyecto {$id_proyecto} cambió a vencido");
+    }
 
     echo json_encode([
         'success' => true,
@@ -79,6 +88,18 @@ try {
         'message' => 'Error al actualizar la tarea: ' . $e->getMessage()
     ]);
 }
+
+//Función auxiliar para obtener estado del proyecto
+function getProjectState($conn, $id_proyecto) {
+    $stmt = $conn->prepare("SELECT estado FROM tbl_proyectos WHERE id_proyecto = ?");
+    $stmt->bind_param("i", $id_proyecto);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row['estado'] ?? 'pendiente';
+}
+
 function recalculateProjectProgress($conn, $id_proyecto) {
     try {
         //obtener el conteo total de tareas
@@ -90,11 +111,11 @@ function recalculateProjectProgress($conn, $id_proyecto) {
         $total_tasks = (int)$row['total'];
         $stmt->close();
 
-        //si no hay tareas poner el progreso en 0
+        //si no hay tareas el progreso es 0
         if ($total_tasks === 0) {
             $progress = 0;
         } else {
-            //obtener conteo de tareas completadas
+            //obtener el conteo de tareas completadas
             $stmt = $conn->prepare("SELECT COUNT(*) as completadas FROM tbl_tareas WHERE id_proyecto = ? AND estado = 'completado'");
             $stmt->bind_param("i", $id_proyecto);
             $stmt->execute();
@@ -107,7 +128,7 @@ function recalculateProjectProgress($conn, $id_proyecto) {
             $progress = round(($completed_tasks / $total_tasks) * 100);
         }
 
-        //actualizar el progreso del proyecto y el estado basado en el progreso
+        //actualizar progreso de proyecto y estatus basado en progreso
         $nuevo_estado = determineProjectStatus($progress, $id_proyecto, $conn);
 
         $stmt = $conn->prepare("UPDATE tbl_proyectos SET progreso = ?, estado = ? WHERE id_proyecto = ?");
@@ -122,9 +143,10 @@ function recalculateProjectProgress($conn, $id_proyecto) {
     }
 }
 
+//determinar el estado del progreso basado en la fecha de entrega
 function determineProjectStatus($progress, $id_proyecto, $conn) {
     try {
-        //obtener la fecha de cumplimiento del proyecto
+        //obtener fecha de entrega de proyecto
         $stmt = $conn->prepare("SELECT fecha_cumplimiento FROM tbl_proyectos WHERE id_proyecto = ?");
         $stmt->bind_param("i", $id_proyecto);
         $stmt->execute();
@@ -132,20 +154,23 @@ function determineProjectStatus($progress, $id_proyecto, $conn) {
         $row = $result->fetch_assoc();
         $stmt->close();
 
-        $fecha_vencimiento = strtotime($row['fecha_cumplimiento']);
+        $fecha_cumplimiento = strtotime($row['fecha_cumplimiento']);
         $hoy = time();
 
-        //si pasa la fecha de entrega y no se hacompletado marcar como vencido
-        if ($hoy > $fecha_vencimiento && $progress < 100) {
+        //si la fecha de entrega paso y no se ha completado marcar como vencido
+        if ($hoy > $fecha_cumplimiento && $progress < 100) {
             return 'vencido';
         }
-        if ($progress == 100) {//si se completa al 100 marcar como completado
+
+        if ($progress == 100) {
             return 'completado';
         }
-        if ($progress > 0) {//si tiene progreso pero no se ha completado marcar en progreso
+
+        if ($progress > 0) {
             return 'en proceso';
         }
-        return 'pendiente';//default en pendiente
+
+        return 'pendiente';
 
     } catch (Exception $e) {
         error_log("Error determinando estado del proyecto: " . $e->getMessage());

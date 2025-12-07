@@ -1,19 +1,13 @@
 <?php
-/**
- * Manager Dashboard - index.php
- * Dashboard specifically for manager role (id_rol = 2)
- * Shows only data from manager's assigned department
- */
+/* Manager Dashboard para mostrar los datos de dashboard de gerente*/
 require_once('../php/check_auth.php');
 
-// Get user info from session
 $user_id = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0);
 $user_name = isset($_SESSION['nombre']) ? $_SESSION['nombre'] : 'Gerente';
 $user_apellido = isset($_SESSION['apellido']) ? $_SESSION['apellido'] : '';
 $user_email = isset($_SESSION['e_mail']) ? $_SESSION['e_mail'] : '';
 $user_rol = isset($_SESSION['id_rol']) ? (int)$_SESSION['id_rol'] : 0;
 
-// Verify this is a manager (id_rol = 2) or admin for testing (id_rol = 1)
 if ($user_rol !== 2 && $user_rol !== 1) {
     header('Location: ../login/');
     exit;
@@ -105,24 +99,41 @@ if ($user_rol !== 2 && $user_rol !== 1) {
             <div class="navbar-menu-wrapper d-flex align-items-top">
                 <ul class="navbar-nav">
                     <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-                        <h1 class="welcome-text">Buenos días, <span class="text-black fw-bold"><?php echo htmlspecialchars($user_name); ?></span></h1>
+                        <h1 class="welcome-text">Buenos días, 
+                            <span class="text-black fw-bold">
+                                <?php echo htmlspecialchars($user_name); ?>
+                            </span>
+                        </h1>
                         <h3 class="welcome-sub-text">Cargando departamento...</h3>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     <!-- Notifications -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
+                    <li class="nav-item dropdown"> 
+                        <a class="nav-link count-indicator" id="countDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="icon-bell"></i>
-                            <span class="count"></span>
+                            <span class="count" style="display: none;"></span>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="notificationDropdown">
-                            <a class="dropdown-item py-3">
-                                <p class="mb-0 font-weight-medium float-left">Notificaciones</p>
-                            </a>
+                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown notification-dropdown pb-0" aria-labelledby="countDropdown">
+                            <!-- Header del dropdown -->
+                            <div class="dropdown-header d-flex justify-content-between align-items-center py-3 border-bottom">
+                                <span class="font-weight-semibold">Notificaciones</span>
+                                <a href="javascript:void(0)" id="markAllNotificationsRead" class="text-primary small">
+                                    <i class="mdi mdi-check-all me-1"></i>Marcar todas como leídas
+                                </a>
+                            </div>
+                            <!-- Contenedor de notificaciones (se llena dinámicamente) -->
+                            <div id="notificationsContainer" style="max-height: 350px; overflow-y: auto;">
+                                <!-- Loading state -->
+                                <div class="notification-loading py-4 text-center">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    <p class="mt-2 mb-0 text-muted small">Cargando notificaciones...</p>
+                                </div>
+                            </div>
                         </div>
                     </li>
-                    
                     <!-- User Profile -->
                     <li class="nav-item dropdown d-none d-lg-block user-dropdown">
                         <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
@@ -319,5 +330,6 @@ if ($user_rol !== 2 && $user_rol !== 1) {
     <script src="../js/manager_charts_area.js"></script>
     <script src="../js/manager_charts_scatter.js"></script>
     <script src="../js/manager_charts_workload.js"></script>
+    <script src="../js/notifications.js"></script>
 </body>
 </html>

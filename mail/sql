@@ -1,0 +1,155 @@
+-- =====================================================
+-- EMAIL NOTIFICATION SYSTEM - DATABASE TABLES
+-- Compatible with task_management_db
+-- =====================================================
+
+-- -----------------------------------------------------
+-- Table: tbl_email_config
+-- Stores SMTP and email configuration settings
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tbl_email_config` (
+    `id_config` INT(11) NOT NULL AUTO_INCREMENT,
+    `config_key` VARCHAR(100) NOT NULL,
+    `config_value` TEXT,
+    `is_encrypted` TINYINT(1) DEFAULT 0,
+    `descripcion` VARCHAR(255) DEFAULT NULL,
+    `fecha_actualizacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id_config`),
+    UNIQUE KEY `unique_config_key` (`config_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Insert default Gmail SMTP configuration
+INSERT INTO `tbl_email_config` (`config_key`, `config_value`, `is_encrypted`, `descripcion`) VALUES
+('smtp_host', 'smtp.gmail.com', 0, 'Servidor SMTP'),
+('smtp_port', '587', 0, 'Puerto SMTP (587 para TLS, 465 para SSL)'),
+('smtp_user', '', 0, 'Usuario/Email SMTP'),
+('smtp_password', '', 1, 'Contraseña de aplicación SMTP (encriptada)'),
+('smtp_encryption', 'tls', 0, 'Tipo de encriptación (tls o ssl)'),
+('smtp_from_name', 'Sistema de Gestión de Tareas', 0, 'Nombre del remitente'),
+('smtp_from_email', '', 0, 'Email del remitente'),
+('smtp_reply_to', '', 0, 'Email para respuestas (opcional)'),
+('email_enabled', '0', 0, 'Habilitar/deshabilitar envío de emails (0/1)'),
+('test_mode', '1', 0, 'Modo de prueba - no envía emails reales (0/1)'),
+('system_url', 'http://localhost/task_management', 0, 'URL base del sistema'),
+('dias_recordatorio_antes', '3', 0, 'Días antes del vencimiento para enviar recordatorio'),
+('max_reintentos', '3', 0, 'Máximo de reintentos para emails fallidos'),
+('emails_por_lote', '20', 0, 'Cantidad de emails a procesar por ejecución del cron');
+
+-- -----------------------------------------------------
+-- Table: tbl_email_queue
+-- Email queue for pending/sent/failed emails
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tbl_email_queue` (
+    `id_email` INT(11) NOT NULL AUTO_INCREMENT,
+    `destinatario_email` VARCHAR(255) NOT NULL,
+    `destinatario_nombre` VARCHAR(255) DEFAULT NULL,
+    `asunto` VARCHAR(255) NOT NULL,
+    `cuerpo_html` TEXT NOT NULL,
+    `cuerpo_texto` TEXT,
+    `tipo_notificacion` ENUM(
+        'tarea_asignada',
+        'tarea_vencimiento',
+        'tarea_vencida',
+        'tarea_completada',
+        'proyecto_asignado',
+        'proyecto_completado',
+        'objetivo_asignado',
+        'recordatorio_diario',
+        'resumen_semanal',
+        'prueba'
+    ) NOT NULL,
+    `prioridad` TINYINT(4) DEFAULT 5 COMMENT '1=más alta, 10=más baja',
+    `estado` ENUM('pendiente', 'enviado', 'fallido', 'cancelado') DEFAULT 'pendiente',
+    `intentos` INT(11) DEFAULT 0,
+    `max_intentos` INT(11) DEFAULT 3,
+    `ultimo_error` TEXT,
+    `referencia_tipo` ENUM('tarea', 'proyecto', 'objetivo', 'usuario') DEFAULT NULL,
+    `referencia_id` INT(11) DEFAULT NULL,
+    `programado_para` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `enviado_at` DATETIME DEFAULT NULL,
+    `fecha_creacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id_email`),
+    INDEX `idx_estado_programado` (`estado`, `programado_para`),
+    INDEX `idx_tipo_notificacion` (`tipo_notificacion`),
+    INDEX `idx_referencia` (`referencia_tipo`, `referencia_id`),
+    INDEX `idx_destinatario` (`destinatario_email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- -----------------------------------------------------
+-- Table: tbl_email_log
+-- Logging for email events and tracking
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tbl_email_log` (
+    `id_log` INT(11) NOT NULL AUTO_INCREMENT,
+    `id_email` INT(11) DEFAULT NULL,
+    `evento` ENUM('queued', 'processing', 'sent', 'failed', 'opened', 'clicked', 'bounced') NOT NULL,
+    `detalle` TEXT,
+    `ip_address` VARCHAR(45) DEFAULT NULL,
+    `user_agent` TEXT,
+    `fecha_creacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id_log`),
+    INDEX `idx_email_evento` (`id_email`, `evento`),
+    INDEX `idx_fecha` (`fecha_creacion`),
+    CONSTRAINT `fk_email_log_queue` FOREIGN KEY (`id_email`) 
+        REFERENCES `tbl_email_queue` (`id_email`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- -----------------------------------------------------
+-- Table: tbl_notificacion_preferencias
+-- User notification preferences
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `tbl_notificacion_preferencias` (
+    `id_preferencia` INT(11) NOT NULL AUTO_INCREMENT,
+    `id_usuario` INT(11) NOT NULL,
+    `notif_tarea_asignada` TINYINT(1) DEFAULT 1 COMMENT 'Notificar cuando se asigna una tarea',
+    `notif_tarea_vencimiento` TINYINT(1) DEFAULT 1 COMMENT 'Notificar antes del vencimiento',
+    `notif_tarea_vencida` TINYINT(1) DEFAULT 1 COMMENT 'Notificar tareas vencidas',
+    `notif_tarea_completada` TINYINT(1) DEFAULT 1 COMMENT 'Notificar cuando se completa una tarea',
+    `notif_proyecto_asignado` TINYINT(1) DEFAULT 1 COMMENT 'Notificar asignación a proyecto',
+    `notif_resumen_diario` TINYINT(1) DEFAULT 0 COMMENT 'Recibir resumen diario',
+    `notif_resumen_semanal` TINYINT(1) DEFAULT 1 COMMENT 'Recibir resumen semanal',
+    `hora_preferida` TIME DEFAULT '09:00:00' COMMENT 'Hora preferida para recibir notificaciones',
+    `fecha_creacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `fecha_actualizacion` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id_preferencia`),
+    UNIQUE KEY `unique_usuario` (`id_usuario`),
+    CONSTRAINT `fk_preferencias_usuario` FOREIGN KEY (`id_usuario`) 
+        REFERENCES `tbl_usuarios` (`id_usuario`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- -----------------------------------------------------
+-- Insert default preferences for existing users
+-- -----------------------------------------------------
+INSERT INTO `tbl_notificacion_preferencias` (`id_usuario`)
+SELECT `id_usuario` FROM `tbl_usuarios`
+WHERE `id_usuario` NOT IN (SELECT `id_usuario` FROM `tbl_notificacion_preferencias`);
+
+-- -----------------------------------------------------
+-- View: v_emails_pendientes
+-- Helper view for pending emails
+-- -----------------------------------------------------
+CREATE OR REPLACE VIEW `v_emails_pendientes` AS
+SELECT 
+    eq.*,
+    TIMESTAMPDIFF(MINUTE, eq.programado_para, NOW()) as minutos_en_cola
+FROM `tbl_email_queue` eq
+WHERE eq.estado = 'pendiente'
+AND eq.programado_para <= NOW()
+AND eq.intentos < eq.max_intentos
+ORDER BY eq.prioridad ASC, eq.programado_para ASC;
+
+-- -----------------------------------------------------
+-- View: v_estadisticas_email
+-- Email statistics view
+-- -----------------------------------------------------
+CREATE OR REPLACE VIEW `v_estadisticas_email` AS
+SELECT 
+    DATE(fecha_creacion) as fecha,
+    tipo_notificacion,
+    COUNT(*) as total,
+    SUM(CASE WHEN estado = 'enviado' THEN 1 ELSE 0 END) as enviados,
+    SUM(CASE WHEN estado = 'fallido' THEN 1 ELSE 0 END) as fallidos,
+    SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) as pendientes
+FROM `tbl_email_queue`
+GROUP BY DATE(fecha_creacion), tipo_notificacion
+ORDER BY fecha DESC;

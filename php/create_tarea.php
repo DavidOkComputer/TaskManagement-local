@@ -1,8 +1,10 @@
 <?php
-//create_tarea.php - creare nueva tarea
+//create_tarea.php para crear nueva tarea
 
 header('Content-Type: application/json');
+session_start();
 require_once 'db_config.php';
+require_once 'notification_triggers.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -13,6 +15,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Método de solicitud inválido');
     }
+    
     $required_fields = [//validar campos requeridos
         'nombre',
         'descripcion',
@@ -30,8 +33,10 @@ try {
     $nombre = trim($_POST['nombre']);//limpiar y validar inputs
     $descripcion = trim($_POST['descripcion']);
     $id_proyecto = intval($_POST['id_proyecto']);
-    $fecha_cumplimiento = trim($_POST['fecha_cumplimiento']);
+    $fecha_cumplimiento = trim($_POST['fecha_vencimiento']);
     $estado = trim($_POST['estado']);
+    //saber id_participante si se proporciona
+    $id_participante = isset($_POST['id_participante']) && !empty($_POST['id_participante']) ? intval($_POST['id_participante']) : null;
 
     //validar longitud
     if (strlen($nombre) > 100) {
@@ -51,13 +56,13 @@ try {
         throw new Exception('El ID del proyecto no es válido');
     }
 
-    $conn = getDBConnection();//conexion a abse de datos
+    $conn = getDBConnection();//conexion a base de datos
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
 
     //verificar que existe el proyecto
-    $verify_query = "SELECT id_proyecto FROM tbl_proyectos WHERE id_proyecto = ?";
+    $verify_query = "SELECT id_proyecto, estado FROM tbl_proyectos WHERE id_proyecto = ?";
     $verify_stmt = $conn->prepare($verify_query);
     
     if (!$verify_stmt) {
@@ -71,20 +76,24 @@ try {
     if ($verify_result->num_rows === 0) {
         throw new Exception('El proyecto especificado no existe');
     }
+    
+    $proyecto_data = $verify_result->fetch_assoc();
+    $estado_anterior_proyecto = $proyecto_data['estado']; //Guardar estado anterior
     $verify_stmt->close();
 
-    //reemplazar con id de la sesion cuando se implemente
+    // Obtener id de la sesión
     $id_creador = isset($_SESSION['id_usuario']) ? intval($_SESSION['id_usuario']) : 1;
 
-    //preparar y ejecutar el insert
+    // Preparar y ejecutar el insert incluir id_participante
     $sql = "INSERT INTO tbl_tareas (
                 nombre,
                 descripcion,
                 id_proyecto,
                 id_creador,
                 fecha_cumplimiento,
-                estado
-            ) VALUES (?, ?, ?, ?, ?, ?)";
+                estado,
+                id_participante
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     $stmt = $conn->prepare($sql);
 
@@ -93,19 +102,35 @@ try {
     }
 
     $stmt->bind_param(
-        "ssiiss",
-        $nombre,            // s-1
-        $descripcion,      // s-2
-        $id_proyecto,             // i-3
-        $id_creador,              // i-4
-        $fecha_cumplimiento,      // s-5
-        $estado                   // s-6
+        "ssiissi",
+        $nombre,
+        $descripcion,
+        $id_proyecto,
+        $id_creador,
+        $fecha_cumplimiento,
+        $estado,
+        $id_participante
     );
 
     if ($stmt->execute()) {
+        $task_id = $stmt->insert_id;
+        
+        if ($id_participante !== null && $id_participante != $id_creador) {
+            triggerNotificacionTareaAsignada($conn, $task_id, $id_participante, null);
+            error_log("Notificación enviada: Nueva tarea {$task_id} asignada a usuario {$id_participante}");
+        }
+        
+        // Recalcular progreso del proyecto
+        recalculateProjectProgress($conn, $id_proyecto);
+        
+        $estado_nuevo_proyecto = getProjectState($conn, $id_proyecto);
+        if ($estado_anterior_proyecto !== 'vencido' && $estado_nuevo_proyecto === 'vencido') {
+            triggerNotificacionProyectoVencido($conn, $id_proyecto, $estado_anterior_proyecto);
+        }
+        
         $response['success'] = true;
         $response['message'] = 'Tarea registrada exitosamente';
-        $response['task_id'] = $stmt->insert_id;
+        $response['task_id'] = $task_id;
     } else {
         throw new Exception('Error al crear la tarea: ' . $stmt->error);
     }
@@ -115,8 +140,84 @@ try {
 
 } catch (Exception $e) {
     $response['message'] = $e->getMessage();
-    error_log('save_task.php Error: ' . $e->getMessage());
+    error_log('create_tarea.php Error: ' . $e->getMessage());
 }
 
 echo json_encode($response);
+
+//Función auxiliar para obtener estado del proyecto
+function getProjectState($conn, $id_proyecto) {
+    $stmt = $conn->prepare("SELECT estado FROM tbl_proyectos WHERE id_proyecto = ?");
+    $stmt->bind_param("i", $id_proyecto);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row['estado'] ?? 'pendiente';
+}
+
+// Función para recalcular progreso
+function recalculateProjectProgress($conn, $id_proyecto) {
+    try {
+        $stmt = $conn->prepare("SELECT COUNT(*) as total FROM tbl_tareas WHERE id_proyecto = ?");
+        $stmt->bind_param("i", $id_proyecto);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $total_tasks = (int)$row['total'];
+        $stmt->close();
+
+        if ($total_tasks === 0) {
+            $progress = 0;
+        } else {
+            $stmt = $conn->prepare("SELECT COUNT(*) as completadas FROM tbl_tareas WHERE id_proyecto = ? AND estado = 'completado'");
+            $stmt->bind_param("i", $id_proyecto);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            $completed_tasks = (int)$row['completadas'];
+            $stmt->close();
+            $progress = round(($completed_tasks / $total_tasks) * 100);
+        }
+
+        $nuevo_estado = determineProjectStatus($progress, $id_proyecto, $conn);
+
+        $stmt = $conn->prepare("UPDATE tbl_proyectos SET progreso = ?, estado = ? WHERE id_proyecto = ?");
+        $stmt->bind_param("isi", $progress, $nuevo_estado, $id_proyecto);
+        $stmt->execute();
+        $stmt->close();
+
+    } catch (Exception $e) {
+        error_log("Error recalculando progreso: " . $e->getMessage());
+    }
+}
+
+function determineProjectStatus($progress, $id_proyecto, $conn) {
+    try {
+        $stmt = $conn->prepare("SELECT fecha_cumplimiento FROM tbl_proyectos WHERE id_proyecto = ?");
+        $stmt->bind_param("i", $id_proyecto);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+
+        $fecha_cumplimiento = strtotime($row['fecha_cumplimiento']);
+        $hoy = time();
+
+        if ($hoy > $fecha_cumplimiento && $progress < 100) {
+            return 'vencido';
+        }
+        if ($progress == 100) {
+            return 'completado';
+        }
+        if ($progress > 0) {
+            return 'en proceso';
+        }
+        return 'pendiente';
+
+    } catch (Exception $e) {
+        error_log("Error determinando estado: " . $e->getMessage());
+        return 'pendiente';
+    }
+}
 ?>

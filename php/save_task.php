@@ -1,8 +1,9 @@
 <?php
-/*save_task.php - crear tareas con validacion de permisos de asignacion, fecha de inicio, y membresía del proyecto*/
+/*save_task.php para crear tareas con validacion de permisos de asignacion, fecha de inicio, y membresía del proyecto*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');
+require_once('notification_triggers.php');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
@@ -169,6 +170,15 @@ try {
     //recalcular el progreso del proyecto
     recalculateProjectProgress($conn, $id_proyecto);
 
+    // NOTIFICAR AL USUARIO ASIGNADO
+    // Solo notificar si hay un participante asignado y no es el mismo creador
+    if ($id_participante !== null && $id_participante != $id_creador) {
+        $notif_result = triggerNotificacionTareaAsignada($conn, $task_id, $id_participante);
+        if ($notif_result && isset($notif_result['success']) && $notif_result['success']) {
+            error_log("Notificación de tarea asignada enviada - Tarea: $task_id, Usuario: $id_participante");
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'message' => 'Tarea creada exitosamente',
@@ -239,7 +249,7 @@ function determineProjectStatus($progress, $id_proyecto, $conn) {
         $row = $result->fetch_assoc();
         $stmt->close();
 
-        $fecha_cumplimiento = date($row['fecha_cumplimiento'], timestamp:null);
+        $fecha_cumplimiento = strtotime($row['fecha_cumplimiento']);
         $hoy = time();
 
         //si la fecha paso y no se ha completado marcar como vencido

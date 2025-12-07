@@ -1,8 +1,9 @@
 <?php
-/*update_task.php - actualizar tareas con validacion de permisos de asignacion, fecha de inicio, y membresía del proyecto*/
+/*update_task.php para actualizar tareas con validacion de permisos de asignacion, fecha de inicio, y membresía del proyecto*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');
+require_once('notification_triggers.php');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
@@ -62,7 +63,8 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    $stmt = $conn->prepare("SELECT id_proyecto FROM tbl_tareas WHERE id_tarea = ?");//verificar que la tarea existe
+    //Obtener el participante anterior para comparar si cambió
+    $stmt = $conn->prepare("SELECT id_proyecto, id_participante FROM tbl_tareas WHERE id_tarea = ?");
     $stmt->bind_param("i", $id_tarea);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -73,6 +75,7 @@ try {
     
     $row = $result->fetch_assoc();
     $old_id_proyecto = $row['id_proyecto'];
+    $old_id_participante = $row['id_participante'];
     $stmt->close();
 
     $stmt = $conn->prepare("SELECT id_creador, puede_editar_otros, fecha_inicio, id_tipo_proyecto, id_participante FROM tbl_proyectos WHERE id_proyecto = ?");//verificar que el proyecto existe y obtener permisos, tipo y fecha de inicio
@@ -174,10 +177,23 @@ try {
 
     $stmt->close();
 
+    // Si se asignó un participante nuevo o diferente, enviar notificación
+    if ($id_participante !== null && $id_participante != $old_id_participante) {
+        triggerNotificacionTareaAsignada($conn, $id_tarea, $id_participante, $old_id_participante);
+        error_log("Notificación enviada: Tarea {$id_tarea} asignada a usuario {$id_participante}");
+    }
+
     //recalcular progreso si la tarea cambio de proyecto o si cambio el estado
+    $estado_anterior_proyecto = getProjectState($conn, $old_id_proyecto); 
     recalculateProjectProgress($conn, $old_id_proyecto);
+    
     if ($old_id_proyecto != $id_proyecto) {
         recalculateProjectProgress($conn, $id_proyecto);
+    }
+    
+    $estado_nuevo_proyecto = getProjectState($conn, $old_id_proyecto);
+    if ($estado_anterior_proyecto !== 'vencido' && $estado_nuevo_proyecto === 'vencido') {
+        triggerNotificacionProyectoVencido($conn, $old_id_proyecto, $estado_anterior_proyecto);
     }
 
     echo json_encode([
@@ -193,6 +209,16 @@ try {
         'message' => 'Error al actualizar la tarea: ' . $e->getMessage()
     ]);
     error_log('update_task.php Error: ' . $e->getMessage());
+}
+
+function getProjectState($conn, $id_proyecto) {
+    $stmt = $conn->prepare("SELECT estado FROM tbl_proyectos WHERE id_proyecto = ?");
+    $stmt->bind_param("i", $id_proyecto);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    return $row['estado'] ?? 'pendiente';
 }
 
 function recalculateProjectProgress($conn, $id_proyecto) {

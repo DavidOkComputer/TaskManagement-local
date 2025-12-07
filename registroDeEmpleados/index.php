@@ -60,56 +60,29 @@ $user_id = $_SESSION['user_id'];
                 </ul> 
                 <ul class="navbar-nav ms-auto"> 
                     <li class="nav-item dropdown"> 
-                        <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown"> 
-                            <i class="icon-mail icon-lg"></i> 
-                        </a> 
-                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="notificationDropdown"> 
-                            <a class="dropdown-item py-3 border-bottom"> 
-                                <p class="mb-0 font-weight-medium float-left">Tienes nuevas notificaciones</p> 
-                                <span class="badge badge-pill badge-primary float-right">Ver todo</span> 
-                            </a> 
-                            <a class="dropdown-item preview-item py-3"> 
-                                <div class="preview-thumbnail"> 
-                                    <i class="mdi mdi-settings m-auto text-primary"></i> 
-                                </div> 
-                                <div class="preview-item-content"> 
-                                    <h6 class="preview-subject fw-normal text-dark mb-1">Configuracion</h6> 
-                                    <p class="fw-light small-text mb-0">Configurar distintos ajustes</p> 
-                                </div> 
-                            </a> 
-                        </div> 
-                    </li> 
-                    <li class="nav-item dropdown"> 
-                        <a class="nav-link count-indicator" id="countDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false"> 
-                            <i class="icon-bell"></i> 
-                            <span class="count"></span> 
-                        </a> 
-                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0" aria-labelledby="countDropdown"> 
-                            <a class="dropdown-item py-3"> 
-                                <p class="mb-0 font-weight-medium float-left">Tienes nuevas notificaciones</p> 
-                                <span class="badge badge-pill badge-primary float-right">Ver todo</span> 
-                            </a> 
-                            <div class="dropdown-divider"></div> 
-                        </div> 
-                    </li> 
-                    <li class="nav-item dropdown d-none d-lg-block user-dropdown"> 
-                        <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false"> 
-                            <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> 
-                        </a> 
-                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown"> 
-                            <div class="dropdown-header text-center"> 
-                                <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> 
-                                <p class="mb-1 mt-3 font-weight-semibold">
-                                    <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
-                                </p> 
-                                <p class="fw-light text-muted mb-0">
-                                    <?php echo htmlspecialchars($user_email); ?>
-                                </p> 
+                        <a class="nav-link count-indicator" id="countDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="icon-bell"></i>
+                            <span class="count" style="display: none;"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown notification-dropdown pb-0" aria-labelledby="countDropdown">
+                            <!-- Header del dropdown -->
+                            <div class="dropdown-header d-flex justify-content-between align-items-center py-3 border-bottom">
+                                <span class="font-weight-semibold">Notificaciones</span>
+                                <a href="javascript:void(0)" id="markAllNotificationsRead" class="text-primary small">
+                                    <i class="mdi mdi-check-all me-1"></i>Marcar todas como leídas
+                                </a>
                             </div>
-                            <a class="dropdown-item" href="../php/logout.php"> 
-                                <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesion 
-                            </a> 
-                        </div> 
+                            <!-- Contenedor de notificaciones (se llena dinámicamente) -->
+                            <div id="notificationsContainer" style="max-height: 350px; overflow-y: auto;">
+                                <!-- Loading state -->
+                                <div class="notification-loading py-4 text-center">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    <p class="mt-2 mb-0 text-muted small">Cargando notificaciones...</p>
+                                </div>
+                            </div>
+                        </div>
                     </li> 
                 </ul> 
                 <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-bs-toggle="offcanvas"> 
@@ -425,6 +398,7 @@ $user_id = $_SESSION['user_id'];
     <script src="../js/file-upload.js"></script> 
     <script src="../js/dashboard.js"></script> 
     <script src="../js/user_register.js"></script> 
+    <script src="../js/notifications.js"></script>
     <!-- End custom js for this page--> 
 </body> 
 </html>
