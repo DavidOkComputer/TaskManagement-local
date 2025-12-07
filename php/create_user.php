@@ -160,9 +160,15 @@ try {
         $stmt->close(); 
     } 
 
-    // Hash de contraseña usando md5 por ahora por compatibilidad
-    // TODO: Cambiar a password_hash() en futuras versiones
-    $acceso_hash = md5($acceso); 
+    // Hash de contraseña usando password_hash() con bcrypt (seguro)
+    // PASSWORD_DEFAULT actualmente usa bcrypt, pero se actualizará automáticamente
+    // si PHP agrega algoritmos más seguros en el futuro
+    $acceso_hash = password_hash($acceso, PASSWORD_DEFAULT, ['cost' => 12]);
+    
+    // Verificar que el hash se generó correctamente
+    if ($acceso_hash === false) {
+        throw new Exception('Error al procesar la contraseña');
+    }
 
     $stmt = $conn->prepare(" 
         INSERT INTO tbl_usuarios  

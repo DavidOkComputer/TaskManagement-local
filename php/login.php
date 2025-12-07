@@ -1,21 +1,17 @@
 <?php
-/*
- * login.php
- * Maneja la autenticación de usuarios y redirecciona según el rol
- */
+/*login.php para iniciar sesion*/
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST');
 header('Access-Control-Allow-Headers: Content-Type');
  
-// Configuración de la base de datos
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'task_management_db');
 define('DB_USER', 'root');
 define('DB_PASS', '');
  
-// Función para conectar a la base de datos
+
 function getDBConnection() {
     try {
         $conn = new PDO(
@@ -35,7 +31,6 @@ function getDBConnection() {
     }
 }
  
-// Función para enviar respuesta JSON
 function sendResponse($success, $message, $redirect = null, $additionalData = []) {
     $response = [
         'success' => $success,
@@ -46,7 +41,6 @@ function sendResponse($success, $message, $redirect = null, $additionalData = []
         $response['redirect'] = $redirect;
     }
     
-    // Agregar datos adicionales a la respuesta
     foreach ($additionalData as $key => $value) {
         $response[$key] = $value;
     }
@@ -55,7 +49,7 @@ function sendResponse($success, $message, $redirect = null, $additionalData = []
     exit;
 }
 
-// Función para obtener la URL de redirección según el rol
+
 function getRedirectByRole($id_rol) {
     $redirects = [
         1 => '/taskManagement/adminDashboard/',    // Administrador
@@ -63,11 +57,9 @@ function getRedirectByRole($id_rol) {
         3 => '/taskManagement/userDashboard/'      // Usuario
     ];
     
-    // Retorna la URL correspondiente o la de usuario por defecto
     return $redirects[$id_rol] ?? '/taskManagement/userDashboard/';
 }
 
-// Función para obtener el nombre del rol
 function getRoleName($id_rol) {
     $roles = [
         1 => 'Administrador',
@@ -76,6 +68,97 @@ function getRoleName($id_rol) {
     ];
     
     return $roles[$id_rol] ?? 'Usuario';
+}
+
+function detectHashType($stored_hash) {
+    // Bcrypt: comienza con $2y$, $2a$, o $2b$ (60 caracteres típicamente)
+    if (preg_match('/^\$2[ayb]\$/', $stored_hash)) {
+        return 'bcrypt';
+    }
+    
+    // MD5: exactamente 32 caracteres hexadecimales
+    if (preg_match('/^[a-f0-9]{32}$/i', $stored_hash) && strlen($stored_hash) === 32) {
+        return 'md5';
+    }
+    
+    // Todo lo demás se considera texto plano
+    return 'plaintext';
+}
+
+function verifyPassword($password, $stored_hash) {
+    $result = [
+        'valid' => false,
+        'needs_migration' => false,
+        'hash_type' => 'unknown'
+    ];
+    
+    // Detectar el tipo de hash
+    $hash_type = detectHashType($stored_hash);
+    $result['hash_type'] = $hash_type;
+    
+    switch ($hash_type) {
+        case 'bcrypt':
+            // Verificación segura con password_verify()
+            if (password_verify($password, $stored_hash)) {
+                $result['valid'] = true;
+                
+                // Verificar si necesita actualización (cost cambió o hay mejor algoritmo)
+                if (password_needs_rehash($stored_hash, PASSWORD_DEFAULT, ['cost' => 12])) {
+                    $result['needs_migration'] = true;
+                }
+            }
+            break;
+            
+        case 'md5':
+            // Verificación MD5 legacy
+            if (md5($password) === $stored_hash) {
+                $result['valid'] = true;
+                $result['needs_migration'] = true; // Siempre migrar MD5 a bcrypt
+            }
+            break;
+            
+        case 'plaintext':
+            // Verificación de texto plano (comparación directa)
+            if ($password === $stored_hash) {
+                $result['valid'] = true;
+                $result['needs_migration'] = true; // Siempre migrar texto plano a bcrypt
+            }
+            break;
+    }
+    
+    return $result;
+}
+
+function migratePasswordToBcrypt($conn, $user_id, $password, $old_hash_type) {
+    try {
+        // Generar hash bcrypt seguro
+        $new_hash = password_hash($password, PASSWORD_DEFAULT, ['cost' => 12]);
+        
+        if ($new_hash === false) {
+            error_log("Error al generar hash bcrypt para usuario ID: {$user_id}");
+            return false;
+        }
+        
+        // Actualizar en la base de datos
+        $stmt = $conn->prepare("UPDATE tbl_usuarios SET acceso = :acceso WHERE id_usuario = :id_usuario");
+        $stmt->bindParam(':acceso', $new_hash, PDO::PARAM_STR);
+        $stmt->bindParam(':id_usuario', $user_id, PDO::PARAM_INT);
+        
+        if ($stmt->execute()) {
+            // Log de la migración exitosa
+            $log_message = "Contraseña migrada exitosamente: ";
+            $log_message .= "Usuario ID: {$user_id}, ";
+            $log_message .= "Tipo anterior: {$old_hash_type}, ";
+            $log_message .= "Tipo nuevo: bcrypt";
+            error_log($log_message);
+            return true;
+        }
+        
+        return false;
+    } catch (PDOException $e) {
+        error_log("Error al migrar contraseña a bcrypt: " . $e->getMessage());
+        return false;
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { 
@@ -100,14 +183,13 @@ if (empty($usuario) || empty($password)) {
 }
  
 try {
-    // Conectar a la base de datos
     $conn = getDBConnection();
     
     if ($conn === null) {
         sendResponse(false, 'Error de conexión con la base de datos');
     }
     
-    // Preparar la consulta para buscar el usuario con información del rol y departamento
+    // Buscar el usuario con información del rol y departamento
     $stmt = $conn->prepare("
         SELECT 
             u.id_usuario, 
@@ -138,13 +220,27 @@ try {
         sendResponse(false, 'Usuario o contraseña incorrectos');
     }
     
-    // Verificar la contraseña
-    // Nota: En producción, usar password_verify() con contraseñas hasheadas
-    if ($password === $user['acceso']) {
-        // Contraseña correcta - iniciar sesión
+    // Verificar la contraseña (soporta bcrypt, MD5 y texto plano)
+    $passwordCheck = verifyPassword($password, $user['acceso']);
+    
+    if ($passwordCheck['valid']) {
+        
+        // Si necesita migración, actualizar a bcrypt automáticamente
+        if ($passwordCheck['needs_migration']) {
+            $migrated = migratePasswordToBcrypt(
+                $conn, 
+                $user['id_usuario'], 
+                $password, 
+                $passwordCheck['hash_type']
+            );
+            
+            if ($migrated) {
+                error_log("Usuario '{$usuario}': Contraseña actualizada de {$passwordCheck['hash_type']} a bcrypt");
+            }
+        }
+        
         session_start();
         
-        // Regenerar el ID de sesión por seguridad
         session_regenerate_id(true);
         
         // Guardar información del usuario en la sesión
@@ -175,7 +271,6 @@ try {
         );
         
     } else {
-        // Contraseña incorrecta
         sendResponse(false, 'Usuario o contraseña incorrectos');
     }
     

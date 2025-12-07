@@ -1,4 +1,4 @@
-// registro-usuario.js
+// registro-usuario.js para registrar usuarios
 
 (function() {
     'use strict';
@@ -10,33 +10,20 @@
         roles: []
     };
 
-    /**
-     * Inicializar la aplicación cuando el DOM esté listo
-     */
     document.addEventListener('DOMContentLoaded', function() {
         initializeApp();
     });
 
-    /**
-     * Inicializar todos los componentes de la aplicación
-     */
     function initializeApp() {
         console.log('Inicializando aplicación de registro de usuarios...');
-        
-        // Cargar datos iniciales
         loadDepartamentos();
         loadRoles();
-        loadUsuarios();
-        
-        // Configurar manejadores de eventos
-        setupEventHandlers();
-        
+        // No cargar usuarios/superiores hasta que se seleccione departamento
+        clearSuperioresSelect();
+        setupEventHandlers();        
         console.log('Aplicación inicializada correctamente');
     }
 
-    /**
-     * Configurar todos los manejadores de eventos
-     */
     function setupEventHandlers() {
         // Manejador del formulario
         const form = document.getElementById('formCrearUsuario');
@@ -53,24 +40,47 @@
                 setTimeout(function() {
                     loadDepartamentos();
                     loadRoles();
-                    loadUsuarios();
+                    clearSuperioresSelect(); // Limpiar superiores al resetear
                 }, 100);
             });
         }
 
-        // Toggle de contraseña
+        // Manejador del cambio de departamento - NUEVO
+        const departamentoSelect = document.getElementById('id_departamento');
+        if (departamentoSelect) {
+            departamentoSelect.addEventListener('change', handleDepartamentoChange);
+        }
+
         const togglePassword = document.getElementById('togglePassword');
         if (togglePassword) {
             togglePassword.addEventListener('click', handlePasswordToggle);
         }
 
-        // Validación en tiempo real
         setupRealtimeValidation();
     }
 
-    /**
-     * Configurar validación en tiempo real de los campos
-     */
+    // Nueva función para manejar cambio de departamento
+    function handleDepartamentoChange(e) {
+        const departamentoId = parseInt(e.target.value);
+        
+        // Resetear el select de superior
+        clearSuperioresSelect();
+        
+        if (departamentoId > 0) {
+            // Cargar superiores filtrados por departamento y rol 2
+            loadUsuariosByDepartamento(departamentoId);
+        }
+    }
+
+    // Nueva función para limpiar el select de superiores
+    function clearSuperioresSelect() {
+        const select = document.getElementById('id_superior');
+        if (!select) return;
+        
+        select.innerHTML = '<option value="0">Sin superior asignado</option>';
+        select.value = "0";
+    }
+
     function setupRealtimeValidation() {
         const usuarioInput = document.getElementById('usuario');
         if (usuarioInput) {
@@ -95,9 +105,6 @@
         }
     }
 
-    /**
-     * Cargar departamentos desde el servidor
-     */
     function loadDepartamentos() {
         fetch('../php/get_departments.php')
             .then(response => response.json())
@@ -117,9 +124,6 @@
             });
     }
 
-    /**
-     * Cargar roles desde el servidor
-     */
     function loadRoles() {
         fetch('../php/get_roles.php')
             .then(response => response.json())
@@ -139,13 +143,35 @@
             });
     }
 
-    /**
-     * Cargar usuarios desde el servidor (para el dropdown de superiores)
-     * Solo carga usuarios con id_rol = 2
-     */
+    // Nueva función: Cargar usuarios filtrados por departamento y rol
+    function loadUsuariosByDepartamento(departamentoId) {
+        // Filtrar solo usuarios con id_rol = 2 (managers) Y del departamento seleccionado
+        fetch(`../php/get_users.php?id_rol=2&id_departamento=${departamentoId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.usuarios) {
+                    app.usuarios = data.usuarios;
+                    populateSuperioresSelect(data.usuarios);
+                    console.log(`${data.usuarios.length} managers del departamento ${departamentoId} cargados para superiores`);
+                    
+                    // Mostrar mensaje si no hay superiores disponibles
+                    if (data.usuarios.length === 0) {
+                        console.log('No hay managers disponibles en este departamento');
+                    }
+                } else {
+                    console.error('Error al cargar usuarios:', data.message);
+                    clearSuperioresSelect();
+                }
+            })
+            .catch(error => {
+                console.error('Error en fetch de usuarios:', error);
+                clearSuperioresSelect();
+            });
+    }
+
+    // Función original (mantenida por compatibilidad pero ya no se usa al inicio)
     function loadUsuarios() {
         // Filtrar solo usuarios con id_rol = 2 para superiores
-        //../php/get_users.php?id_rol=2'
         fetch('../php/get_users.php?id_rol=2')
             .then(response => response.json())
             .then(data => {
@@ -162,9 +188,6 @@
             });
     }
 
-    /**
-     * Poblar el select de departamentos
-     */
     function populateDepartamentosSelect(departamentos) {
         const select = document.getElementById('id_departamento');
         if (!select) return;
@@ -181,9 +204,6 @@
         });
     }
 
-    /**
-     * Poblar el select de roles
-     */
     function populateRolesSelect(roles) {
         const select = document.getElementById('id_rol');
         if (!select) return;
@@ -200,9 +220,6 @@
         });
     }
 
-    /**
-     * Poblar el select de superiores
-     */
     function populateSuperioresSelect(usuarios) {
         const select = document.getElementById('id_superior');
         if (!select) return;
@@ -217,11 +234,13 @@
             option.textContent = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
             select.appendChild(option);
         });
+
+        // Si hay usuarios disponibles, mostrar mensaje en consola
+        if (usuarios.length > 0) {
+            console.log(`Se cargaron ${usuarios.length} superiores disponibles para este departamento`);
+        }
     }
 
-    /**
-     * Manejar el toggle de visibilidad de la contraseña
-     */
     function handlePasswordToggle() {
         const passwordInput = document.getElementById('acceso');
         const toggleIcon = document.getElementById('togglePassword');
@@ -237,9 +256,6 @@
         }
     }
 
-    /**
-     * Manejar el envío del formulario
-     */
     function handleFormSubmit(e) {
         e.preventDefault();
         
@@ -268,16 +284,10 @@
             if (data.success) {
                 showAlert('success', data.message);
                 form.reset();
-                
-                // Recargar la lista de usuarios (solo rol 2) para el dropdown de superiores
-                loadUsuarios();
-                
-                // Scroll al mensaje
+                clearSuperioresSelect(); // Limpiar superiores después de crear usuario
                 scrollToAlert();
-                
-                // Opcional: redirigir después de 2 segundos
                 setTimeout(() => {
-                    // window.location.href = '../gestionDeEmpleados/';
+                    window.location.href = '../gestionDeEmpleados/';
                 }, 2000);
             } else {
                 showAlert('error', data.message);
@@ -296,9 +306,6 @@
         });
     }
 
-    /**
-     * Validar el formulario antes de enviar
-     */
     function validateForm(form) {
         const nombre = form.nombre.value.trim();
         const apellido = form.apellido.value.trim();
@@ -370,9 +377,6 @@
         return true;
     }
 
-    /**
-     * Mostrar mensaje de alerta
-     */
     function showAlert(type, message) {
         const alertDiv = document.getElementById('alertMessage');
         if (!alertDiv) return;
@@ -395,9 +399,6 @@
         }
     }
 
-    /**
-     * Ocultar mensaje de alerta
-     */
     function hideAlert() {
         const alertDiv = document.getElementById('alertMessage');
         if (alertDiv) {
@@ -405,9 +406,6 @@
         }
     }
 
-    /**
-     * Hacer scroll hasta el mensaje de alerta
-     */
     function scrollToAlert() {
         const alertDiv = document.getElementById('alertMessage');
         if (alertDiv && alertDiv.style.display !== 'none') {

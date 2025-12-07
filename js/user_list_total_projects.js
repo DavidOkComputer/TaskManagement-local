@@ -9,7 +9,7 @@ function loadProyectos() {
     showLoadingState();
     
     $.ajax({//obtener los proyectos
-        url: '../php/api_get_projects.php', 
+        url: '../php/user_api_get_projects.php', 
         type: 'GET',
         dataType: 'text', //cambiar a texto para ver la respuesta tal cual
         timeout: 10000, // 10s

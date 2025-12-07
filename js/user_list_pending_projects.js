@@ -22,7 +22,7 @@ function loadProyectosPendientesAndChart() {
 
 function loadPendingProjectsData() {
     return $.ajax({//obtener los proyectos pendientes
-        url: '../php/api_get_pending_projects.php', 
+        url: '../php/user_api_get_pending_projects.php', 
         type: 'GET',
         dataType: 'json',
         timeout: 10000, // 10s
@@ -54,7 +54,7 @@ function loadPendingProjectsData() {
 
 function loadAllProjectsForChart() {
     return $.ajax({
-        url: '../php/api_get_projects.php',
+        url: '../php/user_api_get_projects.php',
         type: 'GET',
         dataType: 'text',
         timeout: 10000,

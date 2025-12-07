@@ -1,5 +1,5 @@
 <?php
-/*get_users.php - obtener lista de usuarios para asignacion de tareas*/
+/*get_users.php saber la lista de usuarios para asignacion de tareas*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');
@@ -19,15 +19,53 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    //obtener parametro de filtro de rol (opcional)
+    // Obtener filtros
     $filter_rol = isset($_GET['id_rol']) ? intval($_GET['id_rol']) : null;
+    $filter_departamento = isset($_GET['id_departamento']) ? intval($_GET['id_departamento']) : null;
     
-    //construir query con filtro opcional
-    if ($filter_rol !== null && $filter_rol > 0) {
-        $query = "SELECT id_usuario, nombre, apellido, num_empleado, id_rol 
-                  FROM tbl_usuarios 
-                  WHERE id_rol = ? 
-                  ORDER BY apellido ASC, nombre ASC";
+    // Construir query según los filtros proporcionados
+    if ($filter_rol !== null && $filter_rol > 0 && $filter_departamento !== null && $filter_departamento > 0) {
+        // Filtrar por rol Y departamento (para superiores del mismo departamento)
+        $query = "SELECT u.id_usuario, 
+                         u.nombre, 
+                         u.apellido, 
+                         u.usuario,
+                         u.num_empleado, 
+                         u.acceso,
+                         u.id_departamento, 
+                         u.id_rol, 
+                         u.id_superior, 
+                         u.e_mail,
+                         d.nombre as area
+                  FROM tbl_usuarios u
+                  LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
+                  WHERE u.id_rol = ? AND u.id_departamento = ?
+                  ORDER BY u.apellido ASC, u.nombre ASC";
+        $stmt = $conn->prepare($query);
+        if (!$stmt) {
+            throw new Exception('Error al preparar la consulta: ' . $conn->error);
+        }
+        $stmt->bind_param("ii", $filter_rol, $filter_departamento);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+    } elseif ($filter_rol !== null && $filter_rol > 0) {
+        // Filtrar solo por rol
+        $query = "SELECT u.id_usuario, 
+                         u.nombre, 
+                         u.apellido, 
+                         u.usuario,
+                         u.num_empleado, 
+                         u.acceso,
+                         u.id_departamento, 
+                         u.id_rol, 
+                         u.id_superior, 
+                         u.e_mail,
+                         d.nombre as area
+                  FROM tbl_usuarios u
+                  LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
+                  WHERE u.id_rol = ? 
+                  ORDER BY u.apellido ASC, u.nombre ASC";
         $stmt = $conn->prepare($query);
         if (!$stmt) {
             throw new Exception('Error al preparar la consulta: ' . $conn->error);
@@ -35,8 +73,34 @@ try {
         $stmt->bind_param("i", $filter_rol);
         $stmt->execute();
         $result = $stmt->get_result();
+        
+    } elseif ($filter_departamento !== null && $filter_departamento > 0) {
+        // Filtrar solo por departamento
+        $query = "SELECT u.id_usuario, 
+                         u.nombre, 
+                         u.apellido, 
+                         u.usuario,
+                         u.num_empleado, 
+                         u.acceso,
+                         u.id_departamento, 
+                         u.id_rol, 
+                         u.id_superior, 
+                         u.e_mail,
+                         d.nombre as area
+                  FROM tbl_usuarios u
+                  LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
+                  WHERE u.id_departamento = ?
+                  ORDER BY u.apellido ASC, u.nombre ASC";
+        $stmt = $conn->prepare($query);
+        if (!$stmt) {
+            throw new Exception('Error al preparar la consulta: ' . $conn->error);
+        }
+        $stmt->bind_param("i", $filter_departamento);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
     } else {
-        //sin filtro, obtener todos los usuarios activos
+        // Sin filtros - obtener todos los usuarios
         $query = "SELECT u.id_usuario, 
                          u.nombre, 
                          u.apellido, 
@@ -50,7 +114,7 @@ try {
                          d.nombre as area
                   FROM tbl_usuarios u
                   LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
-                  ORDER BY apellido ASC, nombre ASC";
+                  ORDER BY u.apellido ASC, u.nombre ASC";
         $result = $conn->query($query);
     }
     
@@ -65,22 +129,26 @@ try {
             'id_usuario' => (int)$row['id_usuario'],
             'nombre' => $row['nombre'],
             'apellido' => $row['apellido'],
-            'usuario'=> $row['usuario'],
+            'usuario' => $row['usuario'] ?? '',
             'num_empleado' => (int)$row['num_empleado'],
             'nombre_completo' => $row['nombre'] . ' ' . $row['apellido'],
             'nombre_empleado' => $row['nombre'] . ' ' . $row['apellido'] . ' (#' . $row['num_empleado'] . ')',
-            'acceso' => $row['acceso'],
-            'id_departamento'=> (int)$row['id_departamento'],
-            'id_superior'=> (int)$row['id_superior'],
-            'id_rol'=> (int)$row['id_rol'],
-            'e_mail'=> $row['e_mail'],
-            'area'=> $row['area']
+            'acceso' => $row['acceso'] ?? '',
+            'id_departamento' => (int)($row['id_departamento'] ?? 0),
+            'id_superior' => (int)($row['id_superior'] ?? 0),
+            'id_rol' => (int)($row['id_rol'] ?? 0),
+            'e_mail' => $row['e_mail'] ?? '',
+            'area' => $row['area'] ?? ''
         ];
     }
     
     echo json_encode([
         'success' => true,
-        'usuarios' => $usuarios
+        'usuarios' => $usuarios,
+        'filters_applied' => [
+            'id_rol' => $filter_rol,
+            'id_departamento' => $filter_departamento
+        ]
     ]);
     
     $result->free();
