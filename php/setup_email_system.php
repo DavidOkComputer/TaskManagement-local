@@ -80,10 +80,6 @@ switch ($command) {
 $conn->close();
 echo "\n";
 
-// ============================================================
-// FUNCIONES
-// ============================================================
-
 function installTables($conn) {
     echo COLOR_YELLOW . "Instalando tablas del sistema de email...\n" . COLOR_RESET;
     

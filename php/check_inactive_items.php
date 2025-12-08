@@ -1,21 +1,32 @@
 <?php
-/* check_inactive_items.php Script de cron para verificar proyectos y tareas inactivos (pendientes sin cambios)
- * Ejecutar diariamente o semanalmente: 0 9 * * 1 php /path/to/check_inactive_items.php*/
-
-// Para ejecución desde cron, establecer directorio de trabajo
+/**
+* check_inactive_items.php
+* Script para verificar proyectos y tareas inactivos (pendientes sin cambios)
+*
+* CONFIGURACIÓN WINDOWS TASK SCHEDULER:
+* - Programa: C:\xampp\php\php.exe (ajustar según tu instalación)
+* - Argumentos: -f "C:\ruta\completa\a\check_inactive_items.php"
+* - Directorio inicial: C:\ruta\completa\a\
+* - Ejecutar: Semanalmente los Lunes a las 9:00 AM
+* - Usuario: SYSTEM o tu usuario con privilegios
+*
+* Alternativamente, usar el archivo batch: check_inactive_items.bat
+*/
+ 
+// Para ejecución desde línea de comandos, establecer directorio de trabajo
 if (php_sapi_name() === 'cli') {
     chdir(__DIR__);
 }
-
+ 
 require_once(__DIR__ . '/db_config.php');
 require_once(__DIR__ . '/notification_helper.php');
-
+ 
 // Configuración
 $DIAS_INACTIVIDAD = 7; // Días sin actividad para generar notificación
-
+ 
 // Log de inicio
 error_log("=== Iniciando verificación de items inactivos: " . date('Y-m-d H:i:s') . " ===");
-
+ 
 try {
     $conn = getDBConnection();
     $notificationHelper = new NotificationHelper($conn);
@@ -24,7 +35,7 @@ try {
     
     // Proyectos pendientes o en proceso que no han tenido cambios en X días
     $query_proyectos = "
-        SELECT 
+        SELECT
             p.id_proyecto,
             p.nombre,
             p.estado,
@@ -34,8 +45,8 @@ try {
             DATEDIFF(CURDATE(), p.fecha_inicio) as dias_sin_actividad
         FROM tbl_proyectos p
         WHERE p.estado IN ('pendiente', 'en proceso')
-          AND p.progreso < 100
-          AND DATEDIFF(CURDATE(), p.fecha_inicio) >= ?
+            AND p.progreso < 100
+            AND DATEDIFF(CURDATE(), p.fecha_inicio) >= ?
     ";
     
     $stmt = $conn->prepare($query_proyectos);
@@ -61,6 +72,7 @@ try {
         $stmt_part->bind_param("i", $proyecto['id_proyecto']);
         $stmt_part->execute();
         $participantes_result = $stmt_part->get_result();
+        
         while ($participante = $participantes_result->fetch_assoc()) {
             $usuarios_notificar[] = (int)$participante['id_usuario'];
         }
@@ -86,7 +98,7 @@ try {
     
     // Tareas pendientes que no han tenido cambios en X días
     $query_tareas = "
-        SELECT 
+        SELECT
             t.id_tarea,
             t.nombre,
             t.estado,
@@ -98,7 +110,7 @@ try {
         FROM tbl_tareas t
         LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto
         WHERE t.estado = 'pendiente'
-          AND DATEDIFF(CURDATE(), t.fecha_inicio) >= ?
+            AND DATEDIFF(CURDATE(), t.fecha_inicio) >= ?
     ";
     
     $stmt = $conn->prepare($query_tareas);

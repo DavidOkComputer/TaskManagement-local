@@ -31,8 +31,8 @@ if (file_exists($config_path)) {
     define('DB_NAME', 'task_management_db');
 }
 
-require_once __DIR__ . '/../includes/email/EmailService.php';
-require_once __DIR__ . '/../includes/email/EmailTemplates.php';
+require_once __DIR__ . '/../email/EmailService.php';
+require_once __DIR__ . '/../email/EmailTemplates.php';
 
 // Logging
 $log_dir = __DIR__ . '/logs';
@@ -74,7 +74,7 @@ try {
         exit(0);
     }
     
-    $system_url = $config->get('system_url', 'http://localhost/task_management');
+    $system_url = $config->get('system_url', 'http://localhost/taskManagement');
     $queued_count = 0;
     
     // Obtener usuarios que desean resumen semanal
@@ -164,7 +164,7 @@ try {
         $result = $emailService->queueEmail(
             $user['e_mail'],
             $user['nombre'] . ' ' . $user['apellido'],
-            '📊 Tu resumen semanal - Sistema de Tareas',
+            'Tu resumen semanal - Sistema de Tareas',
             $html,
             'resumen_semanal',
             'usuario',

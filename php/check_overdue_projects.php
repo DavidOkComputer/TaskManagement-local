@@ -1,19 +1,17 @@
 <?php
-/*check_overdue_projects.php Script de cron para verificar proyectos vencidos y generar notificaciones 
- * Ejecutar diariamente: 0 8 * * * php /path/to/check_overdue_projects.php
- */
-
-// Para ejecución desde cron, establecer directorio de trabajo
+/*check_overdue_projects.php script para verificar proyectos vencidos y generar notificaciones*/
+ 
+// Para ejecución desde línea de comandos, establecer directorio de trabajo
 if (php_sapi_name() === 'cli') {
     chdir(__DIR__);
 }
-
+ 
 require_once(__DIR__ . '/db_config.php');
 require_once(__DIR__ . '/notification_helper.php');
-
+ 
 // Log de inicio
 error_log("=== Iniciando verificación de proyectos vencidos: " . date('Y-m-d H:i:s') . " ===");
-
+ 
 try {
     $conn = getDBConnection();
     $notificationHelper = new NotificationHelper($conn);
@@ -24,7 +22,7 @@ try {
     // Buscar proyectos que acaban de vencer (estado era diferente a 'vencido' pero fecha ya pasó)
     // También incluir proyectos que ya están marcados como vencido para notificar a participantes
     $query = "
-        SELECT 
+        SELECT
             p.id_proyecto,
             p.nombre,
             p.estado,
@@ -33,8 +31,8 @@ try {
             p.id_creador
         FROM tbl_proyectos p
         WHERE p.fecha_cumplimiento < CURDATE()
-          AND p.estado != 'completado'
-          AND p.progreso < 100
+            AND p.estado != 'completado'
+            AND p.progreso < 100
     ";
     
     $result = $conn->query($query);
@@ -61,6 +59,7 @@ try {
             $stmt->bind_param("i", $proyecto['id_proyecto']);
             $stmt->execute();
             $participantes_result = $stmt->get_result();
+            
             while ($participante = $participantes_result->fetch_assoc()) {
                 $usuarios_notificar[] = (int)$participante['id_usuario'];
             }
@@ -89,6 +88,7 @@ try {
                 $update_stmt->bind_param("i", $proyecto['id_proyecto']);
                 $update_stmt->execute();
                 $update_stmt->close();
+                
                 error_log("Proyecto actualizado a vencido: {$proyecto['nombre']}");
             }
         }
@@ -96,7 +96,7 @@ try {
     
     // También verificar tareas vencidas
     $query_tareas = "
-        SELECT 
+        SELECT
             t.id_tarea,
             t.nombre,
             t.estado,
@@ -107,8 +107,8 @@ try {
         FROM tbl_tareas t
         LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto
         WHERE t.fecha_cumplimiento < CURDATE()
-          AND t.fecha_cumplimiento != '0000-00-00'
-          AND t.estado != 'completado'
+            AND t.fecha_cumplimiento != '0000-00-00'
+            AND t.estado != 'completado'
     ";
     
     $result_tareas = $conn->query($query_tareas);

@@ -6,6 +6,7 @@ header('Content-Type: application/json');
 session_start(); 
 require_once 'db_config.php'; 
 require_once 'notification_triggers.php';
+require_once 'email/NotificationHelper.php';
 
 // Buffer de salida para evitar problemas con JSON 
 ob_start(); 

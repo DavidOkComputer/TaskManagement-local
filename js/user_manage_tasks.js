@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tasksList.insertAdjacentHTML('beforeend', taskElement); 
         });        
         attachTaskListeners(); 
-    } 
+    }  
 
     function parseDateStringToLocal(dateString) { 
         if (!dateString || dateString === '0000-00-00') return null;        

@@ -1,18 +1,5 @@
 <?php
-/**
- * api_email_config.php
- * API para configurar y gestionar el sistema de notificaciones por email
- * 
- * Endpoints:
- *   GET    - Obtener configuración actual
- *   POST   - Actualizar configuración
- *   POST action=test_connection - Probar conexión SMTP
- *   POST action=send_test - Enviar email de prueba
- *   POST action=configure_gmail - Configurar Gmail rápidamente
- *   GET  action=stats - Obtener estadísticas de la cola
- * 
- * @package TaskManagement\API
- */
+/*api_email_config.php para configutar el sistema de notificaciones por email*/
 
 ob_start();
 session_start();
@@ -30,7 +17,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['acceso']) || $_SESSION['ac
 }
 
 require_once('db_config.php');
-require_once(__DIR__ . '/../includes/email/EmailService.php');
+require_once(__DIR__ . '/../email/EmailService.php');
 
 $conn = getDBConnection();
 if (!$conn) {

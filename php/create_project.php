@@ -5,6 +5,8 @@
 header('Content-Type: application/json');
 require_once 'db_config.php';
 require_once 'notification_triggers.php';
+require_once 'email/NotificationHelper.php';
+
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -148,6 +150,10 @@ try {
         triggerNotificacionProyectoAsignado($conn, $id_proyecto, $id_participante, null);
         error_log("Notificación enviada: Nuevo proyecto {$id_proyecto} asignado a usuario {$id_participante}");
     }
+
+    //para email de notificacion de asignacion de proyecto
+    $notifier = new NotificationHelper($conn);
+    $notifier->notifyProjectAssigned($proyecto_id, $usuario_asignado_id, $creador_id);
 
     // Manejo de usuarios para proyecto grupal
     if ($id_tipo_proyecto == 1 && !empty($usuarios_grupo)) {

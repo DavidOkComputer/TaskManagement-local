@@ -4,6 +4,7 @@
 header('Content-Type: application/json');
 require_once('db_config.php');
 require_once('notification_triggers.php');
+require_once 'email/NotificationHelper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
@@ -182,6 +183,10 @@ try {
         triggerNotificacionTareaAsignada($conn, $id_tarea, $id_participante, $old_id_participante);
         error_log("Notificación enviada: Tarea {$id_tarea} asignada a usuario {$id_participante}");
     }
+
+    //para correo de asignacion de tarea
+    $notifier = new NotificationHelper($conn);
+    $notifier->notifyTaskAssigned($tarea_id, $usuario_asignador_id);
 
     //recalcular progreso si la tarea cambio de proyecto o si cambio el estado
     $estado_anterior_proyecto = getProjectState($conn, $old_id_proyecto); 

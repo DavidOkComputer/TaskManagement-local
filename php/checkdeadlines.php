@@ -1,7 +1,6 @@
 <?php
 /**
- * check_deadlines.php
- * Script de cron para verificar vencimientos y enviar recordatorios
+ * check_deadlines.php script de cron para verificar vencimientos y enviar recordatorios
  * 
  * Ejecutar diariamente a las 8:00 AM:
  * 0 8 * * * /usr/bin/php /ruta/a/cron/check_deadlines.php >> /var/log/deadlines.log 2>&1

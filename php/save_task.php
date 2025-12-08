@@ -4,6 +4,7 @@
 header('Content-Type: application/json');
 require_once('db_config.php');
 require_once('notification_triggers.php');
+require_once 'email/NotificationHelper.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
@@ -178,6 +179,10 @@ try {
             error_log("Notificación de tarea asignada enviada - Tarea: $task_id, Usuario: $id_participante");
         }
     }
+
+    //para correo de notificacion de tarea creada
+    $notifier = new NotificationHelper($conn);
+    $notifier->notifyTaskAssigned($tarea_id, $usuario_asignador_id);
 
     echo json_encode([
         'success' => true,

@@ -5,6 +5,7 @@ header('Content-Type: application/json');
 session_start();
 require_once 'db_config.php';
 require_once 'notification_triggers.php';
+require_once 'email/NotificationHelper.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -119,7 +120,11 @@ try {
             triggerNotificacionTareaAsignada($conn, $task_id, $id_participante, null);
             error_log("Notificación enviada: Nueva tarea {$task_id} asignada a usuario {$id_participante}");
         }
-        
+
+        //para correo de notificacion de asignacion de tarea
+        $notifier = new NotificationHelper($conn);
+        $notifier->notifyTaskAssigned($tarea_id, $usuario_asignador_id);
+
         // Recalcular progreso del proyecto
         recalculateProjectProgress($conn, $id_proyecto);
         
