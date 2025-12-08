@@ -1,4 +1,4 @@
-/*task-management.js - manejo de tareas, creacion, actualizacion y asignacion de usuarios */
+/*manage_tasks.js para el manejo de tareas, creacion, actualizacion y asignacion de usuarios */
 
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -9,8 +9,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const projectPermissionNote = document.getElementById('projectPermissionNote');
     
     let currentProjectId = null; //seguir el proyecto seleccionado actualmente
-    let currentUserId = 1; //id del usuario actual - remplazar con sesion real
+    let currentUserId = null; // Se inicializa desde APP_CONFIG
     let currentProjectData = null; //almacenar datos del proyecto actual
+    
+    // Inicializar el ID del usuario desde la configuración de la aplicación
+    function initializeUserData() {
+        if (typeof window.APP_CONFIG === 'undefined') {
+            console.error('ERROR: APP_CONFIG no está definido. Asegúrese de que el script de configuración se cargue antes de manage_tasks.js');
+            showAlert('Error: No se pudo cargar la información del usuario. Por favor, recargue la página.', 'danger');
+            return false;
+        }
+        
+        if (!window.APP_CONFIG.userId) {
+            console.error('ERROR: userId no está presente en APP_CONFIG');
+            showAlert('Error: No se pudo obtener el ID del usuario. Por favor, inicie sesión nuevamente.', 'danger');
+            return false;
+        }
+        
+        currentUserId = window.APP_CONFIG.userId;
+        console.log('Usuario inicializado:', {
+            id: currentUserId,
+            nombre: window.APP_CONFIG.userName,
+            apellido: window.APP_CONFIG.userApellido
+        });
+        
+        return true;
+    }
+    
+    // Verificar que el usuario está inicializado antes de continuar
+    if (!initializeUserData()) {
+        console.error('No se pudo inicializar los datos del usuario. Deteniendo la ejecución del script.');
+        return;
+    }
     
     createCustomDialogSystem();
     createTaskModal();
@@ -433,6 +463,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     //verificar si el usuario puede asignar tareas a este proyecto
     function canAssignTasksToProject(projectData) {
+        // Verificar que currentUserId está definido
+        if (!currentUserId) {
+            console.error('ERROR: currentUserId no está definido');
+            return false;
+        }
+        
         //si el proyecto permite edicion por otros, todos pueden asignar tareas
         if (projectData.puede_editar_otros == 1) {
             return true;
@@ -440,7 +476,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         //si solo el creador puede editar, verificar si el usuario actual es el creador
         if (projectData.puede_editar_otros == 0) {
-            return projectData.id_creador == currentUserId;
+            // Convertir ambos valores a números para comparación segura
+            return parseInt(projectData.id_creador) === parseInt(currentUserId);
         }
         
         return false;
@@ -958,6 +995,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Verificar que tenemos el ID del usuario
+        if (!currentUserId) {
+            showModalMessage('Error: No se pudo obtener el ID del usuario. Por favor, recargue la página.', 'danger');
+            return;
+        }
+        
         //obtener valores del form
         const taskName = document.getElementById('taskName').value;
         const taskDescription = document.getElementById('taskDescription').value;
@@ -993,7 +1036,7 @@ document.addEventListener('DOMContentLoaded', function() {
         formData.append('fecha_vencimiento', taskDate);
         formData.append('estado', taskStatus);
         formData.append('id_participante', taskAssignee || null);
-        formData.append('id_creador', currentUserId);
+        formData.append('id_creador', currentUserId); // Usar el ID de sesión
         
         if (isEditMode) {
             //modo de edicion, actualizar tarea existente

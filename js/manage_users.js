@@ -30,52 +30,33 @@ let currentUserIdForProject = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     // inicializar
-    console.clear();
-    console.log('%cSistema de Gestión de Empleados v2.0 - Enhanced Auto-Refresh', 'font-size: 16px; font-weight: bold; color: #28a745;');
-    console.log('%c=====================================', 'color: #28a745;');
-    console.log('Fecha/Hora:', new Date().toLocaleString());
-    console.log('URL:', window.location.href);
-    console.log('User Agent:', navigator.userAgent);
-    console.log('Auto-refresh interval (users):', AUTO_REFRESH_CONFIG.USERS_INTERVAL + 'ms');
-    console.log('Auto-refresh interval (modal):', AUTO_REFRESH_CONFIG.MODAL_INTERVAL + 'ms');
-    console.log('%c=====================================', 'color: #28a745;');
-    
-    logAction('Página cargada - Inicializando sistema');
-    
-    loadDepartamentos(); // Cargar departamentos para el dropdown
-    loadUsuarios();//cargar usuarios al cargar la pagina
-    startAutoRefresh();//iniciar refresco de usuarios y progreso cada minuto
+    loadDepartamentos();
+    loadUsuarios();
+    startAutoRefresh();
 
-    const searchInput = document.getElementById('searchUser');//funcionalidad de buscar
+    const searchInput = document.getElementById('searchUser');
     if (searchInput) {
         searchInput.addEventListener('input', filterUsuarios);
-        console.log('Búsqueda inicializada');
     }
     
-    const selectAllCheckbox = document.getElementById('selectAllCheckbox');//marcar todas las checkbox
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
     if (selectAllCheckbox) {
         selectAllCheckbox.addEventListener('change', toggleSelectAll);
-        console.log('Checkbox "Seleccionar todos" inicializado');
     }
     
     const editUserForm = document.getElementById('editUserForm');
     if (editUserForm) {
         editUserForm.addEventListener('submit', handleSaveUserChanges);
-        console.log('Formulario de edición inicializado');
     }
     
-    const saveUserChanges = document.getElementById('saveUserChanges');//guardar boton d eguardar
+    const saveUserChanges = document.getElementById('saveUserChanges');
     if (saveUserChanges) {
         saveUserChanges.addEventListener('click', handleSaveUserChanges);
-        console.log('Botón "Guardar Cambios" inicializado');
     }
 
     setupSorting();
     setupPagination();
-    setupModalEventListeners(); //congigurar los eventos del modal para auto refrescar
-    
-    console.log('%cSistema inicializado correctamente', 'color: #34b0aa; font-weight: bold;');
-    console.log('%cConsola abierta: Presiona F12 para ver logs detallados', 'color: #17a2b8; font-style: italic;');
+    setupModalEventListeners();
 });
 
 createCustomDialogSystem();
@@ -87,13 +68,11 @@ function setupModalEventListeners() {
     
     modal.addEventListener('show.bs.modal', function() {
         if (AUTO_REFRESH_CONFIG.DEBUG) {
-            console.log('Modal abierto - iniciando auto-refresh de proyectos');
         }
     });
     
     modal.addEventListener('hide.bs.modal', function() {
         if (AUTO_REFRESH_CONFIG.DEBUG) {
-            console.log('Modal cerrado - deteniendo auto-refresh de proyectos');
         }
         currentUserIdForProject = null;
     });
@@ -107,7 +86,6 @@ function startAutoRefresh(){
     //auto refrescar info de usuarios y progreso
     autoRefreshInterval = setInterval(() => {
         if(AUTO_REFRESH_CONFIG.DEBUG) {
-            console.log('%cAuto-refresh: Actualizando datos de usuarios y progreso...', 'color: #17a2b8; font-weight: bold;');
         }
         refreshUserData();
     }, AUTO_REFRESH_CONFIG.USERS_INTERVAL);
@@ -116,7 +94,6 @@ function startAutoRefresh(){
     startModalAutoRefresh();
     
     if(AUTO_REFRESH_CONFIG.DEBUG) {
-        console.log('Auto-refresh iniciado. Intervalos:', AUTO_REFRESH_CONFIG);
     }
 }
 
@@ -131,7 +108,6 @@ function startModalAutoRefresh(){
         if(modal && modal.classList.contains('show')) {
             if(currentUserIdForProject) {
                 if(AUTO_REFRESH_CONFIG.DEBUG) {
-                    console.log('%cModal abierto - refrescando datos de proyectos para usuario: ' + currentUserIdForProject, 'color: #ffc107; font-weight: bold;');
                 }
                 refreshUserProjectData();
             }
@@ -166,9 +142,6 @@ function refreshUserData(){
             const searchInput = document.getElementById('searchUser');
             const currentSearchQuery = searchInput ? searchInput.value:'';
             
-            // Actualizar usuarios y recalcular progreso
-            logAction('Recalculando progreso de todos los usuarios...');
-            
             Promise.all(
                 data.usuarios.map(async usuario => {
                     const progress = await calculateUserProgress(usuario.id_usuario);
@@ -194,12 +167,6 @@ function refreshUserData(){
                 }
                 
                 displayUsuarios(filteredUsuarios);
-                if(AUTO_REFRESH_CONFIG.DEBUG) {
-                    console.log('✓ Datos de usuarios y progreso actualizados exitosamente', {
-                        total_usuarios: allUsuarios.length,
-                        usuarios_con_proyectos: allUsuarios.filter(u => u.totalProjects > 0).length
-                    });
-                }
             });
         }
     })
@@ -224,13 +191,6 @@ async function refreshUserProjectData(){
         
         updateProjectsModal(projects);//actualizar contenido del modal con nueva informacion del proyecto
         
-        if(AUTO_REFRESH_CONFIG.DEBUG) {
-            console.log('✓ Proyectos actualizados en modal:', {
-                total_proyectos: projects.length,
-                total_tareas: projects.reduce((sum, p) => sum + p.tareas_totales, 0),
-                tareas_completadas: projects.reduce((sum, p) => sum + p.tareas_completadas, 0)
-            });
-        }
     } catch(error) {
         console.error('Error al refrescar proyectos en modal:', error);
     }
@@ -306,7 +266,6 @@ function updateProjectsModal(projects) {//actualizar modal de proyectos con la n
 
 // Cargar departamentos para el dropdown
 function loadDepartamentos() {
-    logAction('Cargando departamentos del servidor');
     
     fetch(Config.API_ENDPOINTS.GET_DEPARTMENTS, {
         method: 'GET',
@@ -323,15 +282,9 @@ function loadDepartamentos() {
     .then(data => {
         if (data.success && data.departamentos) {
             allDepartamentos = data.departamentos;
-            logAction('Departamentos cargados exitosamente', { 
-                cantidad: data.departamentos.length,
-                departamentos: data.departamentos.map(d => ({ id: d.id_departamento, nombre: d.nombre }))
-            });
-            console.log('Departamentos disponibles:', allDepartamentos);
             populateDepartamentosDropdown();
         } else {
             const errorMsg = data.message || 'Error desconocido';
-            logAction('Error al cargar departamentos', { error: errorMsg });
             showError('Error al cargar departamentos: ' + errorMsg);
         }
     })
@@ -360,15 +313,10 @@ function populateDepartamentosDropdown() {
         option.dataset.nombre = dept.nombre;
         dropdown.appendChild(option);
     });
-    
-    logAction('Dropdown de departamentos poblado', { 
-        cantidad: allDepartamentos.length 
-    });
 }
 
 async function loadUsuarios() { 
     const tableBody = document.getElementById('usuariosTableBody'); 
-    logAction('Cargando usuarios del servidor'); 
     try { 
         const response = await fetch('../php/get_users.php', { 
             method: 'GET', 
@@ -384,8 +332,6 @@ async function loadUsuarios() {
         if (data.success && data.usuarios) { 
             allUsuarios = data.usuarios; 
             // Calcular progreso para TODOS los usuarios 
-            logAction('Calculando progreso de todos los usuarios...'); 
-            showInfo('Calculando progreso de usuarios...'); 
             const usersWithProgress = await Promise.all( 
                 allUsuarios.map(async usuario => { 
                     const progress = await calculateUserProgress(usuario.id_usuario); 
@@ -397,16 +343,10 @@ async function loadUsuarios() {
             allUsuarios = usersWithProgress; 
             filteredUsuarios = [...allUsuarios];  
             currentPage = 1; 
-            logAction('Usuarios cargados exitosamente', {  
-                cantidad: data.usuarios.length, 
-                usuarios: data.usuarios.map(u => ({ id: u.id_usuario, nombre: u.nombre + ' ' + u.apellido })) 
-            }); 
             console.table(data.usuarios); 
             displayUsuarios(allUsuarios);  
-            showSuccess(`Se cargaron ${data.usuarios.length} usuarios`); 
         } else { 
             const errorMsg = data.message || 'Error desconocido'; 
-            logAction('Error al cargar usuarios', { error: errorMsg }); 
             showError('Error al cargar usuarios: ' + errorMsg); 
             tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error al cargar usuarios</td></tr>'; 
         } 
@@ -908,7 +848,6 @@ function filterUsuarios() {
             ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
             : filteredUsuarios;
         displayUsuarios(sorted);
-        logAction('Búsqueda cancelada', { resultados: allUsuarios.length });
         return;
     }
     
@@ -924,14 +863,6 @@ function filterUsuarios() {
                username.includes(searchInput);
     });
     
-    logAction('Búsqueda realizada', { 
-        termino: searchInput,
-        total_usuarios: allUsuarios.length,
-        resultados_encontrados: filtered.length,
-        usuarios: filtered.map(u => u.nombre + ' ' + u.apellido)
-    });
-    
-    console.log(`Búsqueda: "${searchInput}" - ${filtered.length} resultados de ${allUsuarios.length}`);
     filteredUsuarios = filtered; 
     currentPage = 1; 
     const sorted = currentSortColumn
@@ -1007,14 +938,6 @@ function updateSelectAllCheckbox() {
 
 
 function openEditModal(userId, nombre, apellido, usuario, email, departId) {
-    logAction('Abriendo modal de edición', { 
-        userId: userId,
-        nombre: nombre,
-        apellido: apellido,
-        usuario: usuario,
-        email: email,
-        departId: departId
-    });
     document.getElementById('editUserId').value = userId;
     document.getElementById('editNombre').value = nombre;
     document.getElementById('editApellido').value = apellido;
@@ -1024,11 +947,6 @@ function openEditModal(userId, nombre, apellido, usuario, email, departId) {
     // Establecer el valor del dropdown
     const departmentDropdown = document.getElementById('editDepartamento');
     departmentDropdown.value = departId;
-    
-    logAction('Departamento seleccionado en dropdown', { 
-        departId: departId,
-        departName: getDepartamentoName(departId)
-    });
     
     const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
     modal.show();
@@ -1065,7 +983,6 @@ function handleSaveUserChanges(event) {
         id_departamento: id_departamento
     };
 
-    logAction('Enviando datos al servidor', data);
     showInfo('Guardando cambios...');
     
     fetch('../php/update_users.php', {
@@ -1083,14 +1000,12 @@ function handleSaveUserChanges(event) {
     })
     .then(responseData => {
         if (responseData.success) {
-            logAction('Usuario actualizado exitosamente', responseData.usuario);
             showSuccess('Usuario actualizado exitosamente', responseData.usuario);
             const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
             modal.hide();
             loadUsuarios(); //recargar la tabla
         } else {
             const errorMsg = responseData.message || responseData.error || 'Error desconocido';
-            logAction('Error en actualización', { error: errorMsg });
             showError('Error al actualizar usuario: ' + errorMsg);
         }
     })
@@ -1282,7 +1197,6 @@ function displayNotification(message, type = 'info') {
         </style>
     `;
 
-    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
 
     setTimeout(() => {//esconder notificacion despues de 5seg
         const toastElement = document.getElementById(toastId);

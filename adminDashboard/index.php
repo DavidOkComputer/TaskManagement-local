@@ -232,12 +232,6 @@ session_start();
                       <a class="nav-link border-0" id="more-tab"  href="../proyectosVencidos" role="tab" aria-selected="false">Proyectos vencidos</a>
                     </li>
                   </ul>
-                  <div>
-                    <div class="btn-wrapper">
-                      <a href="#" class="btn btn-otline-dark align-items-center"><i class="icon-share"></i> Compartir</a>
-                      <a href="#" class="btn btn-primary text-white me-0"><i class="icon-printer"></i> Imprimir</a>
-                    </div>
-                  </div>
                 </div>
                 <div class="tab-content tab-content-basic">
                   <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview"> 

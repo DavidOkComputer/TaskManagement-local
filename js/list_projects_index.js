@@ -165,27 +165,7 @@ function updateDashboardStats(stats) {
                 span.textContent = `${porcentajeComp}% del total`; 
             } 
         }
-        
-        // 5. Proyectos en proceso - mostrar: Progreso promedio
-        const procesoElement = statsElements[4].querySelector('.rate-percentage'); 
-        if (procesoElement) { 
-            procesoElement.textContent = stats.proyectos_en_proceso; 
-        } 
-        const procesoProgress = statsElements[4].querySelector('.text-danger, .text-success'); 
-        if (procesoProgress) { 
-            const promedioProgreso = stats.progreso_promedio_en_proceso || 0;
-            const isPositive = promedioProgreso >= 50; 
-            procesoProgress.className = isPositive ? 'text-success d-flex' : 'text-warning d-flex'; 
-            const icon = procesoProgress.querySelector('i'); 
-            if (icon) { 
-                icon.className = isPositive ? 'mdi mdi-menu-up' : 'mdi mdi-menu-right'; 
-            } 
-            const span = procesoProgress.querySelector('span'); 
-            if (span) { 
-                span.textContent = `${promedioProgreso}% promedio`; 
-            } 
-        }
-        
+
         // 6. Proyectos pendientes - mostrar: % del total
         const pendientesElement = statsElements[5].querySelector('.rate-percentage'); 
         if (pendientesElement) { 

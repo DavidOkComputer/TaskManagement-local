@@ -202,7 +202,7 @@ $user_id = $_SESSION['user_id'];
             </a>
             <div class="collapse" id="auth">
               <ul class="nav flex-column sub-menu">
-                <li class="nav-item"> <a class="nav-link" href=""> Cerrar Sesión </a></li>
+                <li class="nav-item"> <a class="nav-link" href="../php/logout.php"> Cerrar Sesión </a></li>
               </ul>
             </div>
           </li>
@@ -435,7 +435,5 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/manage_users.js"></script>
   <script src="../js/notifications.js"></script>
   <!-- End custom js for this page-->
-
-
 </body>
 </html>

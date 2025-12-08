@@ -1,4 +1,5 @@
 <?php
+//get_dashboard_stats.php para los contadores del dashboard
 // Iniciar output buffering para capturar cualquier salida no deseada get_dashboard_stats.php
 ob_start();
 
@@ -17,14 +18,12 @@ if (ob_get_length()) ob_clean();
 header('Content-Type: application/json; charset=utf-8');
 
 try {
-    // Intentar incluir el archivo de conexión
     if (!file_exists('db_config.php')) {
         throw new Exception('Archivo de conexión no encontrado');
     }
 
     require_once('db_config.php');
 
-    // Verificar que la conexión existe
     if (!isset($conexion)) {
         throw new Exception('Conexión a base de datos no establecida');
     }
@@ -58,7 +57,6 @@ try {
 
     if (tableExists($conexion, 'tbl_objetivos')) {
         try {
-            // Total de objetivos
             $queryObjetivos = "SELECT COUNT(*) as total FROM tbl_objetivos";
             $stmtObjetivos = $conexion->prepare($queryObjetivos);
             if ($stmtObjetivos) {
@@ -73,7 +71,6 @@ try {
                 $stmtObjetivos->close();
             }
 
-            // Objetivos completados
             $queryObjetivosCompletados = "
                 SELECT COUNT(*) as completados
                 FROM tbl_objetivos
@@ -92,7 +89,6 @@ try {
                 $stmtObjetivosCompletados->close();
             }
 
-            // Objetivos retrasados (vencidos)
             $queryObjetivosRetrasados = "
                 SELECT COUNT(*) as retrasados
                 FROM tbl_objetivos
@@ -117,7 +113,6 @@ try {
         }
     }
 
-    // Obtener total de proyectos
     $totalProyectos = 0;
     $estadosCount = [
         'completado' => 0,
@@ -146,7 +141,6 @@ try {
                 $stmtProyectos->close();
             }
 
-            // Obtener proyectos por estado
             $queryEstados = "
                 SELECT
                     estado,
@@ -170,7 +164,7 @@ try {
                 $stmtEstados->close();
             }
 
-            // Proyectos completados a tiempo (sin retrasos)
+            // Proyectos completados a tiempo
             $queryOnTime = "
                 SELECT COUNT(*) as on_time
                 FROM tbl_proyectos
@@ -190,7 +184,7 @@ try {
                 $stmtOnTime->close();
             }
 
-            // Proyectos con retraso (vencidos)
+            // Proyectos vencidos
             $queryOverdue = "
                 SELECT COUNT(*) as overdue
                 FROM tbl_proyectos
@@ -215,7 +209,7 @@ try {
         }
     }
 
-    // Obtener total de tareas (si la tabla existe)
+    // Obtener total de tareas 
     $totalTareas = 0;
     $tareasCompletadas = 0;
     $porcentajeTareas = 0;
@@ -258,7 +252,7 @@ try {
                 $stmtTareasCompletadas->close();
             }
 
-            // Tareas retrasadas (vencidas)
+            // Tareas vencidas
             $queryTareasRetrasadas = "
                 SELECT COUNT(*) as retrasadas
                 FROM tbl_tareas

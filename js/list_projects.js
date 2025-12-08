@@ -1,4 +1,4 @@
-/*listar Proyectos Totales*/
+/*list_projects.js para listar Proyectos Totales*/
 
 $(document).ready(function() {
     loadProyectos();
