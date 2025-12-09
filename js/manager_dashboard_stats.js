@@ -1,7 +1,7 @@
-/**  manager_dashboard_stats.js estadísticas del dashboard y gráficos para gerentes */ 
+/* manager_dashboard_stats.js para estadísticas del dashboard y gráficos para gerentes */ 
 
 const DashboardRefreshConfig = { 
-    STATS_INTERVAL: 30000,      // 30 segundos para estadísticas 
+    STATS_INTERVAL: 60000,      // 60 segundos para estadísticas 
     CHART_INTERVAL: 60000,      // 60 segundos para gráficos 
     TABLES_INTERVAL: 45000      // 45 segundos para tablas 
 
@@ -18,25 +18,18 @@ let isManagerDashboardInitialized = false;
 function initializeManagerDashboard() { 
     // Prevenir doble inicialización 
     if (isManagerDashboardInitialized) { 
-        console.log('Dashboard ya inicializado, saltando...'); 
         return; 
     } 
 
     isManagerDashboardInitialized = true; 
-    console.log('Iniciando dashboard de gerente con auto-actualización...'); 
-
-    // Cargar estadísticas inmediatamente 
     loadDashboardStats(); 
     // Esperar a que dashboard.js termine de crear el gráfico, luego actualizar datos 
     setTimeout(() => { 
         loadDoughnutChartData(); 
     }, 500); 
 
-    // Iniciar auto-refresh 
     startAutoRefresh();
-    // Crear indicador de última actualización 
     createUpdateIndicator(); 
-    // Detectar visibilidad de la página 
     setupVisibilityDetection(); 
 } 
 
@@ -46,7 +39,6 @@ function startAutoRefresh() {
     // Intervalo para estadísticas 
     statsRefreshInterval = setInterval(() => { 
         if (isAutoRefreshActive) { 
-            console.log('Auto-refresh: Actualizando estadísticas...'); 
             loadDashboardStats(); 
             updateTimestamp(); 
         } 
@@ -55,7 +47,6 @@ function startAutoRefresh() {
     // Intervalo para gráfico de dona 
     chartRefreshInterval = setInterval(() => { 
         if (isAutoRefreshActive) { 
-            console.log('Auto-refresh: Actualizando gráfico...'); 
             loadDoughnutChartData(); 
         } 
     }, DashboardRefreshConfig.CHART_INTERVAL); 
@@ -63,7 +54,6 @@ function startAutoRefresh() {
     // Intervalo para tablas (empleados y proyectos top) 
     tablesRefreshInterval = setInterval(() => { 
         if (isAutoRefreshActive) {
-            console.log('Auto-refresh: Actualizando tablas...'); 
             if (typeof loadTopEmployeesProgress === 'function') { 
                 loadTopEmployeesProgress(); 
             } 
@@ -73,7 +63,6 @@ function startAutoRefresh() {
             } 
         } 
     }, DashboardRefreshConfig.TABLES_INTERVAL);
-    console.log('Auto-refresh iniciado: Stats cada ' + (DashboardRefreshConfig.STATS_INTERVAL/1000) + 's, Charts cada ' + (DashboardRefreshConfig.CHART_INTERVAL/1000) + 's'); 
 } 
 
 function stopAutoRefresh() { 
@@ -91,7 +80,6 @@ function stopAutoRefresh() {
         clearInterval(tablesRefreshInterval); 
         tablesRefreshInterval = null; 
     } 
-    console.log('Auto-refresh detenido'); 
 } 
 
 function toggleAutoRefresh() { 
@@ -114,7 +102,6 @@ function toggleAutoRefresh() {
         } 
 
         refreshAllData(); 
-        console.log('Auto-refresh reanudado'); 
     } else { 
         if (toggleBtn) { 
             toggleBtn.innerHTML = '<i class="mdi mdi-play"></i>'; 
@@ -127,8 +114,6 @@ function toggleAutoRefresh() {
             statusText.classList.remove('text-muted'); 
             statusText.classList.add('text-warning'); 
         } 
-
-        console.log('Auto-refresh pausado'); 
     } 
     return isAutoRefreshActive; 
 } 
@@ -254,10 +239,8 @@ function updateTimestamp() {
 function setupVisibilityDetection() { 
     document.addEventListener('visibilitychange', function() { 
         if (document.hidden) { 
-            console.log('Página oculta - pausando auto-refresh'); 
             stopAutoRefresh(); 
         } else { 
-            console.log('Página visible - reanudando auto-refresh'); 
             if (isAutoRefreshActive) { 
                 refreshAllData(); 
                 startAutoRefresh(); 
@@ -271,9 +254,6 @@ function setupVisibilityDetection() {
 } 
 
 function loadDashboardStats() { 
-
-    console.log('Cargando estadísticas del dashboard...'); 
-
     fetch('../php/manager_get_dashboard_stats.php', { 
         method: 'GET', 
         headers: { 
@@ -289,7 +269,6 @@ function loadDashboardStats() {
     }) 
 
     .then(function(data) { 
-        console.log('Estadísticas recibidas:', data); 
         if (data.success && data.stats) { 
             updateStatisticsDisplay(data.stats); 
         } else { 
@@ -354,8 +333,6 @@ function updateStatisticsDisplay(stats) {
         percentage: null, 
         trend: stats.proyectos_vencidos > 0 ? 'danger' : 'success' 
     }); 
-
-    console.log('Estadísticas actualizadas exitosamente'); 
 } 
 
 function updateStatElement(index, data) { 
@@ -425,8 +402,6 @@ function showErrorInStats() {
 } 
 
 function loadDoughnutChartData() { 
-    console.log('🍩 Cargando datos para gráfico de dona...'); 
-
     fetch('../php/manager_get_dashboard_stats.php', { 
         method: 'GET', 
         headers: { 
@@ -492,10 +467,7 @@ function updateDoughnutChart(stats) {
         // Actualizar datos 
         window.doughnutChart.data.datasets[0].data = newData; 
         window.doughnutChart.update(); 
-        // Actualizar leyenda personalizada 
         updateDoughnutLegend(stats); 
-        console.log('Gráfico de dona actualizado:', newData); 
-
     } 
 } 
 

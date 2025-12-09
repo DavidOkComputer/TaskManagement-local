@@ -1,4 +1,4 @@
-/**user_objetivo_form.js - Maneja creacion y edicion de objetivos de gerente con restricciones de departamento*/
+/**user_objetivo_form.js para Manejar creacion y edicion de objetivos de gerente */
 
 const editMode = { 
     isEditing: false, 
@@ -66,8 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (editMode.isEditing) {
         cargarObjetivoParaEditar(editMode.objectiveId); 
     }
-    
-    // Setup character counters
     setupCharacterCounters();
 }); 
 
@@ -107,7 +105,6 @@ function loadDepartamentoGerente() {
                     hiddenInput.value = departamento.id_departamento;
                 }
                 
-                console.log('Departamento del usuario cargado:', departamento.nombre);
             } else {
                 showNotification('Error: No se pudo determinar tu departamento', 'error');
             }

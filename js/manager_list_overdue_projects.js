@@ -1,4 +1,4 @@
-/*manager_list_overdue_projects.js para proyectos Vencidosde Todos los Proyectos - filtrado por departamento*/ 
+/*manager_list_overdue_projects.js para proyectos Vencidos de admin*/ 
 
 $(document).ready(function() { 
     loadProyectosVencidosAndChart(); 
@@ -28,10 +28,8 @@ function loadOverdueProjectsData() {
         dataType: 'json', 
         timeout: 10000, 
         success: function(response) { 
-            console.log('Overdue projects response:', response); 
             if (response.success) { 
                 populateProyectosVencidosTable(response.data); 
-                console.log('Overdue projects loaded for department:', response.department_id); 
             } else { 
                 showError('Error: ' + response.message); 
             } 
@@ -63,12 +61,10 @@ function loadAllProjectsForChart() {
         dataType: 'json', 
         timeout: 10000, 
         success: function(response) { 
-            console.log('All projects response for chart:', response); 
             
             if (response.success) { 
                 // Actualizar el grafico con todos los proyectos del departamento 
                 updateProyectoStatusChart(response.data, response.total); 
-                console.log('Chart updated for department:', response.department_id); 
             } else { 
                 console.error('Error: ' + response.message); 
             } 
@@ -245,14 +241,6 @@ function updateProyectoStatusChart(proyectos, total) {
     if (legendElement && window.doughnutChart.generateLegend) { 
         legendElement.innerHTML = window.doughnutChart.generateLegend(); 
     } 
-
-    console.log('Chart updated (Overdue Projects Page) with department data:', { 
-        pendientes: statusCounts['pendiente'], 
-        completados: statusCounts['completado'], 
-        vencidos: statusCounts['vencido'], 
-        enProgreso: statusCounts['en proceso'], 
-        total: total 
-    }); 
 } 
 
 function formatDate(dateString) { 
@@ -311,7 +299,6 @@ function showError(message) {
 } 
 
 function viewProyectoVencidoDetails(proyectoId) { 
-    console.log('Viewing overdue project details:', proyectoId); 
     window.location.href = '../revisarProyectosGerente/?id=' + proyectoId; 
 } 
 
@@ -329,5 +316,4 @@ function bulkActionProyectosVencidos(action) {
         alert('Por favor seleccione al menos un proyecto vencido'); 
         return; 
     } 
-    console.log('Performing action:', action, 'on overdue projects:', selected); 
 } 

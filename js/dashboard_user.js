@@ -1,8 +1,4 @@
-/*
- * dashboard_user.js
- * JavaScript para el dashboard de usuario
- * Inicializa gráficos y carga datos específicos del usuario
- */
+/*dashboard_user.js para el dashboard del usuario inicializa graficos especificos del usuario*/
 
 (function($) {
     'use strict';
@@ -18,14 +14,14 @@
                 datasets: [{
                     data: [0, 0, 0],
                     backgroundColor: [
-                        "#ffce56",  // Amarillo - pendientes
-                        "#28a745",  // Verde - completadas
-                        "#dc3545"   // Rojo - vencidas
+                        "#666666",  //gris- pendientes
+                        "#009b4a",  // Verde - completadas
+                        "#000000"   // negro - vencidas
                     ],
                     borderColor: [
-                        "#ffce56",
-                        "#28a745",
-                        "#dc3545"
+                        "#666666",  //gris- pendientes
+                        "#009b4a",  // Verde - completadas
+                        "#000000"   // negro - vencidas
                     ],
                 }]
             },
@@ -101,9 +97,4 @@ function updateUserTasksChart(tareasPendientes, tareasCompletadas, tareasVencida
         legendElement.innerHTML = window.doughnutChart.generateLegend();
     }
 
-    console.log('Chart actualizado:', {
-        pendientes: tareasPendientes,
-        completadas: tareasCompletadas,
-        vencidas: tareasVencidas
-    });
 }

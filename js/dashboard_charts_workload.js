@@ -7,7 +7,6 @@ let workloadChartState = {
 };
 
 function initializeWorkloadChart() {
-    console.log('Inicializando gráfico de distribución de carga de trabajo...');
     setupWorkloadDropdownListener();
     loadWorkloadDistribution();
 }
@@ -34,12 +33,9 @@ function setupWorkloadDropdownListener() {
             const deptId = parseInt(departmentItem.getAttribute('data-department-id'));
             const deptName = departmentItem.getAttribute('data-department-name') || 'Departamento';
             
-            console.log('Departamento seleccionado para workload:', deptId, deptName);
             selectDepartmentForWorkload(deptId, deptName);
         }
     });
-
-    console.log('Listener de dropdown configurado para workload chart');
 }
 
 function selectDepartmentForWorkload(deptId, deptName) {
@@ -47,7 +43,6 @@ function selectDepartmentForWorkload(deptId, deptName) {
     workloadChartState.selectedDepartmentName = deptName;
     workloadChartState.currentMode = 'projects';
     
-    console.log(`Cargando proyectos para departamento: ${deptName} (ID: ${deptId})`);
     loadProjectWorkload(deptId, deptName);
 }
 
@@ -56,12 +51,10 @@ function resetWorkloadToComparison() {
     workloadChartState.selectedDepartmentName = null;
     workloadChartState.currentMode = 'departments';
     
-    console.log('Volviendo a vista de departamentos...');
     loadWorkloadDistribution();
 }
 
 function loadWorkloadDistribution() {
-    console.log('Cargando distribución de carga de trabajo por departamento...');
     
     fetch('../php/get_task_workload_by_department.php')
         .then(response => {
@@ -71,7 +64,6 @@ function loadWorkloadDistribution() {
             return response.json();
         })
         .then(data => {
-            console.log('Datos de carga de trabajo cargados:', data);
             if (data.success && data.data) {
                 updateWorkloadChart(data.data, 'Distribución de Carga de Trabajo por Departamento');
             } else {
@@ -86,7 +78,6 @@ function loadWorkloadDistribution() {
 }
 
 function loadProjectWorkload(deptId, deptName) {
-    console.log(`Cargando carga de trabajo por proyectos del departamento: ${deptName}...`);
     
     fetch(`../php/get_task_workload_by_project.php?id_departamento=${deptId}`)
         .then(response => {
@@ -96,7 +87,6 @@ function loadProjectWorkload(deptId, deptName) {
             return response.json();
         })
         .then(data => {
-            console.log('Datos de proyectos cargados:', data);
             if (data.success && data.data) {
                 updateWorkloadChart(data.data, `Carga de Trabajo - ${deptName}`);
             } else {
@@ -218,8 +208,6 @@ function updateWorkloadChart(data, chartTitle) {
         data: chartData,
         options: options
     });
-    
-    console.log('Gráfico de carga de trabajo actualizado - Total de tareas: ' + data.total_tareas);
 }
 
 function showWorkloadChartError(message) {
@@ -241,7 +229,6 @@ function showWorkloadChartError(message) {
 }
 
 function refreshWorkloadChart() {
-    console.log('Refrescando gráfico de carga de trabajo...');
     
     if (workloadChartState.currentMode === 'projects' && workloadChartState.selectedDepartmentId) {
         loadProjectWorkload(workloadChartState.selectedDepartmentId, workloadChartState.selectedDepartmentName);
@@ -266,7 +253,6 @@ window.refreshWorkloadChart = refreshWorkloadChart;
 document.addEventListener('DOMContentLoaded', function() {
     const workloadCanvas = document.getElementById('workloadChart');
     if (workloadCanvas) {
-        console.log('Workload chart canvas detectado, inicializando...');
         initializeWorkloadChart();
     }
 });

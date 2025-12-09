@@ -1,11 +1,8 @@
 /*manager_charts_line.js grafica lineal para ver el progreso de los proyectos sobre el tiempo*/
 
 function initializeManagerLineChart() {
-    console.log('Inicializando gráfica de línea (tendencia de proyectos)...');
-    
     const deptId = managerDashboard.department.id;
     const deptName = managerDashboard.department.nombre;
-    
     loadLineData(deptId, deptName);
 }
 
@@ -162,8 +159,6 @@ function renderLineChart(data, deptName) {
         data: chartData,
         options: options
     });
-    
-    console.log('Gráfica de línea actualizada');
 }
 
 function refreshManagerLineChart(deptId, deptName) {

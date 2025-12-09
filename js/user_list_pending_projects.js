@@ -2,13 +2,13 @@
 
 $(document).ready(function() {
     loadProyectosPendientesAndChart();
-    setInterval(loadProyectosPendientesAndChart, 30000);//actualizar cada 30s
+    setInterval(loadProyectosPendientesAndChart, 60000);//actualizar cada 60s
 });
 
 function loadProyectosPendientesAndChart() {
     showLoadingState();
     
-    // Hacer dos llamadas AJAX: una para proyectos pendientes y otra para todos los proyectos
+    // Hacer dos llamadas AJAX una para proyectos pendientes y otra para todos los proyectos
     $.when(
         loadPendingProjectsData(),
         loadAllProjectsForChart()
@@ -208,14 +208,6 @@ function updateProyectoStatusChart(proyectos, total) {
     
     // Actualizar la leyenda
     document.getElementById('doughnut-chart-legend').innerHTML = window.doughnutChart.generateLegend();
-    
-    console.log('Chart updated (Pending Projects Page):', {
-        pendientes: statusCounts['pendiente'],
-        completados: statusCounts['completado'],
-        vencidos: statusCounts['vencido'],
-        enProgreso: statusCounts['en proceso'],
-        total: total
-    });
 }
 
 function getEstadoClass(estado_style) {
@@ -276,7 +268,6 @@ function showError(message) {
 }
 
 function viewProyectoDetails(proyectoId) {
-    console.log('Viewing project details:', proyectoId);
 }
 
 function getSelectedProyectos() {
@@ -294,6 +285,4 @@ function bulkActionProyectos(action) {
         alert('Por favor seleccione al menos un proyecto');
         return;
     }
-    
-    console.log('Performing action:', action, 'on projects:', selected);
 }

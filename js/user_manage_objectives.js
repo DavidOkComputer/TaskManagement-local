@@ -57,7 +57,6 @@ function cargarObjetivos() {
         }) 
 
         .then(data => { 
-            console.log('Información recibida:', data); 
 
             if (data.success && data.objetivos) { 
                 allObjectives = data.objetivos; 

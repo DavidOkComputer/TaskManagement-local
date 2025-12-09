@@ -1,8 +1,6 @@
 /*manager_charts_bar.js grafica de barras para el progreso de los proyectos del departamento*/
 
 function initializeManagerBarChart() {
-    console.log('Inicializando gráfica de barras (progreso de proyectos)...');
-    
     const deptId = managerDashboard.department.id;
     const deptName = managerDashboard.department.nombre;
     
@@ -155,8 +153,6 @@ function renderBarChart(projects, deptName) {
         data: chartData,
         options: options
     });
-    
-    console.log('Gráfica de barras actualizada');
 }
 
 function refreshManagerBarChart(deptId, deptName) {

@@ -57,7 +57,6 @@ function cargarDepartamentoUsuario() {
             if (deptHidden) { 
                 deptHidden.value = dept.id_departamento; 
             } 
-            console.log('Departamento cargado:', dept.nombre, '(ID:', dept.id_departamento + ')'); 
 
         } else { 
             const errorMsg = data.message || 'No se pudo cargar el departamento'; 
@@ -66,8 +65,6 @@ function cargarDepartamentoUsuario() {
             if (deptDisplay) { 
                 deptDisplay.value = 'No asignado'; 
             } 
-
-            // Log debug info if available 
 
             if (data.debug) { 
                 console.error('Debug info:', data.debug); 

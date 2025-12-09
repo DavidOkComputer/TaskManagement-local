@@ -97,7 +97,7 @@
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009b4a',
           }
       }
       var salesTop = new Chart(graphGradient, {

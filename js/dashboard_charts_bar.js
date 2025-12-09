@@ -1,7 +1,6 @@
 /*dashboard_charts_bar.js grafica de barras para progreso de proyectos */ 
 
 function prepareCompletedProjectsByDepartment(departments, projects) { 
-    console.log('Preparando: Proyectos completados por departamento'); 
     const data = { 
         labels: [], 
         data: [], 
@@ -20,8 +19,6 @@ function prepareCompletedProjectsByDepartment(departments, projects) {
         data.backgroundColor.push(dashboardChartsInstance.departmentColors[index % dashboardChartsInstance.departmentColors.length]); 
         data.borderColor.push(dashboardChartsInstance.departmentBorderColors[index % dashboardChartsInstance.departmentBorderColors.length]); 
     }); 
-
-    console.log('Datos preparados:', data); 
     return data; 
 } 
 
@@ -96,8 +93,6 @@ function updateBarChart(data) {
         data: chartData, 
         options: options 
     }); 
-
-    console.log('Bar chart actualizado'); 
 } 
 
 function updateBarChartForDepartment(projects, deptName) { 

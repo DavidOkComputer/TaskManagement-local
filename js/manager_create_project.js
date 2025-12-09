@@ -1,4 +1,4 @@
-/**manager_create_project.js - Creación y edición de proyectos para gerentes con restricciones de departamento*/
+/**manager_create_project.js para la creación y edición de proyectos para gerentes*/
  
 const editMode = {
     isEditing: false,
@@ -74,8 +74,6 @@ function cargarDepartamentoGerente() {
         // Establecer el valor en el campo oculto
         hiddenInput.value = departamento.id_departamento;
         
-        console.log('Departamento del gerente cargado:', departamento.nombre);
-        
         // Ahora cargar los usuarios del mismo departamento
         loadUsuariosDepartamento();
       } else {
@@ -101,7 +99,6 @@ function loadUsuariosDepartamento() {
         app.usuarios = data.usuarios;
         populateUsuariosSelect(data.usuarios);
         populateGrupalModal(data.usuarios);
-        console.log(`${data.usuarios.length} usuarios del departamento cargados`);
       } else {
         console.error('Error al cargar usuarios:', data.message);
         showAlert('Error al cargar usuarios del departamento', 'warning');

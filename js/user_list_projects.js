@@ -41,7 +41,6 @@ function startAutoRefresh() {
         clearInterval(autoRefreshInterval); 
     } 
     autoRefreshInterval = setInterval(() => { 
-        console.log('Auto-refresh: Actualizando datos del usuario...'); 
         loadUserDashboardStats();
         loadMyTasks();
         loadMyProjectsProgress();
@@ -54,7 +53,6 @@ function stopAutoRefresh() {
     if (autoRefreshInterval) { 
         clearInterval(autoRefreshInterval); 
         autoRefreshInterval = null; 
-        console.log('Auto-refresh detenido'); 
     } 
 } 
 
@@ -69,7 +67,6 @@ function loadUserDashboardStats() {
         .then(data => { 
             if (data.success && data.stats) { 
                 updateUserDashboardStats(data.stats); 
-                console.log('Estadísticas del usuario actualizadas:', data.stats); 
             } else { 
                 console.error('Error al cargar estadísticas:', data.message); 
             } 
@@ -193,8 +190,6 @@ function updateUserTasksChart(pendientes, completadas, vencidas) {
         data: chartData,
         options: options
     });
-
-    console.log('Gráfico de tareas actualizado:', {pendientes, completadas, vencidas, total});
 }
 
 function loadMyTasks() {
@@ -208,7 +203,6 @@ function loadMyTasks() {
         .then(data => {
             if (data.success) {
                 displayMyTasks(data.tareas);
-                console.log('Mis tareas cargadas:', data.tareas);
             } else {
                 console.warn('Aviso al cargar tareas:', data.message);
                 displayEmptyTasksState();
@@ -280,7 +274,6 @@ function loadMyProjectsProgress() {
         .then(data => {
             if (data.success) {
                 displayMyProjectsProgress(data.proyectos);
-                console.log('Mi progreso por proyecto cargado:', data.proyectos);
             } else {
                 console.warn('Aviso al cargar progreso:', data.message);
                 displayEmptyProjectsProgressState();
@@ -355,7 +348,6 @@ function loadTopProjects() {
         .then(data => {
             if (data.success && data.proyectos) {
                 displayTopProjects(data.proyectos.slice(0, 10));
-                console.log('Top proyectos cargados:', data.proyectos.length);
             } else {
                 console.warn('Aviso al cargar top proyectos:', data.message);
                 displayEmptyTopProjectsState();
@@ -446,7 +438,6 @@ function cargarProyectos() {
             return response.json();
         }) 
         .then(data => { 
-            console.log('Información recibida:', data); 
             if (data.success && data.proyectos) { 
                 allProjects = data.proyectos; 
                 filteredProjects = [...allProjects]; 
@@ -497,7 +488,6 @@ function refreshProjectsData() {
                 } 
                 
                 displayProjects(filteredProjects); 
-                console.log('Datos de proyectos actualizados exitosamente'); 
             } 
         }) 
         .catch(error => { 

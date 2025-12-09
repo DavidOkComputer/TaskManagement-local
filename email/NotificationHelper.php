@@ -8,9 +8,9 @@
  */
 
 require_once __DIR__ . '/EmailService.php';
-require_once __DIR__ . '/EmailTemplates.php';
+require_once __DIR__ . '/EmailTemplate.php';
 
-class NotificationHelper {
+class NotificationHelpers {
     private $conn;
     private $emailService;
     private $templates;

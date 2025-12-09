@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } 
     } 
     loadDepartamentos();
-    //cargar departamentos al cargar la pagina
     initFileUpload();
     //inicializar carga de archivos
     const form = document.getElementById('formCrearObjetivo');

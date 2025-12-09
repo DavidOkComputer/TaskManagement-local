@@ -38,12 +38,10 @@ let managerDashboard = {
 };
 
 function initializeManagerDashboard() {
-    console.log('INICIALIZANDO DASHBOARD DE GERENTE');
     
     //cargar el departamento del gerente luego los graficso
     loadManagerDepartment()
         .then(() => {
-            console.log('Departamento cargado:', managerDashboard.department.nombre);
             initializeAllCharts();
             startAutoRefresh();
         })
@@ -94,8 +92,6 @@ function updateDepartmentDisplay(deptName) {
 }
 
 function initializeAllCharts() {
-    console.log('Inicializando todas las gráficas...');
-    
     initializeManagerDoughnutChart();
     
     setTimeout(() => {
@@ -121,13 +117,10 @@ function initializeAllCharts() {
 
 function refreshAllCharts() {
     if (managerDashboard.isRefreshing) {
-        console.log('Refresh en progreso, saltando...');
         return;
     }
     
     managerDashboard.isRefreshing = true;
-    console.log('Refrescando datos del dashboard...', new Date().toLocaleTimeString());
-    
     const deptId = managerDashboard.department.id;
     const deptName = managerDashboard.department.nombre;
     
@@ -140,7 +133,6 @@ function refreshAllCharts() {
         refreshManagerWorkloadChart(deptId, deptName)
     ])
     .then(() => {
-        console.log('Todas las gráficas actualizadas');
     })
     .catch(error => {
         console.error('Error en refresh:', error);
@@ -158,21 +150,17 @@ function startAutoRefresh() {
     managerDashboard.refreshInterval = setInterval(() => {
         refreshAllCharts();
     }, managerDashboard.refreshRate);
-    
-    console.log(`Auto-refresh iniciado: cada ${managerDashboard.refreshRate / 1000} segundos`);
 }
 
 function stopAutoRefresh() {
     if (managerDashboard.refreshInterval) {
         clearInterval(managerDashboard.refreshInterval);
         managerDashboard.refreshInterval = null;
-        console.log('Auto-refresh detenido');
     }
 }
 
 function setRefreshRate(milliseconds) {
     managerDashboard.refreshRate = milliseconds;
-    console.log(`Intervalo actualizado a ${milliseconds / 1000} segundos`);
     startAutoRefresh();
 }
 

@@ -53,7 +53,6 @@ function cargarObjetivos() {
             return response.json(); 
         }) 
         .then(data => { 
-            console.log('Información recibida:', data); 
             if (data.success && data.objetivos) { 
                 allObjectives = data.objetivos; 
                 filteredObjectives = [...allObjectives]; 

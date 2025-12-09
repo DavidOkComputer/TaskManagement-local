@@ -83,7 +83,6 @@ function loadUsuarios() {
                 app.usuarios = data.usuarios; 
                 populateUsuariosSelect(data.usuarios); 
                 populateGrupalModal(data.usuarios); 
-                console.log(`${data.usuarios.length} usuarios cargados`); 
             } else { 
                 console.error('Error al cargar usuarios:', data.message); 
             } 
@@ -97,7 +96,6 @@ function loadUsuarios() {
 function loadUsuariosByDepartamento(idDepartamento) { 
 
     if (!idDepartamento || idDepartamento === '') { 
-        console.log('No hay departamento seleccionado, cargando todos los usuarios'); 
         app.usuariosPorDepartamento = app.usuarios; 
         populateUsuariosSelect(app.usuarios); 
         populateGrupalModal(app.usuarios); 
@@ -110,8 +108,6 @@ function loadUsuariosByDepartamento(idDepartamento) {
             if (data.success && data.usuarios) { 
                 app.usuariosPorDepartamento = data.usuarios; 
                 app.departamentoSeleccionado = idDepartamento; 
-
-                console.log(`${data.usuarios.length} usuarios cargados para el departamento ${idDepartamento}`); 
 
                 // Actualizar los selectores con usuarios filtrados 
                 populateUsuariosSelect(data.usuarios); 
@@ -155,8 +151,7 @@ function setupDepartmentChangeHandler() {
         const idDepartamento = this.value; 
         const participanteSelect = document.getElementById('id_participante'); 
         const tipoProyecto = document.querySelector('input[name="id_tipo_proyecto"]:checked')?.value; 
-        console.log('Departamento cambiado a:', idDepartamento); 
-
+        
         // Validar usuario individual seleccionado 
         if (tipoProyecto == '2' && participanteSelect.value && participanteSelect.value !== '0') { 
             const usuarioSeleccionado = parseInt(participanteSelect.value); 

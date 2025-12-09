@@ -31,8 +31,7 @@ function initAdvancedDepartmentForm() {
     setupNetworkDetection(); 
     setupFormRecovery(); 
     setupConfirmationDialogs(); 
-    setupKeyboardShortcuts(); 
-    console.log('Advanced Department Form initialized'); 
+    setupKeyboardShortcuts();  
 } 
 
 function setupFormValidation() { 
@@ -317,7 +316,6 @@ function saveFormData() {
             timestamp: new Date().toISOString() 
         }; 
         localStorage.setItem('departamento_draft', JSON.stringify(data)); 
-        console.log('Form data auto-saved'); 
     } 
 } 
  

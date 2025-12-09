@@ -32,8 +32,6 @@ function shortenProjectTitle(title, maxLength = 15) {
 }
 
 function initializeDashboardCharts() {
-    console.log('Inicializando gráficos del dashboard...');
-    
     loadUserDepartmentView();
     initializeLineChart();
     initializeAreaChart();
@@ -41,45 +39,23 @@ function initializeDashboardCharts() {
 }
 
 function initializeScatterChart() {
-    console.log('Inicializando gráfico de dispersión...');
     
     const hasDepartmentSelected = dashboardChartsInstance.currentDepartment && 
                                   dashboardChartsInstance.currentDepartment.id &&
                                   dashboardChartsInstance.currentDepartment.id > 0;
-    
-    console.log('Scatter chart - Department selected?', hasDepartmentSelected);
-    console.log('Current department state:', dashboardChartsInstance.currentDepartment);
-    
     if (hasDepartmentSelected) {
         //cargar eficiencia de la persona por departamento seleccionado
-        console.log('Loading person efficiency for:', dashboardChartsInstance.currentDepartment.name);
         loadPersonEfficiencyByDepartment(
             dashboardChartsInstance.currentDepartment.id,
             dashboardChartsInstance.currentDepartment.name
         );
     } else {
         //cargar comparacion de eficiencia entre departamentos
-        console.log('Loading department efficiency comparison (all departments)');
         loadDepartmentEfficiency();
     }
 }
-/*
-function debugChartState() {
-    console.log('╔════════════════════════════════════════╗');
-    console.log('║ DASHBOARD CHARTS STATE DEBUG           ║');
-    console.log('╚════════════════════════════════════════╝');
-    console.log('Current Department:', dashboardChartsInstance.currentDepartment);
-    console.log('Active Charts:');
-    console.log('  - Line Chart:', dashboardChartsInstance.charts.lineChart ? ' Active' : ' Not initialized');
-    console.log('  - Area Chart:', dashboardChartsInstance.charts.areaChart ? ' Active' : ' Not initialized');
-    console.log('  - Scatter Chart:', dashboardChartsInstance.charts.scatterChart ? ' Active' : ' Not initialized');
-    console.log('  - Bar Chart:', dashboardChartsInstance.charts.barChart ? ' Active' : ' Not initialized');
-    console.log('  - Doughnut Chart:', dashboardChartsInstance.charts.doughnutChart ? ' Active' : ' Not initialized');
-    console.log('╚════════════════════════════════════════╝');
-}*/
 
 function loadPersonEfficiencyByDepartment(deptId, deptName) {
-    console.log(` Loading person efficiency for department: ${deptName} (ID: ${deptId})`);
     
     if (!dashboardChartsInstance.currentDepartment || //validar que los estados coincidan
         dashboardChartsInstance.currentDepartment.id !== deptId) {
@@ -93,16 +69,14 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
             }
             return response.text();
         })
-        .then(text => {
-            console.log('Raw API response for person scatter chart:', text.substring(0, 200));
-            
+
+        .then(text => {    
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response');
             }
             
             try {
                 const data = JSON.parse(text);
-                console.log(' Person efficiency data loaded:', data.data.details.length, 'people');
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -112,7 +86,6 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
         })
         .then(data => {
             if (data.success && data.data) {
-                console.log('Updating scatter chart to person mode');
                 updateScatterChart(data.data, 'person', deptName);
             } else {
                 console.warn('Error in person efficiency data:', data.message);
@@ -127,8 +100,6 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
 }
 
 function loadDepartmentEfficiency() {
-    console.log('Cargando datos de eficiencia departamental...');
-    
     fetch('../php/get_department_efficiency.php')
         .then(response => {
             if (!response.ok) {
@@ -137,15 +108,12 @@ function loadDepartmentEfficiency() {
             return response.text();
         })
         .then(text => {
-            console.log('Raw API response for scatter chart:', text.substring(0, 200));
-            
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response');
             }
             
             try {
                 const data = JSON.parse(text);
-                console.log('Datos de eficiencia departamental cargados:', data);
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -361,8 +329,6 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
     });
     
     addScatterChartLegend(mode, deptName, data);//agregar texto de leyenda debajo del grafico
-    
-    console.log(`Gráfico de dispersión actualizado: ${chartTitle}`);
 }
 
 function addScatterChartLegend(mode, deptName, data) {
@@ -416,13 +382,10 @@ function addScatterChartLegend(mode, deptName, data) {
 }
 
 function initializeAreaChart() {
-    console.log('Inicializando gráfico de área de tendencias de tareas...');
     loadUserDepartmentForAreaChart();
 }
 
 function loadUserDepartmentForAreaChart() {
-    console.log('Cargando vista de departamento del usuario para gráfico de área...');
-    
     fetch('../php/get_user_department.php')
         .then(response => {
             if (!response.ok) {
@@ -433,7 +396,6 @@ function loadUserDepartmentForAreaChart() {
         .then(data => {
             if (data.success && data.department) {
                 const userDept = data.department;
-                console.log('Cargando tendencia de tareas del departamento:', userDept.nombre);
                 loadTaskTrendForDepartment(userDept.id_departamento, userDept.nombre);
             } else {
                 console.warn('No se pudo obtener el departamento del usuario, mostrando comparación');
@@ -447,8 +409,6 @@ function loadUserDepartmentForAreaChart() {
 }
 
 function loadTaskTrendForDepartment(deptId, deptName) {
-    console.log(`Cargando tendencia de tareas para: ${deptName}`);
-    
     fetch(`../php/get_task_trends.php?id_departamento=${deptId}&weeks=12`)
         .then(response => {
             if (!response.ok) {
@@ -457,15 +417,12 @@ function loadTaskTrendForDepartment(deptId, deptName) {
             return response.text();
         })
         .then(text => {
-            console.log('Raw API response for department area chart:', text.substring(0, 200));
-            
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response');
             }
             
             try {
                 const data = JSON.parse(text);
-                console.log('Datos de tendencia de tareas cargados:', data);
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -487,8 +444,6 @@ function loadTaskTrendForDepartment(deptId, deptName) {
 }
 
 function loadTaskTrendComparison() {
-    console.log('Cargando vista de comparación de tendencias de tareas (todos los departamentos)');
-    
     fetch('../php/get_task_trends.php?weeks=12')
         .then(response => {
             if (!response.ok) {
@@ -497,15 +452,12 @@ function loadTaskTrendComparison() {
             return response.text();
         })
         .then(text => {
-            console.log('Raw API response for comparison area chart:', text.substring(0, 200));
-            
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response. Check: 1) Is get_task_trends.php deployed? 2) Is PHP file in correct location (/php/)?');
             }
             
             try {
                 const data = JSON.parse(text);
-                console.log('JSON parsed successfully:', data);
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -515,7 +467,6 @@ function loadTaskTrendComparison() {
         })
         .then(data => {
             if (data.success && data.data) {
-                console.log('Datos de comparación de tareas cargados:', data);
                 updateAreaChart(data, 'comparison');
             } else {
                 console.error('Error en datos de comparación:', data.message || 'Unknown error');
@@ -637,17 +588,13 @@ function updateAreaChart(data, mode, deptName = null) {
         data: chartData,
         options: options
     });
-    
-    console.log('Gráfico de área actualizado: ' + chartTitle);
 }
 
 function initializeLineChart() {
-    console.log('Inicializando gráfico de línea de tendencias...');
     loadUserDepartmentForLineChart();
 }
 
 function loadUserDepartmentForLineChart() {
-    console.log('Cargando vista de departamento del usuario para gráfico de línea...');
     
     fetch('../php/get_user_department.php')
         .then(response => {
@@ -659,7 +606,6 @@ function loadUserDepartmentForLineChart() {
         .then(data => {
             if (data.success && data.department) {
                 const userDept = data.department;
-                console.log('Cargando tendencia del departamento:', userDept.nombre);
                 loadProjectTrendForDepartment(userDept.id_departamento, userDept.nombre);
             } else {
                 console.warn('No se pudo obtener el departamento del usuario, mostrando comparación');
@@ -673,7 +619,6 @@ function loadUserDepartmentForLineChart() {
 }
 
 function loadProjectTrendForDepartment(deptId, deptName) {
-    console.log(`Cargando tendencia de proyectos para: ${deptName}`);
     
     fetch(`../php/get_project_trends.php?id_departamento=${deptId}&weeks=12`)
         .then(response => {
@@ -683,7 +628,6 @@ function loadProjectTrendForDepartment(deptId, deptName) {
             return response.text();
         })
         .then(text => {
-            console.log('Raw API response for department:', text);
             
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response');
@@ -691,7 +635,6 @@ function loadProjectTrendForDepartment(deptId, deptName) {
             
             try {
                 const data = JSON.parse(text);
-                console.log('Datos de tendencia cargados:', data);
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -713,7 +656,6 @@ function loadProjectTrendForDepartment(deptId, deptName) {
 }
 
 function loadProjectTrendComparison() {
-    console.log('Cargando vista de comparación de tendencias (todos los departamentos)');
     
     fetch('../php/get_project_trends.php?weeks=12')
         .then(response => {
@@ -723,15 +665,12 @@ function loadProjectTrendComparison() {
             return response.text();
         })
         .then(text => {
-            console.log('Raw API response:', text);
-            
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response');
             }
             
             try {
                 const data = JSON.parse(text);
-                console.log('JSON parsed successfully:', data);
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -741,7 +680,6 @@ function loadProjectTrendComparison() {
         })
         .then(data => {
             if (data.success && data.data) {
-                console.log('Datos de comparación cargados:', data);
                 updateLineChart(data, 'comparison');
             } else {
                 console.error('Error en datos de comparación:', data.message || 'Unknown error');
@@ -858,13 +796,9 @@ function updateLineChart(data, mode, deptName = null) {
         data: chartData,
         options: options
     });
-    
-    console.log('Gráfico de línea actualizado: ' + chartTitle);
 }
 
 function loadUserDepartmentView() {
-    console.log('Cargando vista del departamento del usuario...');
-    
     fetch('../php/get_user_department.php')//fetch el departamento del usuario actual
         .then(response => {
             if (!response.ok) {
@@ -875,7 +809,6 @@ function loadUserDepartmentView() {
         .then(data => {
             if (data.success && data.department) {
                 const userDept = data.department;
-                console.log('Departamento del usuario:', userDept);
                 
                 dashboardChartsInstance.currentDepartment = {//establecer el departamento actual al departamento del ususario actual
                     id: userDept.id_departamento,
@@ -898,8 +831,6 @@ function loadUserDepartmentView() {
 }
 
 function loadComparisonView() {
-    console.log('Cargando vista de comparación (todos los departamentos)');
-    console.log('Reseteando estado a comparación...');
     
     dashboardChartsInstance.currentDepartment = null;//reiniciar el estado actual del departamento
     
@@ -911,12 +842,7 @@ function loadComparisonView() {
         if (deptResponse.success && projResponse.success) {
             const departments = deptResponse.departamentos;
             const projects = projResponse.proyectos;
-            
-            console.log('Datos de comparación obtenidos - actualizando gráficos...');
-            
             processComparisonData(departments, projects);//procesar informacion para graficas de comparacion, de barraws y dona
-            
-            console.log('Gráficos de bar y doughnut actualizados');
         } else {
             console.error('Error fetching data for comparison view');
         }
@@ -927,9 +853,6 @@ function loadComparisonView() {
 }
 
 function processComparisonData(departments, projects) {
-    console.log('Procesando datos de comparación...');
-    console.log('Departamentos:', departments.length);
-    console.log('Proyectos:', projects.length);
     
     //preparar info para la grafica de barras 
     const completedByDept = prepareCompletedProjectsByDepartment(departments, projects);
@@ -943,7 +866,6 @@ function processComparisonData(departments, projects) {
 }
 
 function prepareCompletedProjectsByDepartment(departments, projects) {
-    console.log('Preparando: Proyectos completados por departamento');
     
     const data = {
         labels: [],
@@ -963,13 +885,10 @@ function prepareCompletedProjectsByDepartment(departments, projects) {
         data.backgroundColor.push(dashboardChartsInstance.departmentColors[index % dashboardChartsInstance.departmentColors.length]);
         data.borderColor.push(dashboardChartsInstance.departmentBorderColors[index % dashboardChartsInstance.departmentBorderColors.length]);
     });
-    
-    console.log('Datos preparados:', data);
     return data;
 }
 
 function prepareProjectStatusDistribution(projects) {
-    console.log('Preparando: Distribución de estados de proyectos');
     
     const statusCounts = {
         'completado': 0,
@@ -1006,8 +925,6 @@ function prepareProjectStatusDistribution(projects) {
             'rgba(50, 50, 50, 1)'         // Black
         ]
     };
-    
-    console.log('Datos de estado preparados:', data);
     return data;
 }
 
@@ -1080,8 +997,6 @@ function updateBarChart(data) {
         data: chartData,
         options: options
     });
-    
-    console.log('Bar chart actualizado');
 }
 
 function updateDoughnutChart(data) {
@@ -1137,27 +1052,19 @@ function updateDoughnutChart(data) {
         data: chartData,
         options: options
     });
-    
-    console.log('Doughnut chart actualizado');
 }
 
-function loadDepartmentView(deptId, deptName) {
-    console.log('SWITCHING TO DEPARTMENT VIEW:', deptName);
-    
+function loadDepartmentView(deptId, deptName) {    
     dashboardChartsInstance.currentDepartment = { //actualizar el estado primero
         id: deptId, 
         name: deptName,
         updatedAt: new Date().getTime()
     };
-    
-    console.log('Department state updated:', dashboardChartsInstance.currentDepartment);
-    
-    console.log('Loading department-specific projects data...');//fetch de proyectos para el departamento seleccionado
+
     fetch(`../php/get_projects.php?id_departamento=${deptId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log('Projects data received:', data.proyectos.length, 'projects');
                 processDepepartmentData(data.proyectos, deptName);
             } else {
                 console.error('Error fetching projects:', data.message);
@@ -1167,26 +1074,17 @@ function loadDepartmentView(deptId, deptName) {
             console.error('Error loading department view projects:', error);
         });
     
-    console.log('Loading line chart for department...'); //actualizar grafica lineal para este departamento
+    //actualizar grafica lineal para este departamento
     loadProjectTrendForDepartment(deptId, deptName);
-
-    console.log('Loading area chart for department...');//actualizar grafica de area para este departamento
+    //actualizar grafica de area para este departamento
     loadTaskTrendForDepartment(deptId, deptName);
-    
-    console.log('Loading scatter chart (person efficiency) for department...');//cambiar a eficiencia de empleado cuando se selecciona un departamento
+    //cambiar a eficiencia de empleado cuando se selecciona un departamento
     loadPersonEfficiencyByDepartment(deptId, deptName);
-    
-    console.log('All department-specific charts queued for loading');
 }
 
 function processDepepartmentData(projects, deptName) {
-    console.log(`Procesando datos del departamento: ${deptName}`);
-    console.log(`Total de proyectos: ${projects.length}`);
-    
     const statusDistribution = prepareDepartmentStatusDistribution(projects);//preparar distribucion de estatus para este departamento
-    
     updateDoughnutChartForDepartment(statusDistribution, deptName);//actualizar grafica de dona con informacion especifica del departamento
-    
     updateBarChartForDepartment(projects, deptName);//actualizar grafica de barras para mostrar progreso
 }
 
@@ -1362,48 +1260,31 @@ function updateBarChartForDepartment(projects, deptName) {
 }
 
 function clearDepartmentSelection() {
-    console.log('CLEARING DEPARTMENT SELECTION - SWITCHING TO COMPARISON MODE');
-    console.log('Reseteando state y cargando vista de comparación para TODOS los gráficos...');
 
     dashboardChartsInstance.currentDepartment = null;//reinciar departamento actual primero
-    
     updateDropdownButtonText('Revisar departamentos');//actualizar texto del boton dropdown
     
     //carga sequencial, asegura que cada grafica cargue con informacion de comparacion para buen manejo de estados
-    console.log('Step 1: Loading bar/doughnut comparison data...');
     loadComparisonView();
     
     setTimeout(() => {
-        console.log('Step 2: Loading line chart comparison data...');
         loadProjectTrendComparison();
     }, 300);
     
     setTimeout(() => {
-        console.log('Step 3: Loading area chart comparison data...');
         loadTaskTrendComparison();
     }, 600);
     
     setTimeout(() => {
-        console.log('Step 4: Loading scatter chart department efficiency...');
         loadDepartmentEfficiency();
     }, 900);
     
     setTimeout(() => {
-        console.log('ALL CHARTS UPDATED TO COMPARISON MODE');
-        console.log('Current department state:', dashboardChartsInstance.currentDepartment);
     }, 1200);
 }
 
 function selectDepartmentFromDropdown(deptId, deptName) {
-    console.log('═══════════════════════════════════════════════════════');
-    console.log('DEPARTMENT SELECTION FROM DROPDOWN');
-    console.log('Department:', deptName, '(ID:', deptId + ')');
-    console.log('Previous state:', dashboardChartsInstance.currentDepartment);
-    
     loadDepartmentView(deptId, deptName);//llamada a funcion que maneja las actualizafciones de graficas
-    
-    console.log('New state:', dashboardChartsInstance.currentDepartment);
-    console.log('═══════════════════════════════════════════════════════');
 }
 
 function updateDropdownButtonText(text) {

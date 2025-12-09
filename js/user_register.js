@@ -15,13 +15,11 @@
     });
 
     function initializeApp() {
-        console.log('Inicializando aplicación de registro de usuarios...');
         loadDepartamentos();
         loadRoles();
         // No cargar usuarios/superiores hasta que se seleccione departamento
         clearSuperioresSelect();
         setupEventHandlers();        
-        console.log('Aplicación inicializada correctamente');
     }
 
     function setupEventHandlers() {
@@ -112,7 +110,6 @@
                 if (data.success && data.departamentos) {
                     app.departamentos = data.departamentos;
                     populateDepartamentosSelect(data.departamentos);
-                    console.log(`${data.departamentos.length} departamentos cargados`);
                 } else {
                     console.error('Error al cargar departamentos:', data.message);
                     showAlert('error', 'No se pudieron cargar los departamentos');
@@ -131,7 +128,6 @@
                 if (data.success && data.roles) {
                     app.roles = data.roles;
                     populateRolesSelect(data.roles);
-                    console.log(`${data.roles.length} roles cargados`);
                 } else {
                     console.error('Error al cargar roles:', data.message);
                     showAlert('error', 'No se pudieron cargar los roles');
@@ -152,11 +148,9 @@
                 if (data.success && data.usuarios) {
                     app.usuarios = data.usuarios;
                     populateSuperioresSelect(data.usuarios);
-                    console.log(`${data.usuarios.length} managers del departamento ${departamentoId} cargados para superiores`);
                     
                     // Mostrar mensaje si no hay superiores disponibles
                     if (data.usuarios.length === 0) {
-                        console.log('No hay managers disponibles en este departamento');
                     }
                 } else {
                     console.error('Error al cargar usuarios:', data.message);
@@ -178,7 +172,6 @@
                 if (data.success && data.usuarios) {
                     app.usuarios = data.usuarios;
                     populateSuperioresSelect(data.usuarios);
-                    console.log(`${data.usuarios.length} usuarios con rol 2 cargados para superiores`);
                 } else {
                     console.error('Error al cargar usuarios:', data.message);
                 }
@@ -237,7 +230,6 @@
 
         // Si hay usuarios disponibles, mostrar mensaje en consola
         if (usuarios.length > 0) {
-            console.log(`Se cargaron ${usuarios.length} superiores disponibles para este departamento`);
         }
     }
 

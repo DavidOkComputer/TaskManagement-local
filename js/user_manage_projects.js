@@ -1,4 +1,4 @@
-/*user_manage_projects.js manejar proyectos para usuarios normales, solo pueden ver los proyectos que crearon ellos o particiapnte*/ 
+/*user_manage_projects.js para manejar proyectos para usuarios normales*/ 
 
 const Config = { 
     API_ENDPOINTS: { 
@@ -46,7 +46,6 @@ function startAutoRefresh() {
      
 
     autoRefreshInterval = setInterval(() => { 
-        console.log('Auto-refresh: Actualizando datos de proyectos...'); 
         refreshProjectsData(); 
 
         if (currentProjectIdForUsers) { 
@@ -59,7 +58,6 @@ function stopAutoRefresh() {
     if (autoRefreshInterval) { 
         clearInterval(autoRefreshInterval); 
         autoRefreshInterval = null; 
-        console.log('Auto-refresh detenido'); 
     } 
 } 
 
@@ -94,7 +92,6 @@ function refreshProjectsData() {
                 } 
 
                 displayProjects(filteredProjects); 
-                console.log('Datos de proyectos actualizados exitosamente'); 
             } 
         }) 
 
@@ -132,7 +129,6 @@ function refreshProjectUsersData() {
                 } else { 
                     displayProjectUsers(projectUsersData); 
                 } 
-                console.log('Datos de usuarios del proyecto actualizados'); 
             } 
         }) 
 
@@ -169,8 +165,6 @@ function cargarProyectos() {
         }) 
 
         .then(data => { 
-            console.log('Información recibida:', data); 
-
             if (data.success && data.proyectos) { 
                 allProjects = data.proyectos; 
                 filteredProjects = [...allProjects]; 
@@ -722,7 +716,6 @@ function createProjectUsersModal() {
     if (modalElement) { 
         modalElement.addEventListener('hidden.bs.modal', function () { 
             currentProjectIdForUsers = null; 
-            console.log('Modal cerrado, auto-refresh de usuarios detenido'); 
         }); 
     } 
 } 
@@ -750,7 +743,6 @@ function createUserProgressBar(progress) {
 } 
 
 function viewProjectUsers(projectId, projectName) { 
-    console.log('Cargando usuarios del proyecto:', projectId, projectName); 
     currentProjectIdForUsers = projectId; 
     const modal = new bootstrap.Modal(document.getElementById('projectUsersModal')); 
     document.getElementById('projectUsersModalLabel').textContent =  
@@ -774,7 +766,6 @@ function loadProjectUsers(projectId) {
         }) 
 
         .then(data => { 
-            console.log('Datos de usuarios del proyecto:', data); 
             if (data.success && data.usuarios) { 
                 projectUsersData = data.usuarios; 
                 displayProjectUsers(projectUsersData); 

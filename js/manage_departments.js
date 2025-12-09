@@ -32,7 +32,6 @@ function initializePage() {
     setupEditForm();
     setupSorting();
     setupPagination();
-    console.log('Department Management initialized'); 
 } 
 
 function loadDepartments() { 

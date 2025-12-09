@@ -1,12 +1,10 @@
 /*load_departments_dropdown.js cargar dropdown de seleccion de departamentoss*/
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Inicializando dropdown de departamentos...');
     loadDepartmentsIntoDropdown();
 });
 
 function loadDepartmentsIntoDropdown() {
-    console.log('Cargando departamentos para dropdown...');
     
     fetch('../php/get_departments.php')
         .then(response => {
@@ -16,7 +14,6 @@ function loadDepartmentsIntoDropdown() {
             return response.json();
         })
         .then(data => {
-            console.log('Departamentos cargados:', data);
             
             if (data.success && data.departamentos && Array.isArray(data.departamentos)) {
                 populateDepartmentDropdown(data.departamentos);
@@ -71,10 +68,7 @@ function populateDepartmentDropdown(departamentos) {
             const deptId = parseInt(this.getAttribute('data-department-id'));
             const deptName = this.getAttribute('data-department-name');
             
-            console.log('DEPARTAMENTO SELECCIONADO:', deptName, '(ID:', deptId + ')');
-            
             //actualizar estadisticas del dashboard
-            console.log('Actualizando estadisticas del dashboard principal...');
             if (typeof selectDepartmentFromDropdown === 'function') {
                 selectDepartmentFromDropdown(deptId, deptName);
             } else {
@@ -82,7 +76,6 @@ function populateDepartmentDropdown(departamentos) {
             }
             
             //actualizr grafico de carga de trabajo
-            console.log('Actualizando grafico de deistribucion de carga de trabajo...');
             if (typeof selectDepartmentWorkload === 'function') {
                 selectDepartmentWorkload(deptId, deptName);
             } else {
@@ -106,20 +99,15 @@ function populateDepartmentDropdown(departamentos) {
     
     allLink.addEventListener('click', function(e) {
         e.preventDefault();
-        
-        console.log('VISTA DE COMPARACIÓN SELECCIONADA');
-        console.log('Cargando todos los departamentos...');
-        
+
         //limpiar dashboard principal graficas
-        console.log('Limpiando estadisticas del dashboard principal...');
         if (typeof clearDepartmentSelection === 'function') {
             clearDepartmentSelection();
         } else {
             console.error('ERROR: clearDepartmentSelection() NO ENCONTRADO!');
         }
         
-        // Clear workload chart
-        console.log('Limpieando grafica de distribucion de carga...');
+        //limpiar la grafica de carga de trabajo
         if (typeof resetWorkloadView === 'function') {
             resetWorkloadView();
         } else {
@@ -130,8 +118,6 @@ function populateDepartmentDropdown(departamentos) {
     });
     
     dropdownMenu.appendChild(allLink);
-    
-    console.log(`Dropdown poblado con ${departamentos.length} departamentos`);
 }
 
 function closeDropdownSafely() {
@@ -169,6 +155,5 @@ function escapeHtml(text) {
 }
 
 window.refreshDepartmentsList = function() {
-    console.log('Refrescando lista de departamentos...');
     loadDepartmentsIntoDropdown();
 };

@@ -1,4 +1,4 @@
-/**manager_objetivo_form.js - Maneja creacion y edicion de objetivos de gerente con restricciones de departamento*/
+/**manager_objetivo_form.js para creacion y edicion de objetivos de gerente*/
 
 const editMode = { 
     isEditing: false, 
@@ -33,10 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } 
     } 
     
-    // Cargar departamento del gerente (preseleccionado y deshabilitado)
     loadDepartamentoGerente();
-    
-    // Inicializar carga de archivos
     initFileUpload();
     
     // Maneja la creación/edición del form
@@ -69,8 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (editMode.isEditing) {
         cargarObjetivoParaEditar(editMode.objectiveId); 
     }
-    
-    // Setup character counters
     setupCharacterCounters();
 }); 
 
@@ -109,8 +104,6 @@ function loadDepartamentoGerente() {
                 if (hiddenInput) {
                     hiddenInput.value = departamento.id_departamento;
                 }
-                
-                console.log('Departamento del gerente cargado:', departamento.nombre);
             } else {
                 showNotification('Error: No se pudo determinar tu departamento', 'error');
             }

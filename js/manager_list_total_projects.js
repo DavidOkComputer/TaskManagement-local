@@ -1,8 +1,8 @@
-/*manager_list_total_projects*/ 
+/*manager_list_total_projects para saber todos los proyectos toatles del gerente*/ 
 
 $(document).ready(function() { 
     loadProyectos(); 
-    setInterval(loadProyectos, 30000); // actualizar cada 30s 
+    setInterval(loadProyectos, 60000); // actualizar cada 60s 
 }); 
 
 function loadProyectos() { 
@@ -13,14 +13,10 @@ function loadProyectos() {
         dataType: 'json', 
         timeout: 10000, 
         success: function(response) { 
-            console.log('Response from server:', response); 
-
              
             if (response.success) { 
                 populateProyectosTable(response.data); 
                 hideLoadingState(); 
-                console.log('Proyectos loaded for department:', response.department_id); 
-
             } else { 
                 showError('Error: ' + response.message); 
             } 
@@ -125,14 +121,6 @@ function updateProyectoStatusChart(proyectos, total) {
     if (legendElement && window.doughnutChart.generateLegend) { 
         legendElement.innerHTML = window.doughnutChart.generateLegend(); 
     } 
-
-    console.log('Chart updated with department data:', { 
-        pendientes: statusCounts['pendiente'], 
-        completados: statusCounts['completado'], 
-        vencidos: statusCounts['vencido'], 
-        enProgreso: statusCounts['en proceso'], 
-        total: total 
-    }); 
 } 
 
 function createProyectoRow(proyecto) { 
@@ -254,7 +242,6 @@ function showError(message) {
 } 
 
 function viewProyectoDetails(proyectoId) { 
-    console.log('Viewing project details:', proyectoId); 
     window.location.href = '../revisarProyectosGerente/?id=' + proyectoId; 
 } 
 
@@ -272,5 +259,4 @@ function bulkActionProyectos(action) {
         alert('Por favor seleccione al menos un proyecto'); 
         return; 
     } 
-    console.log('Performing action:', action, 'on projects:', selected); 
 } 

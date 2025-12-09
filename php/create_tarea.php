@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 session_start();
 require_once 'db_config.php';
 require_once 'notification_triggers.php';
-require_once 'email/NotificationHelper.php';
+require_once '../email/NotificationHelper.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
@@ -122,7 +122,7 @@ try {
         }
 
         //para correo de notificacion de asignacion de tarea
-        $notifier = new NotificationHelper($conn);
+        $notifier = new NotificationHelpers($conn);
         $notifier->notifyTaskAssigned($tarea_id, $usuario_asignador_id);
 
         // Recalcular progreso del proyecto

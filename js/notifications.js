@@ -19,7 +19,6 @@ const NotificationManager = {
         this.updateBadge();
         this.startPolling();
         this.bindEvents();
-        console.log('NotificationManager inicializado');
     },
     
     bindEvents: function() {
@@ -255,7 +254,7 @@ const NotificationManager = {
         // Opcional reproducir sonido
         // this.playNotificationSound();
         
-        // Opcional: mostrar notificación del navegador
+        // mostrar notificación del navegador
         if (Notification.permission === 'granted') {
             new Notification('Nuevas notificaciones', {
                 body: `Tienes ${newCount} nueva(s) notificación(es)`,

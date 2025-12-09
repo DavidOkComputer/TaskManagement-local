@@ -28,27 +28,22 @@ let projectsRefreshInterval = null;
 let currentProjectIdForUsers = null; 
 
 document.addEventListener('DOMContentLoaded', function() { 
-    console.log('Iniciando lista de proyectos...'); 
     initializeCustomDialogs(); 
     setupSorting(); 
     setupPagination(); 
     setupSearch(); 
 
-    // Cargar datos 
     loadTopEmployeesProgress(); 
     loadTopProjectsProgress(); 
     cargarProyectos(); 
-    // Iniciar auto-refresh de proyectos 
     startProjectsAutoRefresh(); 
 }); 
 
 function startProjectsAutoRefresh() { 
     stopProjectsAutoRefresh(); 
     projectsRefreshInterval = setInterval(() => { 
-        console.log('Auto-refresh: Actualizando tabla de proyectos...'); 
         refreshProjectsData(); 
     }, ManagerConfig.REFRESH_INTERVAL); 
-    console.log(`Auto-refresh de proyectos iniciado: cada ${ManagerConfig.REFRESH_INTERVAL/1000}s`); 
 } 
 
 function stopProjectsAutoRefresh() { 
@@ -59,7 +54,6 @@ function stopProjectsAutoRefresh() {
 } 
 
 function initializeCustomDialogs() { 
-    console.log('Custom dialogs initialized'); 
 } 
 
 function loadTopEmployeesProgress() { 
@@ -74,7 +68,6 @@ function loadTopEmployeesProgress() {
         .then(data => { 
             if (data.success) { 
                 displayTopEmployeesProgress(data.empleados); 
-                console.log('👥 Top empleados del departamento cargados:', data.empleados); 
             } else { 
                 console.warn('Aviso al cargar empleados:', data.message); 
                 displayEmptyEmployeesState(); 
@@ -150,7 +143,6 @@ function loadTopProjectsProgress() {
         .then(data => { 
             if (data.success) { 
                 displayTopProjectsProgress(data.proyectos); 
-                console.log('Top proyectos del departamento cargados:', data.proyectos); 
 
             } else { 
                 console.warn('Aviso al cargar proyectos:', data.message); 
@@ -243,7 +235,6 @@ function cargarProyectos() {
         }) 
 
         .then(data => { 
-            console.log('Información recibida:', data); 
             if (data.success && data.proyectos) { 
                 allProjects = data.proyectos; 
                 filteredProjects = [...allProjects]; 
@@ -313,7 +304,6 @@ function refreshProjectsData() {
                 if (typeof updateProyectoStatusChart === 'function') { 
                     updateProyectoStatusChart(allProjects);
                 } 
-                console.log('Datos de proyectos actualizados exitosamente'); 
             } 
         }) 
 

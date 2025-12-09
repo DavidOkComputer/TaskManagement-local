@@ -1,23 +1,18 @@
 /*dashboard_charts_scatter.js grafica de medidas de eficiencia para el admin*/
 
 function initializeScatterChart() {
-    console.log('Inicializando gráfico de dispersión...');
-    
     const currentDept = dashboardChartsInstance.currentDepartment;
     
     if (currentDept && currentDept.id && currentDept.id > 0) {
         // se selecciona el departamento, mostrar info del depa
-        console.log('Loading person efficiency for:', currentDept.name);
         loadPersonEfficiencyByDepartment(currentDept.id, currentDept.name);
     } else {
         //sino se selecciona departamento mostrar info de comparacion
-        console.log('Loading department efficiency comparison');
         loadDepartmentEfficiency();
     }
 }
 
 function loadPersonEfficiencyByDepartment(deptId, deptName) {
-    console.log(`Loading person efficiency for department: ${deptName} (ID: ${deptId})`);
 
     fetch(`../php/get_person_efficiency_by_department.php?id_departamento=${deptId}`)
         .then(response => {
@@ -27,15 +22,12 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
             return response.text();
         })
         .then(text => {
-            console.log('Raw API response for person scatter chart:', text.substring(0, 200));
-            
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response');
             }
 
             try {
                 const data = JSON.parse(text);
-                console.log('Person efficiency data loaded:', data.data.details.length, 'people');
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -44,7 +36,6 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
         })
         .then(data => {
             if (data.success && data.data) {
-                console.log('Updating scatter chart to person mode');
                 updateScatterChart(data.data, 'person', deptName);
             } else {
                 console.warn('Error in person efficiency data:', data.message);
@@ -60,8 +51,6 @@ function loadPersonEfficiencyByDepartment(deptId, deptName) {
 }
 
 function loadDepartmentEfficiency() {
-    console.log('Cargando datos de eficiencia departamental...');
-    
     fetch('../php/get_department_efficiency.php')
         .then(response => {
             if (!response.ok) {
@@ -70,15 +59,12 @@ function loadDepartmentEfficiency() {
             return response.text();
         })
         .then(text => {
-            console.log('Raw API response for scatter chart:', text.substring(0, 200));
-    
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response');
             }
 
             try {
                 const data = JSON.parse(text);
-                console.log('Datos de eficiencia departamental cargados:', data);
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -278,7 +264,6 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
     });
 
     addScatterChartLegend(mode, deptName, data);
-    console.log(`Gráfico de dispersión actualizado: ${chartTitle}`);
 }
 
 function addScatterChartLegend(mode, deptName, data) {
@@ -333,7 +318,6 @@ function addScatterChartLegend(mode, deptName, data) {
                 </div>
             </div>
             <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(200, 205, 210, 0.3); font-size: 12px; color: rgba(80, 80, 80, 1);">
-                <em>Tip: Pasa el cursor sobre cada punto para ver detalles completos</em>
             </div>
         `;
     } else {
@@ -362,11 +346,10 @@ function addScatterChartLegend(mode, deptName, data) {
                 </div>
                 <div style="display: flex; align-items: center;">
                     <span style="color: rgba(34, 139, 89, 0.5); margin-right: 8px;">━━━</span>
-                    <strong style="color: rgba(34, 139, 89, 1);">Línea punteada:</strong> Promedio organizacional (${data.avg_completion || 0}%)
+                    <strong style="color: rgba(34, 139, 89, 1);"></strong> Promedio organizacional (${data.avg_completion || 0}%)
                 </div>
             </div>
             <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(200, 205, 210, 0.3); font-size: 12px; color: rgba(80, 80, 80, 1);">
-                <em>Tip: Colores distintos representan departamentos diferentes</em>
             </div>
         `;
     }

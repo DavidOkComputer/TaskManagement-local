@@ -1,8 +1,6 @@
 /*manager_charts_area.js  grafica de area para las tareas completadas */
 
 function initializeManagerAreaChart() {
-    console.log('Inicializando gráfica de área (tendencia de tareas)...');
-    
     const deptId = managerDashboard.department.id;
     const deptName = managerDashboard.department.nombre;
     
@@ -171,12 +169,8 @@ function renderAreaChart(data, deptName) {
         options: options
     });
     
-    console.log('Gráfica de área actualizada');
 }
 
-/**
- * Refresh area chart data
- */
 function refreshManagerAreaChart(deptId, deptName) {
     return new Promise((resolve, reject) => {
         fetch(`../php/manager_get_task_trends.php?id_departamento=${deptId}&weeks=12`)

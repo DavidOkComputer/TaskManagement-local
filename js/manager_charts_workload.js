@@ -1,13 +1,8 @@
-/*
- * manager_charts_workload.js grafica de dona para la distribucion de carga de proyectos
- */
+/*manager_charts_workload.js grafica de dona para la distribucion de carga de proyectos*/
 
 function initializeManagerWorkloadChart() {
-    console.log('Inicializando gráfica de carga de trabajo...');
-    
     const deptId = managerDashboard.department.id;
     const deptName = managerDashboard.department.nombre;
-    
     loadWorkloadData(deptId, deptName);
 }
 
@@ -142,8 +137,6 @@ function renderWorkloadChart(data, deptName) {
     });
     
     addWorkloadSummary(ctx.parentElement, data, deptName);
-    
-    console.log('Gráfica de carga de trabajo actualizada - Total tareas:', data.total_tareas);
 }
 
 function addWorkloadSummary(container, data, deptName) {

@@ -1,7 +1,6 @@
 <?php
-/*Dashboard principal de admin*/
+/*adminDashboard.php para el Dashboard principal de admin*/
 require_once('../php/check_auth.php');
-session_start();
 ?>
 
 <!DOCTYPE html>

@@ -1,8 +1,6 @@
-/**dashboard_charts_doughnut.js grafica de estados del proyecto para admin*/
+/*dashboard_charts_doughnut.js grafica de estados del proyecto para admin*/
 
 function prepareProjectStatusDistribution(projects) {
-    console.log('Preparando: Distribución de estados de proyectos');
-
     const statusCounts = {
         'completado': 0,
         'en proceso': 0,
@@ -38,8 +36,6 @@ function prepareProjectStatusDistribution(projects) {
             'rgba(50, 50, 50, 1)'         // Black
         ]
     };
-
-    console.log('Datos de estado preparados:', data);
     return data;
 }
 
@@ -134,8 +130,6 @@ function updateDoughnutChart(data) {
         data: chartData,
         options: options
     });
-
-    console.log('Doughnut chart actualizado (comparación)');
 }
 
 function updateDoughnutChartForDepartment(data, deptName) {
@@ -191,6 +185,4 @@ function updateDoughnutChartForDepartment(data, deptName) {
         data: chartData,
         options: options
     });
-
-    console.log('Doughnut chart actualizado (departamento)');
 }

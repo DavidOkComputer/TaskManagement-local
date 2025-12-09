@@ -38,7 +38,6 @@ function startAutoRefresh() {
     } 
     autoRefreshInterval = setInterval(() => { 
         //configurar el interval para refrescar cada minuto 
-        console.log('Auto-refresh: Actualizando datos de proyectos...'); 
         refreshProjectsData(); 
         loadDashboardStats(); // Refrescar estadísticas también 
         loadTopEmployeesProgress();
@@ -54,7 +53,6 @@ function stopAutoRefresh() {
     if (autoRefreshInterval) { 
         clearInterval(autoRefreshInterval); 
         autoRefreshInterval = null; 
-        console.log('Auto-refresh detenido'); 
     } 
 } 
 
@@ -69,7 +67,6 @@ function loadDashboardStats() {
         .then(data => { 
             if (data.success && data.stats) { 
                 updateDashboardStats(data.stats); 
-                console.log('Estadísticas del dashboard actualizadas:', data.stats); 
             } else { 
                 console.error('Error al cargar estadísticas:', data.message); 
             } 
@@ -238,7 +235,6 @@ function refreshProjectsData() {
                     currentPage = newTotalPages; 
                 } 
                 displayProjects(filteredProjects); 
-                console.log('Datos de proyectos actualizados exitosamente'); 
             } 
         }) 
         .catch(error => { 
@@ -275,7 +271,6 @@ function refreshProjectUsersData() {
                 } else { 
                     displayProjectUsers(projectUsersData); 
                 } 
-                console.log('Datos de usuarios del proyecto actualizados'); 
             } 
         }) 
         .catch(error => { 
@@ -309,7 +304,6 @@ function cargarProyectos() {
             return response.json();
         }) 
         .then(data => { 
-            console.log('Informacion recivida:', data); 
             if (data.success && data.proyectos) { 
                 allProjects = data.proyectos; 
                 filteredProjects = [...allProjects]; 
@@ -570,11 +564,8 @@ function createProjectRow(proyecto, index) {
     const viewUsersButton = proyecto.id_tipo_proyecto === 1 //mostrar unicamente boton de grupo para los proyectos que sean grupales 
 
         ? `<button class="btn btn-sm btn-info btn-action" onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados"> 
-
                   <i class="mdi mdi-account-multiple"></i> 
-
            </button>` 
-
         : ''; 
 
     const actionsButtons = ` 
@@ -776,7 +767,6 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 
     if (!titleElement || !messageElement || !headerElement || !confirmBtn) {//validar todos los elementos 
         console.error('Critical modal elements not found'); 
-        console.log({ titleElement, messageElement, headerElement, confirmBtn }); 
         return; 
     } 
 
@@ -902,13 +892,6 @@ function updateProyectoStatusChart(proyectos, total) {
         legendElement.innerHTML = window.doughnutChart.generateLegend(); 
     } 
  
-    console.log('Chart updated:', { 
-        pendientes: statusCounts['pendiente'], 
-        completados: statusCounts['completado'], 
-        vencidos: statusCounts['vencido'], 
-        enProgreso: statusCounts['en proceso'], 
-        total: total 
-    }); 
 } 
 
 function updateProyectoCount(count) { 
@@ -931,7 +914,6 @@ function loadTopEmployeesProgress() {//cargar top5de empleados por progreso
         .then(data => {
             if (data.success) {
                 displayTopEmployeesProgress(data.empleados);
-                console.log('Top empleados cargados:', data.empleados);
             } else {
                 console.warn('Aviso al cargar empleados:', data.message);
                 displayEmptyEmployeesState();
@@ -1031,7 +1013,6 @@ function loadTopProjectsProgress() {
         .then(data => {
             if (data.success) {
                 displayTopProjectsProgress(data.proyectos);
-                console.log('Top proyectos cargados:', data.proyectos);
             } else {
                 console.warn('Aviso al cargar proyectos:', data.message);
                 displayEmptyProjectsState();

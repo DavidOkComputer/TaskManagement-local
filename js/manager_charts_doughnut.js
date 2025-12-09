@@ -1,7 +1,6 @@
 /*manager_charts_doughnut.js grafica de dona para distribucion de estatus de proyectos*/
 
 function initializeManagerDoughnutChart() {
-    console.log('Inicializando gráfica de dona (estados de proyectos)...');
     
     const deptId = managerDashboard.department.id;
     const deptName = managerDashboard.department.nombre;
@@ -119,8 +118,6 @@ function renderDoughnutChart(data, deptName) {
         data: chartData,
         options: options
     });
-    
-    console.log('Gráfica de dona actualizada');
 }
 
 function refreshManagerDoughnutChart(deptId, deptName) {

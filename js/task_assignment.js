@@ -194,7 +194,6 @@ function cargarProyectos() {
         const isChecked = this.checked;
         
         //agregar funcionalidad para actualizar el estado de la tarea en bd
-        console.log(`Task ${taskId} checked: ${isChecked}`);
         const taskLi = this.closest('li');
         if (isChecked) {
           taskLi.style.opacity = '0.6';

@@ -2,7 +2,6 @@
 
 require_once('../php/check_auth.php');
 //tomar informacion de usuario
-session_start();
 $user_name = $_SESSION['nombre']; 
 $user_apellido = $_SESSION['apellido']; 
 $user_email = $_SESSION['e_mail']; 
@@ -277,47 +276,7 @@ $user_id = $_SESSION['user_id'];
                                 <!-- FORM END --> 
                             </div> 
                         </div> 
-                    </div> 
-                    <div class="row flex-grow"> 
-                        <div class="col-12 grid-margin stretch-card"> 
-                            <div class="card card-rounded"> 
-                                <div class="card-body"> 
-                                    <div class="d-sm-flex justify-content-between align-items-start"> 
-                                        <div> 
-                                            <h4 class="card-title card-title-dash">Proyectos desarrollados por departamento</h4> 
-                                            <p class="card-subtitle card-subtitle-dash">Resumen de cumplimiento de proyectos en base mensual</p> 
-                                        </div> 
-                                        <div> 
-                                            <div class="dropdown"> 
-                                                <button class="btn btn-secondary dropdown-toggle toggle-dark btn-lg mb-0 me-0" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Este mes </button> 
-                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton2"> 
-                                                    <h6 class="dropdown-header">Fecha</h6> 
-                                                    <a class="dropdown-item" href="#">Esta quincena</a> 
-                                                    <a class="dropdown-item" href="#">Esta semana</a> 
-                                                    <a class="dropdown-item" href="#">Hoy</a> 
-                                                    <div class="dropdown-divider"></div> 
-                                                    <a class="dropdown-item" href="#">Resumen completo</a> 
-                                                </div> 
-                                            </div> 
-                                        </div> 
-                                    </div> 
-                                    <div class="d-sm-flex align-items-center mt-1 justify-content-between"> 
-                                        <div class="d-sm-flex align-items-center mt-4 justify-content-between"> 
-                                            <h2 class="me-2 fw-bold">Proyectos desarrollados</h2> 
-                                            <h4 class="me-2"></h4> 
-                                            <h4 class="text-success"></h4> 
-                                        </div> 
-                                        <div class="me-3"> 
-                                            <div id="marketing-overview-legend"></div> 
-                                        </div> 
-                                    </div> 
-                                    <div class="chartjs-bar-wrapper mt-3"> 
-                                        <canvas id="marketingOverview"></canvas> 
-                                    </div> 
-                                </div> 
-                            </div> 
-                        </div> 
-                    </div> 
+                    </div>  
                 </div> 
                 <!-- content-wrapper ends --> 
             </div> 

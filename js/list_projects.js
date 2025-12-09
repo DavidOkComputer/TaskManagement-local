@@ -14,8 +14,6 @@ function loadProyectos() {
         dataType: 'text', //cambiar a texto para ver la respuesta tal cual
         timeout: 10000, // 10s
         success: function(response) {
-            console.log('Raw response from server:', response); // DEBUG
-            console.log('Response length:', response.length); // DEBUG
             
             try {
                 const parsed = JSON.parse(response);
@@ -121,14 +119,6 @@ function updateProyectoStatusChart(proyectos, total) {
     
     // Actualizar la leyenda
     document.getElementById('doughnut-chart-legend').innerHTML = window.doughnutChart.generateLegend();
-    
-    console.log('Chart updated:', {
-        pendientes: statusCounts['pendiente'],
-        completados: statusCounts['completado'],
-        vencidos: statusCounts['vencido'],
-        enProgreso: statusCounts['en proceso'],
-        total: total
-    });
 }
 
 function createProyectoRow(proyecto) {
@@ -248,7 +238,6 @@ function showError(message) {
 }
 
 function viewProyectoDetails(proyectoId) {
-    console.log('Viewing project details:', proyectoId);
 }
 
 function getSelectedProyectos() {
@@ -266,6 +255,4 @@ function bulkActionProyectos(action) {
         alert('Por favor seleccione al menos un proyecto');
         return;
     }
-    
-    console.log('Performing action:', action, 'on projects:', selected);
 }

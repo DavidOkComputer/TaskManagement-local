@@ -27,12 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         currentUserId = window.APP_CONFIG.userId;
-        console.log('Usuario inicializado:', {
-            id: currentUserId,
-            nombre: window.APP_CONFIG.userName,
-            apellido: window.APP_CONFIG.userApellido
-        });
-        
         return true;
     }
     
@@ -305,8 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.success && data.usuarios) {
-                    // Ya no poblamos el dropdown global, esperamos a que se seleccione un proyecto
-                    console.log('Usuarios disponibles cargados');
+                    //esperamos a que se seleccione un proyecto
                 }
             })
             .catch(error => {
@@ -325,7 +318,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 if (data.success && data.usuarios && data.usuarios.length > 0) {
                     populateUserSelect(document.getElementById('taskAssignee'), data.usuarios);
-                    console.log(` ${data.usuarios.length} usuarios cargados para el proyecto ${projectId}`);
                 } else {
                     // Si no hay usuarios, mostrar mensaje y limpiar dropdown
                     populateUserSelect(document.getElementById('taskAssignee'), []);
@@ -840,7 +832,6 @@ document.addEventListener('DOMContentLoaded', function() {
         projectSelect.addEventListener('change', function() {
             if (this.value) {
                 // Cargar y mostrar SOLO usuarios del proyecto seleccionado
-                console.log(`Proyecto seleccionado: ${this.value}`);
                 loadProjectUsersForModal(this.value, () => {
                     // Verificar permisos de asignación
                     fetchProjectDetails(this.value, function(projectData) {
@@ -954,8 +945,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     //cargar usuarios del proyecto en el modal SOLO usuarios del proyecto
     function loadProjectUsersForModal(projectId, callback) {
-        console.log(`Cargando usuarios para el proyecto ${projectId}...`);
-        
         fetch(`../php/get_project_user_two.php?id_proyecto=${projectId}`)
             .then(response => {
                 if (!response.ok) {
@@ -967,7 +956,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const assigneeSelect = document.getElementById('taskAssignee');
                 
                 if (data.success && data.usuarios) {
-                    console.log(`✓ Se encontraron ${data.usuarios.length} usuarios para el proyecto`);
                     populateUserSelect(assigneeSelect, data.usuarios);
                 } else {
                     console.warn(`No hay usuarios en este proyecto`);
@@ -1330,8 +1318,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function showNotification(message, type) {
-        // agregar notificacion de tipo tostada
-        console.log(`[${type.toUpperCase()}] ${message}`);
         
         // mejorar notificacion
         const toast = document.createElement('div');

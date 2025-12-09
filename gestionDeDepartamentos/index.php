@@ -1,6 +1,5 @@
 <?php 
 require_once('../php/check_auth.php');
-session_start();
 $user_name = $_SESSION['nombre']; 
 $user_apellido = $_SESSION['apellido']; 
 $user_email = $_SESSION['e_mail']; 

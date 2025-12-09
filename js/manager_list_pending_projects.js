@@ -2,7 +2,7 @@
 
 $(document).ready(function() { 
     loadProyectosPendientesAndChart(); 
-    setInterval(loadProyectosPendientesAndChart, 30000); // actualizar cada 30s 
+    setInterval(loadProyectosPendientesAndChart, 60000); // actualizar cada 30s 
 }); 
 
 function loadProyectosPendientesAndChart() { 
@@ -27,11 +27,8 @@ function loadPendingProjectsData() {
         dataType: 'json', 
         timeout: 10000, 
         success: function(response) { 
-            console.log('Pending projects response:', response); 
-            
             if (response.success) { 
                 populateProyectosPendientesTable(response.data); 
-                console.log('Pending projects loaded for department:', response.department_id); 
             } else { 
                 showError('Error: ' + response.message); 
             } 
@@ -64,12 +61,10 @@ function loadAllProjectsForChart() {
         dataType: 'json', 
         timeout: 10000, 
         success: function(response) { 
-            console.log('All projects response for chart:', response); 
             
             if (response.success) { 
                 // Actualizar el grafico con todos los proyectos del departamento 
                 updateProyectoStatusChart(response.data, response.total); 
-                console.log('Chart updated for department:', response.department_id); 
             } else { 
                 console.error('Error: ' + response.message); 
             } 
@@ -165,7 +160,7 @@ function createProyectoRow(proyecto) {
 } 
 
 function updateProyectoStatusChart(proyectos, total) { 
-    // Wait for chart to be initialized by dashboard.js 
+    //esperar por la grafica a ser inicializada en dashboard.js
     if (!window.doughnutChart) { 
         console.warn('Doughnut chart not initialized yet, retrying...'); 
         setTimeout(() => updateProyectoStatusChart(proyectos, total), 500); 
@@ -185,7 +180,7 @@ function updateProyectoStatusChart(proyectos, total) {
         window.doughnutChart.data.datasets[0].data = [0, 0, 0, 0]; 
         window.doughnutChart.update(); 
 
-        // Update legend if it exists 
+        //actualizar el pie de grafica si es que existe
         const legendElement = document.getElementById('doughnut-chart-legend'); 
         if (legendElement && window.doughnutChart.generateLegend) { 
             legendElement.innerHTML = window.doughnutChart.generateLegend(); 
@@ -201,7 +196,7 @@ function updateProyectoStatusChart(proyectos, total) {
         } 
     }); 
 
-    // Actualizar los datos del chart en el orden correcto: pendientes, completados, vencidos, en proceso 
+    // Actualizar los datos del chart en orden : pendientes, completados, vencidos, en proceso 
     window.doughnutChart.data.datasets[0].data = [ 
         statusCounts['pendiente'], 
         statusCounts['completado'], 
@@ -217,14 +212,6 @@ function updateProyectoStatusChart(proyectos, total) {
     if (legendElement && window.doughnutChart.generateLegend) { 
         legendElement.innerHTML = window.doughnutChart.generateLegend(); 
     } 
-
-    console.log('Chart updated (Pending Projects Page) with department data:', { 
-        pendientes: statusCounts['pendiente'], 
-        completados: statusCounts['completado'], 
-        vencidos: statusCounts['vencido'], 
-        enProgreso: statusCounts['en proceso'], 
-        total: total 
-    }); 
 } 
 
 function getEstadoClass(estado_style) { 
@@ -286,7 +273,6 @@ function showError(message) {
 } 
 
 function viewProyectoDetails(proyectoId) { 
-    console.log('Viewing project details:', proyectoId);
     window.location.href = '../revisarProyectosGerente/?id=' + proyectoId; 
 } 
 
@@ -304,5 +290,4 @@ function bulkActionProyectos(action) {
         alert('Por favor seleccione al menos un proyecto'); 
         return; 
     } 
-    console.log('Performing action:', action, 'on projects:', selected); 
 } 

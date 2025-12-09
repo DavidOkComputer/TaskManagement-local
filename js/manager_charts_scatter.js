@@ -1,7 +1,6 @@
 /*manager_charts_scatter.js grafica de medidas de eficiencia departamental*/
 
 function initializeManagerScatterChart() {
-    console.log('Inicializando gráfica de dispersión (eficiencia de personas)...');
     
     const deptId = managerDashboard.department.id;
     const deptName = managerDashboard.department.nombre;
@@ -207,8 +206,6 @@ function renderScatterChart(data, deptName) {
     
     //agregar pie de grafica
     addScatterLegend(ctx.parentElement, deptName);
-    
-    console.log('Gráfica de dispersión actualizada');
 }
 
 function addScatterLegend(container, deptName) {

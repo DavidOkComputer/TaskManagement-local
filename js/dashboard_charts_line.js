@@ -1,24 +1,18 @@
 /*dashboard_charts_line.js completacion de prouyectos sobre el tiempo, para admin*/
 
 function initializeLineChart() {
-    console.log('Inicializando gráfico de línea de tendencias...');
-    
     const currentDept = dashboardChartsInstance.currentDepartment;
     
     if (currentDept && currentDept.id && currentDept.id > 0) {
         //el departamento es seleccionado mostrar info del depar
-        console.log('Cargar tendencias de proyecto por departamento:', currentDept.name);
         loadProjectTrendForDepartment(currentDept.id, currentDept.name);
     } else {
         //sino hoay departamento seleccionado mostrar el modo de comparacin
-        console.log('Cargando tendencias de completacion de tendencias, todos los departamentos');
         loadProjectTrendComparison();
     }
 }
 
 function loadProjectTrendForDepartment(deptId, deptName) {
-    console.log(`Cargando tendencia de proyectos para: ${deptName}`);
-    
     fetch(`../php/get_project_trends.php?id_departamento=${deptId}&weeks=12`)
         .then(response => {
             if (!response.ok) {
@@ -27,15 +21,12 @@ function loadProjectTrendForDepartment(deptId, deptName) {
             return response.text();
         })
         .then(text => {
-            console.log('Raw API response for department:', text.substring(0, 200));
-            
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response');
             }
 
             try {
                 const data = JSON.parse(text);
-                console.log('Datos de tendencia cargados:', data);
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -56,8 +47,6 @@ function loadProjectTrendForDepartment(deptId, deptName) {
 }
 
 function loadProjectTrendComparison() {
-    console.log('Cargando vista de comparación de tendencias (todos los departamentos)');
-    
     fetch('../php/get_project_trends.php?weeks=12')
         .then(response => {
             if (!response.ok) {
@@ -66,15 +55,12 @@ function loadProjectTrendComparison() {
             return response.text();
         })
         .then(text => {
-            console.log('Raw API response:', text.substring(0, 200));
-            
             if (!text || text.trim() === '') {
                 throw new Error('API returned empty response.');
             }
 
             try {
                 const data = JSON.parse(text);
-                console.log('JSON parsed successfully:', data);
                 return data;
             } catch (parseError) {
                 console.error('JSON parse error:', parseError);
@@ -83,7 +69,6 @@ function loadProjectTrendComparison() {
         })
         .then(data => {
             if (data.success && data.data) {
-                console.log('Datos de comparación cargados:', data);
                 updateLineChart(data, 'comparison');
             } else {
                 console.error('Error en datos de comparación:', data.message || 'Unknown error');
@@ -185,6 +170,4 @@ function updateLineChart(data, mode, deptName = null) {
         data: chartData,
         options: options
     });
-    
-    console.log('Gráfico de línea actualizado: ' + chartTitle);
 }

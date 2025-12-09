@@ -1,11 +1,10 @@
 <?php
-/*create_project.php para crear nuevo proyecto
-*/
+/*create_project.php para crear nuevo proyecto*/
 
 header('Content-Type: application/json');
 require_once 'db_config.php';
 require_once 'notification_triggers.php';
-require_once 'email/NotificationHelper.php';
+require_once '../email/NotificationHelper.php';
 
 
 error_reporting(E_ALL);
@@ -152,7 +151,7 @@ try {
     }
 
     //para email de notificacion de asignacion de proyecto
-    $notifier = new NotificationHelper($conn);
+    $notifier = new NotificationHelpers($conn);
     $notifier->notifyProjectAssigned($proyecto_id, $usuario_asignado_id, $creador_id);
 
     // Manejo de usuarios para proyecto grupal

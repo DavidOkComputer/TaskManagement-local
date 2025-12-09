@@ -40,7 +40,6 @@ function startAutoRefresh() {
         clearInterval(autoRefreshInterval); 
     } 
     autoRefreshInterval = setInterval(() => { //configurar el interval para refrescar cada minuto
-        console.log('Auto-refresh: Actualizando datos de proyectos...'); 
         refreshProjectsData(); 
         if (currentProjectIdForUsers) { //si el modal de usuarios esta abirto refrescar
             refreshProjectUsersData(); 
@@ -52,7 +51,6 @@ function stopAutoRefresh() {
     if (autoRefreshInterval) { 
         clearInterval(autoRefreshInterval); 
         autoRefreshInterval = null; 
-        console.log('Auto-refresh detenido'); 
     } 
 } 
 
@@ -83,7 +81,6 @@ function refreshProjectsData() {
                     currentPage = newTotalPages; 
                 } 
                 displayProjects(filteredProjects); 
-                console.log('Datos de proyectos actualizados exitosamente'); 
             } 
         }) 
         .catch(error => { 
@@ -119,7 +116,6 @@ function refreshProjectUsersData() {
                 } else { 
                     displayProjectUsers(projectUsersData); 
                 } 
-                console.log('Datos de usuarios del proyecto actualizados'); 
             } 
         }) 
         .catch(error => { 
@@ -151,7 +147,6 @@ function cargarProyectos() {
             return response.json(); 
         }) 
         .then(data => { 
-            console.log('Informacion recivida:', data); 
             if (data.success && data.proyectos) { 
                 allProjects = data.proyectos; 
                 filteredProjects = [...allProjects]; 
@@ -642,7 +637,6 @@ function createProjectUsersModal() {
     if (modalElement) { 
         modalElement.addEventListener('hidden.bs.modal', function () { 
             currentProjectIdForUsers = null; 
-            console.log('Modal cerrado, auto-refresh de usuarios detenido'); 
         }); 
     } 
 } 
@@ -668,7 +662,6 @@ function createUserProgressBar(progress) {
 } 
 
 function viewProjectUsers(projectId, projectName) { 
-    console.log('Cargando usuarios del proyecto:', projectId, projectName); 
     // Guardar el ID del proyecto actual para el auto-refresh 
     currentProjectIdForUsers = projectId; 
     const modal = new bootstrap.Modal(document.getElementById('projectUsersModal')); 
@@ -690,7 +683,6 @@ function loadProjectUsers(projectId) {
             return response.json(); 
         }) 
         .then(data => {
-            console.log('Datos de usuarios del proyecto:', data); 
             if (data.success && data.usuarios) { 
                 projectUsersData = data.usuarios; 
                 displayProjectUsers(projectUsersData); 
@@ -907,7 +899,6 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     const cancelBtn = modal.querySelector('#confirmCancelBtn'); 
     if (!titleElement || !messageElement || !headerElement || !confirmBtn) {//validar todos los elementos 
         console.error('Critical modal elements not found'); 
-        console.log({ titleElement, messageElement, headerElement, confirmBtn }); 
         return; 
     } 
     const config = { 

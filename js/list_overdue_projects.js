@@ -239,14 +239,6 @@ function updateProyectoStatusChart(proyectos, total) {
     
     // Actualizar la leyenda
     document.getElementById('doughnut-chart-legend').innerHTML = window.doughnutChart.generateLegend();
-    
-    console.log('Chart updated (Overdue Projects Page):', {
-        pendientes: statusCounts['pendiente'],
-        completados: statusCounts['completado'],
-        vencidos: statusCounts['vencido'],
-        enProgreso: statusCounts['en proceso'],
-        total: total
-    });
 }
 
 function formatDate(dateString) {
@@ -306,8 +298,6 @@ function showError(message) {
 }
 
 function viewProyectoVencidoDetails(proyectoId) {
-    
-    console.log('Viewing overdue project details:', proyectoId);
     // window.location.href = '../proyectoDetalle/?id=' + proyectoId;
 }
 
@@ -327,6 +317,5 @@ function bulkActionProyectosVencidos(action) {
         return;
     }
     
-    console.log('Performing action:', action, 'on overdue projects:', selected);
     //se puede implementar acciones masivas aqui, como extender la fecha de vencimiento de varios proyectos
 }

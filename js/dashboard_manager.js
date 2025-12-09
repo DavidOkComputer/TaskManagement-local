@@ -1,8 +1,4 @@
-/*
- * dashboard_manager.js
- * JavaScript para el dashboard de gerente
- * Inicializa gráficos para visualización de datos del departamento
- */
+/*dashboard_manager.js javascript para el dashboard de gerente, inicializa los graficos*/
 
 (function($) {
     'use strict';
@@ -18,16 +14,16 @@
                 datasets: [{
                     data: [0, 0, 0, 0],
                     backgroundColor: [
-                        "#ffce56",  // Amarillo - pendientes
-                        "#28a745",  // Verde - completados
-                        "#dc3545",  // Rojo - vencidos
-                        "#007bff"   // Azul - en proceso
+                        "#666666",  // gris - pendientes
+                        "#009b4a",  // Verde - completados
+                        "#000000",  // negro - vencidos
+                        "#e9e9e9"   // ice - en proceso
                     ],
                     borderColor: [
-                        "#ffce56",
-                        "#28a745",
-                        "#dc3545",
-                        "#007bff"
+                        "#666666",  // gris - pendientes
+                        "#009b4a",  // Verde - completados
+                        "#000000",  // negro - vencidos
+                        "#e9e9e9"   // ice - en proceso
                     ],
                 }]
             },
@@ -104,13 +100,6 @@ function updateDepartmentProjectsChart(pendientes, completados, vencidos, enProc
     if (legendElement) {
         legendElement.innerHTML = window.doughnutChart.generateLegend();
     }
-
-    console.log('Chart de departamento actualizado:', {
-        pendientes: pendientes,
-        completados: completados,
-        vencidos: vencidos,
-        enProceso: enProceso
-    });
 }
 
 // Función para actualizar el gráfico basado en array de proyectos

@@ -1,6 +1,5 @@
 <?php 
 require_once( '../php/check_auth.php'); 
-session_start();
 $user_name = $_SESSION[ 'nombre']; 
 $user_apellido = $_SESSION[ 'apellido']; 
 $user_email = $_SESSION[ 'e_mail'];
@@ -413,8 +412,6 @@ $user_id = $_SESSION[ 'user_id'];
 					userApellido: <?php echo json_encode($user_apellido, JSON_HEX_TAG | JSON_HEX_AMP); ?>,
 					userEmail: <?php echo json_encode($user_email, JSON_HEX_TAG | JSON_HEX_AMP); ?>
 				};
-				//log de debug para saber que la info se pasa correctamente
-				console.log('APP_CONFIG initialized:', window.APP_CONFIG);
 			</script>
 			<script src="../js/manage_tasks.js">
 			</script>

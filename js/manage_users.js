@@ -119,12 +119,10 @@ function stopAutoRefresh(){
     if(autoRefreshInterval){
         clearInterval(autoRefreshInterval);
         autoRefreshInterval = null;
-        console.log('Auto-refresh de usuarios detenido');
     }
     if(modalRefreshInterval){
         clearInterval(modalRefreshInterval);
         modalRefreshInterval = null;
-        console.log('Auto-refresh de modal detenido');
     }
 }
 
@@ -184,7 +182,7 @@ async function refreshUserProjectData(){
         
         if(projects.length === 0) {
             if(AUTO_REFRESH_CONFIG.DEBUG) {
-                console.log('No projects found for user:', currentUserIdForProject);
+                
             }
             return;
         }
@@ -954,8 +952,6 @@ function openEditModal(userId, nombre, apellido, usuario, email, departId) {
 
 function handleSaveUserChanges(event) {
     event.preventDefault();
-    
-    logAction('Guardando cambios de usuario');
 
     const validation = validateEditForm();//validar form
     if (!validation.isValid) {
@@ -1101,9 +1097,7 @@ function showSuccess(message, data = null) {
     const timestamp = new Date().toLocaleTimeString();
     const logMessage = `[${timestamp}] hecho: ${message}`;
     
-    console.log(logMessage);//logear en consola
     if (data) {
-        console.log('Data:', data);
     }
     
     displayNotification(message, 'success');//mostrar notificacion en estilo de tostador
@@ -1222,10 +1216,7 @@ function escapeHtml(text) {
 function logAction(action, details = {}) {
     const timestamp = new Date().toLocaleTimeString();
     console.group(`[${timestamp}] ${action}`);
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('Action:', action);
     if (Object.keys(details).length > 0) {
-        console.log('Details:', details);
     }
     console.groupEnd();
 }
@@ -1281,7 +1272,6 @@ function validateEditForm() {
         errors.push(nombreValid.message);
         console.warn('Nombre inválido:', nombreValid.message);
     } else {
-        console.log('Nombre válido:', nombre);
     }
 
     const apellidoValid = validateTextField(apellido, 'Apellido', 2);//validar apllido
@@ -1289,7 +1279,6 @@ function validateEditForm() {
         errors.push(apellidoValid.message);
         console.warn('Apellido inválido:', apellidoValid.message);
     } else {
-        console.log('Apellido válido:', apellido);
     }
 
     const usuarioValid = validateTextField(usuario, 'Usuario', 3);//validar suario
@@ -1297,7 +1286,6 @@ function validateEditForm() {
         errors.push(usuarioValid.message);
         console.warn('Usuario inválido:', usuarioValid.message);
     } else {
-        console.log('Usuario válido:', usuario);
     }
 
     const emailValid = validateEmail(email);//validar email
@@ -1305,7 +1293,6 @@ function validateEditForm() {
         errors.push(emailValid.message);
         console.warn('Email inválido:', emailValid.message);
     } else {
-        console.log('Email válido:', email);
     }
 
     // Validar departamento
@@ -1314,7 +1301,6 @@ function validateEditForm() {
         errors.push(deptValid.message);
         console.warn('Departamento inválido:', deptValid.message);
     } else {
-        console.log('Departamento válido:', departamento);
     }
 
     console.groupEnd();
