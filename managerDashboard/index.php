@@ -1,7 +1,6 @@
 <?php
-/*Dashboard principal de admin*/
+/*managerDashboard.php para Dashboard principal de admin*/
 require_once('../php/check_auth.php');
-session_start();
 ?>
 
 <!DOCTYPE html>
@@ -83,10 +82,10 @@ session_start();
           </li>
           <li class="nav-item dropdown d-none d-lg-block user-dropdown">
             <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> </a>
+              <i class="mdi mdi-account" alt="profile icon"></i>
+            </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
-                <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
                 <p class="mb-1 mt-3 font-weight-semibold">
                   <?php
                     echo $_SESSION['nombre'];
@@ -256,11 +255,6 @@ session_start();
                             <p class="statistics-title">Proyectos completados</p>
                             <h3 class="rate-percentage">30</h3>
                             <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
-                          </div>
-                          <div class="d-none d-md-block">
-                            <p class="statistics-title">Proyectos en proceso</p>
-                            <h3 class="rate-percentage">12</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>2 asignaciones</span></p>
                           </div>
                           <div class="d-none d-md-block">
                             <p class="statistics-title">Proyectos pendientes</p>

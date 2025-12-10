@@ -105,12 +105,12 @@ function loadDepartamentoGerente() {
                     hiddenInput.value = departamento.id_departamento;
                 }
             } else {
-                showNotification('Error: No se pudo determinar tu departamento', 'error');
+               // showNotification('Error: No se pudo determinar tu departamento', 'error');
             }
         })
         .catch(error => {
             console.error('Error al cargar el departamento:', error);
-            showNotification('Error al cargar el departamento', 'error');
+           // showNotification('Error al cargar el departamento', 'error');
         });
 }
 
@@ -142,7 +142,7 @@ function cargarObjetivoParaEditar(objectiveId) {
                 
                 // Verificar que el departamento del objetivo coincida con el del gerente
                 if (objetivo.id_departamento && objetivo.id_departamento != managerState.departmentId) {
-                    showNotification('Advertencia: Este objetivo pertenece a otro departamento', 'warning');
+                   // showNotification('Advertencia: Este objetivo pertenece a otro departamento', 'warning');
                 }
                 
                 // Mostrar archivo adjunto si existe
@@ -166,7 +166,7 @@ function cargarObjetivoParaEditar(objectiveId) {
         }) 
         .catch(error => { 
             console.error('Error al cargar objetivo:', error); 
-            showNotification('Error al cargar el objetivo: ' + error.message, 'error');
+           // showNotification('Error al cargar el objetivo: ' + error.message, 'error');
             window.location.href = '../revisarObjetivosGerente/'; 
         });
 }

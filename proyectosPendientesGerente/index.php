@@ -88,10 +88,10 @@ $user_id = $_SESSION['user_id'];
           </li>
           <li class="nav-item dropdown d-none d-lg-block user-dropdown">
             <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> </a>
+              <i class="mdi mdi-account" alt="profile icon"></i>
+            </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
-                <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
                 <p class="mb-1 mt-3 font-weight-semibold">
                   <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
                 </p>
@@ -231,10 +231,10 @@ $user_id = $_SESSION['user_id'];
                                    <p class="card-subtitle card-subtitle-dash">Tienes 50+ proyectos nuevos</p>
                                   </div>
                                   <div>
-                                    <a href="../nuevoProyecto/">
+                                    <a href="../nuevoProyectoGerente/">
                                       <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-folder-upload"></i>Agregar nuevo proyecto</button>
                                     </a>
-                                    <a href="../revisarProyectos/">
+                                    <a href="../revisarProyectosGerente/">
                                       <button class="btn btn-primary btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-checkbox-multiple-marked"></i>Ver lista de proyectos</button>
                                     </a>
                                   </div>

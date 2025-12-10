@@ -313,13 +313,6 @@ function updateStatisticsDisplay(stats) {
         trend: stats.porcentaje_completados >= 70 ? 'success' : 'neutral' 
     }); 
 
-    updateStatElement(4, { 
-        title: 'Proyectos en proceso', 
-        value: stats.proyectos_en_proceso || 0, 
-        percentage: stats.progreso_promedio ? stats.progreso_promedio + '% progreso' : null, 
-        trend: 'neutral' 
-    }); 
-
     updateStatElement(5, { 
         title: 'Proyectos pendientes', 
         value: stats.proyectos_pendientes || 0, 

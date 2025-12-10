@@ -263,7 +263,6 @@ function validateForm(formData) {
     return true; 
 }
 
-
 function showNotification(message, type = 'info') { 
     //revisar si existe el container para la notificacion
     let container = document.getElementById('notificationContainer');

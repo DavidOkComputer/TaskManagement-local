@@ -1,9 +1,5 @@
 <?php
-/**
- * manager_get_workload.php
- * Gets task distribution by project for manager's department
- * Used by workload doughnut chart
- */
+/*manager_get_workload.php para saber la distribucion de trabajo version gerente*/
 
 ob_start();
 if (session_status() === PHP_SESSION_NONE) {
@@ -22,7 +18,7 @@ $response = [
 ];
 
 try {
-    // Validate department ID
+    //validar el id del departamento
     if (!isset($_GET['id_departamento']) || empty($_GET['id_departamento'])) {
         throw new Exception('ID de departamento requerido');
     }
@@ -39,7 +35,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // Get task distribution by project in this department
+    //obtener la distribucion de tarea a traves de los proyectos
     $query = "
         SELECT 
             p.id_proyecto,

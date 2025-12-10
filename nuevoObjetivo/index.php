@@ -84,10 +84,10 @@ $user_id = $_SESSION['user_id'];
           </li>
           <li class="nav-item dropdown d-none d-lg-block user-dropdown">
             <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> </a>
+              <i class="mdi mdi-account" alt="profile icon"></i>
+            </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
-                <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
                 <p class="mb-1 mt-3 font-weight-semibold"><?php echo htmlspecialchars($user_name); ?></p>
                 <p class="fw-light text-muted mb-0"><?php echo htmlspecialchars($user_email); ?></p>
               </div>

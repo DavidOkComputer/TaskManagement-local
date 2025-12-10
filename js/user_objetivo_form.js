@@ -143,7 +143,7 @@ function cargarObjetivoParaEditar(objectiveId) {
                 
                 // Verificar que el departamento del objetivo coincida con el del gerente
                 if (objetivo.id_departamento && objetivo.id_departamento != managerState.departmentId) {
-                    showNotification('Advertencia: Este objetivo pertenece a otro departamento', 'warning');
+                   // showNotification('Advertencia: Este objetivo pertenece a otro departamento', 'warning');
                 }
                 
                 // Mostrar archivo adjunto si existe

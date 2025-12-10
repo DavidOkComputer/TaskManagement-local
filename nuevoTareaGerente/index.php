@@ -1,10 +1,29 @@
 <?php
 require_once('../php/check_auth.php');
-session_start();
 $user_name = $_SESSION['nombre']; 
 $user_apellido = $_SESSION['apellido']; 
 $user_email = $_SESSION['e_mail']; 
 $user_id = $_SESSION['user_id']; 
+
+// Obtener el departamento del usuario si no está en la sesión
+$user_department = $_SESSION['id_departamento'] ?? null;
+
+if (!$user_department) {
+    require_once('../php/db_config.php');
+    $conn = getDBConnection();
+    if ($conn) {
+        $dept_stmt = $conn->prepare("SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?");
+        $dept_stmt->bind_param("i", $user_id);
+        $dept_stmt->execute();
+        $dept_result = $dept_stmt->get_result();
+        if ($dept_row = $dept_result->fetch_assoc()) {
+            $user_department = $dept_row['id_departamento'];
+            $_SESSION['id_departamento'] = $user_department;
+        }
+        $dept_stmt->close();
+        $conn->close();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,8 +41,6 @@ $user_id = $_SESSION['user_id'];
   <link rel="stylesheet" href="../vendors/simple-line-icons/css/simple-line-icons.css">
   <link rel="stylesheet" href="../vendors/css/vendor.bundle.base.css">
   <!-- endinject -->
-  <!-- Plugin css for this page -->
-  <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
   <!-- endinject -->
@@ -87,18 +104,21 @@ $user_id = $_SESSION['user_id'];
           </li>
           <li class="nav-item dropdown d-none d-lg-block user-dropdown">
             <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <img class="img-xs rounded-circle" src="../images/faces/face8.jpg" alt="Profile image"> </a>
+              <i class="mdi mdi-account" alt="profile icon"></i>
+            </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
-                <img class="img-md rounded-circle" src="../images/faces/face8.jpg" alt="Profile image">
                 <p class="mb-1 mt-3 font-weight-semibold">
                   <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
                 </p>
                 <p class="fw-light text-muted mb-0">
-                 <?php echo htmlspecialchars($user_email); ?>
+                  <?php echo htmlspecialchars($user_email); ?>
                 </p>
               </div>
-              <a class="dropdown-item" href="../php/logout.php"><i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión</a>
+              <a class="dropdown-item" href="../php/logout.php">
+                <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>
+                Cerrar sesion
+              </a>
             </div>
           </li>
         </ul>
@@ -194,7 +214,7 @@ $user_id = $_SESSION['user_id'];
                 <div class="card-body">
                   <div id="alertContainer">
                     <h4 class="card-title">Asignación de tareas para proyectos</h4>
-                    <p class="card-description">Asigne las tareas a desarrollar dentro del proyecto</p>
+                    <p class="card-description">Asigne las tareas a desarrollar dentro del proyecto <small class="text-muted">(Solo proyectos de su departamento)</small></p>
                   </div>
                   <hr>
                   <div class="row">
@@ -263,8 +283,19 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for this page-->
   <script src="../js/file-upload.js"></script>
   <script src="../js/dashboard.js"></script>
+  <script src="../js/hoverable-collapse.js"></script>
   <!-- End custom js for this page-->
-  <script src="../js/manage_tasks.js"></script>
+  
+  <!-- IMPORTANTE: Variables de sesión para JavaScript -->
+  <script>
+    // Pasar datos de sesión a JavaScript para uso en manager_manage_tasks.js
+    window.currentUserId = <?php echo json_encode((int)$user_id); ?>;
+    window.currentDepartmentId = <?php echo json_encode($user_department ? (int)$user_department : null); ?>;
+    window.currentUserName = <?php echo json_encode($user_name); ?>;
+  </script>
+  
+  <!-- Manager Task Management Script -->
+  <script src="../js/manager_manage_tasks.js"></script>
   <script src="../js/notifications.js"></script>
 </body>
 </html>

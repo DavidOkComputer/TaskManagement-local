@@ -448,7 +448,7 @@ function formatDate(dateString) {
 } 
 
 function editarObjetivo(idObjetivo) { 
-    window.location.href = `../nuevoObjetivo/?edit=${idObjetivo}`; 
+    window.location.href = `../nuevoObjetivoGerente/?edit=${idObjetivo}`; 
 }
 
 function toggleObjectiveCompletion(idObjetivo, nuevoEstado) {
@@ -506,12 +506,12 @@ function updateObjectiveStatus(idObjetivo, nuevoEstado) {
                 : filteredObjectives;
             displayObjectives(sorted);
         } else {
-            showErrorAlert(data.message || 'Error al actualizar el estado del objetivo');
+           // showErrorAlert(data.message || 'Error al actualizar el estado del objetivo');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showErrorAlert('Error al conectar con el servidor');
+        //showErrorAlert('Error al conectar con el servidor');
     });
 }
 

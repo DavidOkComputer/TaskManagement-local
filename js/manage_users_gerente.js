@@ -26,7 +26,6 @@ let currentUserIdForProject = null;
 document.addEventListener('DOMContentLoaded', function() {
 	// inicializar 
 	console.clear();
-	logAction('Página cargada - Inicializando sistema');
 	loadDepartamentos();
 	loadUsuarios();
 	startAutoRefresh();
@@ -324,7 +323,6 @@ function loadUsuarios() {
 				allUsuarios = data.usuarios;
 				filteredUsuarios = [...allUsuarios];
 				currentPage = 1;
-				console.table(data.usuarios); //mostrar formato d etabla 
 				displayUsuarios(allUsuarios);
 				showSuccess(`Se cargaron ${data.usuarios.length} usuarios`);
 			} else {
@@ -901,7 +899,7 @@ function showSuccess(message, data = null) {
 	const timestamp = new Date().toLocaleTimeString();
 	const logMessage = `[${timestamp}] hecho: ${message}`;
 	if (data) {}
-	displayNotification(message, 'success'); //mostrar notificacion en estilo de tostador 
+	//displayNotification(message, 'success'); //mostrar notificacion en estilo de tostador 
 }
 
 function showError(message, error = null) {
@@ -911,21 +909,21 @@ function showError(message, error = null) {
 	if (error) {
 		console.error('Error Details:', error);
 	}
-	displayNotification(message, 'error');
+	//displayNotification(message, 'error');
 }
 
 function showInfo(message) {
 	const timestamp = new Date().toLocaleTimeString();
 	const logMessage = `[${timestamp}]INFO: ${message}`;
 	console.info(logMessage);
-	displayNotification(message, 'info');
+	//displayNotification(message, 'info');
 }
 
 function showWarning(message) {
 	const timestamp = new Date().toLocaleTimeString();
 	const logMessage = `[${timestamp}]Advertencia: ${message}`;
 	console.warn(logMessage);
-	displayNotification(message, 'advertencia');
+	//displayNotification(message, 'advertencia');
 }
 
 function displayNotification(message, type = 'info') {

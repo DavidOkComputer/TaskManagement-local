@@ -23,7 +23,7 @@ function loadProyectosVencidosAndChart() {
 
 function loadOverdueProjectsData() { 
     return $.ajax({ 
-        url: '../php/api_get_overdue_projects.php', 
+        url: '../php/manager_api_get_overdue_projects.php', 
         type: 'GET', 
         dataType: 'json', 
         timeout: 10000, 
