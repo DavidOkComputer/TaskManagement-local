@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 09, 2025 at 04:12 PM
+-- Generation Time: Dec 10, 2025 at 08:45 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -75,6 +75,13 @@ CREATE TABLE `tbl_email_log` (
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `tbl_email_log`
+--
+
+INSERT INTO `tbl_email_log` (`id_log`, `id_email`, `evento`, `detalle`, `ip_address`, `user_agent`, `fecha_creacion`) VALUES
+(1, 1, 'queued', 'Email en cola para: francisco.valdez@nidec.com', NULL, NULL, '2025-12-09 19:25:48');
+
 -- --------------------------------------------------------
 
 --
@@ -100,6 +107,13 @@ CREATE TABLE `tbl_email_queue` (
   `enviado_at` datetime DEFAULT NULL,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tbl_email_queue`
+--
+
+INSERT INTO `tbl_email_queue` (`id_email`, `destinatario_email`, `destinatario_nombre`, `asunto`, `cuerpo_html`, `cuerpo_texto`, `tipo_notificacion`, `prioridad`, `estado`, `intentos`, `max_intentos`, `ultimo_error`, `referencia_tipo`, `referencia_id`, `programado_para`, `enviado_at`, `fecha_creacion`) VALUES
+(1, 'francisco.valdez@nidec.com', 'Francisco Valdez', '📋 Nueva tarea asignada: de nuevo otra prueba de tarea despue de notificacion', '\r\n<!DOCTYPE html>\r\n<html lang=\"es\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n    <title>Nueva tarea asignada: de nuevo otra prueba de tarea despue de notificacion</title>\r\n    <style>\r\n        * {\r\n            margin: 0;\r\n            padding: 0;\r\n            box-sizing: border-box;\r\n        }\r\n        body { \r\n            font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;\r\n            line-height: 1.6;\r\n            color: #333333;\r\n            background-color: #f5f5f5;\r\n            padding: 20px;\r\n        }\r\n        .email-wrapper {\r\n            max-width: 600px;\r\n            margin: 0 auto;\r\n        }\r\n        .email-container {\r\n            background: #ffffff;\r\n            border-radius: 8px;\r\n            overflow: hidden;\r\n            box-shadow: 0 2px 8px rgba(0,0,0,0.1);\r\n        }\r\n        .header {\r\n            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);\r\n            color: #ffffff;\r\n            padding: 25px 30px;\r\n            text-align: center;\r\n        }\r\n        .header h1 {\r\n            margin: 0;\r\n            font-size: 22px;\r\n            font-weight: 600;\r\n        }\r\n        .header .subtitle {\r\n            font-size: 14px;\r\n            opacity: 0.9;\r\n            margin-top: 5px;\r\n        }\r\n        .content {\r\n            padding: 30px;\r\n        }\r\n        .greeting {\r\n            font-size: 18px;\r\n            margin-bottom: 20px;\r\n        }\r\n        .task-card {\r\n            background: #f8f9fa;\r\n            border-left: 4px solid #4CAF50;\r\n            padding: 20px;\r\n            margin: 20px 0;\r\n            border-radius: 0 8px 8px 0;\r\n        }\r\n        .task-card.urgent {\r\n            border-left-color: #f44336;\r\n            background: #fff5f5;\r\n        }\r\n        .task-card.warning {\r\n            border-left-color: #ff9800;\r\n            background: #fff8e1;\r\n        }\r\n        .task-card h3 {\r\n            margin: 0 0 10px 0;\r\n            color: #333;\r\n            font-size: 18px;\r\n        }\r\n        .task-card p {\r\n            margin: 0 0 10px 0;\r\n            color: #666;\r\n        }\r\n        .meta-info {\r\n            font-size: 14px;\r\n            color: #666;\r\n        }\r\n        .meta-info strong {\r\n            color: #333;\r\n        }\r\n        .btn {\r\n            display: inline-block;\r\n            padding: 12px 28px;\r\n            background-color: #4CAF50;\r\n            color: #ffffff !important;\r\n            text-decoration: none;\r\n            border-radius: 6px;\r\n            margin-top: 20px;\r\n            font-weight: 500;\r\n            font-size: 14px;\r\n        }\r\n        .btn:hover {\r\n            background-color: #45a049;\r\n        }\r\n        .btn-center {\r\n            text-align: center;\r\n            margin: 25px 0;\r\n        }\r\n        .stats-container {\r\n            display: table;\r\n            width: 100%;\r\n            margin: 20px 0;\r\n        }\r\n        .stat-box {\r\n            display: table-cell;\r\n            width: 33.33%;\r\n            padding: 15px;\r\n            text-align: center;\r\n            border-radius: 8px;\r\n        }\r\n        .stat-box.success { background: #e8f5e9; }\r\n        .stat-box.warning { background: #fff3e0; }\r\n        .stat-box.danger { background: #ffebee; }\r\n        .stat-number {\r\n            font-size: 32px;\r\n            font-weight: bold;\r\n            display: block;\r\n        }\r\n        .stat-box.success .stat-number { color: #4CAF50; }\r\n        .stat-box.warning .stat-number { color: #ff9800; }\r\n        .stat-box.danger .stat-number { color: #f44336; }\r\n        .stat-label {\r\n            font-size: 12px;\r\n            color: #666;\r\n            text-transform: uppercase;\r\n        }\r\n        .footer {\r\n            margin-top: 30px;\r\n            padding: 20px 30px;\r\n            background: #f8f9fa;\r\n            border-top: 1px solid #eee;\r\n            text-align: center;\r\n            font-size: 12px;\r\n            color: #999;\r\n        }\r\n        .footer a {\r\n            color: #4CAF50;\r\n            text-decoration: none;\r\n        }\r\n        .divider {\r\n            height: 1px;\r\n            background: #eee;\r\n            margin: 20px 0;\r\n        }\r\n        .upcoming-list {\r\n            margin: 15px 0;\r\n            padding: 0;\r\n            list-style: none;\r\n        }\r\n        .upcoming-list li {\r\n            padding: 10px 0;\r\n            border-bottom: 1px solid #eee;\r\n        }\r\n        .upcoming-list li:last-child {\r\n            border-bottom: none;\r\n        }\r\n        .date-badge {\r\n            display: inline-block;\r\n            background: #e3f2fd;\r\n            color: #1976D2;\r\n            padding: 2px 8px;\r\n            border-radius: 4px;\r\n            font-size: 12px;\r\n            margin-left: 10px;\r\n        }\r\n        @media only screen and (max-width: 600px) {\r\n            .content { padding: 20px; }\r\n            .stat-box { display: block; width: 100%; margin-bottom: 10px; }\r\n        }\r\n    </style>\r\n</head>\r\n<body>\r\n    <div class=\"email-wrapper\">\r\n        <div class=\"email-container\">\r\n            <div class=\"header\">\r\n                <h1>Sistema de Gestión de Tareas</h1>\r\n                <div class=\"subtitle\">Nueva tarea asignada</div>\r\n            </div>\r\n            <div class=\"content\">\r\n                \r\n            <p class=\"greeting\">Hola <strong>Francisco</strong>,</p>\r\n            <p>Se te ha asignado una nueva tarea en el sistema:</p>\r\n            \r\n            <div class=\"task-card\">\r\n                <h3>📋 de nuevo otra prueba de tarea despue de notificacion</h3>\r\n                <p>descripcion de denuevo otra prueba de tarea despues de notificacion</p>\r\n                <div class=\"divider\"></div>\r\n                <div class=\"meta-info\">\r\n                    <p><strong>Proyecto:</strong> Prueba de creacion de proyectos con edicion restringida</p>\r\n                    <p><strong>Fecha límite:</strong> 11/12/2025</p>\r\n                    <p><strong>Asignado por:</strong> David Barreto</p>\r\n                </div>\r\n            </div>\r\n            \r\n            <div class=\"btn-center\">\r\n                <a href=\"http://localhost/task_management\" class=\"btn\">Ver Tarea</a>\r\n            </div>\r\n            </div>\r\n            <div class=\"footer\">\r\n                <p>Este es un mensaje automático del Sistema de Gestión de Tareas.</p>\r\n                <p>Por favor no responda directamente a este correo.</p>\r\n                <p style=\"margin-top: 10px;\">\r\n                    <a href=\"http://localhost/task_management\">Acceder al Sistema</a>\r\n                </p>\r\n            </div>\r\n        </div>\r\n    </div>\r\n</body>\r\n</html>', 'Nueva tarea asignada: de nuevo otra prueba de tarea despue de notificacion\r\n \r\n * {\r\n margin: 0;\r\n padding: 0;\r\n box-sizing: border-box;\r\n }\r\n body { \r\n font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif;\r\n line-height: 1.6;\r\n color: #333333;\r\n background-color: #f5f5f5;\r\n padding: 20px;\r\n }\r\n .email-wrapper {\r\n max-width: 600px;\r\n margin: 0 auto;\r\n }\r\n .email-container {\r\n background: #ffffff;\r\n border-radius: 8px;\r\n overflow: hidden;\r\n box-shadow: 0 2px 8px rgba(0,0,0,0.1);\r\n }\r\n .header {\r\n background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);\r\n color: #ffffff;\r\n padding: 25px 30px;\r\n text-align: center;\r\n }\r\n .header h1 {\r\n margin: 0;\r\n font-size: 22px;\r\n font-weight: 600;\r\n }\r\n .header .subtitle {\r\n font-size: 14px;\r\n opacity: 0.9;\r\n margin-top: 5px;\r\n }\r\n .content {\r\n padding: 30px;\r\n }\r\n .greeting {\r\n font-size: 18px;\r\n margin-bottom: 20px;\r\n }\r\n .task-card {\r\n background: #f8f9fa;\r\n border-left: 4px solid #4CAF50;\r\n padding: 20px;\r\n margin: 20px 0;\r\n border-radius: 0 8px 8px 0;\r\n }\r\n .task-card.urgent {\r\n border-left-color: #f44336;\r\n background: #fff5f5;\r\n }\r\n .task-card.warning {\r\n border-left-color: #ff9800;\r\n background: #fff8e1;\r\n }\r\n .task-card h3 {\r\n margin: 0 0 10px 0;\r\n color: #333;\r\n font-size: 18px;\r\n }\r\n .task-card p {\r\n margin: 0 0 10px 0;\r\n color: #666;\r\n }\r\n .meta-info {\r\n font-size: 14px;\r\n color: #666;\r\n }\r\n .meta-info strong {\r\n color: #333;\r\n }\r\n .btn {\r\n display: inline-block;\r\n padding: 12px 28px;\r\n background-color: #4CAF50;\r\n color: #ffffff !important;\r\n text-decoration: none;\r\n border-radius: 6px;\r\n margin-top: 20px;\r\n font-weight: 500;\r\n font-size: 14px;\r\n }\r\n .btn:hover {\r\n background-color: #45a049;\r\n }\r\n .btn-center {\r\n text-align: center;\r\n margin: 25px 0;\r\n }\r\n .stats-container {\r\n display: table;\r\n width: 100%;\r\n margin: 20px 0;\r\n }\r\n .stat-box {\r\n display: table-cell;\r\n width: 33.33%;\r\n padding: 15px;\r\n text-align: center;\r\n border-radius: 8px;\r\n }\r\n .stat-box.success { background: #e8f5e9; }\r\n .stat-box.warning { background: #fff3e0; }\r\n .stat-box.danger { background: #ffebee; }\r\n .stat-number {\r\n font-size: 32px;\r\n font-weight: bold;\r\n display: block;\r\n }\r\n .stat-box.success .stat-number { color: #4CAF50; }\r\n .stat-box.warning .stat-number { color: #ff9800; }\r\n .stat-box.danger .stat-number { color: #f44336; }\r\n .stat-label {\r\n font-size: 12px;\r\n color: #666;\r\n text-transform: uppercase;\r\n }\r\n .footer {\r\n margin-top: 30px;\r\n padding: 20px 30px;\r\n background: #f8f9fa;\r\n border-top: 1px solid #eee;\r\n text-align: center;\r\n font-size: 12px;\r\n color: #999;\r\n }\r\n .footer a {\r\n color: #4CAF50;\r\n text-decoration: none;\r\n }\r\n .divider {\r\n height: 1px;\r\n background: #eee;\r\n margin: 20px 0;\r\n }\r\n .upcoming-list {\r\n margin: 15px 0;\r\n padding: 0;\r\n list-style: none;\r\n }\r\n .upcoming-list li {\r\n padding: 10px 0;\r\n border-bottom: 1px solid #eee;\r\n }\r\n .upcoming-list li:last-child {\r\n border-bottom: none;\r\n }\r\n .date-badge {\r\n display: inline-block;\r\n background: #e3f2fd;\r\n color: #1976D2;\r\n padding: 2px 8px;\r\n border-radius: 4px;\r\n font-size: 12px;\r\n margin-left: 10px;\r\n }\r\n @media only screen and (max-width: 600px) {\r\n .content { padding: 20px; }\r\n .stat-box { display: block; width: 100%; margin-bottom: 10px; }\r\n }\r\n \r\n\r\n\r\n \r\n \r\n \r\n Sistema de Gestión de Tareas\r\n Nueva tarea asignada\n\n\r\n \n\n\r\n \r\n \r\n Hola Francisco,\n\n\r\n Se te ha asignado una nueva tarea en el sistema:\n\n\r\n \r\n \r\n 📋 de nuevo otra prueba de tarea despue de notificacion\r\n descripcion de denuevo otra prueba de tarea despues de notificacion\n\n\r\n \n\n\r\n \r\n Proyecto: Prueba de creacion de proyectos con edicion restringida\n\n\r\n Fecha límite: 11/12/2025\n\n\r\n Asignado por: David Barreto\n\n\r\n \n\n\r\n \n\n\r\n \r\n \r\n Ver Tarea\r\n \n\n\r\n \n\n\r\n \r\n Este es un mensaje automático del Sistema de Gestión de Tareas.\n\n\r\n Por favor no responda directamente a este correo.\n\n\r\n \r\n Acceder al Sistema', 'tarea_asignada', 2, 'pendiente', 0, 3, NULL, 'tarea', 40, '2025-12-09 20:25:48', NULL, '2025-12-09 19:25:48');
 
 -- --------------------------------------------------------
 
@@ -150,7 +164,14 @@ INSERT INTO `tbl_notificaciones` (`id_notificacion`, `id_usuario`, `tipo`, `titu
 (0, 3, 'inactividad_tarea', 'Tarea pendiente sin actividad', 'La tarea \'Prueba de complecion de tarea\' lleva 12 días pendiente sin cambios.', 27, 'tarea', 0, '2025-12-08 16:04:08', NULL),
 (0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'prueba de notificacion de tostada\' en el proyecto \'prueba\'.', 31, 'tarea', 0, '2025-12-09 14:36:32', NULL),
 (0, 6, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'prueba de fecha de tarea\' en el proyecto \'Ingreso de robots a planta\'.', 32, 'tarea', 0, '2025-12-09 14:45:15', NULL),
-(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'a\' en el proyecto \'prueba\'.', 33, 'tarea', 0, '2025-12-09 15:08:47', NULL);
+(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'a\' en el proyecto \'prueba\'.', 33, 'tarea', 0, '2025-12-09 15:08:47', NULL),
+(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'Prueba de tarea con fecha de vencimiento adecuada\' en el proyecto \'prueba\'.', 34, 'tarea', 0, '2025-12-09 15:50:39', NULL),
+(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'Prueba de tarea con fecha buena\' en el proyecto \'prueba\'.', 35, 'tarea', 0, '2025-12-09 15:52:41', NULL),
+(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'Prueba de creacion de tarea con fecha correspondiente\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 36, 'tarea', 0, '2025-12-09 17:54:59', NULL),
+(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'nueva prueba de fecha\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 37, 'tarea', 0, '2025-12-09 18:07:38', NULL),
+(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'prueba de creacion de tarea despues de notificacion\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 38, 'tarea', 0, '2025-12-09 19:22:06', NULL),
+(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'nueva pruebva de tarea\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 39, 'tarea', 0, '2025-12-09 19:23:57', NULL),
+(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'de nuevo otra prueba de tarea despue de notificacion\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 40, 'tarea', 0, '2025-12-09 19:25:48', NULL);
 
 -- --------------------------------------------------------
 
@@ -273,7 +294,10 @@ INSERT INTO `tbl_objetivos` (`id_objetivo`, `nombre`, `descripcion`, `id_departa
 (6, 'Proyecto desarrollo de inteligencia artificial', 'prueba de objetivo', 6, '2025-11-13 13:03:04', '2025-11-25', 'pendiente', '', '', 1, '2025-11-13 19:03:04'),
 (7, 'Completacion de app de tareas', 'Descripcion de completacion de app de tareas', 6, '2025-12-04 07:48:26', '2025-12-26', 'pendiente', '', '', 6, '2025-12-04 13:48:26'),
 (8, 'Terminacion de proyecto de tareas', 'Descripcion de proyecto de tareas', 8, '2025-12-04 08:03:06', '2025-12-20', 'pendiente', '', '', 6, '2025-12-04 14:03:06'),
-(9, 'Completar año nuevo', 'Descripcion de completar año nuevo', 9, '2025-12-04 11:14:49', '2025-12-25', 'pendiente', '', '', 7, '2025-12-04 17:14:49');
+(9, 'Completar año nuevo', 'Descripcion de completar año nuevo', 9, '2025-12-04 11:14:49', '2025-12-25', 'pendiente', '', '', 7, '2025-12-04 17:14:49'),
+(10, 'Prueba de edicion de nuevo objetivo', 'Descripcion de prueba de nuevo objetivo despues de notificaciones', 1, '2025-12-09 15:16:47', '2025-12-25', 'pendiente', '', '', 1, '2025-12-09 21:16:47'),
+(11, 'Prueba de creacion de objetivo como usuario', 'Descripcion de prueba de creacion de objetivo como usuario', 6, '2025-12-10 10:57:07', '2025-12-13', 'pendiente', '', '', 3, '2025-12-10 16:57:07'),
+(12, 'Prueba de creacion de objetivo como gerente', 'Descripcion de prueba de creacion de objetivo como gerente', 8, '2025-12-10 11:29:30', '2025-12-13', 'pendiente', '', '', 6, '2025-12-10 17:29:30');
 
 -- --------------------------------------------------------
 
@@ -306,14 +330,18 @@ CREATE TABLE `tbl_proyectos` (
 INSERT INTO `tbl_proyectos` (`id_proyecto`, `nombre`, `descripcion`, `id_departamento`, `fecha_inicio`, `fecha_cumplimiento`, `progreso`, `ar`, `estado`, `archivo_adjunto`, `id_creador`, `id_participante`, `id_tipo_proyecto`, `puede_editar_otros`, `fecha_creacion`) VALUES
 (1, 'Proyecto desarrollo de inteligencia artificial', 'Desarrollo e implementacion de inteligencia artificia autonoma capaz de realizar tareas de limpiesa autonomas', 1, '2025-11-25 17:27:09', '2025-11-17', 14, 0x31323334353637383839, 'vencido', 'uploads/proyectos/1762799642_f3314399a73845f2_Manual_de_usuario_para_sistema_de_pir__mide_3Q6S.pdf', 1, 1, 2, 0, '2025-11-14 18:33:00'),
 (4, 'bbbbbbbbbbbbbb', 'bbbbbbbbbbbbbbbbb', 6, '2025-11-26 13:29:45', '2025-11-25', 83, '', 'vencido', '0', 1, 0, 1, 0, '2025-11-15 19:09:00'),
-(8, 'prueba', 'prueba', 6, '2025-12-09 15:08:47', '2025-11-30', 50, 0x30, 'vencido', '', 1, 3, 2, 0, '2025-11-13 21:02:01'),
+(8, 'prueba', 'prueba', 6, '2025-12-09 15:52:41', '2025-11-30', 33, 0x30, 'vencido', '', 1, 3, 2, 0, '2025-11-13 21:02:01'),
 (9, 'Prueba de vencimiento de proyecto', 'Descripcion de prueba de vencimiento de proyecto', 6, '2025-12-08 16:00:43', '2025-11-30', 50, 0x30, 'vencido', '', 1, 3, 2, 0, '2025-11-19 15:37:50'),
 (10, 'Prueba de index para proyecto', 'Descripcion de prueba de index para proyecto', 6, '2025-12-08 16:00:43', '2025-11-30', 0, 0x30, 'vencido', '', 1, 1, 2, 0, '2025-11-19 21:16:34'),
-(11, 'Prueba de creacion de proyectos con edicion restringida', 'Descripcion de prueba de creacion de proyectos con edicion restringida', 6, '2025-12-08 16:00:43', '2025-11-24', 0, '', 'vencido', '0', 1, 3, 2, 0, '2025-11-20 15:50:09'),
+(11, 'Prueba de creacion de proyectos con edicion restringida', 'Descripcion de prueba de creacion de proyectos con edicion restringida', 6, '2025-12-09 19:25:48', '2025-11-24', 17, '', 'vencido', '0', 1, 3, 2, 0, '2025-11-20 15:50:09'),
 (12, 'Estadisticas desarrolladas', 'Descripcion de estadisticas desarrolladas', 8, '2025-12-03 19:57:55', '2025-11-28', 100, '', 'completado', '0', 1, 6, 2, 0, '2025-11-24 17:17:28'),
 (13, 'Instalacion de camaras de seguridad', 'Descripcion del proyecto de camaras de seguridad', 9, '2025-11-25 18:29:01', '2025-12-05', 100, '', 'completado', '0', 1, 7, 2, 0, '2025-11-25 18:28:19'),
 (14, 'Ingreso de robots a planta', 'Descripcion de ingreso de robots a planta', 8, '2025-12-09 14:45:15', '2025-12-06', 33, '', 'vencido', '0', 1, 6, 2, 0, '2025-11-28 15:38:59'),
-(18, 'prueba de proyecto para usuario normal', 'Descripcion de prueba para usuario normal', 9, '2025-12-11 19:35:00', '2025-12-18', 0, '', 'pendiente', '0', 7, 7, 2, 0, '2025-12-04 19:35:55');
+(18, 'prueba de proyecto para usuario normal', 'Descripcion de prueba para usuario normal', 9, '2025-12-11 19:35:00', '2025-12-18', 0, '', 'pendiente', '0', 7, 7, 2, 0, '2025-12-04 19:35:55'),
+(19, 'prueba de creacion de proyecto despues de notificacion', 'descripcion de prueba de creacion de proyecto despues de notificacion', 1, '2025-12-10 19:18:00', '2026-01-01', 0, '', 'pendiente', '0', 1, 0, 2, 0, '2025-12-09 19:19:01'),
+(20, 'prueba de creacion de proyecto despues de notificacion', 'Descripcion de prueba de proyecto despues de notificacion', 1, '2025-12-10 19:20:00', '2026-01-01', 0, '', 'pendiente', '0', 1, 1, 2, 0, '2025-12-09 19:20:16'),
+(21, 'Prueba de creacion de proyecto como usuario', 'Descripcion de prueba de creacion de proyecto como usuario', 6, '2025-12-12 16:52:00', '2025-12-13', 0, '', 'pendiente', '0', 3, 3, 2, 0, '2025-12-10 16:52:34'),
+(22, 'Prueba de creacion de proyecto como gerente', 'Descripcion de prueba de creacion de proyecto como gerente', 8, '2025-12-10 17:41:55', '2025-12-13', 100, '', 'completado', '0', 6, 6, 2, 0, '2025-12-10 17:26:06');
 
 -- --------------------------------------------------------
 
@@ -370,7 +398,7 @@ CREATE TABLE `tbl_tareas` (
   `id_proyecto` int(11) NOT NULL,
   `id_creador` int(11) NOT NULL,
   `fecha_inicio` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `fecha_cumplimiento` date NOT NULL,
+  `fecha_cumplimiento` date DEFAULT NULL,
   `estado` enum('pendiente','vencido','completado') NOT NULL,
   `fecha_creacion` timestamp NOT NULL DEFAULT current_timestamp(),
   `id_participante` int(11) DEFAULT NULL
@@ -381,13 +409,13 @@ CREATE TABLE `tbl_tareas` (
 --
 
 INSERT INTO `tbl_tareas` (`id_tarea`, `nombre`, `descripcion`, `id_proyecto`, `id_creador`, `fecha_inicio`, `fecha_cumplimiento`, `estado`, `fecha_creacion`, `id_participante`) VALUES
-(1, 'desarrollar correccion de modal', 'desarrollar e implementar la correccion para el modal de tareas donde se queda la pantalla oscura', 4, 1, '2025-11-11 14:42:14', '0000-00-00', 'completado', '2025-11-11 14:42:14', NULL),
-(2, 'Desarrollo de red neuronal', 'Desarrollo e implementacion de red neuronal a traves de python', 1, 1, '2025-11-25 15:53:12', '0000-00-00', 'pendiente', '2025-11-11 14:43:31', NULL),
-(4, 'nueva tarea para el proyecto', 'desarrollo de tareas para proyectos', 4, 1, '2025-11-11 17:03:47', '0000-00-00', 'completado', '2025-11-11 17:03:47', NULL),
-(7, 'ejemplo', 'ejemplo', 1, 1, '2025-11-25 15:53:11', '0000-00-00', 'pendiente', '2025-11-11 17:43:42', NULL),
-(8, 'Desarrollo de automatizacion', 'Desarrollo e implementacion de pensamiento automatico', 1, 1, '2025-11-25 15:53:13', '0000-00-00', 'pendiente', '2025-11-12 18:51:19', NULL),
-(9, 'Desarrollo de presentacion de informacin', 'Desarrollar el procesamiento de la informacion y presentacion de la misma', 1, 1, '2025-11-25 17:25:10', '0000-00-00', 'pendiente', '2025-11-12 18:52:59', NULL),
-(10, 'Desarrollo de procesamiento eficiente', 'Desarrollo e implementacion de procesamiento eficiente de datos', 1, 1, '2025-11-25 17:25:09', '0000-00-00', 'pendiente', '2025-11-12 18:57:46', NULL),
+(1, 'desarrollar correccion de modal', 'desarrollar e implementar la correccion para el modal de tareas donde se queda la pantalla oscura', 4, 1, '2025-12-09 15:49:01', NULL, 'completado', '2025-11-11 14:42:14', NULL),
+(2, 'Desarrollo de red neuronal', 'Desarrollo e implementacion de red neuronal a traves de python', 1, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-11-11 14:43:31', NULL),
+(4, 'nueva tarea para el proyecto', 'desarrollo de tareas para proyectos', 4, 1, '2025-12-09 15:49:01', NULL, 'completado', '2025-11-11 17:03:47', NULL),
+(7, 'ejemplo', 'ejemplo', 1, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-11-11 17:43:42', NULL),
+(8, 'Desarrollo de automatizacion', 'Desarrollo e implementacion de pensamiento automatico', 1, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-11-12 18:51:19', NULL),
+(9, 'Desarrollo de presentacion de informacin', 'Desarrollar el procesamiento de la informacion y presentacion de la misma', 1, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-11-12 18:52:59', NULL),
+(10, 'Desarrollo de procesamiento eficiente', 'Desarrollo e implementacion de procesamiento eficiente de datos', 1, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-11-12 18:57:46', NULL),
 (11, 'Desarrollo de deteccion de errores', 'Desarrollo e implementacion de deteccion de errores en procesamiento', 1, 1, '2025-11-25 17:26:29', '2025-11-30', 'completado', '2025-11-12 19:15:38', NULL),
 (12, 'Desarrollo de conciencia', 'Desarrollo de sistema de conciencia de la red neuronal', 1, 1, '2025-12-08 16:00:43', '2025-11-28', 'vencido', '2025-11-13 14:42:41', NULL),
 (13, 'Prueba de desarrollo de tarea', 'Descripcion de prueba de desarrollo de tarea', 4, 1, '2025-11-18 15:47:59', '2025-11-20', 'completado', '2025-11-18 15:47:55', 1),
@@ -397,19 +425,27 @@ INSERT INTO `tbl_tareas` (`id_tarea`, `nombre`, `descripcion`, `id_proyecto`, `i
 (17, 'Prueba de asignacion a cierto empleado', 'Descripcion de asignacion a cierto empleado', 4, 1, '2025-11-20 18:34:02', '2025-11-21', 'completado', '2025-11-19 15:24:19', 3),
 (18, 'Prueba de tarea para vencimiento de proyecto', 'Descripcion de prueba de tarea para vencimiento de proyecto', 9, 1, '2025-11-19 15:42:37', '2025-11-30', 'completado', '2025-11-19 15:39:14', 3),
 (19, 'Segunda tarea de prueba para vencimiento de proyecto', 'Descripcion de segunda tarea de prueba para vencimiento de proyecto.', 9, 1, '2025-12-08 16:00:43', '2025-11-30', 'vencido', '2025-11-19 15:40:18', 3),
-(20, 'Prueba de asignacion de tarea con acceso restringido', 'Descripcion de prueba de asignacion de tarea con acceso restringido', 11, 1, '2025-11-21 16:55:39', '0000-00-00', 'pendiente', '2025-11-20 15:55:35', 3),
-(21, 'Prueba de fecha de tarea', 'Descripcion para prueba de fecha de tarea', 10, 1, '2025-11-21 13:49:37', '0000-00-00', 'pendiente', '2025-11-21 13:49:37', 1),
-(23, 'Grafica lineal', 'Descripcion de grafica lineal', 12, 1, '2025-11-25 17:26:47', '0000-00-00', 'completado', '2025-11-24 17:33:04', NULL),
-(24, 'grafica de barras', 'descripcion de grafica de barras', 12, 1, '2025-12-03 19:57:04', '0000-00-00', 'completado', '2025-11-25 14:40:20', 6),
-(25, 'Grafica de puntos dispersos', 'Descripcion de grafica de puntos dispersos', 12, 1, '2025-12-03 19:57:55', '0000-00-00', 'completado', '2025-11-25 17:29:11', 6),
-(26, 'Instalacion de camaras en caseta', 'Descripcion de instalacion de camaras en caseta', 13, 1, '2025-11-25 18:29:01', '0000-00-00', 'completado', '2025-11-25 18:28:56', 7),
-(27, 'Prueba de complecion de tarea', 'Descricpion de prueba de complecion de tarea', 4, 1, '2025-11-26 13:29:45', '0000-00-00', 'pendiente', '2025-11-26 13:27:54', 3),
-(28, 'Path finding para robots', 'Instalar path finding en los robots', 14, 1, '2025-12-03 19:53:47', '0000-00-00', 'pendiente', '2025-11-28 15:43:29', 6),
-(29, 'Cargadores', 'Instalacion de cargadores de robots', 14, 1, '2025-11-28 15:44:06', '0000-00-00', 'completado', '2025-11-28 15:44:02', 6),
+(20, 'Prueba de asignacion de tarea con acceso restringido', 'Descripcion de prueba de asignacion de tarea con acceso restringido', 11, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-11-20 15:55:35', 3),
+(21, 'Prueba de fecha de tarea', 'Descripcion para prueba de fecha de tarea', 10, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-11-21 13:49:37', 1),
+(23, 'Grafica lineal', 'Descripcion de grafica lineal', 12, 1, '2025-12-09 15:49:01', NULL, 'completado', '2025-11-24 17:33:04', NULL),
+(24, 'grafica de barras', 'descripcion de grafica de barras', 12, 1, '2025-12-09 15:49:01', NULL, 'completado', '2025-11-25 14:40:20', 6),
+(25, 'Grafica de puntos dispersos', 'Descripcion de grafica de puntos dispersos', 12, 1, '2025-12-09 15:49:01', NULL, 'completado', '2025-11-25 17:29:11', 6),
+(26, 'Instalacion de camaras en caseta', 'Descripcion de instalacion de camaras en caseta', 13, 1, '2025-12-09 15:49:01', NULL, 'completado', '2025-11-25 18:28:56', 7),
+(27, 'Prueba de complecion de tarea', 'Descricpion de prueba de complecion de tarea', 4, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-11-26 13:27:54', 3),
+(28, 'Path finding para robots', 'Instalar path finding en los robots', 14, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-11-28 15:43:29', 6),
+(29, 'Cargadores', 'Instalacion de cargadores de robots', 14, 1, '2025-12-09 15:49:01', NULL, 'completado', '2025-11-28 15:44:02', 6),
 (30, 'Completacion de prueba', 'Descripcion de completacion de prueba', 18, 7, '2025-12-06 18:23:17', '2025-12-20', 'pendiente', '2025-12-06 18:23:17', 7),
-(31, 'prueba de notificacion de tostada', 'Descripcion de notificacion de tostada', 8, 1, '2025-12-09 14:36:32', '0000-00-00', 'pendiente', '2025-12-09 14:36:32', 3),
-(32, 'prueba de fecha de tarea', 'descripcion de prueba de fecha de tarea', 14, 1, '2025-12-09 14:45:15', '0000-00-00', 'pendiente', '2025-12-09 14:45:15', 6),
-(33, 'a', 'a', 8, 1, '2025-12-09 15:08:47', '0000-00-00', 'pendiente', '2025-12-09 15:08:47', 3);
+(31, 'prueba de notificacion de tostada', 'Descripcion de notificacion de tostada', 8, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-12-09 14:36:32', 3),
+(32, 'prueba de fecha de tarea', 'descripcion de prueba de fecha de tarea', 14, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-12-09 14:45:15', 6),
+(33, 'a', 'a', 8, 1, '2025-12-09 15:49:01', NULL, 'pendiente', '2025-12-09 15:08:47', 3),
+(34, 'Prueba de tarea con fecha de vencimiento adecuada', 'descripcion de tarea con fecha de vencimiento adecuada', 8, 1, '2025-12-09 15:50:39', '0000-00-00', 'pendiente', '2025-12-09 15:50:39', 3),
+(35, 'Prueba de tarea con fecha buena', 'Descripcion de tarea con fecha buena', 8, 1, '2025-12-09 15:52:41', '0000-00-00', 'pendiente', '2025-12-09 15:52:41', 3),
+(36, 'Prueba de actualizacion de tareas nuevas', 'Descripcion de prueba de actualizacion de tareas', 11, 1, '2025-12-09 19:10:08', '2025-12-16', 'pendiente', '2025-12-09 17:54:59', 3),
+(37, 'nueva prueba de fecha', 'descripcion de neuva prueba de fecha', 11, 1, '2025-12-09 18:49:02', '2025-12-17', 'completado', '2025-12-09 18:07:38', 3),
+(38, 'prueba de creacion de tarea despues de notificacion', 'descripcion de prueba de notificacion despues de tarea', 11, 1, '2025-12-09 19:22:06', '2025-12-18', 'pendiente', '2025-12-09 19:22:06', 3),
+(39, 'nueva pruebva de tarea', 'descripcion de neva prueba de tarea', 11, 1, '2025-12-09 19:23:57', '2025-12-11', 'pendiente', '2025-12-09 19:23:57', 3),
+(40, 'de nuevo otra prueba de tarea despue de notificacion', 'descripcion de denuevo otra prueba de tarea despues de notificacion', 11, 1, '2025-12-09 19:25:48', '2025-12-11', 'pendiente', '2025-12-09 19:25:48', 3),
+(41, 'Prueba de creacion de tarea como gerente', 'Descripcion de prueba de creacion de tarea como gerente', 22, 6, '2025-12-10 17:41:55', '2025-12-13', 'completado', '2025-12-10 17:41:48', 6);
 
 -- --------------------------------------------------------
 
@@ -456,8 +492,8 @@ CREATE TABLE `tbl_usuarios` (
 
 INSERT INTO `tbl_usuarios` (`id_usuario`, `nombre`, `apellido`, `usuario`, `num_empleado`, `acceso`, `id_departamento`, `id_rol`, `id_superior`, `e_mail`) VALUES
 (1, 'David', 'Barreto', 'NMC10DB', 1858, '$2y$12$aGtk1WQgiTS78EolU.N10Ozp7mUV0ui58orx0outXxhY9yqJy0X.e', 1, 1, 0, 'francisco.barreto@nidec.com'),
-(3, 'Francisco', 'Valdez', 'fram', 1959, '113a7f0c601f3d56b2cf4c9cca5ce636', 6, 3, 0, 'francisco.valdez@nidec.com'),
-(6, 'Jhon', 'Doe', 'JhonDoe', 1010, '113a7f0c601f3d56b2cf4c9cca5ce636', 8, 2, 0, 'jhon.doe@nidec.com'),
+(3, 'Francisco', 'Valdez', 'fram', 1959, '$2y$12$1A48sLCpaQNaIWPuobLreuboG0NVHWGWhvPQD/8AT9X63U6v3WK7G', 6, 3, 0, 'francisco.valdez@nidec.com'),
+(6, 'Jhon', 'Doe', 'JhonDoe', 1010, '$2y$12$pLqIjGxJAy6hbfbcH5TD/uhDlzNcuC7CDMpSO8CGSC12Booz2AKMa', 8, 2, 0, 'jhon.doe@nidec.com'),
 (7, 'Juan', 'Dou', 'JuanDou', 2222, '113a7f0c601f3d56b2cf4c9cca5ce636', 9, 3, 0, 'juan.dou@nidec-motor.com'),
 (8, 'Frenkie', 'DeJong', 'FKDJ20NMC', 21, '113a7f0c601f3d56b2cf4c9cca5ce636', 9, 3, 0, 'frenkie.dejong@nidec-motor.com'),
 (9, 'Luis', 'Ortiz', 'NMC56LO', 56, '$2y$12$dE2hoNRW.xcIQI64CsZxW.IHIB8bbIExHq/5ocrKRQP9d2Y4oof.y', 9, 2, 0, 'luis.ortiz@nidec-motor.com');
@@ -629,13 +665,13 @@ ALTER TABLE `tbl_email_config`
 -- AUTO_INCREMENT for table `tbl_email_log`
 --
 ALTER TABLE `tbl_email_log`
-  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_log` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `tbl_email_queue`
 --
 ALTER TABLE `tbl_email_queue`
-  MODIFY `id_email` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_email` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `tbl_notificacion_preferencias`
@@ -647,13 +683,13 @@ ALTER TABLE `tbl_notificacion_preferencias`
 -- AUTO_INCREMENT for table `tbl_objetivos`
 --
 ALTER TABLE `tbl_objetivos`
-  MODIFY `id_objetivo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id_objetivo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `tbl_proyectos`
 --
 ALTER TABLE `tbl_proyectos`
-  MODIFY `id_proyecto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id_proyecto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `tbl_proyecto_usuarios`
@@ -671,7 +707,7 @@ ALTER TABLE `tbl_roles`
 -- AUTO_INCREMENT for table `tbl_tareas`
 --
 ALTER TABLE `tbl_tareas`
-  MODIFY `id_tarea` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
+  MODIFY `id_tarea` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `tbl_tipo_proyecto`
