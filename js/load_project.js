@@ -1,9 +1,8 @@
-// Load projects when the page is ready
+
 document.addEventListener('DOMContentLoaded', function() {
     loadProjects();
 });
 
-// Function to load projects from the server
 function loadProjects() {
     fetch('php/get_projects.php')
         .then(response => response.json())
@@ -21,7 +20,6 @@ function loadProjects() {
         });
 }
 
-// Function to display projects in the table
 function displayProjects(projects) {
     const tbody = document.querySelector('.table.select-table tbody');
     
@@ -44,18 +42,14 @@ function displayProjects(projects) {
     });
 }
 
-// Function to create a table row for a project
 function createProjectRow(project, rowNumber) {
     const tr = document.createElement('tr');
     
-    // Get status badge class and text
     const statusInfo = getStatusBadge(project.estado);
     
-    // Get progress bar color
     const progressColor = getProgressColor(project.progreso);
     
-    // Calculate progress fraction (if you have a total tasks field, adjust this)
-    const totalTasks = 10; // This should come from your database if available
+    const totalTasks = 10;
     const completedTasks = Math.round((project.progreso / 100) * totalTasks);
     
     tr.innerHTML = `
@@ -111,7 +105,6 @@ function createProjectRow(project, rowNumber) {
     return tr;
 }
 
-// Function to get status badge class and text
 function getStatusBadge(estado) {
     const statusMap = {
         'pendiente': {
@@ -135,7 +128,6 @@ function getStatusBadge(estado) {
     return statusMap[estado] || { class: 'badge-opacity-secondary', text: estado };
 }
 
-// Function to get progress bar color based on percentage
 function getProgressColor(progreso) {
     if (progreso < 30) {
         return 'bg-danger';
@@ -146,7 +138,6 @@ function getProgressColor(progreso) {
     }
 }
 
-// Function to format date
 function formatDate(dateString) {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
@@ -155,7 +146,6 @@ function formatDate(dateString) {
     return `${day}/${month}/${year}`;
 }
 
-// Function to escape HTML to prevent XSS
 function escapeHtml(text) {
     const map = {
         '&': '&amp;',
@@ -167,7 +157,6 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-// Function to show error message
 function showError(message) {
     const tbody = document.querySelector('.table.select-table tbody');
     tbody.innerHTML = `
@@ -179,9 +168,7 @@ function showError(message) {
     `;
 }
 
-// Action functions (to be implemented)
 function editProject(projectId) {
-    // Redirect to edit page or open modal
     window.location.href = `../editarProyecto?id=${projectId}`;
 }
 
@@ -198,7 +185,7 @@ function deleteProject(projectId) {
         .then(data => {
             if (data.success) {
                 alert('Proyecto eliminado exitosamente');
-                loadProjects(); // Reload the table
+                loadProjects(); 
             } else {
                 alert('Error al eliminar el proyecto: ' + data.error);
             }
@@ -211,6 +198,5 @@ function deleteProject(projectId) {
 }
 
 function viewProgress(projectId) {
-    // Redirect to progress page
     window.location.href = `../progresoProyecto?id=${projectId}`;
 }

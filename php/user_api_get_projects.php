@@ -74,7 +74,6 @@ try {
         throw new Exception('Error preparando consulta: ' . $conexion->error);
     }
     
-    // Bind 3 parameters now (creator, participant, group member)
     $stmt->bind_param('iii', $id_usuario, $id_usuario, $id_usuario);
     
     if (!$stmt->execute()) {

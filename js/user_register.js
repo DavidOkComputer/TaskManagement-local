@@ -139,7 +139,6 @@
             });
     }
 
-    // Nueva función: Cargar usuarios filtrados por departamento y rol
     function loadUsuariosByDepartamento(departamentoId) {
         // Filtrar solo usuarios con id_rol = 2 (managers) Y del departamento seleccionado
         fetch(`../php/get_users.php?id_rol=2&id_departamento=${departamentoId}`)
@@ -163,7 +162,6 @@
             });
     }
 
-    // Función original (mantenida por compatibilidad pero ya no se usa al inicio)
     function loadUsuarios() {
         // Filtrar solo usuarios con id_rol = 2 para superiores
         fetch('../php/get_users.php?id_rol=2')

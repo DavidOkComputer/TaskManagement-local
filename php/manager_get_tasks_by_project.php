@@ -1,5 +1,5 @@
 <?php
-/*manager_get_tasks_by_project.php - obtener tareas de un proyecto validando que pertenezca al departamento del gerente*/
+/*manager_get_tasks_by_project.php para saber las tareas de un proyecto validando que pertenezca al departamento del gerente*/
 
 session_start();
 header('Content-Type: application/json');

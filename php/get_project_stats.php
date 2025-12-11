@@ -1,6 +1,5 @@
 <?php
-/**get_project_stats.php obtener los detalles de proyecto con estadisticas de tareas
- */
+/*get_project_stats.php obtener los detalles de proyecto con estadisticas de tareas*/
 
 header('Content-Type: application/json');
 require_once 'db_config.php';

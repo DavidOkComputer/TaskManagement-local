@@ -1,4 +1,4 @@
-/**manage_objectives.js - Maneja la carga y muestra todos los objetivos de la tabla con botones de acción*/ 
+/**manage_objectives.js Maneja la carga y muestra todos los objetivos de la tabla con botones de acción*/ 
 const Config = { 
     API_ENDPOINTS: { 
         DELETE: '../php/delete_objective.php', 

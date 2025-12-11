@@ -18,7 +18,6 @@ $response = [
 ];
 
 try {
-    // Validate department ID
     if (!isset($_GET['id_departamento']) || empty($_GET['id_departamento'])) {
         throw new Exception('ID de departamento requerido');
     }
@@ -30,7 +29,6 @@ try {
         throw new Exception('ID de departamento inválido');
     }
     
-    // Limit weeks range
     $weeks = max(4, min(52, $weeks));
     
     $conn = getDBConnection();
@@ -39,7 +37,6 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // Generate weekly labels
     $labels = [];
     
     for ($i = $weeks - 1; $i >= 0; $i--) {
@@ -48,7 +45,6 @@ try {
         $labels[] = $weekLabel;
     }
     
-    // Get projects in this department
     $proj_query = "SELECT id_proyecto, nombre FROM tbl_proyectos WHERE id_departamento = ?";
     $proj_stmt = $conn->prepare($proj_query);
     $proj_stmt->bind_param('i', $id_departamento);
@@ -65,7 +61,6 @@ try {
     $proj_stmt->close();
     
     if (empty($projectIds)) {
-        // No projects - return empty data
         $response['success'] = true;
         $response['data'] = [
             'labels' => $labels,
@@ -76,7 +71,6 @@ try {
         exit;
     }
     
-    // Prepare datasets for each project
     $datasets = [];
     $colorIndex = 0;
     
@@ -90,10 +84,8 @@ try {
     ];
     
     foreach ($projects as $project) {
-        // Initialize weekly data for this project
         $weeklyData = array_fill(0, count($labels), 0);
         
-        // Query completed tasks for this project
         $task_query = "
             SELECT 
                 DATE(fecha_inicio) as fecha,
@@ -123,7 +115,6 @@ try {
             $task_stmt->close();
         }
         
-        // Calculate cumulative
         $cumulativeData = [];
         $cumulative = 0;
         foreach ($weeklyData as $value) {
@@ -131,7 +122,6 @@ try {
             $cumulativeData[] = $cumulative;
         }
         
-        // Only add dataset if there's data
         if ($cumulative > 0) {
             $color = $colors[$colorIndex % count($colors)];
             
@@ -148,7 +138,6 @@ try {
         }
     }
     
-    // Prepare response
     $response['success'] = true;
     $response['data'] = [
         'labels' => $labels,

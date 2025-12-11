@@ -1,7 +1,5 @@
 <?php
-/*
- * get_top_employees_progress_manager.php para los 5 empleados con mayor progreso en el departamento del gerente
- */
+/*get_top_employees_progress_manager.php para los 5 empleados con mayor progreso en el departamento del gerente*/
 
 header('Content-Type: application/json');
 session_start();

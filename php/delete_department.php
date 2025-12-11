@@ -1,6 +1,5 @@
 <?php
-// eliminar_departamento.php
-// php para eliminar departamentos
+//delete_department.php para borrar departamentos existentes
 header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set( 'display_errors', 0);
@@ -8,18 +7,16 @@ ini_set( 'display_errors', 0);
 require_once 'db_config.php';
 $response=['success'=>false, 'message' => '' ]; 
   
-try { // Check request method
+try {
     if ($_SERVER['REQUEST_METHOD']!== 'POST') { 
       throw new Exception('Método de solicitud no válido'); 
     } 
 
-    //Validate input
     $id_departamento = isset($_POST['id_departamento']) ? intval($_POST['id_departamento']): 0;
     if ($id_departamento<=0 ) { 
       throw new Exception( 'ID de departamento no válido');
     } 
     
-    //crear conexion a base de datos
     $conn=getDBConnection();
     if ($conn->connect_error) { 
       throw new Exception('Error de conexión a la base de datos');

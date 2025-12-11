@@ -1,5 +1,4 @@
 <?php 
-
 /*manager_api_get_pending_projects para proyectos pendientes filtrados por departamento*/ 
 ob_start(); 
 session_start(); 

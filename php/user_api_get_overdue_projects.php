@@ -1,5 +1,5 @@
 <?php
-/*user_api_get_overdue_projects.php para saber proyectos vencidos - Usuario */
+/*user_api_get_overdue_projects.php para saber proyectos vencidos*/
 
 ob_start();
 session_start();
@@ -38,10 +38,6 @@ if (!$id_usuario) {
 $proyectos = [];
 
 try {
-    // Query corregida: incluye las 3 formas en que un usuario puede estar asociado a un proyecto
-    // 1. Como creador (id_creador)
-    // 2. Como participante individual (id_participante) 
-    // 3. Como parte de un grupo (tbl_proyecto_usuarios)
     $query = "
         SELECT DISTINCT
             p.id_proyecto,
@@ -75,7 +71,6 @@ try {
         throw new Exception('Error preparando consulta: ' . $conexion->error);
     }
     
-    // Bind 3 parameters now (creator, participant, group member)
     $stmt->bind_param('iii', $id_usuario, $id_usuario, $id_usuario);
     
     if (!$stmt->execute()) {

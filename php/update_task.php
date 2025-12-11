@@ -4,7 +4,7 @@
 
 ob_start();
 
-// Configurar manejo de errores - no mostrar errores en output
+// Configurar manejo de errores
 error_reporting(E_ALL);
 ini_set("display_errors", 0);
 ini_set("log_errors", 1);
@@ -313,8 +313,6 @@ try {
     "message" => "Error al actualizar la tarea: " . $e->getMessage(),
   ]);
 }
-
-// Finalizar output buffering
 ob_end_flush();
 
 function getProjectState($conn, $id_proyecto)

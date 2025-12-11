@@ -1,9 +1,5 @@
 <?php
-/**
- * manager_get_project_status.php
- * Gets project status distribution for manager's department
- * Used by doughnut chart
- */
+/*manager_get_project_status.php para obtener el estado de los proyectos se usa en la grafica de dona */
 
 ob_start();
 if (session_status() === PHP_SESSION_NONE) {
@@ -22,7 +18,6 @@ $response = [
 ];
 
 try {
-    // Validate department ID
     if (!isset($_GET['id_departamento']) || empty($_GET['id_departamento'])) {
         throw new Exception('ID de departamento requerido');
     }
@@ -39,7 +34,6 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // Count projects by status for the department
     $query = "
         SELECT 
             estado,
@@ -71,7 +65,6 @@ try {
     
     $result = $stmt->get_result();
     
-    // Initialize status counts
     $statusCounts = [
         'completado' => 0,
         'en proceso' => 0,
@@ -86,7 +79,6 @@ try {
         }
     }
     
-    // Prepare chart data
     $response['success'] = true;
     $response['data'] = [
         'labels' => ['Completados', 'En Proceso', 'Pendientes', 'Vencidos'],

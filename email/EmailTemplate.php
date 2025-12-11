@@ -1,23 +1,17 @@
 <?php
-/**
- * EmailTemplates.php
- * Plantillas HTML para notificaciones por email
- * 
- * @package TaskManagement\Email
- * @author Sistema de Tareas
- */
+/*EmailTemplates.php plantilla html para notificaciones por correo*/
 
 class EmailTemplates {
     private $baseTemplate;
     private $templates = [];
     private $colors = [
-        'primary' => '#4CAF50',
-        'danger' => '#f44336',
-        'warning' => '#ff9800',
-        'info' => '#2196F3',
-        'success' => '#4CAF50',
-        'dark' => '#333333',
-        'light' => '#f5f5f5',
+        'primary' => '#009B4A',
+        'danger' => '#000000',
+        'warning' => '#666666',
+        'info' => '#666666',
+        'success' => '#009B4A',
+        'dark' => '#000000',
+        'light' => '#E9E9E9',
         'white' => '#ffffff'
     ];
     
@@ -26,9 +20,6 @@ class EmailTemplates {
         $this->loadTemplates();
     }
     
-    /**
-     * Cargar plantilla base
-     */
     private function loadBaseTemplate() {
         $this->baseTemplate = '
 <!DOCTYPE html>
@@ -61,7 +52,7 @@ class EmailTemplates {
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .header {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            background: linear-gradient(135deg, #009B4A 0%, #009B4A 100%);
             color: #ffffff;
             padding: 25px 30px;
             text-align: center;
@@ -85,17 +76,17 @@ class EmailTemplates {
         }
         .task-card {
             background: #f8f9fa;
-            border-left: 4px solid #4CAF50;
+            border-left: 4px solid #009B4A;
             padding: 20px;
             margin: 20px 0;
             border-radius: 0 8px 8px 0;
         }
         .task-card.urgent {
-            border-left-color: #f44336;
+            border-left-color: #000000;
             background: #fff5f5;
         }
         .task-card.warning {
-            border-left-color: #ff9800;
+            border-left-color: #666666;
             background: #fff8e1;
         }
         .task-card h3 {
@@ -117,7 +108,7 @@ class EmailTemplates {
         .btn {
             display: inline-block;
             padding: 12px 28px;
-            background-color: #4CAF50;
+            background-color: #009B4A;
             color: #ffffff !important;
             text-decoration: none;
             border-radius: 6px;
@@ -126,7 +117,7 @@ class EmailTemplates {
             font-size: 14px;
         }
         .btn:hover {
-            background-color: #45a049;
+            background-color: #009B4A;
         }
         .btn-center {
             text-align: center;
@@ -152,9 +143,9 @@ class EmailTemplates {
             font-weight: bold;
             display: block;
         }
-        .stat-box.success .stat-number { color: #4CAF50; }
-        .stat-box.warning .stat-number { color: #ff9800; }
-        .stat-box.danger .stat-number { color: #f44336; }
+        .stat-box.success .stat-number { color: #009B4A; }
+        .stat-box.warning .stat-number { color: #666666; }
+        .stat-box.danger .stat-number { color: #000000; }
         .stat-label {
             font-size: 12px;
             color: #666;
@@ -170,7 +161,7 @@ class EmailTemplates {
             color: #999;
         }
         .footer a {
-            color: #4CAF50;
+            color: #009B4A;
             text-decoration: none;
         }
         .divider {
@@ -193,7 +184,7 @@ class EmailTemplates {
         .date-badge {
             display: inline-block;
             background: #e3f2fd;
-            color: #1976D2;
+            color: #009B4A;
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 12px;
@@ -228,9 +219,6 @@ class EmailTemplates {
 </html>';
     }
     
-    /**
-     * Cargar plantillas de notificación
-     */
     private function loadTemplates() {
         // Tarea Asignada
         $this->templates['tarea_asignada'] = '
@@ -238,7 +226,7 @@ class EmailTemplates {
             <p>Se te ha asignado una nueva tarea en el sistema:</p>
             
             <div class="task-card">
-                <h3>📋 {{NOMBRE_TAREA}}</h3>
+                <h3>{{NOMBRE_TAREA}}</h3>
                 <p>{{DESCRIPCION_TAREA}}</p>
                 <div class="divider"></div>
                 <div class="meta-info">
@@ -258,10 +246,10 @@ class EmailTemplates {
             <p>Te recordamos que la siguiente tarea está próxima a vencer:</p>
             
             <div class="task-card warning">
-                <h3>⚠️ {{NOMBRE_TAREA}}</h3>
+                <h3>{{NOMBRE_TAREA}}</h3>
                 <div class="meta-info">
                     <p><strong>Proyecto:</strong> {{NOMBRE_PROYECTO}}</p>
-                    <p><strong>Vence en:</strong> <span style="color: #ff9800; font-weight: bold;">{{DIAS_RESTANTES}} día(s)</span></p>
+                    <p><strong>Vence en:</strong> <span style="color: #666666; font-weight: bold;">{{DIAS_RESTANTES}} día(s)</span></p>
                     <p><strong>Fecha límite:</strong> {{FECHA_VENCIMIENTO}}</p>
                 </div>
             </div>
@@ -278,10 +266,10 @@ class EmailTemplates {
             <p>La siguiente tarea ha superado su fecha límite:</p>
             
             <div class="task-card urgent">
-                <h3>🚨 {{NOMBRE_TAREA}}</h3>
+                <h3>{{NOMBRE_TAREA}}</h3>
                 <div class="meta-info">
                     <p><strong>Proyecto:</strong> {{NOMBRE_PROYECTO}}</p>
-                    <p><strong>Venció hace:</strong> <span style="color: #f44336; font-weight: bold;">{{DIAS_VENCIDOS}} día(s)</span></p>
+                    <p><strong>Venció hace:</strong> <span style="color: #666666; font-weight: bold;">{{DIAS_VENCIDOS}} día(s)</span></p>
                     <p><strong>Fecha límite:</strong> {{FECHA_VENCIMIENTO}}</p>
                 </div>
             </div>
@@ -289,7 +277,7 @@ class EmailTemplates {
             <p>Por favor, actualiza el estado de esta tarea lo antes posible o contacta a tu supervisor si necesitas una extensión.</p>
             
             <div class="btn-center">
-                <a href="{{URL_SISTEMA}}" class="btn" style="background-color: #f44336;">Atender Tarea</a>
+                <a href="{{URL_SISTEMA}}" class="btn" style="background-color: #000000;">Atender Tarea</a>
             </div>';
         
         // Tarea Completada (notificación al creador/gerente)
@@ -297,8 +285,8 @@ class EmailTemplates {
             <p class="greeting">Hola <strong>{{NOMBRE_USUARIO}}</strong>,</p>
             <p>La siguiente tarea ha sido marcada como completada:</p>
             
-            <div class="task-card" style="border-left-color: #4CAF50;">
-                <h3>✅ {{NOMBRE_TAREA}}</h3>
+            <div class="task-card" style="border-left-color: #009B4A;">
+                <h3>{{NOMBRE_TAREA}}</h3>
                 <div class="meta-info">
                     <p><strong>Proyecto:</strong> {{NOMBRE_PROYECTO}}</p>
                     <p><strong>Completada por:</strong> {{COMPLETADA_POR}}</p>
@@ -315,8 +303,8 @@ class EmailTemplates {
             <p class="greeting">Hola <strong>{{NOMBRE_USUARIO}}</strong>,</p>
             <p>Has sido asignado a un nuevo proyecto:</p>
             
-            <div class="task-card" style="border-left-color: #2196F3;">
-                <h3>📁 {{NOMBRE_PROYECTO}}</h3>
+            <div class="task-card" style="border-left-color: #009B4A;">
+                <h3>{{NOMBRE_PROYECTO}}</h3>
                 <p>{{DESCRIPCION_PROYECTO}}</p>
                 <div class="divider"></div>
                 <div class="meta-info">
@@ -327,7 +315,7 @@ class EmailTemplates {
             </div>
             
             <div class="btn-center">
-                <a href="{{URL_SISTEMA}}" class="btn" style="background-color: #2196F3;">Ver Proyecto</a>
+                <a href="{{URL_SISTEMA}}" class="btn" style="background-color: #009B4A;">Ver Proyecto</a>
             </div>';
         
         // Objetivo Asignado
@@ -335,8 +323,8 @@ class EmailTemplates {
             <p class="greeting">Hola <strong>{{NOMBRE_USUARIO}}</strong>,</p>
             <p>Se te ha asignado un nuevo objetivo:</p>
             
-            <div class="task-card" style="border-left-color: #9C27B0;">
-                <h3>🎯 {{NOMBRE_OBJETIVO}}</h3>
+            <div class="task-card" style="border-left-color: #009B4A;">
+                <h3>{{NOMBRE_OBJETIVO}}</h3>
                 <p>{{DESCRIPCION_OBJETIVO}}</p>
                 <div class="divider"></div>
                 <div class="meta-info">
@@ -346,7 +334,7 @@ class EmailTemplates {
             </div>
             
             <div class="btn-center">
-                <a href="{{URL_SISTEMA}}" class="btn" style="background-color: #9C27B0;">Ver Objetivo</a>
+                <a href="{{URL_SISTEMA}}" class="btn" style="background-color: #009B4A;">Ver Objetivo</a>
             </div>';
         
         // Resumen Semanal
@@ -389,13 +377,6 @@ class EmailTemplates {
             </div>';
     }
     
-    /**
-     * Renderizar una plantilla
-     * 
-     * @param string $template_name Nombre de la plantilla
-     * @param array $variables Variables a reemplazar
-     * @return string HTML renderizado
-     */
     public function render($template_name, $variables = []) {
         if (!isset($this->templates[$template_name])) {
             throw new Exception("Plantilla '$template_name' no encontrada");
@@ -428,9 +409,6 @@ class EmailTemplates {
         return $html;
     }
     
-    /**
-     * Obtener subtítulo según el tipo de notificación
-     */
     private function getSubtitleForType($type) {
         $subtitles = [
             'tarea_asignada' => 'Nueva tarea asignada',
@@ -448,18 +426,12 @@ class EmailTemplates {
         return $subtitles[$type] ?? 'Notificación';
     }
     
-    /**
-     * Generar HTML para lista de tareas próximas
-     * 
-     * @param array $tasks Array de tareas
-     * @return string HTML
-     */
     public function renderUpcomingTasks($tasks) {
         if (empty($tasks)) {
             return '<p style="color: #666; font-style: italic;">No hay tareas próximas a vencer.</p>';
         }
         
-        $html = '<h3 style="margin-top: 20px;">📅 Tareas próximas a vencer:</h3>';
+        $html = '<h3 style="margin-top: 20px;">Tareas próximas a vencer:</h3>';
         $html .= '<ul class="upcoming-list">';
         
         foreach ($tasks as $task) {
@@ -481,22 +453,16 @@ class EmailTemplates {
         return $html;
     }
     
-    /**
-     * Generar HTML para tareas del día
-     * 
-     * @param array $tasks Array de tareas
-     * @return string HTML
-     */
     public function renderTodayTasks($tasks) {
         if (empty($tasks)) {
-            return '<div class="task-card"><p>🎉 No tienes tareas pendientes para hoy. ¡Buen trabajo!</p></div>';
+            return '<div class="task-card"><p>No tienes tareas pendientes para hoy. ¡Buen trabajo!</p></div>';
         }
         
         $html = '<h3>Tareas para hoy:</h3>';
         
         foreach ($tasks as $task) {
             $html .= '<div class="task-card">';
-            $html .= '<h3>📋 ' . htmlspecialchars($task['nombre']) . '</h3>';
+            $html .= '<h3>' . htmlspecialchars($task['nombre']) . '</h3>';
             $html .= '<p class="meta-info">';
             if (!empty($task['proyecto_nombre'])) {
                 $html .= '<strong>Proyecto:</strong> ' . htmlspecialchars($task['proyecto_nombre']);
@@ -508,10 +474,6 @@ class EmailTemplates {
         return $html;
     }
     
-    /**
-     * Obtener lista de plantillas disponibles
-     * @return array
-     */
     public function getAvailableTemplates() {
         return array_keys($this->templates);
     }

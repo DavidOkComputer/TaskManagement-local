@@ -1,9 +1,5 @@
 <?php
-/*
- * get_top_projects_progress_manager.php
- * Obtiene los 5 proyectos con mayor progreso en el departamento del gerente
- * Excluye proyectos completados para mostrar proyectos activos
- */
+/*manager_get_top_projects_progress_manager.php para los proyectos mas avanzados*/
 
 ob_start();
 error_reporting(E_ALL);

@@ -1,7 +1,6 @@
 <?php
 header('Content-Type: application/json');
 require_once('db_config.php');
-// conexion a la base de datos
 $conn = getDBConnection();
 
 if ($conn->connect_error) {

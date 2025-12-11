@@ -1,5 +1,5 @@
 <?php 
-// create_user.php 
+// create_user.php  para crear usuarios
 header('Content-Type: application/json'); 
 
 error_reporting(E_ALL); 
@@ -160,12 +160,8 @@ try {
         $stmt->close(); 
     } 
 
-    // Hash de contraseña usando password_hash() con bcrypt (seguro)
-    // PASSWORD_DEFAULT actualmente usa bcrypt, pero se actualizará automáticamente
-    // si PHP agrega algoritmos más seguros en el futuro
     $acceso_hash = password_hash($acceso, PASSWORD_DEFAULT, ['cost' => 12]);
     
-    // Verificar que el hash se generó correctamente
     if ($acceso_hash === false) {
         throw new Exception('Error al procesar la contraseña');
     }

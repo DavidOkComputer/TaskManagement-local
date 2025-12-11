@@ -1,11 +1,5 @@
 <?php
-/**
- * NotificationHelper.php
- * Clase auxiliar para facilitar el envío de notificaciones desde el código existente
- * 
- * @package TaskManagement\Email
- * @author Sistema de Tareas
- */
+/*NotificationHelper.php clase auxiliar para facilitar el envio de notificaciones*/
 
 require_once __DIR__ . '/EmailService.php';
 require_once __DIR__ . '/EmailTemplate.php';
@@ -16,10 +10,6 @@ class NotificationHelpers {
     private $templates;
     private $systemUrl;
     
-    /**
-     * Constructor
-     * @param mysqli $conn Conexión a la base de datos
-     */
     public function __construct($conn) {
         $this->conn = $conn;
         $this->emailService = new EmailService($conn);
@@ -27,15 +17,8 @@ class NotificationHelpers {
         $this->systemUrl = $this->emailService->getConfig()->get('system_url', 'http://localhost/task_management');
     }
     
-    /**
-     * Notificar asignación de tarea
-     * 
-     * @param int $tarea_id ID de la tarea
-     * @param int $asignado_por_id ID del usuario que asigna
-     * @return bool|int ID del email en cola o false
-     */
     public function notifyTaskAssigned($tarea_id, $asignado_por_id) {
-        // Obtener información de la tarea y usuario
+        //saber la información de la tarea y usuario
         $stmt = $this->conn->prepare("
             SELECT 
                 t.id_tarea,
@@ -65,12 +48,12 @@ class NotificationHelpers {
             return false;
         }
         
-        // Verificar preferencias del usuario
+        //verificar preferencias del usuario
         if (!$this->checkUserPreference($task['id_usuario'], 'notif_tarea_asignada')) {
             return false;
         }
         
-        // Renderizar email
+        //renderizar email
         $html = $this->templates->render('tarea_asignada', [
             'SUBJECT' => 'Nueva tarea asignada: ' . $task['tarea_nombre'],
             'NOMBRE_USUARIO' => $task['usuario_nombre'],
@@ -87,7 +70,7 @@ class NotificationHelpers {
         return $this->emailService->queueEmail(
             $task['usuario_email'],
             $task['usuario_nombre'] . ' ' . $task['usuario_apellido'],
-            '📋 Nueva tarea asignada: ' . $task['tarea_nombre'],
+            'Nueva tarea asignada: ' . $task['tarea_nombre'],
             $html,
             'tarea_asignada',
             'tarea',
@@ -96,14 +79,6 @@ class NotificationHelpers {
         );
     }
     
-    /**
-     * Notificar asignación a proyecto
-     * 
-     * @param int $proyecto_id ID del proyecto
-     * @param int $usuario_id ID del usuario asignado
-     * @param int $creador_id ID del usuario que crea/asigna
-     * @return bool|int
-     */
     public function notifyProjectAssigned($proyecto_id, $usuario_id, $creador_id) {
         $stmt = $this->conn->prepare("
             SELECT 
@@ -153,7 +128,7 @@ class NotificationHelpers {
         return $this->emailService->queueEmail(
             $project['usuario_email'],
             $project['usuario_nombre'] . ' ' . $project['usuario_apellido'],
-            '📁 Asignado a proyecto: ' . $project['proyecto_nombre'],
+            'Asignado a proyecto: ' . $project['proyecto_nombre'],
             $html,
             'proyecto_asignado',
             'proyecto',
@@ -162,13 +137,6 @@ class NotificationHelpers {
         );
     }
     
-    /**
-     * Notificar tarea completada al creador/gerente
-     * 
-     * @param int $tarea_id ID de la tarea
-     * @param int $completada_por_id ID del usuario que completó
-     * @return bool|int
-     */
     public function notifyTaskCompleted($tarea_id, $completada_por_id) {
         $stmt = $this->conn->prepare("
             SELECT 
@@ -219,7 +187,7 @@ class NotificationHelpers {
         return $this->emailService->queueEmail(
             $task['creador_email'],
             $task['creador_nombre'] . ' ' . $task['creador_apellido'],
-            '✅ Tarea completada: ' . $task['tarea_nombre'],
+            'Tarea completada: ' . $task['tarea_nombre'],
             $html,
             'tarea_completada',
             'tarea',
@@ -228,13 +196,6 @@ class NotificationHelpers {
         );
     }
     
-    /**
-     * Verificar preferencia de notificación del usuario
-     * 
-     * @param int $usuario_id ID del usuario
-     * @param string $preference Nombre de la preferencia
-     * @return bool
-     */
     private function checkUserPreference($usuario_id, $preference) {
         $stmt = $this->conn->prepare(
             "SELECT $preference FROM tbl_notificacion_preferencias WHERE id_usuario = ?"
@@ -244,7 +205,7 @@ class NotificationHelpers {
         $result = $stmt->get_result()->fetch_assoc();
         $stmt->close();
         
-        // Si no hay preferencias configuradas, asumir habilitado
+        //Si no hay preferencias configuradas pensar que esta habilitado
         if (!$result) {
             return true;
         }
@@ -252,18 +213,10 @@ class NotificationHelpers {
         return $result[$preference] == 1;
     }
     
-    /**
-     * Obtener instancia del servicio de email
-     * @return EmailService
-     */
     public function getEmailService() {
         return $this->emailService;
     }
     
-    /**
-     * Obtener instancia de templates
-     * @return EmailTemplates
-     */
     public function getTemplates() {
         return $this->templates;
     }

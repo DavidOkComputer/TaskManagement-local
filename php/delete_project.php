@@ -1,5 +1,5 @@
 <?php
-/*delete_project.php - Eliminar proyecto solo el creador puede eliminar */
+/*delete_project.php para Eliminar proyecto solo el creador puede eliminar */
  
 header('Content-Type: application/json');
 session_start();

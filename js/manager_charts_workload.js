@@ -75,7 +75,6 @@ function renderWorkloadChart(data, deptName) {
                     generateLabels: function(chart) {
                         const original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
                         return original.map((label, index) => {
-                            // Use full project name in legend
                             label.text = shortenTitle(data.labels[index], 25);
                             return label;
                         });

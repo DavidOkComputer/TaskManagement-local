@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 10, 2025 at 08:45 PM
+-- Generation Time: Dec 11, 2025 at 04:30 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -171,7 +171,9 @@ INSERT INTO `tbl_notificaciones` (`id_notificacion`, `id_usuario`, `tipo`, `titu
 (0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'nueva prueba de fecha\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 37, 'tarea', 0, '2025-12-09 18:07:38', NULL),
 (0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'prueba de creacion de tarea despues de notificacion\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 38, 'tarea', 0, '2025-12-09 19:22:06', NULL),
 (0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'nueva pruebva de tarea\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 39, 'tarea', 0, '2025-12-09 19:23:57', NULL),
-(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'de nuevo otra prueba de tarea despue de notificacion\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 40, 'tarea', 0, '2025-12-09 19:25:48', NULL);
+(0, 3, 'tarea_asignada', 'Nueva tarea asignada', 'Se te ha asignado la tarea \'de nuevo otra prueba de tarea despue de notificacion\' en el proyecto \'Prueba de creacion de proyectos con edicion restringida\'.', 40, 'tarea', 0, '2025-12-09 19:25:48', NULL),
+(0, 1, 'proyecto_vencido', 'Proyecto vencido', 'El proyecto \'prueba\' ha superado su fecha de entrega.', 8, 'proyecto', 0, '2025-12-10 19:57:39', NULL),
+(0, 3, 'proyecto_vencido', 'Proyecto vencido', 'El proyecto \'prueba\' ha superado su fecha de entrega.', 8, 'proyecto', 0, '2025-12-10 19:57:39', NULL);
 
 -- --------------------------------------------------------
 
@@ -231,7 +233,9 @@ INSERT INTO `tbl_notificaciones_enviadas` (`id`, `tipo_evento`, `id_referencia`,
 (0, 'inactividad_tarea_50', 20, 3, '2025-12-08 16:04:08'),
 (0, 'inactividad_tarea_50', 21, 1, '2025-12-08 16:04:08'),
 (0, 'inactividad_tarea_50', 27, 1, '2025-12-08 16:04:08'),
-(0, 'inactividad_tarea_50', 27, 3, '2025-12-08 16:04:08');
+(0, 'inactividad_tarea_50', 27, 3, '2025-12-08 16:04:08'),
+(0, 'proyecto_vencido', 8, 1, '2025-12-10 19:57:39'),
+(0, 'proyecto_vencido', 8, 3, '2025-12-10 19:57:39');
 
 -- --------------------------------------------------------
 
@@ -296,7 +300,7 @@ INSERT INTO `tbl_objetivos` (`id_objetivo`, `nombre`, `descripcion`, `id_departa
 (8, 'Terminacion de proyecto de tareas', 'Descripcion de proyecto de tareas', 8, '2025-12-04 08:03:06', '2025-12-20', 'pendiente', '', '', 6, '2025-12-04 14:03:06'),
 (9, 'Completar año nuevo', 'Descripcion de completar año nuevo', 9, '2025-12-04 11:14:49', '2025-12-25', 'pendiente', '', '', 7, '2025-12-04 17:14:49'),
 (10, 'Prueba de edicion de nuevo objetivo', 'Descripcion de prueba de nuevo objetivo despues de notificaciones', 1, '2025-12-09 15:16:47', '2025-12-25', 'pendiente', '', '', 1, '2025-12-09 21:16:47'),
-(11, 'Prueba de creacion de objetivo como usuario', 'Descripcion de prueba de creacion de objetivo como usuario', 6, '2025-12-10 10:57:07', '2025-12-13', 'pendiente', '', '', 3, '2025-12-10 16:57:07'),
+(11, 'Prueba de creacion de objetivo como usuario', 'Descripcion de prueba de creacion de objetivo como usuario', 6, '2025-12-10 10:57:07', '2025-12-13', 'completado', '', '', 3, '2025-12-10 16:57:07'),
 (12, 'Prueba de creacion de objetivo como gerente', 'Descripcion de prueba de creacion de objetivo como gerente', 8, '2025-12-10 11:29:30', '2025-12-13', 'pendiente', '', '', 6, '2025-12-10 17:29:30');
 
 -- --------------------------------------------------------

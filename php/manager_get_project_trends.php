@@ -1,9 +1,5 @@
 <?php
-/**
- * manager_get_project_trends.php
- * Gets project completion trends over time for manager's department
- * Used by line chart
- */
+/*manager_get_project_trends.php para saber las tendecnais de completacion de datos, se usa por la grafica lineal*/
 
 ob_start();
 if (session_status() === PHP_SESSION_NONE) {
@@ -22,7 +18,6 @@ $response = [
 ];
 
 try {
-    // Validate department ID
     if (!isset($_GET['id_departamento']) || empty($_GET['id_departamento'])) {
         throw new Exception('ID de departamento requerido');
     }
@@ -34,7 +29,6 @@ try {
         throw new Exception('ID de departamento inválido');
     }
     
-    // Limit weeks range
     $weeks = max(4, min(52, $weeks));
     
     $conn = getDBConnection();
@@ -43,7 +37,6 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // Get department name
     $dept_query = "SELECT nombre FROM tbl_departamentos WHERE id_departamento = ?";
     $dept_stmt = $conn->prepare($dept_query);
     $dept_stmt->bind_param('i', $id_departamento);
@@ -53,7 +46,6 @@ try {
     $dept_name = $dept_row ? $dept_row['nombre'] : 'Departamento';
     $dept_stmt->close();
     
-    // Generate weekly labels
     $labels = [];
     $weeklyData = [];
     
@@ -83,7 +75,6 @@ try {
     $stmt = $conn->prepare($query);
     
     if (!$stmt) {
-        // If fecha_inicio doesn't exist, try with fecha_actualizacion
         $query = "
             SELECT 
                 DATE(fecha_actualizacion) as fecha,
@@ -111,7 +102,6 @@ try {
     
     $result = $stmt->get_result();
     
-    // Map results to weekly labels
     while ($row = $result->fetch_assoc()) {
         $weekLabel = date('d/m', strtotime('monday this week', strtotime($row['fecha'])));
         if (isset($weeklyData[$weekLabel])) {
@@ -119,7 +109,6 @@ try {
         }
     }
     
-    // Calculate cumulative totals
     $cumulativeData = [];
     $cumulative = 0;
     foreach ($labels as $label) {
@@ -127,7 +116,6 @@ try {
         $cumulativeData[] = $cumulative;
     }
     
-    // Prepare chart data
     $response['success'] = true;
     $response['data'] = [
         'labels' => $labels,

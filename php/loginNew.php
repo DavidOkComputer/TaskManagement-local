@@ -19,7 +19,6 @@ function isRateLimited() {
         $_SESSION['login_attempts'] = [];
     }
     
-    // Clean old attempts
     $_SESSION['login_attempts'] = array_filter(
         $_SESSION['login_attempts'],
         function($timestamp) {
@@ -111,7 +110,6 @@ try {
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
     
-    // Check if user exists
     if (!$user) {
         recordFailedAttempt();
         sendResponse(false, 'Número de empleado o contraseña incorrectos');
@@ -120,12 +118,9 @@ try {
     $passwordCorrect = false;
     $needsRehash = false;
     
-    // Check if password is hashed
     if (preg_match('/^\$2[ayb]\$.{56}$/', $user['contrasenia'])) {
-        // Password is hashed - verify with bcrypt
         $passwordCorrect = password_verify($password, $user['contrasenia']);
     } else {
-        // Password is NOT hashed - compare directly (legacy support)
         if ($password === $user['contrasenia']) {
             $passwordCorrect = true;
             $needsRehash = true;
@@ -146,10 +141,7 @@ try {
             $updateStmt->close();
         }
         
-        // Limpiar intentos de logeo
         clearLoginAttempts();
-        
-        // Regenerar id de la sesion para mayor seguridad
         session_regenerate_id(true);
         
         // Guardar informacion de la sesion
@@ -172,7 +164,6 @@ try {
                 $redirect = 'dashboard.php';
         }
         
-        // Send complete response with all user data
         sendResponse(
             true, 
             'Inicio de sesión exitoso', 

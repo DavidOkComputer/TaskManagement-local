@@ -1,12 +1,4 @@
-/**
- * task-modal.js - Updated to support task completion tracking and automatic project progress
- * 
- * Features:
- * - Create new tasks
- * - Update task status by checking/unchecking
- * - Automatic project progress calculation based on task completion
- * - Real-time project progress updates
- */
+/*task-modal.js para el manejo de tareas*/
 
 document.addEventListener('DOMContentLoaded', function() {
   
@@ -163,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
       formData.append('id_proyecto', taskProject);
       formData.append('fecha_vencimiento', taskDate);
       formData.append('estado', taskStatus);
-      formData.append('id_creador', 1); // Should be set to current user ID
+      formData.append('id_creador', 1); 
       
       // enviar informacion al servidor
       fetch('../php/save_task.php', {
@@ -217,7 +209,6 @@ document.addEventListener('DOMContentLoaded', function() {
           if (todoList) {
             todoList.insertAdjacentHTML('beforeend', newTaskHTML);
             
-            // Add event listener to the new checkbox
             const newCheckbox = todoList.querySelector(`[data-task-id="${data.task_id}"]`);
             if (newCheckbox) {
               attachTaskCheckboxListener(newCheckbox);
@@ -248,10 +239,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('taskMessage').style.display = 'none';
   });
 
-  /**
-   * Attach checkbox event listener to update task status
-   * When checkbox is clicked, update task status and recalculate project progress
-   */
   function attachTaskCheckboxListener(checkboxElement) {
     const checkbox = checkboxElement.querySelector('.task-checkbox');
     if (!checkbox) return;
@@ -261,12 +248,10 @@ document.addEventListener('DOMContentLoaded', function() {
       const isChecked = this.checked;
       const newStatus = isChecked ? 'completado' : 'pendiente';
 
-      // Show loading state
       const li = checkboxElement;
       li.style.opacity = '0.6';
       li.style.pointerEvents = 'none';
 
-      // Send update to server
       const updateData = new FormData();
       updateData.append('id_tarea', taskId);
       updateData.append('estado', newStatus);
@@ -278,7 +263,6 @@ document.addEventListener('DOMContentLoaded', function() {
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // Update badge
           const badge = li.querySelector('.task-badge');
           if (badge) {
             if (isChecked) {
@@ -290,17 +274,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           }
 
-          // Restore normal state
           li.style.opacity = '1';
           li.style.pointerEvents = 'auto';
 
           showMessage('Estado de tarea actualizado correctamente', 'success');
           
-          // Optionally reload project progress from server
-          // This could be done by emitting a custom event or calling a function
-          // to update the project progress display if it's visible on the same page
         } else {
-          // Revert checkbox on error
           checkbox.checked = !isChecked;
           li.style.opacity = '1';
           li.style.pointerEvents = 'auto';
@@ -311,7 +290,6 @@ document.addEventListener('DOMContentLoaded', function() {
       .catch(error => {
         console.error('Error updating task:', error);
         
-        // Revert checkbox on error
         checkbox.checked = !isChecked;
         li.style.opacity = '1';
         li.style.pointerEvents = 'auto';
@@ -321,9 +299,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  /**
-   * Initialize existing task checkboxes
-   */
   if (todoList) {
     const existingCheckboxes = todoList.querySelectorAll('li');
     existingCheckboxes.forEach(li => {

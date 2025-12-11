@@ -1,5 +1,5 @@
 <?php
-/*get_user_role_info.php*/
+/*get_user_role_info.php para obtener el rol de cada usuario logeado*/
 
 session_start();
 header('Content-Type: application/json; charset=utf-8');

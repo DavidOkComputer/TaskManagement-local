@@ -197,8 +197,6 @@ try {
 }
 
 ob_clean();
-
 echo json_encode($response);
-
 ob_end_flush();
 ?>

@@ -1,12 +1,5 @@
 <?php
-/**
- * check_deadlines.php script de cron para verificar vencimientos y enviar recordatorios
- * 
- * Ejecutar diariamente a las 8:00 AM:
- * 0 8 * * * /usr/bin/php /ruta/a/cron/check_deadlines.php >> /var/log/deadlines.log 2>&1
- * 
- * @package TaskManagement\Email\Cron
- */
+/*check_deadlines.php script de cron para verificar vencimientos y enviar recordatorios*/
 
 // Permitir ejecución solo desde CLI
 if (php_sapi_name() !== 'cli') {
@@ -83,9 +76,6 @@ try {
         'overdue' => 0
     ];
     
-    // =====================================================
-    // 1. TAREAS QUE VENCEN EN X DÍAS
-    // =====================================================
     logMessage("Buscando tareas que vencen en $dias_recordatorio días...");
     
     $stmt = $conn->prepare("
@@ -127,7 +117,7 @@ try {
         $emailService->queueEmail(
             $task['e_mail'],
             $task['nombre'] . ' ' . $task['apellido'],
-            "⚠️ Recordatorio: '{$task['tarea_nombre']}' vence en $dias_recordatorio días",
+            "Recordatorio: '{$task['tarea_nombre']}' vence en $dias_recordatorio días",
             $html,
             'tarea_vencimiento',
             'tarea',
@@ -139,10 +129,6 @@ try {
     $stmt->close();
     
     logMessage("Tareas próximas a vencer: {$queued['upcoming']} notificaciones en cola");
-    
-    // =====================================================
-    // 2. TAREAS QUE VENCEN MAÑANA (urgente)
-    // =====================================================
     logMessage("Buscando tareas que vencen mañana...");
     
     $stmt = $conn->prepare("
@@ -183,7 +169,7 @@ try {
         $emailService->queueEmail(
             $task['e_mail'],
             $task['nombre'] . ' ' . $task['apellido'],
-            "🚨 URGENTE: '{$task['tarea_nombre']}' vence MAÑANA",
+            "URGENTE: '{$task['tarea_nombre']}' vence MAÑANA",
             $html,
             'tarea_vencimiento',
             'tarea',
@@ -195,10 +181,6 @@ try {
     $stmt->close();
     
     logMessage("Tareas que vencen mañana: {$queued['tomorrow']} notificaciones en cola");
-    
-    // =====================================================
-    // 3. TAREAS VENCIDAS
-    // =====================================================
     logMessage("Buscando tareas vencidas...");
     
     // Enviar recordatorio de vencidas solo los lunes o si acaban de vencer (1 día)
@@ -246,7 +228,7 @@ try {
             $emailService->queueEmail(
                 $task['e_mail'],
                 $task['nombre'] . ' ' . $task['apellido'],
-                "🚨 Tarea vencida: '{$task['tarea_nombre']}' (hace {$task['dias_vencidos']} días)",
+                "Tarea vencida: '{$task['tarea_nombre']}' (hace {$task['dias_vencidos']} días)",
                 $html,
                 'tarea_vencida',
                 'tarea',
@@ -259,10 +241,6 @@ try {
     $stmt->close();
     
     logMessage("Tareas vencidas: {$queued['overdue']} notificaciones en cola");
-    
-    // =====================================================
-    // RESUMEN
-    // =====================================================
     $total = $queued['upcoming'] + $queued['tomorrow'] + $queued['overdue'];
     logMessage("=== Verificación completada ===");
     logMessage("Total de notificaciones en cola: $total");

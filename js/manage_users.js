@@ -1148,11 +1148,11 @@ function displayNotification(message, type = 'info') {
 
     const toastId = 'toast-' + Date.now();
     const bgColor = {//elementos de la notificacion
-        'success': '#34b0aa',
-        'error': '#f85e53',
-        'info': '#17a2b8',
-        'warning': '#ffc107'
-    }[type] || '#17a2b8';
+        'success': '#009B4A',
+        'error': '#000000',
+        'info': '#666666',
+        'warning': '#666666'
+    }[type] || '#009B4A';
 
     const toastHTML = `
         <div id="${toastId}" style="

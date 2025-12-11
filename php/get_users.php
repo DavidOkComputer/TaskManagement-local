@@ -100,7 +100,7 @@ try {
         $result = $stmt->get_result();
         
     } else {
-        // Sin filtros - obtener todos los usuarios
+        // Sin filtros  obtener todos los usuarios
         $query = "SELECT u.id_usuario, 
                          u.nombre, 
                          u.apellido, 

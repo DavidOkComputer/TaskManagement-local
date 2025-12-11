@@ -1,5 +1,5 @@
 <?php
-// subir_archivo.php
+// upload_file.php para subir los archivso
 header('Content-Type: application/json');
 error_reporting(E_ALL);
 ini_set('display_errors', 0);

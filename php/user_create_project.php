@@ -1,6 +1,6 @@
 <?php 
 
-/*user_create_project.php - Crear proyectos para usuarios */ 
+/*user_create_project.php para crear proyectos para usuarios */ 
 
 ob_start(); 
 header('Content-Type: application/json; charset=UTF-8'); 

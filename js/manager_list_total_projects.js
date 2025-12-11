@@ -89,7 +89,6 @@ function updateProyectoStatusChart(proyectos, total) {
         window.doughnutChart.data.datasets[0].data = [0, 0, 0, 0]; 
         window.doughnutChart.update(); 
 
-        // Update legend if it exists 
         const legendElement = document.getElementById('doughnut-chart-legend'); 
         if (legendElement && window.doughnutChart.generateLegend) { 
             legendElement.innerHTML = window.doughnutChart.generateLegend(); 

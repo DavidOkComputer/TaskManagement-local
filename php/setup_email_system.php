@@ -1,16 +1,5 @@
 <?php
-/**
- * setup_email_system.php
- * Script de instalación y configuración del sistema de emails
- * 
- * Uso desde CLI:
- *   php setup_email_system.php install    - Crear tablas
- *   php setup_email_system.php configure  - Configurar Gmail interactivamente
- *   php setup_email_system.php test       - Probar conexión
- *   php setup_email_system.php status     - Ver estado del sistema
- * 
- * @package TaskManagement\Email\Setup
- */
+/*setup_email_system.php Script de instalación y configuración del sistema de emails  */
 
 // Solo permitir ejecución CLI
 if (php_sapi_name() !== 'cli') {

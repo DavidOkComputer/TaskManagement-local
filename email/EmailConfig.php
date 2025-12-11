@@ -1,11 +1,5 @@
 <?php
-/**
- * EmailConfig.php
- * Clase para cargar y gestionar la configuración de email desde la base de datos
- * 
- * @package TaskManagement\Email
- * @author Sistema de Tareas
- */
+/*EmailConfig.php clase para cargar y gestionar la configuracion de email desde la base de datos*/
 
 class EmailConfig {
     private $conn;
@@ -13,20 +7,13 @@ class EmailConfig {
     private $encryption_key;
     private $loaded = false;
     
-    /**
-     * Constructor
-     * @param mysqli $conn Conexión a la base de datos
-     */
     public function __construct($conn) {
         $this->conn = $conn;
-        // Clave de encriptación - en producción usar variable de entorno
+        //Clave de encriptación usar variable de entorno
         $this->encryption_key = getenv('EMAIL_ENCRYPTION_KEY') ?: 'task_management_email_key_2024';
         $this->loadConfig();
     }
     
-    /**
-     * Cargar configuración desde la base de datos
-     */
     private function loadConfig() {
         if ($this->loaded) {
             return;
@@ -49,23 +36,10 @@ class EmailConfig {
         }
     }
     
-    /**
-     * Obtener un valor de configuración
-     * @param string $key Clave de configuración
-     * @param mixed $default Valor por defecto si no existe
-     * @return mixed
-     */
     public function get($key, $default = null) {
         return $this->config[$key] ?? $default;
     }
     
-    /**
-     * Establecer un valor de configuración
-     * @param string $key Clave
-     * @param mixed $value Valor
-     * @param bool $encrypt Si debe encriptarse
-     * @return bool
-     */
     public function set($key, $value, $encrypt = false) {
         $storedValue = $encrypt ? $this->encrypt($value) : $value;
         $isEncrypted = $encrypt ? 1 : 0;
@@ -91,11 +65,6 @@ class EmailConfig {
         return $result;
     }
     
-    /**
-     * Encriptar un valor
-     * @param string $data Datos a encriptar
-     * @return string Datos encriptados en base64
-     */
     private function encrypt($data) {
         if (empty($data)) {
             return '';
@@ -106,11 +75,6 @@ class EmailConfig {
         return base64_encode($iv . $encrypted);
     }
     
-    /**
-     * Desencriptar un valor
-     * @param string $data Datos encriptados en base64
-     * @return string Datos desencriptados
-     */
     private function decrypt($data) {
         if (empty($data)) {
             return '';
@@ -133,26 +97,14 @@ class EmailConfig {
         }
     }
     
-    /**
-     * Verificar si el servicio de email está habilitado
-     * @return bool
-     */
     public function isEnabled() {
         return $this->get('email_enabled', '0') === '1';
     }
     
-    /**
-     * Verificar si está en modo de prueba
-     * @return bool
-     */
     public function isTestMode() {
         return $this->get('test_mode', '1') === '1';
     }
     
-    /**
-     * Obtener toda la configuración (sin contraseñas)
-     * @return array
-     */
     public function getAll() {
         $safe_config = [];
         foreach ($this->config as $key => $value) {
@@ -165,10 +117,6 @@ class EmailConfig {
         return $safe_config;
     }
     
-    /**
-     * Validar configuración SMTP
-     * @return array Array con 'valid' (bool) y 'errors' (array)
-     */
     public function validateConfig() {
         $errors = [];
         
@@ -198,12 +146,6 @@ class EmailConfig {
         ];
     }
     
-    /**
-     * Actualizar configuración de Gmail de forma rápida
-     * @param string $email Email de Gmail
-     * @param string $appPassword Contraseña de aplicación
-     * @return bool
-     */
     public function configureGmail($email, $appPassword) {
         $success = true;
         

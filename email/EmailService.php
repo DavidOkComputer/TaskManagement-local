@@ -1,17 +1,11 @@
 <?php
-/**
- * EmailService.php
- * Servicio principal para envío de emails con PHPMailer
- * 
- * @package TaskManagement\Email
- * @author Sistema de Tareas
- */
+/*EmailService.php servicio principal para envio de email con PHPMailer*/
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-// Cargar PHPMailer - ajustar rutas según tu instalación
+// Cargar PHPMailer ajustar rutas despues
 require_once __DIR__ . '/PHPMailer/Exception.php';
 require_once __DIR__ . '/PHPMailer/PHPMailer.php';
 require_once __DIR__ . '/PHPMailer/SMTP.php';
@@ -24,24 +18,16 @@ class EmailService {
     private $lastError;
     private $debugOutput = '';
     
-    /**
-     * Constructor
-     * @param mysqli $conn Conexión a la base de datos
-     */
     public function __construct($conn) {
         $this->conn = $conn;
         $this->config = new EmailConfig($conn);
     }
     
-    /**
-     * Inicializar PHPMailer con la configuración actual
-     * @return bool
-     */
     private function initializeMailer() {
         $this->mailer = new PHPMailer(true);
         
         try {
-            // Configuración del servidor
+            // Configuración del servidor 
             $this->mailer->isSMTP();
             $this->mailer->Host       = $this->config->get('smtp_host', 'smtp.gmail.com');
             $this->mailer->SMTPAuth   = true;
@@ -86,21 +72,7 @@ class EmailService {
             return false;
         }
     }
-    
-    /**
-     * Agregar email a la cola
-     * 
-     * @param string $to_email Email del destinatario
-     * @param string $to_name Nombre del destinatario
-     * @param string $subject Asunto
-     * @param string $html_body Cuerpo HTML
-     * @param string $type Tipo de notificación
-     * @param string|null $reference_type Tipo de referencia (tarea, proyecto, objetivo)
-     * @param int|null $reference_id ID de la referencia
-     * @param int $priority Prioridad (1-10)
-     * @param string|null $scheduled_for Fecha/hora programada
-     * @return int|false ID del email o false si falla
-     */
+
     public function queueEmail($to_email, $to_name, $subject, $html_body, $type, 
                                $reference_type = null, $reference_id = null, 
                                $priority = 5, $scheduled_for = null) {
@@ -141,15 +113,6 @@ class EmailService {
         return false;
     }
     
-    /**
-     * Enviar email inmediatamente (sin cola)
-     * 
-     * @param string $to_email Email del destinatario
-     * @param string $to_name Nombre del destinatario
-     * @param string $subject Asunto
-     * @param string $html_body Cuerpo HTML
-     * @return bool
-     */
     public function sendImmediate($to_email, $to_name, $subject, $html_body) {
         // Verificar si el servicio está habilitado
         if (!$this->config->isEnabled()) {
@@ -157,7 +120,7 @@ class EmailService {
             return false;
         }
         
-        // Modo de prueba - no enviar realmente
+        // Modo de prueba no enviar de verdad
         if ($this->config->isTestMode()) {
             error_log("[EMAIL TEST MODE] Para: $to_email, Asunto: $subject");
             return true;
@@ -189,12 +152,6 @@ class EmailService {
         }
     }
     
-    /**
-     * Procesar cola de emails
-     * 
-     * @param int $batch_size Cantidad de emails a procesar
-     * @return array Resultados del procesamiento
-     */
     public function processQueue($batch_size = null) {
         $batch_size = $batch_size ?? (int) $this->config->get('emails_por_lote', 20);
         
@@ -259,9 +216,6 @@ class EmailService {
         return $results;
     }
     
-    /**
-     * Actualizar estado de un email
-     */
     private function updateEmailStatus($email_id, $status) {
         $stmt = $this->conn->prepare("UPDATE tbl_email_queue SET estado = ? WHERE id_email = ?");
         $stmt->bind_param("si", $status, $email_id);
@@ -269,9 +223,6 @@ class EmailService {
         $stmt->close();
     }
     
-    /**
-     * Marcar email como enviado
-     */
     private function markAsSent($email_id) {
         $stmt = $this->conn->prepare(
             "UPDATE tbl_email_queue 
@@ -285,9 +236,6 @@ class EmailService {
         $this->logEvent($email_id, 'sent', 'Email enviado exitosamente');
     }
     
-    /**
-     * Marcar email como fallido
-     */
     private function markAsFailed($email_id, $error) {
         $stmt = $this->conn->prepare(
             "UPDATE tbl_email_queue 
@@ -303,9 +251,6 @@ class EmailService {
         $this->logEvent($email_id, 'failed', $error);
     }
     
-    /**
-     * Registrar evento en el log
-     */
     private function logEvent($email_id, $event, $detail) {
         $stmt = $this->conn->prepare(
             "INSERT INTO tbl_email_log (id_email, evento, detalle) VALUES (?, ?, ?)"
@@ -315,9 +260,6 @@ class EmailService {
         $stmt->close();
     }
     
-    /**
-     * Convertir HTML a texto plano
-     */
     private function htmlToText($html) {
         // Reemplazar <br> con saltos de línea
         $text = preg_replace('/<br\s*\/?>/i', "\n", $html);
@@ -335,17 +277,10 @@ class EmailService {
         return trim($text);
     }
     
-    /**
-     * Obtener el último error
-     */
     public function getLastError() {
         return $this->lastError;
     }
     
-    /**
-     * Probar conexión SMTP
-     * @return array Resultado de la prueba
-     */
     public function testConnection() {
         // Validar configuración primero
         $validation = $this->config->validateConfig();
@@ -395,14 +330,8 @@ class EmailService {
         }
     }
     
-    /**
-     * Enviar email de prueba
-     * 
-     * @param string $to_email Email de destino
-     * @return array Resultado del envío
-     */
     public function sendTestEmail($to_email) {
-        $subject = '✅ Prueba de Email - Sistema de Gestión de Tareas';
+        $subject = 'Prueba de Email - Sistema de Gestión de Tareas';
         $html = '
         <!DOCTYPE html>
         <html>
@@ -411,9 +340,9 @@ class EmailService {
             <style>
                 body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                .header { background: #009b4a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
                 .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 8px 8px; }
-                .success { color: #4CAF50; font-size: 48px; }
+                .success { color: #009b4a; font-size: 48px; }
             </style>
         </head>
         <body>
@@ -469,10 +398,6 @@ class EmailService {
         ];
     }
     
-    /**
-     * Obtener estadísticas de la cola
-     * @return array
-     */
     public function getQueueStats() {
         $stats = [
             'pendientes' => 0,
@@ -497,10 +422,6 @@ class EmailService {
         return $stats;
     }
     
-    /**
-     * Obtener instancia de configuración
-     * @return EmailConfig
-     */
     public function getConfig() {
         return $this->config;
     }

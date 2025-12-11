@@ -1,7 +1,6 @@
 <?php 
-// procesar_departamento.php 
+//create_department.php para crear departamentos para los usuarios
 
-//quitar cuando este terminado
 error_reporting(E_ALL); 
 ini_set('display_errors', 0); //mostrar errores en log en vez de al usuario 
 

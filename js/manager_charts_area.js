@@ -41,9 +41,6 @@ function loadAreaData(deptId, deptName) {
         });
 }
 
-/**
- * Render the area chart
- */
 function renderAreaChart(data, deptName) {
     const ctx = document.getElementById('areaChart');
     

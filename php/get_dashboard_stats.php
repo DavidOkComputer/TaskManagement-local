@@ -1,6 +1,5 @@
 <?php
 //get_dashboard_stats.php para los contadores del dashboard
-// Iniciar output buffering para capturar cualquier salida no deseada get_dashboard_stats.php
 ob_start();
 
 // Suprimir errores de visualización

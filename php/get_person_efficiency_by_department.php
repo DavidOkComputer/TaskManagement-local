@@ -1,5 +1,4 @@
 <?php 
-
 /*get_person_efficiency_by_department.php eficiencia de personas en un departamento específico */ 
 ob_start(); 
 header('Content-Type: application/json; charset=utf-8'); 
@@ -29,9 +28,7 @@ try {
     $conn = getDBConnection(); 
 
     if (!$conn) { 
-
         throw new Exception('Error de conexión a la base de datos'); 
-
     } 
 
     // Obtener nombre del departamento 
@@ -191,28 +188,28 @@ function processPersonEfficiencyData($efficiency_data) {
 function getOfficialDashboardColors($count) { 
     // Colores oficiales del dashboard (de dashboard_charts_core.js) 
     $colors = [ 
-        // Verde primario (Green Primary) 
+        // Verde primario
         ['border' => 'rgba(34, 139, 89, 1)', 'background' => 'rgba(34, 139, 89, 0.7)'], 
 
-        // Verde claro (Green Light) 
+        // Verde claro  
         ['border' => 'rgba(80, 154, 108, 1)', 'background' => 'rgba(80, 154, 108, 0.7)'], 
 
-        // Verde oscuro (Green Dark) 
+        // Verde oscuro 
         ['border' => 'rgba(24, 97, 62, 1)', 'background' => 'rgba(24, 97, 62, 0.7)'], 
 
-        // Ice/Gris claro (Ice/Light Gray) 
+        // Ice/Gris claro  
         ['border' => 'rgba(200, 205, 210, 1)', 'background' => 'rgba(200, 205, 210, 0.7)'], 
 
-        // Gris (Gray) 
+        // Gris 
         ['border' => 'rgba(130, 140, 150, 1)', 'background' => 'rgba(130, 140, 150, 0.7)'], 
 
-        // Negro (Black) 
+        // Negro  
         ['border' => 'rgba(50, 50, 50, 1)', 'background' => 'rgba(50, 50, 50, 0.7)'], 
 
-        // Verde secundario (Green Secondary) 
+        // Verde secundario  
         ['border' => 'rgba(45, 110, 80, 1)', 'background' => 'rgba(45, 110, 80, 0.7)'], 
 
-        // Gris claro (Gray Light) 
+        // Gris claro  
         ['border' => 'rgba(160, 170, 180, 1)', 'background' => 'rgba(160, 170, 180, 0.7)'], 
 
         // Variaciones adicionales con opacidad diferente para más personas 

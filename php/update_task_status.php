@@ -110,7 +110,6 @@ try {
     ]);
 }
  
-// Finalizar output buffering
 ob_end_flush();
  
 //Función auxiliar para obtener estado del proyecto

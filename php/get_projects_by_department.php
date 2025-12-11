@@ -1,5 +1,5 @@
 <?php
-/** get_projects_by_department.php  Obtener proyectos filtrados por departamento */
+/* get_projects_by_department.php  para saber los proyectos filtrados por departamento */
 header('Content-Type: application/json');
 require_once 'db_config.php';
  

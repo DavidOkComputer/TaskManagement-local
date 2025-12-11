@@ -1,17 +1,7 @@
 <?php
 /**
 * check_inactive_items.php
-* Script para verificar proyectos y tareas inactivos (pendientes sin cambios)
-*
-* CONFIGURACIÓN WINDOWS TASK SCHEDULER:
-* - Programa: C:\xampp\php\php.exe (ajustar según tu instalación)
-* - Argumentos: -f "C:\ruta\completa\a\check_inactive_items.php"
-* - Directorio inicial: C:\ruta\completa\a\
-* - Ejecutar: Semanalmente los Lunes a las 9:00 AM
-* - Usuario: SYSTEM o tu usuario con privilegios
-*
-* Alternativamente, usar el archivo batch: check_inactive_items.bat
-*/
+* Script para verificar proyectos y tareas inactivos, las que son pendientes sin cambios*/
  
 // Para ejecución desde línea de comandos, establecer directorio de trabajo
 if (php_sapi_name() === 'cli') {
