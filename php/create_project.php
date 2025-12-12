@@ -1,24 +1,29 @@
 <?php
 /*create_project.php para crear nuevo proyecto*/
-
+session_start();
+ 
 header('Content-Type: application/json');
 require_once 'db_config.php';
 require_once 'notification_triggers.php';
 require_once '../email/NotificationHelper.php';
-
-
+ 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
-
 ob_start();
-
+ 
 $response = ['success' => false, 'message' => ''];
-
+ 
 try {
+    if (!isset($_SESSION['user_id'])) {
+        throw new Exception('Usuario no autenticado. Por favor inicie sesión.');
+    }
+ 
+    $id_creador = intval($_SESSION['user_id']);
+    
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new Exception('Método de solicitud inválido');
     }
-    
+ 
     $required_fields = [
         'nombre',
         'descripcion',
@@ -26,16 +31,15 @@ try {
         'fecha_creacion',
         'fecha_cumplimiento',
         'estado',
-        'id_creador',
         'id_tipo_proyecto'
     ];
-
+ 
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || (empty($_POST[$field]) && $_POST[$field] !== '0')) {
             throw new Exception("El campo {$field} es requerido");
         }
     }
-
+ 
     $nombre = trim($_POST['nombre']);
     $descripcion = trim($_POST['descripcion']);
     $id_departamento = intval($_POST['id_departamento']);
@@ -45,45 +49,50 @@ try {
     $ar = isset($_POST['ar']) ? trim($_POST['ar']) : '';
     $estado = trim($_POST['estado']);
     $archivo_adjunto = isset($_POST['archivo_adjunto']) ? trim($_POST['archivo_adjunto']) : '';
-    $id_creador = intval($_POST['id_creador']);
     $id_tipo_proyecto = intval($_POST['id_tipo_proyecto']);
     $puede_editar_otros = isset($_POST['puede_editar_otros']) ? intval($_POST['puede_editar_otros']) : 0;
-    
+ 
     if (strlen($nombre) > 100) {
         throw new Exception('El nombre no puede exceder 100 caracteres');
     }
+ 
     if (strlen($descripcion) > 200) {
         throw new Exception('La descripción no puede exceder 200 caracteres');
     }
+ 
     if (strlen($archivo_adjunto) > 300) {
         throw new Exception('La ruta del archivo no puede exceder 300 caracteres');
     }
-
+ 
     $estados_validos = ['pendiente', 'en proceso', 'vencido', 'completado'];
     if (!in_array($estado, $estados_validos)) {
         throw new Exception('El estado debe ser: pendiente, en proceso, vencido o completado');
     }
+ 
     if (strpos($fecha_creacion, 'T') !== false) {
         $fecha_creacion = str_replace('T', ' ', $fecha_creacion);
     }
+ 
     if (strtotime($fecha_creacion) === false) {
         throw new Exception('La fecha de creación no es válida');
     }
+ 
     if (strtotime($fecha_cumplimiento) === false) {
         throw new Exception('La fecha de cumplimiento no es válida');
     }
+ 
     if (strtotime($fecha_cumplimiento) < strtotime($fecha_creacion)) {
         throw new Exception('La fecha de entrega debe ser posterior o igual a la fecha de inicio');
     }
-
+ 
     $conn = getDBConnection();
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
-
+ 
     $usuarios_grupo = [];
     $id_participante = 0;
-    
+ 
     if ($id_tipo_proyecto == 1) {
         if (isset($_POST['usuarios_grupo'])) {
             $usuarios_grupo = json_decode($_POST['usuarios_grupo'], true);
@@ -98,28 +107,28 @@ try {
             $id_participante = intval($_POST['id_participante']);
         }
     }
-
+ 
     $sql = "INSERT INTO tbl_proyectos (
-                nombre,
-                descripcion,
-                id_departamento,
-                fecha_inicio,
-                fecha_cumplimiento,
-                progreso,
-                ar,
-                estado,
-                archivo_adjunto,
-                id_creador,
-                id_participante,
-                id_tipo_proyecto,
-                puede_editar_otros
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
+        nombre,
+        descripcion,
+        id_departamento,
+        fecha_inicio,
+        fecha_cumplimiento,
+        progreso,
+        ar,
+        estado,
+        archivo_adjunto,
+        id_creador,
+        id_participante,
+        id_tipo_proyecto,
+        puede_editar_otros
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+ 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         throw new Exception('Error al preparar la consulta: ' . $conn->error);
     }
-
+ 
     $stmt->bind_param(
         "ssissississii",
         $nombre,
@@ -131,38 +140,38 @@ try {
         $ar,
         $estado,
         $archivo_adjunto,
-        $id_creador,
+        $id_creador, 
         $id_participante,
         $id_tipo_proyecto,
         $puede_editar_otros
     );
-
+ 
     if (!$stmt->execute()) {
         throw new Exception('Error al crear el proyecto: ' . $stmt->error);
     }
-
+ 
     $id_proyecto = $stmt->insert_id;
     $stmt->close();
-
+ 
+    // Notificar al participante si es proyecto individual y no es el mismo creador
     if ($id_tipo_proyecto == 2 && $id_participante > 0 && $id_participante != $id_creador) {
-        // Notificar al participante que se le asignó el proyecto
         triggerNotificacionProyectoAsignado($conn, $id_proyecto, $id_participante, null);
         error_log("Notificación enviada: Nuevo proyecto {$id_proyecto} asignado a usuario {$id_participante}");
+        
+        // Email de notificación de asignación de proyecto
+        $notifier = new NotificationHelpers($conn);
+        $notifier->notifyProjectAssigned($id_proyecto, $id_participante, $id_creador);
     }
-
-    //para email de notificacion de asignacion de proyecto
-    $notifier = new NotificationHelpers($conn);
-    $notifier->notifyProjectAssigned($proyecto_id, $usuario_asignado_id, $creador_id);
-
+ 
     // Manejo de usuarios para proyecto grupal
     if ($id_tipo_proyecto == 1 && !empty($usuarios_grupo)) {
         $sql_usuarios = "INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)";
         $stmt_usuarios = $conn->prepare($sql_usuarios);
-
+        
         if (!$stmt_usuarios) {
             throw new Exception('Error al preparar consulta de usuarios: ' . $conn->error);
         }
-
+ 
         foreach ($usuarios_grupo as $id_usuario) {
             $id_usuario = intval($id_usuario);
             $stmt_usuarios->bind_param("ii", $id_proyecto, $id_usuario);
@@ -170,27 +179,32 @@ try {
             if (!$stmt_usuarios->execute()) {
                 throw new Exception('Error al asignar usuarios al proyecto: ' . $stmt_usuarios->error);
             }
-            
+ 
+            // Notificar a cada usuario del grupo (excepto el creador)
             if ($id_usuario != $id_creador) {
                 triggerNotificacionProyectoGrupal($conn, $id_proyecto, $id_usuario);
                 error_log("Notificación enviada: Proyecto grupal {$id_proyecto} - usuario {$id_usuario} agregado");
+                
+                // Email de notificación
+                $notifier = new NotificationHelpers($conn);
+                $notifier->notifyProjectAssigned($id_proyecto, $id_usuario, $id_creador);
             }
         }
         $stmt_usuarios->close();
     }
-
+ 
     $response['success'] = true;
     $response['message'] = 'Proyecto registrado exitosamente';
     $response['id_proyecto'] = $id_proyecto;
-
+ 
     $conn->close();
-
+ 
 } catch (Exception $e) {
     $response['success'] = false;
     $response['message'] = $e->getMessage();
     error_log('Error in create_project.php: ' . $e->getMessage());
 }
-
+ 
 ob_end_clean();
 echo json_encode($response);
 exit;

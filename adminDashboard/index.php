@@ -238,39 +238,39 @@ require_once('../php/check_auth.php');
                       <div class="col-sm-12">
                         <div class="statistics-details d-flex align-items-center justify-content-between">
                           <div>
-                            <p class="statistics-title">Total de objetivos</p>
-                            <h3 class="rate-percentage">20</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>-0.5% productividad</span></p>
+                            <p class="statistics-title"></p>
+                            <h3 class="rate-percentage"></h3>
+                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span></span></p>
                           </div>
                           <div>
-                            <p class="statistics-title">Total de proyectos</p>
-                            <h3 class="rate-percentage">24</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+0.1%</span></p>
+                            <p class="statistics-title"></p>
+                            <h3 class="rate-percentage"></h3>
+                            <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span></span></p>
                           </div>
                           <div>
-                            <p class="statistics-title">Total de Tareas</p>
-                            <h3 class="rate-percentage">50%</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>20% fehca esperada</span></p>
+                            <p class="statistics-title"></p>
+                            <h3 class="rate-percentage"></h3>
+                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span></span></p>
                           </div>
                           <div class="d-none d-md-block">
-                            <p class="statistics-title">Proyectos completados</p>
-                            <h3 class="rate-percentage">30</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                            <p class="statistics-title"></p>
+                            <h3 class="rate-percentage"></h3>
+                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span></span></p>
                           </div>
                           <div class="d-none d-md-block">
-                            <p class="statistics-title">Proyectos en proceso</p>
-                            <h3 class="rate-percentage">12</h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>2 asignaciones</span></p>
+                            <p class="statistics-title"></p>
+                            <h3 class="rate-percentage"></h3>
+                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span></span></p>
                           </div>
                           <div class="d-none d-md-block">
-                            <p class="statistics-title">Proyectos pendientes</p>
-                            <h3 class="rate-percentage">10</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                            <p class="statistics-title"></p>
+                            <h3 class="rate-percentage"></h3>
+                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span></span></p>
                           </div>
                           <div class="d-none d-md-block">
-                            <p class="statistics-title">Proyectos vencidos</p>
-                            <h3 class="rate-percentage">5</h3>
-                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                            <p class="statistics-title"></p>
+                            <h3 class="rate-percentage"></h3>
+                            <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span></span></p>
                           </div>
                         </div>
                       </div>
@@ -345,6 +345,7 @@ require_once('../php/check_auth.php');
                                     </td>
                                   </tr>
                                 </tbody>
+                                
                               </table>
                             </div>
                           </div>
@@ -425,7 +426,6 @@ require_once('../php/check_auth.php');
     <!-- page-body-wrapper ends -->
   </div>
   <!-- container-scroller -->
-
   <!-- plugins:js -->
   <script src="../vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
@@ -433,7 +433,6 @@ require_once('../php/check_auth.php');
   <script src="../vendors/chart.js/Chart.min.js"></script>
   <script src="../vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
   <script src="../vendors/progressbar.js/progressbar.min.js"></script>
-
   <!-- End plugin js for this page -->
   <!-- inject:js -->
   <script src="../js/template.js"></script>
@@ -448,5 +447,4 @@ require_once('../php/check_auth.php');
   <script src="../js/notifications.js"></script>
   <!-- End custom js for this page-->
 </body>
-
 </html>

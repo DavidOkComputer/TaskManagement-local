@@ -17,28 +17,28 @@
               data: [50, 110, 60, 400, 200, 115, 130, 170, 90, 210, 240, 280, 200],
               backgroundColor: saleGradientBg,
               borderColor: [
-                  '#1F3BB3',
+                  '#009b4a',
               ],
               borderWidth: 1.5,
-              fill: true, // 3: no fill
+              fill: true, 
               pointBorderWidth: 1,
               pointRadius: [4, 4, 4, 4, 4,4, 4, 4, 4, 4,4, 4, 4],
               pointHoverRadius: [2, 2, 2, 2, 2,2, 2, 2, 2, 2,2, 2, 2],
-              pointBackgroundColor: ['#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)'],
+              pointBackgroundColor: ['#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)'],
               pointBorderColor: ['#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff',],
           },{
             label: 'Semana anterior',
             data: [30, 150, 190, 250, 120, 150, 130, 20, 30, 15, 40, 95, 180],
             backgroundColor: saleGradientBg2,
             borderColor: [
-                '#52CDFF',
+                '#009b4a',
             ],
             borderWidth: 1.5,
-            fill: true, // 3: no fill
+            fill: true, 
             pointBorderWidth: 1,
             pointRadius: [0, 0, 0, 4, 0],
             pointHoverRadius: [0, 0, 0, 2, 0],
-            pointBackgroundColor: ['#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)'],
+            pointBackgroundColor: ['#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)'],
               pointBorderColor: ['#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff',],
         }]
       };
@@ -81,7 +81,7 @@
             var text = [];
             text.push('<div class="chartjs-legend"><ul>');
             for (var i = 0; i < chart.data.datasets.length; i++) {
-              console.log(chart.data.datasets[i]); // see what's inside the obj.
+              console.log(chart.data.datasets[i]);
               text.push('<li>');
               text.push('<span style="background-color:' + chart.data.datasets[i].borderColor + '">' + '</span>');
               text.push(chart.data.datasets[i].label);
@@ -130,21 +130,21 @@
               pointBorderWidth: 1,
               pointRadius: [4, 4, 4, 4, 4,4, 4, 4, 4, 4,4, 4, 4],
               pointHoverRadius: [2, 2, 2, 2, 2,2, 2, 2, 2, 2,2, 2, 2],
-              pointBackgroundColor: ['#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)'],
+              pointBackgroundColor: ['#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)'],
               pointBorderColor: ['#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437',],
           },{
             label: '# de votos',
             data: [30, 150, 190, 250, 120, 150, 130, 20, 30, 15, 40, 95, 180],
             backgroundColor: saleGradientBg2,
             borderColor: [
-                '#52CDFF',
+                '#009b4a',
             ],
             borderWidth: 1.5,
-            fill: true, // 3: no fill
+            fill: true, 
             pointBorderWidth: 1,
             pointRadius: [0, 0, 0, 4, 0],
             pointHoverRadius: [0, 0, 0, 2, 0],
-            pointBackgroundColor: ['#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)'],
+            pointBackgroundColor: ['#009b4a', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)'],
               pointBorderColor: ['#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437',],
         }]
       };
@@ -187,7 +187,7 @@
             var text = [];
             text.push('<div class="chartjs-legend"><ul>');
             for (var i = 0; i < chart.data.datasets.length; i++) {
-              console.log(chart.data.datasets[i]); // see what's inside the obj.
+              console.log(chart.data.datasets[i]);
               text.push('<li>');
               text.push('<span style="background-color:' + chart.data.datasets[i].borderColor + '">' + '</span>');
               text.push(chart.data.datasets[i].label);
@@ -203,7 +203,7 @@
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009b4a',
           }
       }
       var salesTopDark = new Chart(graphGradient, {
@@ -227,12 +227,12 @@
           datasets: [{
               label: '# de Votos',
               data: [50, 68, 70, 10, 12, 80],
-              backgroundColor: "#ffcc00",
+              backgroundColor: "#666666",
               borderColor: [
-                  '#01B6A0',
+                  '#009b4a',
               ],
               borderWidth: 2,
-              fill: false, // 3: no fill
+              fill: false,
               pointBorderWidth: 0,
               pointRadius: [0, 0, 0, 0, 0, 0],
               pointHoverRadius: [0, 0, 0, 0, 0, 0],
@@ -281,7 +281,7 @@
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009b4a',
           }
       }
       var statusSummaryChart = new Chart(statusSummaryChartCanvas, {
@@ -293,8 +293,6 @@
     if ($('#totalVisitors').length) {
       var bar = new ProgressBar.Circle(totalVisitors, {
         color: '#fff',
-        // This has to be the same size as the maximum width to
-        // prevent clipping
         strokeWidth: 15,
         trailWidth: 15, 
         easing: 'easeInOut',
@@ -303,14 +301,13 @@
           autoStyleContainer: false
         },
         from: {
-          color: '#52CDFF',
+          color: '#009b4a',
           width: 15
         },
         to: {
-          color: '#677ae4',
+          color: '#009b4a',
           width: 15
         },
-        // Set default step function for all animate calls
         step: function(state, circle) {
           circle.path.setAttribute('stroke', state.color);
           circle.path.setAttribute('stroke-width', state.width);
@@ -326,13 +323,11 @@
       });
   
       bar.text.style.fontSize = '0rem';
-      bar.animate(.64); // Number from 0.0 to 1.0
+      bar.animate(.64);
     }
     if ($('#visitperday').length) {
       var bar = new ProgressBar.Circle(visitperday, {
         color: '#fff',
-        // This has to be the same size as the maximum width to
-        // prevent clipping
         strokeWidth: 15,
         trailWidth: 15,
         easing: 'easeInOut',
@@ -341,14 +336,13 @@
           autoStyleContainer: false
         },
         from: {
-          color: '#34B1AA',
+          color: '#009b4a',
           width: 15
         },
         to: {
-          color: '#677ae4',
+          color: '#009b4a',
           width: 15
         },
-        // Set default step function for all animate calls
         step: function(state, circle) {
           circle.path.setAttribute('stroke', state.color);
           circle.path.setAttribute('stroke-width', state.width);
@@ -364,7 +358,7 @@
       });
   
       bar.text.style.fontSize = '0rem';
-      bar.animate(.34); // Number from 0.0 to 1.0
+      bar.animate(.34); 
     }
     if ($("#marketingOverview").length) {
       var marketingOverviewChart = document.getElementById("marketingOverview").getContext('2d');
@@ -373,22 +367,22 @@
           datasets: [{
               label: 'Last week',
               data: [110, 220, 200, 190, 220, 110, 210, 110, 205, 202, 201, 150],
-              backgroundColor: "#52CDFF",
+              backgroundColor: "#009b4a",
               borderColor: [
-                  '#52CDFF',
+                  '#009b4a',
               ],
               borderWidth: 0,
-              fill: true, // 3: no fill
+              fill: true,
               
           },{
             label: 'Esta semana',
             data: [215, 290, 210, 250, 290, 230, 290, 210, 280, 220, 190, 300],
-            backgroundColor: "#1F3BB3",
+            backgroundColor: "#009b4a",
             borderColor: [
-                '#1F3BB3',
+                '#009b4a',
             ],
             borderWidth: 0,
-            fill: true, // 3: no fill
+            fill: true, 
         }]
       };
   
@@ -432,7 +426,7 @@
             var text = [];
             text.push('<div class="chartjs-legend"><ul>');
             for (var i = 0; i < chart.data.datasets.length; i++) {
-              console.log(chart.data.datasets[i]); // see what's inside the obj.
+              console.log(chart.data.datasets[i]); 
               text.push('<li class="text-muted text-small">');
               text.push('<span style="background-color:' + chart.data.datasets[i].borderColor + '">' + '</span>');
               text.push(chart.data.datasets[i].label);
@@ -448,7 +442,7 @@
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009b4a',
           }
       }
       var marketingOverview = new Chart(marketingOverviewChart, {
@@ -465,22 +459,22 @@
           datasets: [{
               label: 'Semana Pasada',
               data: [110, 220, 200, 190, 220, 110, 210, 110, 205, 202, 201, 150],
-              backgroundColor: "#52CDFF",
+              backgroundColor: "#009b4a",
               borderColor: [
-                  '#52CDFF',
+                  '#009b4a',
               ],
               borderWidth: 0,
-              fill: true, // 3: no fill
+              fill: true,
               
           },{
             label: 'Esta semana',
             data: [215, 290, 210, 250, 290, 230, 290, 210, 280, 220, 190, 300],
-            backgroundColor: "#1F3BB3",
+            backgroundColor: "#009b4a",
             borderColor: [
-                '#1F3BB3',
+                '#009b4a',
             ],
             borderWidth: 0,
-            fill: true, // 3: no fill
+            fill: true, 
         }]
       };
   
@@ -524,7 +518,7 @@
             var text = [];
             text.push('<div class="chartjs-legend"><ul>');
             for (var i = 0; i < chart.data.datasets.length; i++) {
-              console.log(chart.data.datasets[i]); // see what's inside the obj.
+              console.log(chart.data.datasets[i]); 
               text.push('<li class="text-muted text-small">');
               text.push('<span style="background-color:' + chart.data.datasets[i].borderColor + '">' + '</span>');
               text.push(chart.data.datasets[i].label);
@@ -540,7 +534,7 @@
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009b4a',
           }
       }
       var marketingOverviewDark = new Chart(marketingOverviewChartDark, {
@@ -550,7 +544,6 @@
       });
       document.getElementById('marketing-overview-legend').innerHTML = marketingOverviewDark.generateLegend();
     }
-    // Replace the doughnut chart section in dashboard.js with this code:
 
 if ($("#doughnutChart").length) {
   var doughnutChartCanvas = $("#doughnutChart").get(0).getContext("2d");
@@ -558,10 +551,10 @@ if ($("#doughnutChart").length) {
     datasets: [{
       data: [0, 0, 0, 0],
       backgroundColor: [
-        "#E9E9E9",   // Pendientes - Yellow
-        "#009B4A",   // Completados - Green
-        "#000000",   // Vencidos - Red
-        "#666666"    // En Progreso - Orange
+        "#E9E9E9",   // Pendientes 
+        "#009B4A",   // Completados
+        "#000000",   // Vencidos
+        "#666666"    // En Progreso
       ],
       borderColor: [
         "#E9E9E9",
@@ -571,7 +564,6 @@ if ($("#doughnutChart").length) {
       ],
     }],
 
-    // These labels appear in the legend and in the tooltips when hovering different arcs
     labels: [
       'Pendientes',
       'Completados',
@@ -629,7 +621,6 @@ if ($("#doughnutChart").length) {
       displayColors: false
     }
   };
-  // Store chart in window object so it can be accessed and updated from other files
   window.doughnutChart = new Chart(doughnutChartCanvas, {
     type: 'doughnut',
     data: doughnutPieData,
@@ -644,12 +635,12 @@ if ($("#doughnutChart").length) {
           datasets: [{
               label: 'Semana anterior',
               data: [18, 25, 39, 11, 24],
-              backgroundColor: "#52CDFF",
+              backgroundColor: "#ffffff",
               borderColor: [
-                  '#52CDFF',
+                  '#ffffff',
               ],
               borderWidth: 0,
-              fill: true, // 3: no fill
+              fill: true, 
               
           }]
       };
@@ -696,7 +687,7 @@ if ($("#doughnutChart").length) {
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009b4a',
           }
       }
       var leaveReport = new Chart(leaveReportChart, {
@@ -712,12 +703,12 @@ if ($("#doughnutChart").length) {
           datasets: [{
               label: 'Last week',
               data: [18, 25, 39, 11, 24],
-              backgroundColor: "#52CDFF",
+              backgroundColor: "#009b4a",
               borderColor: [
-                  '#52CDFF',
+                  '#009b4a',
               ],
               borderWidth: 0,
-              fill: true, // 3: no fill
+              fill: true,
               
           }]
       };
@@ -764,7 +755,7 @@ if ($("#doughnutChart").length) {
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009b4a',
           }
       }
       var leaveReportDark = new Chart(leaveReportChartDark, {

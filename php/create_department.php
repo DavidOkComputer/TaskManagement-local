@@ -44,7 +44,6 @@ try {
         throw new Exception('ID de creador no válido'); 
     } 
     
-    
     $conn = getDBConnection();//conexion a base de datos 
 
     if ($conn->connect_error) {//revisar conexion 
@@ -107,4 +106,4 @@ try {
 
 echo json_encode($response, JSON_UNESCAPED_UNICODE);//respuesta en json 
 exit; 
-?> 
+?>
