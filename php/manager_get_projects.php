@@ -1,5 +1,5 @@
 <?php
-/*get_projects_manager.php Obtiene todos los proyectos del departamento del gerente*/
+/*manager_get_projects.php Obtiene todos los proyectos del departamento del gerente con conteo de tareas*/
 
 header('Content-Type: application/json');
 session_start();
@@ -32,7 +32,7 @@ try {
         throw new Exception('Método no permitido');
     }
 
-    // Query para obtener todos los proyectos del departamento
+    // Query para obtener todos los proyectos del departamento con conteo de tareas
     $query = "
         SELECT 
             p.id_proyecto,
@@ -48,7 +48,8 @@ try {
             u.apellido as participante_apellido,
             p.id_participante,
             creator.nombre as creador_nombre,
-            creator.apellido as creador_apellido
+            creator.apellido as creador_apellido,
+            (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto) as total_tareas
         FROM tbl_proyectos p
         LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento
         LEFT JOIN tbl_usuarios u ON p.id_participante = u.id_usuario
@@ -103,7 +104,8 @@ try {
             'id_tipo_proyecto' => (int)$row['id_tipo_proyecto'],
             'id_creador' => (int)$row['id_creador'],
             'creador' => $row['creador_nombre'] . ' ' . $row['creador_apellido'],
-            'puede_editar' => true // El gerente puede editar todos los proyectos del departamento
+            'puede_editar' => true,
+            'total_tareas' => (int)$row['total_tareas']
         ];
     }
     
@@ -118,7 +120,7 @@ try {
 } catch (Exception $e) {
     $response['success'] = false;
     $response['message'] = 'Error al cargar proyectos: ' . $e->getMessage();
-    error_log('get_projects_manager.php Error: ' . $e->getMessage());
+    error_log('manager_get_projects.php Error: ' . $e->getMessage());
 }
 
 echo json_encode($response, JSON_UNESCAPED_UNICODE);

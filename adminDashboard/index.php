@@ -259,8 +259,8 @@ require_once('../php/check_auth.php');
                           </div>
                           <div class="d-none d-md-block">
                             <p class="statistics-title"></p>
-                            <h3 class="rate-percentage"></h3>
-                            <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span></span></p>
+                            <h3 class="rate-percentage"></h3><!--Quitar mdi icono aqui-->
+                            <p class="text-danger d-flex"></i><span></span></p>
                           </div>
                           <div class="d-none d-md-block">
                             <p class="statistics-title"></p>

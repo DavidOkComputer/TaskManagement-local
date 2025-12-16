@@ -32,31 +32,38 @@ try {
     } 
 
     $query = " 
-        SELECT DISTINCT 
-            p.id_proyecto, 
-            p.nombre, 
-            p.descripcion, 
-            p.fecha_cumplimiento, 
-            p.progreso, 
-            p.estado, 
-            p.id_tipo_proyecto, 
-            p.id_participante, 
-            p.id_creador, 
-            p.puede_editar_otros, 
-            d.nombre as area, 
-            u.nombre as participante_nombre, 
-            u.apellido as participante_apellido 
-        FROM tbl_proyectos p 
-        LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento 
-        LEFT JOIN tbl_usuarios u ON p.id_participante = u.id_usuario 
-        LEFT JOIN tbl_proyecto_usuarios pu ON p.id_proyecto = pu.id_proyecto 
-        WHERE ( 
-            p.id_creador = ? 
-            OR p.id_participante = ? 
-            OR (p.id_tipo_proyecto = 1 AND pu.id_usuario = ?) 
-        ) 
-        AND p.id_departamento = ? 
-        ORDER BY p.fecha_cumplimiento ASC 
+       SELECT DISTINCT
+            p.id_proyecto,
+            p.nombre,
+            p.descripcion,
+            p.fecha_cumplimiento,
+            p.progreso,
+            p.estado,
+            p.id_tipo_proyecto,
+            p.id_creador,
+            d.nombre as area,
+            u.nombre as participante_nombre,
+            u.apellido as participante_apellido,
+            p.id_participante,
+            creator.nombre as creador_nombre,
+            creator.apellido as creador_apellido,
+            (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto) as total_tareas
+        FROM tbl_proyectos p
+        LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento
+        LEFT JOIN tbl_usuarios u ON p.id_participante = u.id_usuario
+        LEFT JOIN tbl_usuarios creator ON p.id_creador = creator.id_usuario
+        LEFT JOIN tbl_proyecto_usuarios pu ON p.id_proyecto = pu.id_proyecto
+        WHERE p.id_creador = ? 
+           OR p.id_participante = ? 
+           OR pu.id_usuario = ?
+        ORDER BY 
+            CASE 
+                WHEN p.estado = 'vencido' THEN 1
+                WHEN p.estado = 'en proceso' THEN 2
+                WHEN p.estado = 'pendiente' THEN 3
+                ELSE 4
+            END,
+            p.fecha_cumplimiento ASC
     "; 
 
     $stmt = $conn->prepare($query); 
@@ -64,7 +71,7 @@ try {
         throw new Exception('Error al preparar la consulta: ' . $conn->error); 
     } 
 
-    $stmt->bind_param("iiii", $id_usuario, $id_usuario, $id_usuario, $id_departamento); 
+    $stmt->bind_param("iii", $id_usuario, $id_usuario, $id_usuario); 
 
     if (!$stmt->execute()) { 
         throw new Exception('Error al ejecutar la consulta: ' . $stmt->error); 
@@ -135,7 +142,7 @@ try {
     $response['id_departamento'] = $id_departamento; 
     $response['message'] = 'Proyectos cargados exitosamente'; 
 
-} catch (Exception $e) { 
+} catch (Exception $e) {    
     $response['success'] = false; 
     $response['message'] = 'Error al cargar proyectos: ' . $e->getMessage(); 
     error_log('user_get_projects.php Error: ' . $e->getMessage()); 

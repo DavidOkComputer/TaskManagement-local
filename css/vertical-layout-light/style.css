@@ -13822,9 +13822,9 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .alert-warning {
-  color: #664600;
-  background-color: #ffefcc;
-  border-color: #ffe7b3;
+  color: #ffffff;
+  background-color: #666666;
+  border-color: #666666;
 }
 
 .alert-warning .alert-link {
@@ -21010,7 +21010,7 @@ code {
 }
 
 .alert-warning {
-  color: #666666;
+  color: #ffffff;
 }
 
 .alert-danger {
