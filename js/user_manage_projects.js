@@ -3,7 +3,8 @@
 const Config = { 
     API_ENDPOINTS: { 
         DELETE: '../php/delete_project.php', 
-        GET_PROJECT_USERS: '../php/get_project_user.php' 
+        GET_PROJECT_USERS: '../php/get_project_user.php',
+        UPDATE_STATUS: '../php/update_project_status.php'  
     } 
 }; 
 
@@ -420,7 +421,6 @@ function displayProjects(proyectos) {
 
     updatePaginationControls(); 
 } 
-
 function createProjectRow(proyecto, index) { 
     const row = document.createElement('tr'); 
     const statusColor = getStatusColor(proyecto.estado); 
@@ -429,15 +429,34 @@ function createProjectRow(proyecto, index) {
 
     // Verificar si el usuario actual es el creador del proyecto 
     const esCreador = currentUserId && proyecto.id_creador === currentUserId; 
+    
+    // Verificar si el proyecto tiene tareas
+    const tieneTareas = proyecto.total_tareas && proyecto.total_tareas > 0;
 
     // Botón de ver usuarios solo para proyectos grupales 
     const viewUsersButton = proyecto.id_tipo_proyecto === 1 
-        ? `<button class="btn btn-sm btn-info btn-action"  
+        ? `<button class="btn btn-sm btn-primary btn-action"  
                    onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
                    title="Ver usuarios asignados"> 
                <i class="mdi mdi-account-multiple"></i> 
            </button>` 
         : ''; 
+
+    // Botón de marcar como completado (solo para creadores y proyectos SIN tareas)
+    let toggleCompletionButton = '';
+    if (esCreador && !tieneTareas) {
+        const isCompleted = proyecto.estado === 'completado';
+        const nextState = isCompleted ? 'pendiente' : 'completado';
+        const toggleButtonClass = isCompleted ? 'btn-secondary' : 'btn-info';
+        const toggleButtonIcon = isCompleted ? 'mdi-undo-variant' : 'mdi-check-circle-outline';
+        const toggleButtonTitle = isCompleted ? 'Marcar como pendiente' : 'Marcar como completado';
+        
+        toggleCompletionButton = `<button class="btn btn-sm ${toggleButtonClass} btn-action"  
+                   onclick="toggleProjectCompletion(${proyecto.id_proyecto}, '${nextState}')"  
+                   title="${toggleButtonTitle}"> 
+               <i class="mdi ${toggleButtonIcon}"></i> 
+           </button>`;
+    }
 
     // Solo mostrar botones de editar y eliminar si el usuario es el creador 
     const actionButtons = esCreador 
@@ -453,8 +472,10 @@ function createProjectRow(proyecto, index) {
                    <i class="mdi mdi-delete"></i> 
                </button> 
                ${viewUsersButton} 
+               ${toggleCompletionButton}
            </div>` 
         : `<div class="action-buttons"> 
+               ${viewUsersButton}
                <small class="text-muted d-block mt-1">Solo lectura</small> 
            </div>`; 
 
@@ -473,7 +494,7 @@ function createProjectRow(proyecto, index) {
         <td>${actionButtons}</td> 
     `; 
     return row; 
-} 
+}
 
 function createProgressBar(progress) { 
     const progressValue = parseInt(progress) || 0; 
@@ -609,6 +630,162 @@ function verDetallesProyecto(idProyecto) {
     // Redirigir a una página de detalles (solo lectura) 
     showAlert('Esta funcionalidad estará disponible próximamente', 'info'); 
 } 
+/**
+ * Alternar el estado de completado del proyecto
+ * Solo disponible para el creador del proyecto
+ */
+function toggleProjectCompletion(idProyecto, nuevoEstado) {
+    const proyecto = allProjects.find(proj => proj.id_proyecto === idProyecto);
+    if (!proyecto) return;
+
+    // Verificar permisos - solo el creador puede cambiar el estado
+    const esCreador = currentUserId && proyecto.id_creador === currentUserId;
+    if (!esCreador) {
+        showErrorAlert('No tienes permisos para modificar este proyecto');
+        return;
+    }
+
+    let confirmMessage;
+    let titleText;
+    
+    if (nuevoEstado === 'completado') {
+        confirmMessage = `¿Marcar el proyecto "${escapeHtml(proyecto.nombre)}" como completado?\n\nEl progreso se establecerá en 100%.`;
+        titleText = 'Cambiar estado a completado';
+    } else {
+        // Verificar si el proyecto está vencido
+        const fechaCumplimiento = new Date(proyecto.fecha_cumplimiento + 'T00:00:00');
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        
+        const estaVencido = fechaCumplimiento < hoy;
+        
+        if (estaVencido) {
+            confirmMessage = `¿Revertir el proyecto "${escapeHtml(proyecto.nombre)}"?\n\nComo la fecha de entrega (${formatDate(proyecto.fecha_cumplimiento)}) ya pasó, el proyecto se marcará como VENCIDO.\n\nEl progreso se recalculará basado en las tareas completadas.`;
+            titleText = 'Revertir proyecto (vencido)';
+        } else {
+            confirmMessage = `¿Marcar el proyecto "${escapeHtml(proyecto.nombre)}" como pendiente?\n\nEl progreso se recalculará basado en las tareas completadas.`;
+            titleText = 'Cambiar estado a pendiente';
+        }
+    }
+
+    showConfirm(
+        confirmMessage,
+        function() {
+            updateProjectStatus(idProyecto, nuevoEstado);
+        },
+        titleText,
+        {
+            type: nuevoEstado === 'completado' ? 'success' : 'warning',
+            confirmText: 'Confirmar',
+            cancelText: 'Cancelar'
+        }
+    );
+}
+
+function updateProjectStatus(idProyecto, nuevoEstado) {
+    fetch(Config.API_ENDPOINTS.UPDATE_STATUS, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id_proyecto: idProyecto,
+            estado: nuevoEstado
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Actualizar datos locales con el estado real devuelto por el servidor
+            const project = allProjects.find(proj => proj.id_proyecto === idProyecto);
+            if (project) {
+                project.estado = data.nuevo_estado;
+                project.progreso = data.nuevo_progreso;
+            }
+            
+            const filteredProject = filteredProjects.find(proj => proj.id_proyecto === idProyecto);
+            if (filteredProject) {
+                filteredProject.estado = data.nuevo_estado;
+                filteredProject.progreso = data.nuevo_progreso;
+            }
+
+            // Mostrar mensaje de éxito con el estado real
+            let statusText;
+            switch(data.nuevo_estado) {
+                case 'completado':
+                    statusText = 'completado';
+                    break;
+                case 'vencido':
+                    statusText = 'vencido (fecha de entrega superada)';
+                    break;
+                case 'pendiente':
+                    statusText = 'pendiente';
+                    break;
+                default:
+                    statusText = data.nuevo_estado;
+            }
+            showSuccessAlert(`Proyecto marcado como ${statusText}`);
+            
+            // Actualizar la tabla
+            const sorted = currentSortColumn
+                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+                : filteredProjects;
+            displayProjects(sorted);
+        } else {
+            showErrorAlert(data.message || 'Error al actualizar el estado del proyecto');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorAlert('Error al conectar con el servidor');
+    });
+}
+
+function updateProjectStatus(idProyecto, nuevoEstado) {
+    fetch(Config.API_ENDPOINTS.UPDATE_STATUS, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id_proyecto: idProyecto,
+            estado: nuevoEstado
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Actualizar datos locales
+            const project = allProjects.find(proj => proj.id_proyecto === idProyecto);
+            if (project) {
+                project.estado = data.nuevo_estado;
+                project.progreso = data.nuevo_progreso;
+            }
+            
+            const filteredProject = filteredProjects.find(proj => proj.id_proyecto === idProyecto);
+            if (filteredProject) {
+                filteredProject.estado = data.nuevo_estado;
+                filteredProject.progreso = data.nuevo_progreso;
+            }
+
+            // Mostrar mensaje de éxito
+            const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';
+            showSuccessAlert(`Proyecto marcado como ${statusText}`);
+            
+            // Actualizar la tabla
+            const sorted = currentSortColumn
+                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+                : filteredProjects;
+            displayProjects(sorted);
+        } else {
+            showErrorAlert(data.message || 'Error al actualizar el estado del proyecto');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorAlert('Error al conectar con el servidor');
+    });
+}
 
 function confirmDelete(id, nombre) { 
     showConfirm( 
@@ -1088,4 +1265,6 @@ window.changePage = changePage;
 window.showConfirm = showConfirm; 
 window.viewProjectUsers = viewProjectUsers; 
 window.stopAutoRefresh = stopAutoRefresh; 
-window.startAutoRefresh = startAutoRefresh; 
+window.startAutoRefresh = startAutoRefresh;
+window.toggleProjectCompletion = toggleProjectCompletion;
+window.updateProjectStatus = updateProjectStatus;

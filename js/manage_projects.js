@@ -1,7 +1,8 @@
 const Config = { 
     API_ENDPOINTS: { 
         DELETE: '../php/delete_project.php', 
-        GET_PROJECT_USERS: '../php/get_project_user.php' 
+        GET_PROJECT_USERS: '../php/get_project_user.php', 
+         UPDATE_STATUS: '../php/update_project_status.php'
     } 
 }; 
 
@@ -200,7 +201,7 @@ function updateSortIndicators() {
         if (header.dataset.sort === currentSortColumn) { 
             icon.className = sortDirection === 'asc' ? 'mdi mdi-sort-ascending' : 'mdi mdi-sort-descending'; 
             header.style.fontWeight = 'bold'; 
-            header.style.color = '#007bff'; 
+            header.style.color = '#009b4a'; 
         } else { 
             icon.className = 'mdi mdi-sort-variant'; 
             header.style.fontWeight = 'normal'; 
@@ -376,12 +377,32 @@ function createProjectRow(proyecto, index) {
     const row = document.createElement('tr'); 
     const statusColor = getStatusColor(proyecto.estado); 
     const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado || 'N/A'}</span>`; 
-    const progressBar = createProgressBar(proyecto.progreso || 0);     
-    const viewUsersButton = proyecto.id_tipo_proyecto === 1 //mostrar unicamente boton de grupo para los proyectos que sean grupales
-        ? `<button class="btn btn-sm btn-info btn-action" onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados"> 
+    const progressBar = createProgressBar(proyecto.progreso || 0);
+    
+    // Botón de marcar como completado solo si NO tiene tareas
+    let toggleCompletionButton = '';
+    const tieneTareas = proyecto.total_tareas && proyecto.total_tareas > 0;
+    
+    if (!tieneTareas) {
+        const isCompleted = proyecto.estado === 'completado';
+        const nextState = isCompleted ? 'pendiente' : 'completado';
+        const toggleButtonClass = isCompleted ? 'btn-secondary' : 'btn-info';
+        const toggleButtonIcon = isCompleted ? 'mdi-undo-variant' : 'mdi-check-circle-outline';
+        const toggleButtonTitle = isCompleted ? 'Marcar como pendiente' : 'Marcar como completado';
+        
+        toggleCompletionButton = `<button class="btn btn-sm ${toggleButtonClass} btn-action"  
+                onclick="toggleProjectCompletion(${proyecto.id_proyecto}, '${nextState}')"  
+                title="${toggleButtonTitle}"> 
+            <i class="mdi ${toggleButtonIcon}"></i> 
+        </button>`;
+    }
+    
+    const viewUsersButton = proyecto.id_tipo_proyecto === 1 
+        ? `<button class="btn btn-sm btn-primary btn-action" onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados"> 
                 <i class="mdi mdi-account-multiple"></i> 
             </button>` 
         : ''; 
+    
     const actionsButtons = ` 
         <div class="action-buttons">
             <button class="btn btn-sm btn-success btn-action" onclick="editarProyecto(${proyecto.id_proyecto})" title="Editar"> 
@@ -391,8 +412,10 @@ function createProjectRow(proyecto, index) {
                 <i class="mdi mdi-delete"></i> 
             </button> 
             ${viewUsersButton}
+            ${toggleCompletionButton}
         </div> 
     `; 
+    
     row.innerHTML = ` 
         <td>${index}</td> 
         <td> 
@@ -413,7 +436,7 @@ function createProjectRow(proyecto, index) {
         </td> 
     `; 
     return row; 
-} 
+}
  
 function createProgressBar(progress) { 
     const progressValue = parseInt(progress) || 0; 
@@ -962,11 +985,162 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     } 
 } 
 
-//hacer funciones globalmente disponibles 
+/**
+ * Alternar el estado de completado del proyecto
+ */
+function toggleProjectCompletion(idProyecto, nuevoEstado) {
+    const proyecto = allProjects.find(proj => proj.id_proyecto === idProyecto);
+    if (!proyecto) return;
+
+    let confirmMessage;
+    let titleText;
+    
+    if (nuevoEstado === 'completado') {
+        confirmMessage = `¿Marcar el proyecto "${escapeHtml(proyecto.nombre)}" como completado?\n\nEl progreso se establecerá en 100%.`;
+        titleText = 'Cambiar estado a completado';
+    } else {
+        // Verificar si el proyecto está vencido
+        const fechaCumplimiento = new Date(proyecto.fecha_cumplimiento + 'T00:00:00');
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        
+        const estaVencido = fechaCumplimiento < hoy;
+        
+        if (estaVencido) {
+            confirmMessage = `¿Revertir el proyecto "${escapeHtml(proyecto.nombre)}"?\n\nComo la fecha de entrega (${formatDate(proyecto.fecha_cumplimiento)}) ya pasó, el proyecto se marcará como VENCIDO.\n\nEl progreso se recalculará basado en las tareas completadas.`;
+            titleText = 'Revertir proyecto (vencido)';
+        } else {
+            confirmMessage = `¿Marcar el proyecto "${escapeHtml(proyecto.nombre)}" como pendiente?\n\nEl progreso se recalculará basado en las tareas completadas.`;
+            titleText = 'Cambiar estado a pendiente';
+        }
+    }
+
+    showConfirm(
+        confirmMessage,
+        function() {
+            updateProjectStatus(idProyecto, nuevoEstado);
+        },
+        titleText,
+        {
+            type: nuevoEstado === 'completado' ? 'success' : 'warning',
+            confirmText: 'Confirmar',
+            cancelText: 'Cancelar'
+        }
+    );
+}
+
+function updateProjectStatus(idProyecto, nuevoEstado) {
+    fetch(Config.API_ENDPOINTS.UPDATE_STATUS, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id_proyecto: idProyecto,
+            estado: nuevoEstado
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Actualizar datos locales con el estado real devuelto por el servidor
+            const project = allProjects.find(proj => proj.id_proyecto === idProyecto);
+            if (project) {
+                project.estado = data.nuevo_estado;
+                project.progreso = data.nuevo_progreso;
+            }
+            
+            const filteredProject = filteredProjects.find(proj => proj.id_proyecto === idProyecto);
+            if (filteredProject) {
+                filteredProject.estado = data.nuevo_estado;
+                filteredProject.progreso = data.nuevo_progreso;
+            }
+
+            // Mostrar mensaje de éxito con el estado real
+            let statusText;
+            switch(data.nuevo_estado) {
+                case 'completado':
+                    statusText = 'completado';
+                    break;
+                case 'vencido':
+                    statusText = 'vencido (fecha de entrega superada)';
+                    break;
+                case 'pendiente':
+                    statusText = 'pendiente';
+                    break;
+                default:
+                    statusText = data.nuevo_estado;
+            }
+            showSuccessAlert(`Proyecto marcado como ${statusText}`);
+            
+            // Actualizar la tabla
+            const sorted = currentSortColumn
+                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+                : filteredProjects;
+            displayProjects(sorted);
+        } else {
+            showErrorAlert(data.message || 'Error al actualizar el estado del proyecto');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorAlert('Error al conectar con el servidor');
+    });
+}
+
+function updateProjectStatus(idProyecto, nuevoEstado) {
+    fetch(Config.API_ENDPOINTS.UPDATE_STATUS, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id_proyecto: idProyecto,
+            estado: nuevoEstado
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Actualizar datos locales
+            const project = allProjects.find(proj => proj.id_proyecto === idProyecto);
+            if (project) {
+                project.estado = data.nuevo_estado;
+                project.progreso = data.nuevo_progreso;
+            }
+            
+            const filteredProject = filteredProjects.find(proj => proj.id_proyecto === idProyecto);
+            if (filteredProject) {
+                filteredProject.estado = data.nuevo_estado;
+                filteredProject.progreso = data.nuevo_progreso;
+            }
+
+            // Mostrar mensaje de éxito
+            const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';
+            showSuccessAlert(`Proyecto marcado como ${statusText}`);
+            
+            // Actualizar la tabla
+            const sorted = currentSortColumn
+                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
+                : filteredProjects;
+            displayProjects(sorted);
+        } else {
+            showErrorAlert(data.message || 'Error al actualizar el estado del proyecto');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorAlert('Error al conectar con el servidor');
+    });
+}
+
+// Hacer funciones globalmente disponibles 
 window.confirmDelete = confirmDelete; 
 window.editarProyecto = editarProyecto; 
 window.changePage = changePage; 
 window.showConfirm = showConfirm; 
 window.viewProjectUsers = viewProjectUsers; 
-window.stopAutoRefresh = stopAutoRefresh; // Exportar por si se necesita detener manualmente 
-window.startAutoRefresh = startAutoRefresh; // Exportar por si se necesita reiniciar manualmente
+window.stopAutoRefresh = stopAutoRefresh;
+window.startAutoRefresh = startAutoRefresh;
+window.toggleProjectCompletion = toggleProjectCompletion; 
+window.updateProjectStatus = updateProjectStatus; 
