@@ -557,16 +557,16 @@ if ($("#doughnutChart").length) {
     datasets: [{
       data: [0, 0, 0, 0],
       backgroundColor: [
-        "#E9E9E9",   // Pendientes 
-        "#009B4A",   // Completados
-        "#000000",   // Vencidos
-        "#666666"    // En Progreso
+        "#f4e285",   // Pendientes 
+        "#8cb369",   // Completados 
+        "#bc4b51",   // Vencidos
+        "#f4a259"    // En Progreso 
       ],
       borderColor: [
-        "#E9E9E9",
-        "#009B4A",
-        "#000000",
-        "#666666"
+        "#f4e285",   // Pendientes 
+        "#8cb369",   // Completados 
+        "#bc4b51",   // Vencidos
+        "#f4a259"    // En Progreso 
       ],
     }],
 

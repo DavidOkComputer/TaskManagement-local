@@ -23,17 +23,17 @@ let managerDashboard = {
     },
     
     statusColors: {
-        completado: 'rgba(34, 139, 89, 0.7)',
-        'en proceso': 'rgba(130, 140, 150, 0.7)',
-        pendiente: 'rgba(200, 205, 210, 0.7)',
-        vencido: 'rgba(50, 50, 50, 0.7)'
+        completado: '#7bf1a8',
+        'en proceso': '#ff9770',
+        pendiente: '#e9ff70',
+        vencido: '#ee6055'
     },
     
     statusBorderColors: {
-        completado: 'rgba(34, 139, 89, 1)',
-        'en proceso': 'rgba(130, 140, 150, 1)',
-        pendiente: 'rgba(200, 205, 210, 1)',
-        vencido: 'rgba(50, 50, 50, 1)'
+        completado: '#7bf1a8',
+        'en proceso': '#ff9770',
+        pendiente: '#e9ff70',
+        vencido: '#ee6055'
     }
 };
 

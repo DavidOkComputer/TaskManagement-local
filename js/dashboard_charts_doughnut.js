@@ -24,16 +24,16 @@ function prepareProjectStatusDistribution(projects) {
             statusCounts['vencido']
         ],
         backgroundColor: [
-            'rgba(34, 139, 89, 0.7)',     // Green - Completado
-            'rgba(130, 140, 150, 0.7)',   // Gray - En Proceso
-            'rgba(200, 205, 210, 0.7)',   // Ice - Pendiente
-            'rgba(50, 50, 50, 0.7)'       // Black - Vencidos
+            '#7bf1a8',     // Completado
+            '#ff9770',   // En Proceso
+            '#e9ff70',   // Pendiente
+            '#ee6055'       // Vencidos
         ],
         borderColor: [
-            'rgba(34, 139, 89, 1)',       // Green
-            'rgba(130, 140, 150, 1)',     // Gray
-            'rgba(200, 205, 210, 1)',     // Ice
-            'rgba(50, 50, 50, 1)'         // Black
+            '#7bf1a8',     // Completado
+            '#ff9770',   // En Proceso
+            '#e9ff70',   // Pendiente
+            '#ee6055'       // Vencidos
         ]
     };
     return data;

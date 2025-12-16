@@ -474,10 +474,10 @@ function updateDoughnutLegend(stats) {
                 (stats.proyectos_en_proceso || 0); 
 
     var items = [ 
-        { label: 'Pendientes', value: stats.proyectos_pendientes || 0, color: '#E9E9E9' }, 
-        { label: 'Completados', value: stats.proyectos_completados || 0, color: '#009B4A' }, 
-        { label: 'Vencidos', value: stats.proyectos_vencidos || 0, color: '#000000' }, 
-        { label: 'En Progreso', value: stats.proyectos_en_proceso || 0, color: '#666666' } 
+        { label: 'Pendientes', value: stats.proyectos_pendientes || 0, color: '#f4e285' }, 
+        { label: 'Completados', value: stats.proyectos_completados || 0, color: '#8cb369' }, 
+        { label: 'Vencidos', value: stats.proyectos_vencidos || 0, color: '#bc4b51' }, 
+        { label: 'En Progreso', value: stats.proyectos_en_proceso || 0, color: '#f4a259' } 
     ]; 
      
     var html = '<div class="chartjs-legend"><ul class="justify-content-center">'; 

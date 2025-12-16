@@ -345,7 +345,6 @@ require_once('../php/check_auth.php');
                                     </td>
                                   </tr>
                                 </tbody>
-                                
                               </table>
                             </div>
                           </div>
