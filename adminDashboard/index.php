@@ -61,75 +61,122 @@
          .table-responsive::-webkit-scrollbar-thumb:hover { 
          background: #555; 
          } 
-         .datetime-widget {
+         
+         /* Departments Widget - Flag Style (matching Quick Stats) */
+         .departments-widget {
+            display: flex;
+            gap: 12px;
+            padding: 8px 16px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8e8e8;
+         }
+         
+         .dept-flag {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #009b4a 0%, #009b4f 100%);
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 148, 186, 0.2);
-            min-width: 500px;
             align-items: center;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 70px;
+            background: linear-gradient(135deg, var(--dept-color) 0%, var(--dept-light) 100%);
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
          }
          
-         .clock-display,
-         .date-display {
+         .dept-flag::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: rgba(255, 255, 255, 0.4);
+         }
+         
+         .dept-flag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+         }
+         
+         .dept-flag-stripe {
+            display: none;
+         }
+         
+         .dept-flag-content {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            color: #ffffff;
-            font-weight: 700;
+            width: 100%;
          }
          
-         .clock-display {
-            font-size: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 6px;
-         }
-         
-         .date-display {
-            font-size: 0.9rem;
-            padding-top: 2px;
-         }
-         
-         .clock-display i,
-         .date-display i {
-            font-size: 1.2rem;
-            color: #ffffff;
+         .dept-flag-content i {
+            font-size: 1.4rem;
+            margin-bottom: 4px;
             opacity: 0.9;
          }
          
-         .time-text {
-            font-family: 'Courier New', monospace;
-            letter-spacing: 1px;
-            font-weight: 600;
+         .dept-flag-initials {
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 2px;
          }
          
-         .date-text {
+         .dept-flag-name {
+            font-size: 0.7rem;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 65px;
+            text-align: center;
          }
          
-         /* Responsive adjustments */
-         @media (max-width: 1400px) {
-            .datetime-widget {
-               min-width: 200px;
+         .dept-flag-empty {
+            cursor: default;
+            opacity: 0.7;
+         }
+         
+         .dept-flag-empty:hover {
+            transform: none;
+            box-shadow: none;
+         }
+         
+         /* Responsive adjustments for departments widget */
+         @media (max-width: 1600px) {
+            .departments-widget {
+               gap: 8px;
                padding: 6px 12px;
             }
             
-            .clock-display {
+            .dept-flag {
+               min-width: 60px;
+               padding: 4px 8px;
+            }
+            
+            .dept-flag-initials {
                font-size: 1rem;
             }
             
-            .date-display {
-               font-size: 0.85rem;
+            .dept-flag-name {
+               font-size: 0.65rem;
             }
          }
          
-         @media (max-width: 1200px) {
-            .datetime-widget {
+         @media (max-width: 1400px) {
+            .departments-widget {
                display: none;
             }
          }
+         
          /* Quick Stats Bar */
          .quick-stats-bar {
             display: flex;
@@ -268,19 +315,26 @@
                   </li>
                </ul>
                <ul class="navbar-nav ms-auto">
-                   <!-- Clock and Calendar Widget -->
-                  <li class="nav-item d-none d-lg-flex align-items-center me-4">
-                     <div class="datetime-widget">
-                           <div class="clock-display">
-                              <i class="mdi mdi-clock-outline me-2"></i>
-                              <span id="currentTime" class="time-text">00:00:00</span>
+                  
+                  <!-- Departments Widget - Flag Style -->
+                  <li class="nav-item d-none d-xl-flex align-items-center me-3">
+                     <div class="departments-widget">
+                        <div id="departmentsWidgetContainer" style="display: flex; gap: 12px;">
+                           <!-- Loading state -->
+                           <div class="dept-flag" style="--dept-color: #adb5bd; --dept-light: #ced4da; min-width: 80px;">
+                              <div class="dept-flag-content">
+                                 <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; margin-bottom: 4px;">
+                                    <span class="visually-hidden">Cargando...</span>
+                                 </div>
+                                 <span class="dept-flag-initials">...</span>
+                                 <span class="dept-flag-name">Cargando</span>
+                              </div>
                            </div>
-                           <div class="date-display">
-                              <i class="mdi mdi-calendar-outline me-2"></i>
-                              <span id="currentDate" class="date-text">Cargando...</span>
-                           </div>
+                        </div>
                      </div>
                   </li>
+                  
+                  <!-- Quick Stats Bar -->
                   <li class="nav-item d-none d-xl-flex align-items-center me-3">
                      <div class="quick-stats-bar">
                         <div class="stat-item stat-pending" id="navPendingTasks" title="Tareas pendientes">

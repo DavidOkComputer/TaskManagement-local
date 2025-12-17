@@ -23,6 +23,230 @@ require_once('../php/check_auth.php');
   <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
   <!-- endinject -->
   <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
+  <style>
+    /* Departments Widget - Flag Style (matching Quick Stats) */
+    .departments-widget {
+      display: flex;
+      gap: 12px;
+      padding: 8px 16px;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e8e8e8;
+    }
+    
+    .dept-flag {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      min-width: 70px;
+      background: linear-gradient(135deg, var(--dept-color) 0%, var(--dept-light) 100%);
+      color: #ffffff;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .dept-flag::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: rgba(255, 255, 255, 0.4);
+    }
+    
+    .dept-flag:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dept-flag-stripe {
+      display: none;
+    }
+    
+    .dept-flag-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    
+    .dept-flag-content i {
+      font-size: 1.4rem;
+      margin-bottom: 4px;
+      opacity: 0.9;
+    }
+    
+    .dept-flag-initials {
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    
+    .dept-flag-name {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 65px;
+      text-align: center;
+    }
+    
+    .dept-flag-empty {
+      cursor: default;
+      opacity: 0.7;
+    }
+    
+    .dept-flag-empty:hover {
+      transform: none;
+      box-shadow: none;
+    }
+    
+    /* Responsive adjustments for departments widget */
+    @media (max-width: 1600px) {
+      .departments-widget {
+        gap: 8px;
+        padding: 6px 12px;
+      }
+      
+      .dept-flag {
+        min-width: 60px;
+        padding: 4px 8px;
+      }
+      
+      .dept-flag-initials {
+        font-size: 1rem;
+      }
+      
+      .dept-flag-name {
+        font-size: 0.65rem;
+      }
+    }
+    
+    @media (max-width: 1400px) {
+      .departments-widget {
+        display: none;
+      }
+    }
+    
+    /* Quick Stats Bar */
+    .quick-stats-bar {
+      display: flex;
+      gap: 12px;
+      padding: 8px 16px;
+      background: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border: 1px solid #e8e8e8;
+    }
+    
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      min-width: 70px;
+    }
+    
+    .stat-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-item i {
+      font-size: 1.4rem;
+      margin-bottom: 4px;
+    }
+    
+    .stat-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.8;
+    }
+    
+    .stat-pending {
+      background: linear-gradient(135deg, #f4e285 0%, #f4e285 100%);
+      color: #000000;
+    }
+    
+    .stat-pending i {
+      color: #000000;
+    }
+    
+    .stat-today {
+      background: linear-gradient(135deg, #8cb369 0%, #8cb369 100%);
+      color: #000000;
+    }
+    
+    .stat-today i {
+      color: #000000;
+    }
+    
+    .stat-overdue {
+      background: linear-gradient(135deg, #bc4b51 0%, #bc4b51 100%);
+      color: #ffffff;
+    }
+    
+    .stat-overdue i {
+      color: #ffffff;
+    }
+    
+    .stat-overdue.has-items {
+      animation: pulse-alert 2s infinite;
+    }
+    
+    @keyframes pulse-alert {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+    
+    /* Hide on smaller screens */
+    @media (max-width: 1600px) {
+      .quick-stats-bar {
+        gap: 8px;
+        padding: 6px 12px;
+      }
+      
+      .stat-item {
+        min-width: 60px;
+        padding: 4px 8px;
+      }
+      
+      .stat-value {
+        font-size: 1rem;
+      }
+      
+      .stat-label {
+        font-size: 0.65rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="container-scroller"> 
@@ -55,6 +279,46 @@ require_once('../php/check_auth.php');
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
+          
+          <!-- Departments Widget - Flag Style -->
+          <li class="nav-item d-none d-xl-flex align-items-center me-3">
+            <div class="departments-widget">
+              <div id="departmentsWidgetContainer" style="display: flex; gap: 12px;">
+                <!-- Loading state -->
+                <div class="dept-flag" style="--dept-color: #adb5bd; --dept-light: #ced4da; min-width: 80px;">
+                  <div class="dept-flag-content">
+                    <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; margin-bottom: 4px;">
+                      <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <span class="dept-flag-initials">...</span>
+                    <span class="dept-flag-name">Cargando</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+          
+          <!-- Quick Stats Bar -->
+          <li class="nav-item d-none d-xl-flex align-items-center me-3">
+            <div class="quick-stats-bar">
+              <div class="stat-item stat-pending" id="navPendingTasks" title="Tareas pendientes">
+                <i class="mdi mdi-clock-alert-outline"></i>
+                <span class="stat-value">-</span>
+                <span class="stat-label">Pendientes</span>
+              </div>
+              <div class="stat-item stat-today" id="navTodayTasks" title="Tareas de hoy">
+                <i class="mdi mdi-calendar-today"></i>
+                <span class="stat-value">-</span>
+                <span class="stat-label">Hoy</span>
+              </div>
+              <div class="stat-item stat-overdue" id="navOverdueTasks" title="Tareas vencidas">
+                <i class="mdi mdi-alert-circle-outline"></i>
+                <span class="stat-value">-</span>
+                <span class="stat-label">Vencidas</span>
+              </div>
+            </div>
+          </li>
+          
           <li class="nav-item dropdown"> 
               <a class="nav-link count-indicator" id="countDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="icon-bell"></i>
@@ -441,6 +705,7 @@ require_once('../php/check_auth.php');
   <script src="../js/Chart.roundedBarCharts.js"></script>
   <script src="../js/custom_dialogs.js"></script>
   <script src="../js/notifications.js"></script>
+  <script src="../js/departments_widget.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

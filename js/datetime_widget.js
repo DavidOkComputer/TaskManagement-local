@@ -1,43 +1,152 @@
+/**
+ * departments_widget.js - Department Display Widget
+ * Displays available departments as flag-style items in the navbar
+ */
+
 (function() {
-    function updateDateTime() {
-        const now = new Date();
-        
-        // Update time (HH:MM:SS format)
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        const timeString = `${hours}:${minutes}:${seconds}`;
-        
-        const timeElement = document.getElementById('currentTime');
-        if (timeElement) {
-            timeElement.textContent = timeString;
-        }
-        
-        // Update date (Día, DD de Mes de YYYY format)
-        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const meses = [
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-        ];
-        
-        const diaSemana = dias[now.getDay()];
-        const dia = now.getDate();
-        const mes = meses[now.getMonth()];
-        const año = now.getFullYear();
-        
-        const dateString = `${diaSemana}, ${dia} de ${mes} ${año}`;
-        
-        const dateElement = document.getElementById('currentDate');
-        if (dateElement) {
-            dateElement.textContent = dateString;
-        }
+    // Department colors palette - matching quick stats style
+    const departmentColors = [
+        { bg: '#667eea', light: '#8b9ff5' },
+        { bg: '#11998e', light: '#3dbdb2' },
+        { bg: '#ee5a24', light: '#f57f4d' },
+        { bg: '#9b59b6', light: '#b07cc6' },
+        { bg: '#3498db', light: '#5faee3' },
+        { bg: '#1abc9c', light: '#48d1b5' },
+        { bg: '#e74c3c', light: '#ee7b6e' },
+        { bg: '#f39c12', light: '#f6b93b' }
+    ];
+
+    // Load departments from API
+    function loadDepartments() {
+        const container = document.getElementById('departmentsWidgetContainer');
+        if (!container) return;
+
+        fetch('../php/get_departments.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.departamentos) {
+                    renderDepartments(data.departamentos);
+                } else {
+                    console.error('Error loading departments:', data.message);
+                    renderEmptyState();
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching departments:', error);
+                renderEmptyState();
+            });
     }
-    
+
+    // Render department items as flags
+    function renderDepartments(departments) {
+        const container = document.getElementById('departmentsWidgetContainer');
+        if (!container) return;
+
+        if (departments.length === 0) {
+            renderEmptyState();
+            return;
+        }
+
+        // Limit to first 5 departments for navbar space
+        const displayDepts = departments.slice(0, 5);
+        
+        let html = '';
+        displayDepts.forEach((dept, index) => {
+            const colorScheme = departmentColors[index % departmentColors.length];
+            const initials = getInitials(dept.nombre);
+            
+            html += `
+                <div class="dept-flag" 
+                     data-dept-id="${dept.id_departamento}"
+                     title="${dept.nombre}${dept.descripcion ? ': ' + dept.descripcion : ''}"
+                     style="--dept-color: ${colorScheme.bg}; --dept-light: ${colorScheme.light};">
+                    <div class="dept-flag-stripe"></div>
+                    <div class="dept-flag-content">
+                        <i class="mdi mdi-domain"></i>
+                        <span class="dept-flag-initials">${initials}</span>
+                        <span class="dept-flag-name">${truncateName(dept.nombre, 10)}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Add "more" indicator if there are more departments
+        if (departments.length > 5) {
+            html += `
+                <div class="dept-flag dept-flag-more" 
+                     title="Ver todos los departamentos (${departments.length} total)"
+                     style="--dept-color: #6c757d; --dept-light: #868e96;">
+                    <div class="dept-flag-stripe"></div>
+                    <div class="dept-flag-content">
+                        <i class="mdi mdi-dots-horizontal"></i>
+                        <span class="dept-flag-initials">+${departments.length - 5}</span>
+                        <span class="dept-flag-name">Más</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+        attachClickHandlers();
+    }
+
+    // Render empty state
+    function renderEmptyState() {
+        const container = document.getElementById('departmentsWidgetContainer');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="dept-flag dept-flag-empty" 
+                 style="--dept-color: #adb5bd; --dept-light: #ced4da;">
+                <div class="dept-flag-stripe"></div>
+                <div class="dept-flag-content">
+                    <i class="mdi mdi-office-building-outline"></i>
+                    <span class="dept-flag-initials">--</span>
+                    <span class="dept-flag-name">Sin deptos</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Get initials from department name
+    function getInitials(name) {
+        if (!name) return '??';
+        const words = name.trim().split(/\s+/);
+        if (words.length === 1) {
+            return words[0].substring(0, 2).toUpperCase();
+        }
+        return (words[0][0] + words[1][0]).toUpperCase();
+    }
+
+    // Truncate name for display
+    function truncateName(name, maxLength) {
+        if (!name) return '';
+        if (name.length <= maxLength) return name;
+        return name.substring(0, maxLength - 1) + '…';
+    }
+
+    // Attach click handlers to department items
+    function attachClickHandlers() {
+        const items = document.querySelectorAll('.dept-flag');
+        items.forEach(item => {
+            item.addEventListener('click', function() {
+                const deptId = this.dataset.deptId;
+                // Navigate to department management
+                window.location.href = '../gestionDeDepartamentos/';
+            });
+        });
+    }
+
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-        updateDateTime(); // Update immediately
-        setInterval(updateDateTime, 1000); // Update every second
+        loadDepartments();
+        
+        // Refresh departments every 5 minutes
+        setInterval(loadDepartments, 300000);
     });
+
+    // Expose function globally for manual refresh
+    window.refreshDepartmentsWidget = loadDepartments;
 })();
 
 // Quick Stats Bar - Load user's task statistics
