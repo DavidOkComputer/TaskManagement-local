@@ -354,7 +354,7 @@ function updateSortIndicators() {
 		if (header.dataset.sort === currentSortColumn) {
 			icon.className = sortDirection === 'asc' ? 'mdi mdi-sort-ascending' : 'mdi mdi-sort-descending';
 			header.style.fontWeight = 'bold';
-			header.style.color = '#0094baa';
+			header.style.color = '#009b4a';
 		} else {
 			icon.className = 'mdi mdi-sort-variant';
 			header.style.fontWeight = 'normal';

@@ -1,19 +1,16 @@
-/**
- * departments_widget.js - Department Display Widget
- * Displays available departments as flag-style items in the navbar
- */
+/*departments_widget.js widgedt para el dashboard de admin principal */
 
 (function() {
-    // Department colors palette - matching quick stats style
+    
     const departmentColors = [
-        { bg: '#667eea', light: '#8b9ff5' },
-        { bg: '#11998e', light: '#3dbdb2' },
-        { bg: '#ee5a24', light: '#f57f4d' },
-        { bg: '#9b59b6', light: '#b07cc6' },
-        { bg: '#3498db', light: '#5faee3' },
-        { bg: '#1abc9c', light: '#48d1b5' },
-        { bg: '#e74c3c', light: '#ee7b6e' },
-        { bg: '#f39c12', light: '#f6b93b' }
+        { bg: '#005f73', light: '#005f73' },
+        { bg: '#468faf', light: '#468faf' },
+        { bg: '#C62828', light: '#C62828' },
+        { bg: '#2e2e2e', light: '#2e2e2e' },
+        { bg: '#00663a', light: '#00663a' },
+        { bg: '#007f6e', light: '#007f6e' },
+        { bg: '#a33a2b', light: '#a33a2b' },
+        { bg: '#ffb703', light: '#ffb703' }
     ];
 
     // Load departments from API
@@ -37,7 +34,7 @@
             });
     }
 
-    // Render department items as flags
+    //renderizar los items de departamentos como si fueran banderaas
     function renderDepartments(departments) {
         const container = document.getElementById('departmentsWidgetContainer');
         if (!container) return;
@@ -47,8 +44,8 @@
             return;
         }
 
-        // Limit to first 5 departments for navbar space
-        const displayDepts = departments.slice(0, 5);
+        //limitar a los 6 primeros departamentos
+        const displayDepts = departments.slice(0, 6);
         
         let html = '';
         displayDepts.forEach((dept, index) => {
@@ -70,8 +67,8 @@
             `;
         });
 
-        // Add "more" indicator if there are more departments
-        if (departments.length > 5) {
+        //agregar indicador de mas si hay mas departamentos
+        if (departments.length > 6) {
             html += `
                 <div class="dept-flag dept-flag-more" 
                      title="Ver todos los departamentos (${departments.length} total)"
@@ -90,7 +87,7 @@
         attachClickHandlers();
     }
 
-    // Render empty state
+    //renderizar estado de vacio
     function renderEmptyState() {
         const container = document.getElementById('departmentsWidgetContainer');
         if (!container) return;
@@ -108,7 +105,7 @@
         `;
     }
 
-    // Get initials from department name
+    //iniciales del departamento
     function getInitials(name) {
         if (!name) return '??';
         const words = name.trim().split(/\s+/);
@@ -118,38 +115,34 @@
         return (words[0][0] + words[1][0]).toUpperCase();
     }
 
-    // Truncate name for display
+    //truncar el nombre para mostrarlo
     function truncateName(name, maxLength) {
         if (!name) return '';
         if (name.length <= maxLength) return name;
         return name.substring(0, maxLength - 1) + '…';
     }
 
-    // Attach click handlers to department items
+    //agregar click hanglers a lositems de departamentos
     function attachClickHandlers() {
         const items = document.querySelectorAll('.dept-flag');
         items.forEach(item => {
             item.addEventListener('click', function() {
                 const deptId = this.dataset.deptId;
-                // Navigate to department management
                 window.location.href = '../gestionDeDepartamentos/';
             });
         });
     }
 
-    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
         loadDepartments();
-        
-        // Refresh departments every 5 minutes
-        setInterval(loadDepartments, 300000);
+        setInterval(loadDepartments, 900000);
     });
 
-    // Expose function globally for manual refresh
+    //hacer funcion global para poder refrescarla a mano
     window.refreshDepartmentsWidget = loadDepartments;
 })();
 
-// Quick Stats Bar - Load user's task statistics
+//barra de estadisticas rapidas cargar tareas de usuarios
 function loadQuickStats() {
     fetch('../php/get_user_quick_stats.php')
         .then(response => response.json())
@@ -164,25 +157,22 @@ function loadQuickStats() {
 }
  
 function updateQuickStats(stats) {
-    // Update pending tasks
     const pendingElement = document.querySelector('#navPendingTasks .stat-value');
     if (pendingElement) {
         pendingElement.textContent = stats.pendientes || 0;
     }
     
-    // Update today's tasks
     const todayElement = document.querySelector('#navTodayTasks .stat-value');
     if (todayElement) {
         todayElement.textContent = stats.hoy || 0;
     }
     
-    // Update overdue tasks
     const overdueElement = document.querySelector('#navOverdueTasks .stat-value');
     const overdueContainer = document.getElementById('navOverdueTasks');
     if (overdueElement) {
         overdueElement.textContent = stats.vencidas || 0;
         
-        // Add pulse animation if there are overdue tasks
+        //animacion para tareas vencidas
         if (stats.vencidas > 0) {
             overdueContainer.classList.add('has-items');
         } else {
@@ -191,14 +181,11 @@ function updateQuickStats(stats) {
     }
 }
  
-// Add click handlers for quick navigation
 document.addEventListener('DOMContentLoaded', function() {
     loadQuickStats();
     
-    // Refresh every 2 minutes
     setInterval(loadQuickStats, 120000);
     
-    // Click handlers
     const pendingItem = document.getElementById('navPendingTasks');
     if (pendingItem) {
         pendingItem.addEventListener('click', () => {

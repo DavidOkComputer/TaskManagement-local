@@ -9,7 +9,7 @@ try {
     $id_rol = $_SESSION['id_rol'];
     $id_departamento = $_SESSION['user_department'];
     
-    // Get pending tasks count
+    // contar las tareas pendientes
     $queryPendientes = "
         SELECT COUNT(*) as total
         FROM tbl_tareas
@@ -23,7 +23,7 @@ try {
     $pendientes = $stmt->get_result()->fetch_assoc()['total'];
     $stmt->close();
     
-    // Get today's tasks count (tasks due today)
+    //contar las tareas para hoy
     $queryHoy = "
         SELECT COUNT(*) as total
         FROM tbl_tareas
@@ -38,7 +38,7 @@ try {
     $hoy = $stmt->get_result()->fetch_assoc()['total'];
     $stmt->close();
     
-    // Get overdue tasks count
+    //contar las tareas vencidas
     $queryVencidas = "
         SELECT COUNT(*) as total
         FROM tbl_tareas

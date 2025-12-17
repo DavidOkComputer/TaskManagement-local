@@ -557,16 +557,16 @@ if ($("#doughnutChart").length) {
     datasets: [{
       data: [0, 0, 0, 0],
       backgroundColor: [
-        "#f4e285",   // Pendientes 
-        "#8cb369",   // Completados 
-        "#bc4b51",   // Vencidos
-        "#f4a259"    // En Progreso 
+        "#F2C94C",   // Pendientes 
+        "#009b4a",   // Completados 
+        "#C62828",   // Vencidos
+        "#F2994A"    // En Progreso 
       ],
       borderColor: [
-        "#f4e285",   // Pendientes 
-        "#8cb369",   // Completados 
-        "#bc4b51",   // Vencidos
-        "#f4a259"    // En Progreso 
+        "#F2C94C",   // Pendientes 
+        "#009b4a",   // Completados 
+        "#C62828",   // Vencidos
+        "#F2994A"    // En Progreso 
       ],
     }],
 

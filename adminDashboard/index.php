@@ -6,8 +6,7 @@
    ?> 
 <!DOCTYPE html> 
 <html lang="en">
-   <head>
-      <!-- Required meta tags --> 
+   <head> 
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       <title>Administrador de proyectos </title>
@@ -24,270 +23,12 @@
       <!-- endinject --> 
       <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
       <style> 
-         /* Custom styles for single-view layout */ 
-         .content-wrapper { 
-         padding-bottom: 0 !important; 
-         } 
-         .statistics-details > div { 
-         padding: 5px 8px !important; 
-         } 
-         .card-body { 
-         padding: 12px !important; 
-         } 
-         .table-sm td, .table-sm th { 
-         padding: 0.4rem !important; 
-         font-size: 0.85rem !important; 
-         } 
-         .progress { 
-         height: 16px !important; 
-         font-size: 0.7rem !important; 
-         } 
-         /* Ensure no scrolling on main content */ 
-         .tab-content-basic { 
-         overflow: hidden; 
-         } 
-         /* Custom scrollbar for tables */ 
-         .table-responsive::-webkit-scrollbar { 
-         width: 6px; 
-         height: 6px; 
-         } 
-         .table-responsive::-webkit-scrollbar-track { 
-         background: #f1f1f1; 
-         } 
-         .table-responsive::-webkit-scrollbar-thumb { 
-         background: #888; 
-         border-radius: 3px; 
-         } 
-         .table-responsive::-webkit-scrollbar-thumb:hover { 
-         background: #555; 
-         } 
          
-         /* Departments Widget - Flag Style (matching Quick Stats) */
-         .departments-widget {
-            display: flex;
-            gap: 12px;
-            padding: 8px 16px;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e8e8e8;
-         }
-         
-         .dept-flag {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 6px 12px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            min-width: 70px;
-            background: linear-gradient(135deg, var(--dept-color) 0%, var(--dept-light) 100%);
-            color: #ffffff;
-            position: relative;
-            overflow: hidden;
-         }
-         
-         .dept-flag::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: rgba(255, 255, 255, 0.4);
-         }
-         
-         .dept-flag:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-         }
-         
-         .dept-flag-stripe {
-            display: none;
-         }
-         
-         .dept-flag-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-         }
-         
-         .dept-flag-content i {
-            font-size: 1.4rem;
-            margin-bottom: 4px;
-            opacity: 0.9;
-         }
-         
-         .dept-flag-initials {
-            font-size: 1.2rem;
-            font-weight: 700;
-            line-height: 1;
-            margin-bottom: 2px;
-         }
-         
-         .dept-flag-name {
-            font-size: 0.7rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            opacity: 0.9;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 65px;
-            text-align: center;
-         }
-         
-         .dept-flag-empty {
-            cursor: default;
-            opacity: 0.7;
-         }
-         
-         .dept-flag-empty:hover {
-            transform: none;
-            box-shadow: none;
-         }
-         
-         /* Responsive adjustments for departments widget */
-         @media (max-width: 1600px) {
-            .departments-widget {
-               gap: 8px;
-               padding: 6px 12px;
-            }
-            
-            .dept-flag {
-               min-width: 60px;
-               padding: 4px 8px;
-            }
-            
-            .dept-flag-initials {
-               font-size: 1rem;
-            }
-            
-            .dept-flag-name {
-               font-size: 0.65rem;
-            }
-         }
-         
-         @media (max-width: 1400px) {
-            .departments-widget {
-               display: none;
-            }
-         }
-         
-         /* Quick Stats Bar */
-         .quick-stats-bar {
-            display: flex;
-            gap: 12px;
-            padding: 8px 16px;
-            background: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e8e8e8;
-         }
-         
-         .stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 6px 12px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            min-width: 70px;
-         }
-         
-         .stat-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-         }
-         
-         .stat-item i {
-            font-size: 1.4rem;
-            margin-bottom: 4px;
-         }
-         
-         .stat-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-            line-height: 1;
-            margin-bottom: 2px;
-         }
-         
-         .stat-label {
-            font-size: 0.7rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            opacity: 0.8;
-         }
-         
-         .stat-pending {
-            background: linear-gradient(135deg, #f4e285 0%, #f4e285 100%);
-            color: #000000;
-         }
-         
-         .stat-pending i {
-            color: #000000;
-         }
-         
-         .stat-today {
-            background: linear-gradient(135deg, #8cb369 0%, #8cb369 100%);
-            color: #000000;
-         }
-         
-         .stat-today i {
-            color: #000000;
-         }
-         
-         .stat-overdue {
-            background: linear-gradient(135deg, #bc4b51 0%, #bc4b51 100%);
-            color: #ffffff;
-         }
-         
-         .stat-overdue i {
-            color: #ffffff;
-         }
-         
-         .stat-overdue.has-items {
-            animation: pulse-alert 2s infinite;
-         }
-         
-         @keyframes pulse-alert {
-            0%, 100% {
-               transform: scale(1);
-            }
-            50% {
-               transform: scale(1.05);
-            }
-         }
-         /* Hide on smaller screens */
-         @media (max-width: 1600px) {
-            .quick-stats-bar {
-               gap: 8px;
-               padding: 6px 12px;
-            }
-            
-            .stat-item {
-               min-width: 60px;
-               padding: 4px 8px;
-            }
-            
-            .stat-value {
-               font-size: 1rem;
-            }
-            
-            .stat-label {
-               font-size: 0.65rem;
-            }
-         }
       </style>
    </head>
    <body>
       <div class="container-scroller">
-         <!-- partial:partials/_navbar.html --> 
+         <!-- partial navbar --> 
          <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
             <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
                <div class="me-3"> 
@@ -316,11 +57,11 @@
                </ul>
                <ul class="navbar-nav ms-auto">
                   
-                  <!-- Departments Widget - Flag Style -->
+                  <!-- widget de departamentos -->
                   <li class="nav-item d-none d-xl-flex align-items-center me-3">
                      <div class="departments-widget">
                         <div id="departmentsWidgetContainer" style="display: flex; gap: 12px;">
-                           <!-- Loading state -->
+                           <!-- estado de carga -->
                            <div class="dept-flag" style="--dept-color: #adb5bd; --dept-light: #ced4da; min-width: 80px;">
                               <div class="dept-flag-content">
                                  <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; margin-bottom: 4px;">
@@ -334,7 +75,7 @@
                      </div>
                   </li>
                   
-                  <!-- Quick Stats Bar -->
+                  <!-- barra de estadisticas rapidas-->
                   <li class="nav-item d-none d-xl-flex align-items-center me-3">
                      <div class="quick-stats-bar">
                         <div class="stat-item stat-pending" id="navPendingTasks" title="Tareas pendientes">
@@ -369,7 +110,7 @@
                         </div>
                         <!-- Contenedor de notificaciones (se llena dinámicamente) --> 
                         <div id="notificationsContainer" style="max-height: 350px; overflow-y: auto;">
-                           <!-- Loading state --> 
+                           <!-- estado de carga --> 
                            <div class="notification-loading py-4 text-center">
                               <div class="spinner-border spinner-border-sm text-primary" role="status"> 
                                  <span class="visually-hidden">Cargando...</span> 
@@ -400,10 +141,9 @@
                <span class="mdi mdi-menu"></span> 
                </button> 
             </div>
-         </nav>
-         <!-- partial --> 
+         </nav> 
          <div class="container-fluid page-body-wrapper">
-            <!-- partial:partials/_settings-panel.html --> 
+            <!-- partial barra lateral --> 
             <div id="right-sidebar" class="settings-panel">
                <i class="settings-close ti-close"></i> 
                <ul class="nav nav-tabs border-top" id="setting-panel" role="tablist">
@@ -411,9 +151,8 @@
                      <a class="nav-link active" id="todo-tab" data-bs-toggle="tab" href="" role="tab" aria-controls="todo-section" aria-expanded="true">Lista de que hacer</a> 
                   </li>
                </ul>
-            </div>
-            <!-- partial --> 
-            <!-- partial:partials/_sidebar.html --> 
+            </div> 
+            <!-- partial menu lateral--> 
             <nav class="sidebar sidebar-offcanvas" id="sidebar">
                <ul class="nav">
                   <li class="nav-item nav-category">Gestion de usuarios</li>
@@ -527,54 +266,54 @@
                            </div>
                            <div class="tab-content tab-content-basic">
                               <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
-                                 <!-- Statistics Bar - Compact Version --> 
-                                 <div class="row mb-2">
+                                 <!-- barra de estadisticas--> 
+                                 <div class="row mb-0" style="margin-bottom:0 !important;">
                                     <div class="col-sm-12">
-                                       <div class="statistics-details d-flex align-items-center justify-content-between" style="padding: 8px 0;">
-                                          <div style="padding: 5px 10px;">
-                                             <p class="statistics-title mb-1" style="font-size: 0.75rem;">Total de objetivos</p>
+                                       <div class="statistics-details d-flex align-items-center justify-content-between" style="padding: 6px 0 2px 0;">
+                                          <div style="padding: 2px 10px;">
+                                             <p class="statistics-title mb-1" style="font-size: 0.95rem;">Total de objetivos</p>
                                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;"></h3>
                                              <p class="text-danger d-flex mb-0" style="font-size: 0.7rem;"><i class="mdi mdi-menu-down"></i><span></span></p>
                                           </div>
-                                          <div style="padding: 5px 10px;">
-                                             <p class="statistics-title mb-1" style="font-size: 0.75rem;">Total de proyectos</p>
+                                          <div style="padding: 2px 10px;">
+                                             <p class="statistics-title mb-1" style="font-size: 0.95rem;">Total de proyectos</p>
                                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;"></h3>
                                              <p class="text-success d-flex mb-0" style="font-size: 0.7rem;"><i class="mdi mdi-menu-up"></i><span></span></p>
                                           </div>
-                                          <div style="padding: 5px 10px;">
-                                             <p class="statistics-title mb-1" style="font-size: 0.75rem;">Proyectos en tiempo</p>
+                                          <div style="padding: 2px 10px;">
+                                             <p class="statistics-title mb-1" style="font-size: 0.95rem;">Proyectos en tiempo</p>
                                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;"></h3>
                                              <p class="text-danger d-flex mb-0" style="font-size: 0.7rem;"><i class="mdi mdi-menu-down"></i><span></span></p>
                                           </div>
-                                          <div class="d-none d-md-block" style="padding: 5px 10px;">
-                                             <p class="statistics-title mb-1" style="font-size: 0.75rem;">Proyectos completados</p>
+                                          <div class="d-none d-md-block" style="padding: 2px 10px;">
+                                             <p class="statistics-title mb-1" style="font-size: 0.95rem;">Proyectos completados</p>
                                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;"></h3>
                                              <p class="text-success d-flex mb-0" style="font-size: 0.7rem;"><i class="mdi mdi-menu-down"></i><span></span></p>
                                           </div>
-                                          <div class="d-none d-md-block" style="padding: 5px 10px;">
-                                             <p class="statistics-title mb-1" style="font-size: 0.75rem;"></p>
+                                          <div class="d-none d-md-block" style="padding: 2px 10px;">
+                                             <p class="statistics-title mb-1" style="font-size: 0.95rem;"></p>
                                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;"></h3>
                                              <p class="text-danger d-flex mb-0" style="font-size: 0.7rem;"><span></span></p>
                                           </div>
-                                          <div class="d-none d-md-block" style="padding: 5px 10px;">
-                                             <p class="statistics-title mb-1" style="font-size: 0.75rem;">Proyectos pendientes</p>
+                                          <div class="d-none d-md-block" style="padding: 2px 10px;">
+                                             <p class="statistics-title mb-1" style="font-size: 0.95rem;">Proyectos pendientes</p>
                                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;"></h3>
                                              <p class="text-success d-flex mb-0" style="font-size: 0.7rem;"><i class="mdi mdi-menu-down"></i><span></span></p>
                                           </div>
-                                          <div class="d-none d-md-block" style="padding: 5px 10px;">
-                                             <p class="statistics-title mb-1" style="font-size: 0.75rem;">Proyectos vencidos</p>
+                                          <div class="d-none d-md-block" style="padding: 2px 10px;">
+                                             <p class="statistics-title mb-1" style="font-size: 0.95rem;">Proyectos vencidos</p>
                                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;"></h3>
                                              <p class="text-success d-flex mb-0" style="font-size: 0.7rem;"><i class="mdi mdi-menu-down"></i><span></span></p>
                                           </div>
                                        </div>
                                     </div>
                                  </div>
-                                 <!-- Main Content Grid - Everything in One View --> 
-                                 <div class="row" style="height: calc(100vh - 280px);">
-                                    <!-- Left Column - Project Details Table (60% width) --> 
-                                    <div class="col-lg-8" style="height: 100%; padding-right: 8px;">
-                                       <div class="card h-100" style="margin-bottom: 0;">
-                                          <div class="card-body d-flex flex-column" style="padding: 10px;">
+                                 <!-- tablas principales --> 
+                                 <div class="row" style="height: calc(100vh - 260px);">
+                                    <!-- columna izquierda --> 
+                                    <div class="col-lg-8" style="height: 100%; padding-right: 8px; ">
+                                       <div class="card h-100" style="margin-bottom: 0; border: 1px solid #000000;">
+                                          <div class="card-body d-flex flex-column" style="padding: 10px; ">
                                              <h4 class="card-title mb-2" style="font-size: 1rem;">Detalles de los proyectos</h4>
                                              <div class="table-responsive flex-grow-1" style="overflow-y: auto; max-height: calc(100% - 40px);">
                                                 <table class="table select-table table-sm">
@@ -625,11 +364,11 @@
                                           </div>
                                        </div>
                                     </div>
-                                    <!-- Right Column - Charts and Stats (40% width) --> 
+                                    <!-- columna derecha--> 
                                     <div class="col-lg-4" style="height: 100%; padding-left: 8px;">
                                        <div class="d-flex flex-column h-100">
-                                          <!-- Top Employees Card - 33% height --> 
-                                          <div class="card mb-2" style="height: 33%; min-height: 0;">
+                                          <!-- top empleados --> 
+                                          <div class="card mb-2" style="height: 33%; min-height: 0; border: 1px solid #000000">
                                              <div class="card-body d-flex flex-column" style="padding: 12px;">
                                                 <h4 class="card-title mb-2" style="font-size: 0.95rem;">Top Empleados</h4>
                                                 <div class="flex-grow-1" style="overflow-y: auto;">
@@ -647,8 +386,8 @@
                                                 </div>
                                              </div>
                                           </div>
-                                          <!-- Top Projects Card - 33% height --> 
-                                          <div class="card mb-2" style="height: 33%; min-height: 0;">
+                                          <!-- top proyectos--> 
+                                          <div class="card mb-2" style="height: 33%; min-height: 0;border: 1px solid #000000;">
                                              <div class="card-body d-flex flex-column" style="padding: 12px;">
                                                 <h4 class="card-title mb-2" style="font-size: 0.95rem;">Top Proyectos</h4>
                                                 <div class="flex-grow-1" style="overflow-y: auto;">
@@ -666,10 +405,10 @@
                                                 </div>
                                              </div>
                                           </div>
-                                          <!-- Status Chart Card - 34% height --> 
-                                          <div class="card" style="height: 34%; min-height: 0; margin-bottom: 0;">
+                                          <!-- graficas de proyectos por estado --> 
+                                          <div class="card" style="height: 34%; min-height: 0; margin-bottom: 0; border: 1px solid #000000;">
                                              <div class="card-body d-flex flex-column" style="padding: 12px;">
-                                                <h4 class="card-title mb-2" style="font-size: 0.95rem;">Proyectos por Estado</h4>
+                                                <h4 class="card-title mb-2" style="font-size: 0.95rem;">P.P.E.</h4>
                                                 <div class="flex-grow-1 d-flex flex-column justify-content-center" style="min-height: 0;">
                                                    <div style="height: 140px; display: flex; justify-content: center; align-items: center;">
                                                       <canvas id="doughnutChart" style="max-height: 100%; max-width: 100%;"></canvas>
@@ -687,13 +426,13 @@
                      </div>
                   </div>
                </div>
-               <!-- content-wrapper ends --> 
+               <!-- fin de contenido --> 
             </div>
-            <!-- main-panel ends --> 
+            <!-- fin del panel principal --> 
          </div>
-         <!-- page-body-wrapper ends --> 
+         <!-- body-wrapper de la pagina termina --> 
       </div>
-      <!-- container-scroller --> 
+      <!-- scroller de contenido --> 
       <!-- plugins:js --> 
       <script src="../vendors/js/vendor.bundle.base.js"></script> 
       <!-- endinject --> 

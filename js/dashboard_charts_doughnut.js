@@ -24,16 +24,16 @@ function prepareProjectStatusDistribution(projects) {
             statusCounts['vencido']
         ],
         backgroundColor: [
-            '#7bf1a8',     // Completado
-            '#ff9770',   // En Proceso
-            '#e9ff70',   // Pendiente
-            '#ee6055'       // Vencidos
+            '#009b4a',     // Completado
+            '#F2994A',   // En Proceso
+            '#F2C94C',   // Pendiente
+            '#C62828'       // Vencidos
         ],
         borderColor: [
-            '#7bf1a8',     // Completado
-            '#ff9770',   // En Proceso
-            '#e9ff70',   // Pendiente
-            '#ee6055'       // Vencidos
+            '#009b4a',     // Completado
+            '#F2994A',   // En Proceso
+            '#F2C94C',   // Pendiente
+            '#C62828'       // Vencidos
         ]
     };
     return data;
@@ -63,16 +63,16 @@ function prepareDepartmentStatusDistribution(projects) {
             statusCounts['vencido']
         ],
         backgroundColor: [
-            'rgba(34, 139, 89, 0.7)',     // Green - Completado
-            'rgba(130, 140, 150, 0.7)',   // Gray - En Proceso
-            'rgba(200, 205, 210, 0.7)',   // Ice - Pendiente
-            'rgba(50, 50, 50, 0.7)'       // Black - Vencido
+            '#009b4a',     // Completado
+            '#F2994A',   // En Proceso
+            '#F2C94C',   // Pendiente
+            '#C62828'       // Vencidos
         ],
         borderColor: [
-            'rgba(34, 139, 89, 1)',       // Green
-            'rgba(130, 140, 150, 1)',     // Gray
-            'rgba(200, 205, 210, 1)',     // Ice
-            'rgba(50, 50, 50, 1)'         // Black
+            '#009b4a',     // Completado
+            '#F2994A',   // En Proceso
+            '#F2C94C',   // Pendiente
+            '#C62828'       // Vencidos
         ]
     };
 }
