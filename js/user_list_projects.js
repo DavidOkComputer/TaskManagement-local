@@ -147,7 +147,7 @@ function updateUserTasksChart(pendientes, completadas, vencidas) {
         labels: labels,
         datasets: [{
             data: data,
-            backgroundColor: total === 0 ? ['#e0e0e0'] : ['#666666', '#009b4a', '#000000'],
+            backgroundColor: total === 0 ? ['#ff9770'] : ['#e9ff70', '#7bf1a8', '#ee6055'],
             borderWidth: 2,
             borderColor: '#fff'
         }]

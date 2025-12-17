@@ -741,7 +741,6 @@ function createUsuarioRow(usuario) {
 	tr.innerHTML = ` 
         <td> 
             <div class="d-flex align-items-center"> 
-                <img src="../images/faces/face1.jpg" alt="image" class="me-3 rounded-circle" style="width: 40px; height: 40px;"> 
                 <div> 
                     <h6 class="mb-0">${escapeHtml(nombreCompleto)}</h6> 
                     <small class="text-muted">${escapeHtml(usuario.e_mail)}</small> 

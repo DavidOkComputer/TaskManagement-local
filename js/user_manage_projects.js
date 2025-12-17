@@ -477,6 +477,7 @@ function createProjectRow(proyecto, index) {
         : `<div class="action-buttons"> 
                ${viewUsersButton}
                <small class="text-muted d-block mt-1">Solo lectura</small> 
+               ${viewUsersButton}
            </div>`; 
 
     row.innerHTML = ` 
