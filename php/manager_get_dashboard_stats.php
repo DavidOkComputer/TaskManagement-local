@@ -1,7 +1,5 @@
 <?php
-/*get_dashboard_stats_manager.php
-estadísticas del dashboard filtradas por el departamento del gerente
-Incluye todas las métricas del dashboard de administrador*/
+/*get_dashboard_stats_manager.php estadisticas de gerente para contador de dashboardr*/
  
 ob_start();
 error_reporting(E_ALL);
@@ -40,9 +38,6 @@ try {
         'stats' => []
     ];
     
-    // ==========================================
-    // OBJETIVOS DEL DEPARTAMENTO
-    // ==========================================
     $queryObjetivos = "
         SELECT
             COUNT(*) as total,
@@ -73,9 +68,6 @@ try {
         ? round(($objetivosCompletados / $totalObjetivos) * 100, 1)
         : 0;
     
-    // ==========================================
-    // PROYECTOS DEL DEPARTAMENTO
-    // ==========================================
     $queryProyectos = "
         SELECT
             COUNT(*) as total,
@@ -143,9 +135,6 @@ try {
         ? round(($proyectosPendientes / $totalProyectos) * 100, 1)
         : 0;
     
-    // ==========================================
-    // TAREAS DEL DEPARTAMENTO
-    // ==========================================
     $queryTareas = "
         SELECT
             COUNT(*) as total,
@@ -183,9 +172,6 @@ try {
         ? round(($tareasCompletadas / $totalTareas) * 100, 1)
         : 0;
     
-    // ==========================================
-    // EMPLEADOS DEL DEPARTAMENTO (adicional)
-    // ==========================================
     $queryEmpleados = "
         SELECT COUNT(*) as total
         FROM tbl_usuarios
@@ -205,13 +191,9 @@ try {
     
     $conexion->close();
     
-    // ==========================================
-    // CONSTRUIR RESPUESTA
-    // ==========================================
-    // Incluir tanto nombres compatibles con admin como nombres legacy de manager
     $response['success'] = true;
     $response['stats'] = [
-        // Contadores principales (compatibles con admin)
+        // Contadores principales
         'total_objetivos' => $totalObjetivos,
         'total_proyectos' => $totalProyectos,
         'total_tareas' => $totalTareas,
@@ -238,8 +220,8 @@ try {
         'total_empleados' => $totalEmpleados,
         'id_departamento' => $id_departamento,
         
-        // === ALIASES PARA COMPATIBILIDAD CON JS LEGACY ===
-        // Estos campos mantienen compatibilidad con manager_dashboard_stats.js existente
+        
+        //para compatibilidad 
         'objetivos_departamento' => $totalObjetivos,
         'proyectos_departamento' => $totalProyectos,
         'tareas_departamento' => $totalTareas,

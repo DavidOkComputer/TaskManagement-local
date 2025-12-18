@@ -11,7 +11,7 @@ let sortDirection = 'asc';
 let filteredProjects = [];
 //variables de paginacion 
 let currentPage = 1;
-let rowsPerPage = 10;
+let rowsPerPage = 12;
 let totalPages = 0;
 // Variable para el auto-refresh 
 let autoRefreshInterval = null;
@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	setupSorting();
 	setupPagination();
 	cargarProyectos();
-	loadDashboardStats(); // Cargar estadísticas al inicio 
-	startAutoRefresh(); // iniciar refresco cada minuto o 60000ms 
+	loadDashboardStats(); 
+	startAutoRefresh();  
 	loadTopEmployeesProgress();
 	loadTopProjectsProgress();
 });

@@ -20913,7 +20913,7 @@ code {
 
 .badge-opacity-success {
   background: #009b4a;
-  color: #000000;
+  color: #ffffff;
 }
 
 .badge-opacity-info {
@@ -20943,7 +20943,7 @@ code {
 
 .badge-primary {
   color: #000000;
-  border: 1px solid #e9e9e9;
+  border: 1px solid #000000;
 }
 
 .badge-secondary {
@@ -29201,7 +29201,8 @@ div.tagsinput span.tag a {
   -webkit-transition: width 0.25s ease, background 0.25s ease;
   -moz-transition: width 0.25s ease, background 0.25s ease;
   -ms-transition: width 0.25s ease, background 0.25s ease;
-  border-right: 9px solid #009B4A;
+  border-right: 9px solid;
+  border-image: linear-gradient(to top, #e9e9e9, #009b4a) 1;
 }
 
 .sidebar .nav {
@@ -52479,7 +52480,7 @@ code {
 
 .badge-opacity-success {
   background: #009b4a;
-  color: #000000;
+  color: #ffffff;
 }
 
 .badge-opacity-info {
@@ -52509,7 +52510,7 @@ code {
 
 .badge-primary {
   color: #000000;
-  border: 1px solid #e9e9e9;
+  border: 1px solid #000000;
 }
 
 .badge-secondary {
@@ -52546,6 +52547,221 @@ code {
   color: #ffffff;
   border: 1px solid #000000;
 }
+
+/* Contenedor principal del widget */ 
+.employees-widget { 
+    display: flex; 
+    align-items: center; 
+} 
+ 
+/* Contenedor de las banderas de empleados */ 
+#employeesWidgetContainer { 
+    display: flex; 
+    gap: 12px; 
+} 
+ 
+/* Bandera de empleado - estilo base */ 
+.emp-flag { 
+    position: relative; 
+    min-width: 80px; 
+    height: 120px; 
+    background: linear-gradient(135deg, var(--emp-color) 0%, var(--emp-light) 100%); 
+    border-radius: 8px; 
+    overflow: hidden; 
+    cursor: pointer; 
+    transition: all 0.3s ease; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+} 
+ 
+/* Efecto hover */ 
+.emp-flag:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+} 
+
+/* Franja lateral decorativa */ 
+.emp-flag-stripe { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 4px; 
+    height: 100%; 
+    background: rgba(255,255,255,0.3); 
+} 
+
+/* Contenido de la bandera */ 
+.emp-flag-content { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    height: 100%; 
+    padding: 8px; 
+    color: white; 
+    text-align: center; 
+} 
+
+/* Icono del empleado */ 
+.emp-flag-content i { 
+    font-size: 1.2rem; 
+    margin-bottom: 2px; 
+    opacity: 0.9; 
+} 
+
+.emp-flag-initials { 
+    font-size: 0.75rem; 
+    font-weight: 600; 
+    letter-spacing: 0.5px; 
+    margin-bottom: 2px; 
+    text-transform: uppercase; 
+} 
+
+.emp-flag-name { 
+    font-size: 0.65rem; 
+    font-weight: 500; 
+    line-height: 1; 
+    opacity: 0.95; 
+} 
+
+.emp-flag-empty { 
+    opacity: 0.6; 
+    cursor: default; 
+} 
+
+.emp-flag-empty:hover { 
+    transform: none; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+} 
+
+.emp-flag-more { 
+    background: linear-gradient(135deg, #6c757d 0%, #868e96 100%); 
+} 
+
+.emp-flag-more:hover { 
+    background: linear-gradient(135deg, #5a6268 0%, #6c757d 100%); 
+} 
+
+/* Animación de carga */ 
+@keyframes pulse { 
+    0%, 100% { 
+        opacity: 1; 
+    } 
+    50% { 
+        opacity: 0.5; 
+    } 
+} 
+
+.emp-flag .spinner-border { 
+    animation: pulse 1.5s ease-in-out infinite; 
+} 
+
+/* Responsive - ocultar en pantallas pequeñas */ 
+@media (max-width: 1199.98px) { 
+    .employees-widget { 
+        display: none; 
+    } 
+} 
+
+/* Ajustes para pantallas muy grandes */ 
+@media (min-width: 1400px) { 
+    .emp-flag { 
+        min-width: 90px; 
+        height: 120px; 
+    } 
+    
+    .emp-flag-content i { 
+        font-size: 1.3rem; 
+    } 
+  
+    .emp-flag-initials { 
+        font-size: 0.8rem; 
+    } 
+  
+    .emp-flag-name { 
+        font-size: 0.7rem; 
+    } 
+} 
+
+/* Tooltips personalizados*/ 
+.emp-flag[title]:hover::after { 
+    content: attr(title); 
+    position: absolute; 
+    bottom: 110%; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    background: rgba(0,0,0,0.9); 
+    color: white; 
+    padding: 8px 12px; 
+    border-radius: 6px; 
+    font-size: 0.75rem; 
+    white-space: nowrap; 
+    z-index: 1000; 
+    pointer-events: none; 
+} 
+ 
+.emp-flag[title]:hover::before { 
+    content: ''; 
+    position: absolute; 
+    bottom: 100%; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    border: 6px solid transparent; 
+    border-top-color: rgba(0,0,0,0.9); 
+    z-index: 1000; 
+    pointer-events: none; 
+} 
+
+/* Animación de entrada */ 
+@keyframes slideIn { 
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    } 
+} 
+
+.emp-flag { 
+    animation: slideIn 0.3s ease-out; 
+} 
+
+/* Delay progresivo para cada bandera */ 
+.emp-flag:nth-child(1) { animation-delay: 0.05s; } 
+.emp-flag:nth-child(2) { animation-delay: 0.1s; } 
+.emp-flag:nth-child(3) { animation-delay: 0.15s; } 
+.emp-flag:nth-child(4) { animation-delay: 0.2s; } 
+.emp-flag:nth-child(5) { animation-delay: 0.25s; } 
+.emp-flag:nth-child(6) { animation-delay: 0.3s; } 
+.emp-flag:nth-child(7) { animation-delay: 0.35s; } 
+
+/* Estados adicionales */ 
+.emp-flag.loading { 
+    pointer-events: none; 
+    opacity: 0.7; 
+} 
+
+.emp-flag.error { 
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); 
+} 
+
+/* Accesibilidad */ 
+.emp-flag:focus { 
+    outline: 2px solid #007bff; 
+    outline-offset: 2px; 
+} 
+
+.emp-flag:focus:not(:focus-visible) { 
+    outline: none; 
+} 
+
+/* Print styles */ 
+@media print { 
+    .employees-widget { 
+        display: none; 
+    } 
+} 
 
 /* Bootstrap Alerts */
 .alert {

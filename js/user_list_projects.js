@@ -16,7 +16,7 @@ let filteredProjects = [];
 
 // Variables de paginación 
 let currentPage = 1; 
-let rowsPerPage = 10; 
+let rowsPerPage = 5; 
 let totalPages = 0; 
 
 // Variable para el auto-refresh 
@@ -147,7 +147,7 @@ function updateUserTasksChart(pendientes, completadas, vencidas) {
         labels: labels,
         datasets: [{
             data: data,
-            backgroundColor: total === 0 ? ['#ff9770'] : ['#e9ff70', '#7bf1a8', '#ee6055'],
+            backgroundColor: total === 0 ? ['#F2994A'] : ['#F2C94C', '#009b4a', '#C62828'],
             borderWidth: 2,
             borderColor: '#fff'
         }]
@@ -273,7 +273,7 @@ function loadMyProjectsProgress() {
         })
         .then(data => {
             if (data.success) {
-                displayMyProjectsProgress(data.proyectos);
+                displayMyProjectsProgress(data.proyectos.slice(0, 5));
             } else {
                 console.warn('Aviso al cargar progreso:', data.message);
                 displayEmptyProjectsProgressState();
@@ -347,7 +347,7 @@ function loadTopProjects() {
         })
         .then(data => {
             if (data.success && data.proyectos) {
-                displayTopProjects(data.proyectos.slice(0, 10));
+                displayTopProjects(data.proyectos.slice(0, 3));
             } else {
                 console.warn('Aviso al cargar top proyectos:', data.message);
                 displayEmptyTopProjectsState();

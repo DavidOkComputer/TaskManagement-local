@@ -1,4 +1,7 @@
-<?php /*managerDashboard.php para Dashboard principal de admin*/ require_once('../php/check_auth.php'); ?>
+<?php 
+/*managerDashboard.php para Dashboard principal de gerente*/ 
+require_once('../php/check_auth.php'); 
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -18,8 +21,11 @@
     <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
     <!-- endinject -->
     <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
+    <style>
+    </style>
   </head>
-  <body>
+  <body data-user-id="
+											<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '0'; ?>">
     <div class="container-scroller">
       <!-- partial -->
       <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
@@ -47,35 +53,35 @@
             </li>
           </ul>
           <ul class="navbar-nav ms-auto">
-            <!-- widget de departamentos -->
+            <!-- Widget de empleados del departamento -->
             <li class="nav-item d-none d-xl-flex align-items-center me-3">
-              <div class="departments-widget">
-                <div id="departmentsWidgetContainer" style="display: flex; gap: 12px;">
-                  <!-- estado de carga -->
-                  <div class="dept-flag" style="--dept-color: #adb5bd; --dept-light: #ced4da; min-width: 80px;">
-                    <div class="dept-flag-content">
+              <div class="employees-widget">
+                <div id="employeesWidgetContainer" style="display: flex; gap: 12px;">
+                  <!-- Estado de carga -->
+                  <div class="emp-flag" style="--emp-color: #adb5bd; --emp-light: #ced4da; min-width: 80px;">
+                    <div class="emp-flag-content">
                       <div class="spinner-border spinner-border-sm" role="status" style="width: 1.2rem; height: 1.2rem; margin-bottom: 4px;">
                         <span class="visually-hidden">Cargando...</span>
                       </div>
-                      <span class="dept-flag-initials">...</span>
-                      <span class="dept-flag-name">Cargando</span>
+                      <span class="emp-flag-initials">...</span>
+                      <span class="emp-flag-name">Cargando</span>
                     </div>
                   </div>
                 </div>
               </div>
             </li>
-            <!--estadisticas rapidas -->
+            <!-- Estadísticas rápidas -->
             <li class="nav-item d-none d-xl-flex align-items-center me-3">
               <div class="quick-stats-bar">
-                <div class="stat-item stat-pending" id="navPendingTasks" title="Tareas pendientes">
-                  <i class="mdi mdi-clock-alert-outline"></i>
-                  <span class="stat-value">-</span>
-                  <span class="stat-label">Pendientes</span>
-                </div>
                 <div class="stat-item stat-today" id="navTodayTasks" title="Tareas de hoy">
                   <i class="mdi mdi-calendar-today"></i>
                   <span class="stat-value">-</span>
                   <span class="stat-label">Hoy</span>
+                </div>
+                <div class="stat-item stat-pending" id="navPendingTasks" title="Tareas pendientes">
+                  <i class="mdi mdi-clock-alert-outline"></i>
+                  <span class="stat-value">-</span>
+                  <span class="stat-label">Pendientes</span>
                 </div>
                 <div class="stat-item stat-overdue" id="navOverdueTasks" title="Tareas vencidas">
                   <i class="mdi mdi-alert-circle-outline"></i>
@@ -96,9 +102,9 @@
                   <a href="javascript:void(0)" id="markAllNotificationsRead" class="text-primary small">
                     <i class="mdi mdi-check-all me-1"></i>Marcar todas como leídas </a>
                 </div>
-                <!-- Contenedor de notificaciones (se llena dinámicamente) -->
+                <!-- Contenedor de notificaciones -->
                 <div id="notificationsContainer" style="max-height: 350px; overflow-y: auto;">
-                  <!-- Loading state -->
+                  <!-- estado de carga -->
                   <div class="notification-loading py-4 text-center">
                     <div class="spinner-border spinner-border-sm text-primary" role="status">
                       <span class="visually-hidden">Cargando...</span>
@@ -110,12 +116,24 @@
             </li>
             <li class="nav-item dropdown d-none d-lg-block user-dropdown">
               <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="mdi mdi-account" alt="profile icon"></i>
+                <div class="preview-thumbnail">
+                  <img src="../images/faces/face10.jpg" alt="image" class="img-sm profile-pic" style="border-radius: 35px;">
+                </div>
               </a>
               <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                 <div class="dropdown-header text-center">
-                  <p class="mb-1 mt-3 font-weight-semibold"> <?php echo $_SESSION['nombre']; echo ' '; echo $_SESSION['apellido']; ?> </p>
-                  <p class="fw-light text-muted mb-0"> <?php echo $_SESSION['e_mail']; ?> </p>
+                  <p class="mb-1 mt-3 font-weight-semibold"> 
+                    <?php  
+                      echo $_SESSION['nombre'];  
+                      echo ' ';  
+                      echo $_SESSION['apellido'];  
+                    ?> 
+                  </p>
+                  <p class="fw-light text-muted mb-0"> 
+                    <?php 
+                      echo $_SESSION['e_mail']; 
+                      ?> 
+                  </p>
                 </div>
                 <a class="dropdown-item" href="../php/logout.php">
                   <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar sesión </a>
@@ -258,9 +276,10 @@
                   </div>
                   <div class="tab-content tab-content-basic">
                     <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview">
+                      <!-- Barra de estadísticas -->
                       <div class="row mb-0" style="margin-bottom:0 !important;">
                         <div class="col-sm-12">
-                          <div class="statistics-details d-flex align-items-center justify-content-between">
+                          <div class="statistics-details d-flex align-items-center justify-content-between" style="padding: 6px 0 2px 0;">
                             <!-- Índice 0: Total de objetivos -->
                             <div style="padding: 2px 10px;">
                               <p class="statistics-title mb-1" style="font-size: 0.95rem;">Total de objetivos</p>
@@ -290,27 +309,35 @@
                             </div>
                             <!-- Índice 3: Proyectos completados -->
                             <div class="d-none d-md-block" style="padding: 2px 10px;">
-                              <p class="statistics-title" style="font-size: 0.95rem;">Proyectos completados</p>
-                              <h3 class="rate-percentage" style="font-size: 1.2rem;">-</h3>
-                              <p class="text-muted d-flex" style="font-size: 0.7rem;">
+                              <p class="statistics-title mb-1" style="font-size: 0.95rem;">Proyectos completados</p>
+                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;">-</h3>
+                              <p class="text-muted d-flex mb-0" style="font-size: 0.7rem;">
                                 <i class="mdi mdi-minus"></i>
                                 <span></span>
                               </p>
                             </div>
-                            <!-- Índice 4: Proyectos pendientes -->
+                            <!-- Índice 4: Espacio vacío (para mantener simetría con admin) -->
                             <div class="d-none d-md-block" style="padding: 2px 10px;">
-                              <p class="statistics-title" style="font-size: 0.95rem;">Proyectos pendientes</p>
-                              <h3 class="rate-percentage" style="font-size: 1.2rem;">-</h3>
-                              <p class="text-muted d-flex" style="font-size: 0.7rem;">
+                              <p class="statistics-title mb-1" style="font-size: 0.95rem;"></p>
+                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;"></h3>
+                              <p class="text-muted d-flex mb-0" style="font-size: 0.7rem;">
+                                <span></span>
+                              </p>
+                            </div>
+                            <!-- Índice 5: Proyectos pendientes -->
+                            <div class="d-none d-md-block" style="padding: 2px 10px;">
+                              <p class="statistics-title mb-1" style="font-size: 0.95rem;">Proyectos pendientes</p>
+                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;">-</h3>
+                              <p class="text-muted d-flex mb-0" style="font-size: 0.7rem;">
                                 <i class="mdi mdi-minus"></i>
                                 <span></span>
                               </p>
                             </div>
-                            <!-- Índice 5: Proyectos vencidos -->
+                            <!-- Índice 6: Proyectos vencidos -->
                             <div class="d-none d-md-block" style="padding: 2px 10px;">
-                              <p class="statistics-title" style="font-size: 0.95rem;">Proyectos vencidos</p>
-                              <h3 class="rate-percentage" style="font-size: 1.2rem;">-</h3>
-                              <p class="text-muted d-flex" style="font-size: 0.7rem;">
+                              <p class="statistics-title mb-1" style="font-size: 0.95rem;">Proyectos vencidos</p>
+                              <h3 class="rate-percentage mb-1" style="font-size: 1.2rem;">-</h3>
+                              <p class="text-muted d-flex mb-0" style="font-size: 0.7rem;">
                                 <i class="mdi mdi-minus"></i>
                                 <span></span>
                               </p>
@@ -318,29 +345,40 @@
                           </div>
                         </div>
                       </div>
-                      <div class="row">
-                        <!--Progreso por responsable-->
-                        <div class="col-sm-4 grid-margin stretch-card">
-                          <div class="card" style="border: 1px solid #000000;">
-                            <div class="card-body">
-                              <h4 class="card-title"> Empleados por Progreso </h4>
-                              <div class="table-responsive pt-3">
-                                <table class="table table-bordered table-hover">
-                                  <thead>
+                      <!-- Tablas principales compactas -->
+                      <div class="row" style="height: calc(100vh - 260px);">
+                        <!-- Columna izquierda - Tabla de proyectos -->
+                        <div class="col-lg-8" style="height: 100%; padding-right: 8px;">
+                          <div class="card h-100" style="margin-bottom: 0; border: 1px solid #000000;">
+                            <div class="card-body d-flex flex-column" style="padding: 10px;">
+                              <h4 class="card-title mb-2" style="font-size: 1rem;">Detalles de los proyectos</h4>
+                              <div class="table-responsive flex-grow-1" style="overflow-y: auto; max-height: calc(100% - 40px);">
+                                <table class="table select-table table-sm">
+                                  <thead style="position: sticky; top: 0; background: white; z-index: 10;">
                                     <tr>
-                                      <th style="width: 10%;"> # </th>
-                                      <th style="width: 40%;"> Nombre </th>
-                                      <th style="width: 50%;"> Progreso </th>
+                                      <th class="sortable-header" data-sort="id_proyecto" style="cursor: pointer; user-select: none; font-size: 0.85rem; padding: 8px;"> # <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none; font-size: 0.85rem; padding: 8px;"> Título <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="descripcion" style="cursor: pointer; user-select: none; font-size: 0.85rem; padding: 8px;"> Descripción <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor: pointer; user-select: none; font-size: 0.85rem; padding: 8px;"> Fecha <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="progreso" style="cursor: pointer; user-select: none; font-size: 0.85rem; padding: 8px;"> Progreso <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="estado" style="cursor: pointer; user-select: none; font-size: 0.85rem; padding: 8px;"> Estado <i class="mdi mdi-sort-variant"></i>
+                                      </th>
+                                      <th class="sortable-header" data-sort="participante" style="cursor: pointer; user-select: none; font-size: 0.85rem; padding: 8px;"> Responsable <i class="mdi mdi-sort-variant"></i>
+                                      </th>
                                     </tr>
                                   </thead>
-                                  <tbody id="topEmployeesTableBody">
-                                    <!-- Contenido cargado dinámicamente -->
+                                  <tbody id="proyectosTableBody" style="font-size: 0.85rem;">
                                     <tr>
-                                      <td colspan="3" class="text-center py-4">
-                                        <div class="spinner-border text-primary" role="status">
+                                      <td colspan="8" class="text-center">
+                                        <div class="spinner-border text-primary spinner-border-sm" role="status">
                                           <span class="visually-hidden">Cargando...</span>
                                         </div>
-                                        <p class="mt-2">Cargando empleados...</p>
+                                        <p class="mt-2 mb-0">Cargando proyectos...</p>
                                       </td>
                                     </tr>
                                   </tbody>
@@ -349,86 +387,57 @@
                             </div>
                           </div>
                         </div>
-                        <!--Progreso por proyecto/tareas-->
-                        <div class="col-sm-4 grid-margin stretch-card">
-                          <div class="card" style="border: 1px solid #000000;">
-                            <div class="card-body">
-                              <h4 class="card-title">Progreso por proyecto</h4>
-                              <div class="table-responsive pt-3">
-                                <table class="table table-bordered table-hover">
-                                  <thead>
-                                    <tr>
-                                      <th style="width: 10%;"> # </th>
-                                      <th style="width: 50%;"> Proyecto </th>
-                                      <th style="width: 40%;"> Progreso </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody id="topProjectsTableBody">
-                                    <!-- Contenido cargado dinámicamente -->
-                                    <tr>
-                                      <td colspan="3" class="text-center py-4">
-                                        <div class="spinner-border text-primary" role="status">
-                                          <span class="visually-hidden">Cargando...</span>
-                                        </div>
-                                        <p class="mt-2">Cargando proyectos...</p>
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <!--Fin de progreso por proyecto/tarea-->
-                        <div class="col-sm-4 grid-margin stretch-card">
-                          <div class="card" style="border: 1px solid #000000;">
-                            <div class="card-body">
-                              <h4 class="card-title">Proyectos por estado</h4>
-                              <div class="chart-container" style="width: 100%; display: flex; flex-direction: column;">
-                                <div class="chart-wrapper" style="flex: 1; display: flex; justify-content: center; align-items: center;">
-                                  <canvas id="doughnutChart" height="200" style="max-width: 100%;"></canvas>
+                        <!-- Columna derecha - Top Empleados, Proyectos y Chart -->
+                        <div class="col-lg-4" style="height: 100%; padding-left: 8px;">
+                          <div class="d-flex flex-column h-100">
+                            <!-- Top Empleados -->
+                            <div class="card mb-2" style="height: 33%; min-height: 0; border: 1px solid #000000;">
+                              <div class="card-body d-flex flex-column" style="padding: 12px;">
+                                <h4 class="card-title mb-2" style="font-size: 0.95rem;">Top Empleados</h4>
+                                <div class="flex-grow-1" style="overflow-y: auto;">
+                                  <table class="table table-sm table-borderless" style="font-size: 0.8rem;">
+                                    <tbody id="topEmployeesTableBody">
+                                      <tr>
+                                        <td colspan="3" class="text-center py-2">
+                                          <div class="spinner-border text-primary spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
                                 </div>
-                                <div id="doughnut-chart-legend" class="mt-5 text-center" style="width: 100%; overflow-x: auto;"></div>
                               </div>
                             </div>
-                          </div>
-                        </div>
-                        <div class="col-lg-12 grid-margin-stretch-card">
-                          <div class="card" style="border: 1px solid #000000">
-                            <div class="card-body">
-                              <h4 class="card-title">Detalles de los proyectos</h4>
-                              <div class="table-responsive mt-3">
-                                <table class="table select-table">
-                                  <thead>
-                                    <tr>
-                                      <th class="sortable-header" data-sort="id_proyecto" style="cursor: pointer; user-select: none;"> # <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none;"> Título <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="descripcion" style="cursor: pointer; user-select: none;"> Descripción <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="fecha_cumplimiento" style="cursor: pointer; user-select: none;"> Fecha de entrega <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="progreso" style="cursor: pointer; user-select: none;"> Progreso <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="estado" style="cursor: pointer; user-select: none;"> Estado <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                      <th class="sortable-header" data-sort="participante" style="cursor: pointer; user-select: none;"> Responsable <i class="mdi mdi-sort-variant"></i>
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody id="proyectosTableBody">
-                                    <!--proyectos cargados automaticamente-->
-                                    <tr>
-                                      <td colspan="9" class="text-center">
-                                        <div class="spinner-border text-primary" role="status">
-                                          <span class="visually-hidden">Cargando...</span>
-                                        </div>
-                                        <p class="mt-2">Cargando proyectos...</p>
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
+                            <!-- Top Proyectos -->
+                            <div class="card mb-2" style="height: 33%; min-height: 0; border: 1px solid #000000;">
+                              <div class="card-body d-flex flex-column" style="padding: 12px;">
+                                <h4 class="card-title mb-2" style="font-size: 0.95rem;">Top Proyectos</h4>
+                                <div class="flex-grow-1" style="overflow-y: auto;">
+                                  <table class="table table-sm table-borderless" style="font-size: 0.8rem;">
+                                    <tbody id="topProjectsTableBody">
+                                      <tr>
+                                        <td colspan="3" class="text-center py-2">
+                                          <div class="spinner-border text-primary spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                          </div>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Gráfico de proyectos por estado -->
+                            <div class="card" style="height: 34%; min-height: 0; margin-bottom: 0; border: 1px solid #000000;">
+                              <div class="card-body d-flex flex-column" style="padding: 12px;">
+                                <h4 class="card-title mb-2" style="font-size: 0.95rem;">P.P.E.</h4>
+                                <div class="flex-grow-1 d-flex flex-column justify-content-center" style="min-height: 0;">
+                                  <div style="height: 140px; display: flex; justify-content: center; align-items: center;">
+                                    <canvas id="doughnutChart" style="max-height: 100%; max-width: 100%;"></canvas>
+                                  </div>
+                                  <div id="doughnut-chart-legend" class="mt-2 text-center" style="font-size: 0.75rem;"></div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -447,6 +456,25 @@
       <!-- page-body-wrapper ends -->
     </div>
     <!-- container-scroller -->
+    <!-- Modal para ver usuarios del proyecto -->
+    <div class="modal fade" id="projectUsersModal" tabindex="-1" aria-labelledby="projectUsersModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="projectUsersModalLabel">
+              <i class="mdi mdi-account-multiple me-2"></i>Usuarios del Proyecto
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="projectUsersContent">
+            <!-- Contenido cargado dinámicamente -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- plugins:js -->
     <script src="../vendors/js/vendor.bundle.base.js"></script>
     <!-- endinject -->
@@ -468,6 +496,7 @@
     <script src="../js/custom_dialogs.js"></script>
     <script src="../js/notifications.js"></script>
     <script src="../js/datetime_widget.js"></script>
+    <script src="../js/widget_empleados.js"></script>
     <!-- End custom js for this page-->
   </body>
 </html>

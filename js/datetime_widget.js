@@ -3,17 +3,11 @@
 (function() {
     
     const departmentColors = [
-        { bg: '#005f73', light: '#005f73' },
-        { bg: '#468faf', light: '#468faf' },
-        { bg: '#C62828', light: '#C62828' },
-        { bg: '#2e2e2e', light: '#2e2e2e' },
-        { bg: '#00663a', light: '#00663a' },
-        { bg: '#007f6e', light: '#007f6e' },
-        { bg: '#a33a2b', light: '#a33a2b' },
-        { bg: '#ffb703', light: '#ffb703' }
+        {bg: '#31ab6a',
+			light: '#31ab6a' }
     ];
 
-    // Load departments from API
+    // CARGAR DEPARTAMENTOS DESDE LA API
     function loadDepartments() {
         const container = document.getElementById('departmentsWidgetContainer');
         if (!container) return;

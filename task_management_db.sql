@@ -749,6 +749,10 @@ ALTER TABLE `tbl_proyecto_usuarios`
   ADD CONSTRAINT `tbl_proyecto_usuarios_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `tbl_usuarios` (`id_usuario`) ON DELETE CASCADE;
 COMMIT;
 
+ALTER TABLE `tbl_usuarios` ADD COLUMN `foto_perfil` 
+VARCHAR(255) DEFAULT NULL COMMENT 'Ruta relativa de la foto de perfil del usuario' 
+AFTER e_mail; 
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

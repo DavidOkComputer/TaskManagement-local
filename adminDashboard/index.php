@@ -1,9 +1,7 @@
 <?php 
    /*adminDashboard.php para el Dashboard principal de admin*/ 
-   
    require_once('../php/check_auth.php'); 
-   
-   ?> 
+?> 
 <!DOCTYPE html> 
 <html lang="en">
    <head> 
@@ -22,9 +20,6 @@
       <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
       <!-- endinject --> 
       <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
-      <style> 
-         
-      </style>
    </head>
    <body>
       <div class="container-scroller">
@@ -78,21 +73,25 @@
                   <!-- barra de estadisticas rapidas-->
                   <li class="nav-item d-none d-xl-flex align-items-center me-3">
                      <div class="quick-stats-bar">
-                        <div class="stat-item stat-pending" id="navPendingTasks" title="Tareas pendientes">
-                              <i class="mdi mdi-clock-alert-outline"></i>
-                              <span class="stat-value">-</span>
-                              <span class="stat-label">Pendientes</span>
-                        </div>
+                        
                         <div class="stat-item stat-today" id="navTodayTasks" title="Tareas de hoy">
                               <i class="mdi mdi-calendar-today"></i>
                               <span class="stat-value">-</span>
                               <span class="stat-label">Hoy</span>
                         </div>
+                        
+                        <div class="stat-item stat-pending" id="navPendingTasks" title="Tareas pendientes">
+                              <i class="mdi mdi-clock-alert-outline"></i>
+                              <span class="stat-value">-</span>
+                              <span class="stat-label">Pendientes</span>
+                        </div>
+                        
                         <div class="stat-item stat-overdue" id="navOverdueTasks" title="Tareas vencidas">
                               <i class="mdi mdi-alert-circle-outline"></i>
                               <span class="stat-value">-</span>
                               <span class="stat-label">Vencidas</span>
                         </div>
+                     
                      </div>
                   </li>
                   <li class="nav-item dropdown">

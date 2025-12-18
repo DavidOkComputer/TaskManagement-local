@@ -20,7 +20,7 @@ let filteredProjects = [];
 
 // Variables de paginación 
 let currentPage = 1; 
-let rowsPerPage = 10; 
+let rowsPerPage = 12; 
 let totalPages = 0; 
 
 // Variable para el auto-refresh de proyectos 
