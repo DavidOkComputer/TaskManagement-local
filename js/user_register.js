@@ -1,5 +1,4 @@
-// registro-usuario.js para registrar usuarios
-
+// user_register.js para registrar usuarios CON SOPORTE DE FOTO DE PERFIL
 (function() {
     'use strict';
 
@@ -7,7 +6,15 @@
     const app = {
         usuarios: [],
         departamentos: [],
-        roles: []
+        roles: [],
+        selectedImage: null
+    };
+
+    // Configuración de imagen
+    const IMAGE_CONFIG = {
+        MAX_SIZE: 5 * 1024 * 1024, // 5MB
+        ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        ALLOWED_EXTENSIONS: ['jpg', 'jpeg', 'png', 'gif', 'webp']
     };
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -17,33 +24,30 @@
     function initializeApp() {
         loadDepartamentos();
         loadRoles();
-        // No cargar usuarios/superiores hasta que se seleccione departamento
         clearSuperioresSelect();
-        setupEventHandlers();        
+        setupEventHandlers();
+        setupProfilePictureHandlers();
     }
 
     function setupEventHandlers() {
-        // Manejador del formulario
         const form = document.getElementById('formCrearUsuario');
         if (form) {
             form.addEventListener('submit', handleFormSubmit);
         }
 
-        // Manejador del botón de reset
-        const resetButton = form.querySelector('button[type="reset"]');
+        const resetButton = form ? form.querySelector('button[type="reset"]') : null;
         if (resetButton) {
             resetButton.addEventListener('click', function() {
                 hideAlert();
-                // Recargar los dropdowns después de un breve delay
+                clearImagePreview();
                 setTimeout(function() {
                     loadDepartamentos();
                     loadRoles();
-                    clearSuperioresSelect(); // Limpiar superiores al resetear
+                    clearSuperioresSelect();
                 }, 100);
             });
         }
 
-        // Manejador del cambio de departamento - NUEVO
         const departamentoSelect = document.getElementById('id_departamento');
         if (departamentoSelect) {
             departamentoSelect.addEventListener('change', handleDepartamentoChange);
@@ -57,24 +61,156 @@
         setupRealtimeValidation();
     }
 
-    // Nueva función para manejar cambio de departamento
+    // ========== FUNCIONES DE FOTO DE PERFIL ==========
+    
+    function setupProfilePictureHandlers() {
+        const fileInput = document.getElementById('foto_perfil');
+        const dropZone = document.getElementById('profilePictureDropZone');
+        const removeBtn = document.getElementById('removeProfilePicture');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', handleFileSelect);
+        }
+
+        if (dropZone) {
+            // Eventos de drag and drop
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+            dropZone.addEventListener('drop', handleDrop);
+            dropZone.addEventListener('click', () => fileInput?.click());
+        }
+
+        if (removeBtn) {
+            removeBtn.addEventListener('click', clearImagePreview);
+        }
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.remove('drag-over');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            processImageFile(files[0]);
+        }
+    }
+
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+            processImageFile(file);
+        }
+    }
+
+    function processImageFile(file) {
+        // Validar tipo
+        if (!IMAGE_CONFIG.ALLOWED_TYPES.includes(file.type)) {
+            showAlert('error', 'Tipo de archivo no permitido. Use JPG, PNG, GIF o WebP');
+            return;
+        }
+
+        // Validar tamaño
+        if (file.size > IMAGE_CONFIG.MAX_SIZE) {
+            showAlert('error', 'El archivo es demasiado grande. Máximo 5MB');
+            return;
+        }
+
+        // Validar extensión
+        const extension = file.name.split('.').pop().toLowerCase();
+        if (!IMAGE_CONFIG.ALLOWED_EXTENSIONS.includes(extension)) {
+            showAlert('error', 'Extensión de archivo no permitida');
+            return;
+        }
+
+        app.selectedImage = file;
+        showImagePreview(file);
+    }
+
+    function showImagePreview(file) {
+        const reader = new FileReader();
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const previewImage = document.getElementById('imagePreview');
+        const dropZone = document.getElementById('profilePictureDropZone');
+        const removeBtn = document.getElementById('removeProfilePicture');
+        const fileName = document.getElementById('selectedFileName');
+
+        reader.onload = function(e) {
+            if (previewImage) {
+                previewImage.src = e.target.result;
+            }
+            if (previewContainer) {
+                previewContainer.style.display = 'block';
+            }
+            if (dropZone) {
+                dropZone.classList.add('has-image');
+            }
+            if (removeBtn) {
+                removeBtn.style.display = 'inline-block';
+            }
+            if (fileName) {
+                fileName.textContent = file.name;
+            }
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    function clearImagePreview() {
+        const fileInput = document.getElementById('foto_perfil');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        const previewImage = document.getElementById('imagePreview');
+        const dropZone = document.getElementById('profilePictureDropZone');
+        const removeBtn = document.getElementById('removeProfilePicture');
+        const fileName = document.getElementById('selectedFileName');
+
+        app.selectedImage = null;
+
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        if (previewImage) {
+            previewImage.src = '';
+        }
+        if (previewContainer) {
+            previewContainer.style.display = 'none';
+        }
+        if (dropZone) {
+            dropZone.classList.remove('has-image');
+        }
+        if (removeBtn) {
+            removeBtn.style.display = 'none';
+        }
+        if (fileName) {
+            fileName.textContent = '';
+        }
+    }
+
+    // ========== FUNCIONES EXISTENTES (sin cambios) ==========
+
     function handleDepartamentoChange(e) {
         const departamentoId = parseInt(e.target.value);
-        
-        // Resetear el select de superior
         clearSuperioresSelect();
-        
         if (departamentoId > 0) {
-            // Cargar superiores filtrados por departamento y rol 2
             loadUsuariosByDepartamento(departamentoId);
         }
     }
 
-    // Nueva función para limpiar el select de superiores
     function clearSuperioresSelect() {
         const select = document.getElementById('id_superior');
         if (!select) return;
-        
         select.innerHTML = '<option value="0">Sin superior asignado</option>';
         select.value = "0";
     }
@@ -84,7 +220,6 @@
         if (usuarioInput) {
             usuarioInput.addEventListener('input', function(e) {
                 const value = e.target.value;
-                // Solo permitir letras, números, punto, guión y guión bajo
                 const sanitized = value.replace(/[^a-zA-Z0-9._-]/g, '');
                 if (value !== sanitized) {
                     e.target.value = sanitized;
@@ -95,7 +230,6 @@
         const numEmpleadoInput = document.getElementById('num_empleado');
         if (numEmpleadoInput) {
             numEmpleadoInput.addEventListener('input', function(e) {
-                // Asegurar que solo sean números positivos
                 if (e.target.value < 0) {
                     e.target.value = 0;
                 }
@@ -140,17 +274,12 @@
     }
 
     function loadUsuariosByDepartamento(departamentoId) {
-        // Filtrar solo usuarios con id_rol = 2 (managers) Y del departamento seleccionado
         fetch(`../php/get_users.php?id_rol=2&id_departamento=${departamentoId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.usuarios) {
                     app.usuarios = data.usuarios;
                     populateSuperioresSelect(data.usuarios);
-                    
-                    // Mostrar mensaje si no hay superiores disponibles
-                    if (data.usuarios.length === 0) {
-                    }
                 } else {
                     console.error('Error al cargar usuarios:', data.message);
                     clearSuperioresSelect();
@@ -162,31 +291,10 @@
             });
     }
 
-    function loadUsuarios() {
-        // Filtrar solo usuarios con id_rol = 2 para superiores
-        fetch('../php/get_users.php?id_rol=2')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.usuarios) {
-                    app.usuarios = data.usuarios;
-                    populateSuperioresSelect(data.usuarios);
-                } else {
-                    console.error('Error al cargar usuarios:', data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error en fetch de usuarios:', error);
-            });
-    }
-
     function populateDepartamentosSelect(departamentos) {
         const select = document.getElementById('id_departamento');
         if (!select) return;
-
-        // Limpiar opciones existentes excepto la primera
         select.innerHTML = '<option value="0">Seleccione un departamento</option>';
-
-        // Agregar opciones
         departamentos.forEach(dept => {
             const option = document.createElement('option');
             option.value = dept.id_departamento;
@@ -198,11 +306,7 @@
     function populateRolesSelect(roles) {
         const select = document.getElementById('id_rol');
         if (!select) return;
-
-        // Limpiar opciones existentes excepto la primera
         select.innerHTML = '<option value="0">Seleccione un rol</option>';
-
-        // Agregar opciones
         roles.forEach(rol => {
             const option = document.createElement('option');
             option.value = rol.id_rol;
@@ -214,27 +318,19 @@
     function populateSuperioresSelect(usuarios) {
         const select = document.getElementById('id_superior');
         if (!select) return;
-
-        // Limpiar opciones existentes excepto la primera
         select.innerHTML = '<option value="0">Sin superior asignado</option>';
-
-        // Agregar opciones
         usuarios.forEach(usuario => {
             const option = document.createElement('option');
             option.value = usuario.id_usuario;
             option.textContent = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
             select.appendChild(option);
         });
-
-        // Si hay usuarios disponibles, mostrar mensaje en consola
-        if (usuarios.length > 0) {
-        }
     }
 
     function handlePasswordToggle() {
         const passwordInput = document.getElementById('acceso');
         const toggleIcon = document.getElementById('togglePassword');
-        
+
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
             toggleIcon.classList.remove('mdi-eye-off');
@@ -248,23 +344,25 @@
 
     function handleFormSubmit(e) {
         e.preventDefault();
-        
+
         const form = e.target;
         const submitButton = document.getElementById('btnSubmit');
-        
-        // Validar formulario antes de enviar
+
         if (!validateForm(form)) {
             return;
         }
 
-        // Deshabilitar el botón de envío
         submitButton.disabled = true;
         submitButton.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Creando...';
 
-        // Recopilar datos del formulario
+        // Usar FormData para enviar archivos
         const formData = new FormData(form);
 
-        // Enviar datos al servidor
+        // Agregar la imagen si existe
+        if (app.selectedImage) {
+            formData.set('foto_perfil', app.selectedImage);
+        }
+
         fetch('../php/create_user.php', {
             method: 'POST',
             body: formData
@@ -272,9 +370,14 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showAlert('success', data.message);
+                let message = data.message;
+                if (data.foto_warning) {
+                    message += ' (Nota: ' + data.foto_warning + ')';
+                }
+                showAlert('success', message);
                 form.reset();
-                clearSuperioresSelect(); // Limpiar superiores después de crear usuario
+                clearSuperioresSelect();
+                clearImagePreview();
                 scrollToAlert();
                 setTimeout(() => {
                     window.location.href = '../gestionDeEmpleados/';
@@ -290,7 +393,6 @@
             scrollToAlert();
         })
         .finally(() => {
-            // Rehabilitar el botón de envío
             submitButton.disabled = false;
             submitButton.innerHTML = '<i class="mdi mdi-account-plus"></i> Crear Usuario';
         });
@@ -306,56 +408,47 @@
         const id_rol = parseInt(form.id_rol.value);
         const e_mail = form.e_mail.value.trim();
 
-        // Validar nombre
         if (nombre.length < 2 || nombre.length > 100) {
             showAlert('error', 'El nombre debe tener entre 2 y 100 caracteres');
             return false;
         }
 
-        // Validar apellido
         if (apellido.length < 2 || apellido.length > 100) {
             showAlert('error', 'El apellido debe tener entre 2 y 100 caracteres');
             return false;
         }
 
-        // Validar usuario
         if (usuario.length < 4 || usuario.length > 100) {
             showAlert('error', 'El usuario debe tener entre 4 y 100 caracteres');
             return false;
         }
 
-        // Validar formato de usuario
         const usuarioRegex = /^[a-zA-Z0-9._-]+$/;
         if (!usuarioRegex.test(usuario)) {
             showAlert('error', 'El usuario solo puede contener letras, números, punto, guión y guión bajo');
             return false;
         }
 
-        // Validar contraseña
         if (acceso.length < 6) {
             showAlert('error', 'La contraseña debe tener al menos 6 caracteres');
             return false;
         }
 
-        // Validar número de empleado
         if (num_empleado <= 0 || isNaN(num_empleado)) {
             showAlert('error', 'Debe ingresar un número de empleado válido');
             return false;
         }
 
-        // Validar departamento
         if (id_departamento <= 0 || isNaN(id_departamento)) {
             showAlert('error', 'Debe seleccionar un departamento');
             return false;
         }
 
-        // Validar rol
         if (id_rol <= 0 || isNaN(id_rol)) {
             showAlert('error', 'Debe seleccionar un rol');
             return false;
         }
 
-        // Validar email si se proporciona
         if (e_mail && e_mail.length > 0) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(e_mail)) {
@@ -373,7 +466,7 @@
 
         const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
         const iconClass = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle';
-        
+
         alertDiv.className = `alert ${alertClass}`;
         alertDiv.innerHTML = `
             <i class="mdi ${iconClass} me-2"></i>
@@ -381,7 +474,6 @@
         `;
         alertDiv.style.display = 'block';
 
-        // Auto-ocultar después de 5 segundos si es éxito
         if (type === 'success') {
             setTimeout(() => {
                 hideAlert();

@@ -30814,6 +30814,172 @@ div.tagsinput span.tag a {
   }
 }
 
+/* Estilos para el área de carga de foto de perfil */
+.profile-picture-dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #fafafa;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-picture-dropzone:hover {
+    border-color: #007bff;
+    background-color: #f0f7ff;
+}
+
+.profile-picture-dropzone.drag-over {
+    border-color: #28a745;
+    background-color: #e8f5e9;
+    transform: scale(1.02);
+}
+
+.profile-picture-dropzone.has-image {
+    border-style: solid;
+    border-color: #28a745;
+}
+
+.profile-picture-dropzone .dropzone-content {
+    pointer-events: none;
+}
+
+.profile-picture-dropzone .img-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Ocultar contenido inicial cuando hay imagen */
+.profile-picture-dropzone.has-image .dropzone-content {
+    display: none;
+}
+
+/* Estilos para thumbnail en tabla */
+.profile-thumbnail {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+    transition: transform 0.2s ease;
+}
+
+.profile-thumbnail:hover {
+    transform: scale(1.1);
+    border-color: #007bff;
+}
+
+/* Estilos para foto en modal de edición */
+.edit-photo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.edit-photo-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e9ecef;
+    margin-bottom: 10px;
+}
+
+.edit-photo-dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #fafafa;
+}
+
+.edit-photo-dropzone:hover {
+    border-color: #007bff;
+    background-color: #f0f7ff;
+}
+
+.edit-photo-dropzone.drag-over {
+    border-color: #28a745;
+    background-color: #e8f5e9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-picture-dropzone {
+        padding: 20px;
+        min-height: 150px;
+    }
+    
+    .profile-picture-dropzone .img-preview {
+        max-width: 150px;
+        max-height: 150px;
+    }
+  }
+
+.edit-photo-section {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.edit-photo-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.edit-photo-dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+.edit-photo-dropzone:hover {
+    border-color: #007bff;
+    background-color: #f0f7ff;
+}
+
+.edit-photo-dropzone.drag-over {
+    border-color: #28a745;
+    background-color: #e8f5e9;
+    transform: scale(1.02);
+}
+
+/* Animación de transición suave */
+#editCurrentPhotoContainer,
+#editNewPhotoContainer {
+    transition: opacity 0.3s ease;
+}
+
+/* Responsive para modal */
+@media (max-width: 576px) {
+    .edit-photo-preview {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .edit-photo-section {
+        padding: 15px;
+    }
+}
+
 /* Layouts */
 @media (min-width: 992px) {
   .sidebar-mini .navbar .navbar-brand-wrapper {

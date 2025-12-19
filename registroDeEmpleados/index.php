@@ -373,6 +373,42 @@ $user_id = $_SESSION['user_id'];
                                                 </div> 
                                             </div> 
                                         </div> 
+                                         <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="form-label">Foto de Perfil</label>
+                                                <small class="text-muted d-block mb-2">Opcional - Formatos: JPG, PNG, GIF, WebP (máx. 5MB)</small>
+                                                
+                                                <!-- Drop Zone -->
+                                                <div id="profilePictureDropZone" class="profile-picture-dropzone">
+                                                    <input type="file" 
+                                                        id="foto_perfil" 
+                                                        name="foto_perfil" 
+                                                        accept="image/jpeg,image/png,image/gif,image/webp"
+                                                        style="display: none;">
+                                                    
+                                                    <!-- Estado inicial (sin imagen) -->
+                                                    <div class="dropzone-content">
+                                                        <i class="mdi mdi-cloud-upload" style="font-size: 48px; color: #ccc;"></i>
+                                                        <p class="mb-1">Arrastra una imagen aquí o haz clic para seleccionar</p>
+                                                        <small class="text-muted">JPG, PNG, GIF o WebP - Máximo 5MB</small>
+                                                    </div>
+                                                    
+                                                    <!-- Vista previa de imagen -->
+                                                    <div id="imagePreviewContainer" style="display: none;">
+                                                        <img id="imagePreview" src="" alt="Vista previa" class="img-preview">
+                                                        <p id="selectedFileName" class="mt-2 mb-0 small text-muted"></p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Botón para eliminar imagen -->
+                                                <button type="button" 
+                                                        id="removeProfilePicture" 
+                                                        class="btn btn-sm btn-outline-danger mt-2"
+                                                        style="display: none;">
+                                                    <i class="mdi mdi-delete"></i> Eliminar imagen
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div> 
 
                                     <!-- Submit Buttons --> 

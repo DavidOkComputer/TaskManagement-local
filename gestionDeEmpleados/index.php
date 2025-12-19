@@ -295,48 +295,148 @@ $user_id = $_SESSION['user_id'];
 </div>
 <!-- container-scroller -->
 
-<!-- Edit User Modal - UPDATED VERSION -->
+<!-- Edit User Modal -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editUserModalLabel">Editar Usuario</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="editUserForm">
-          <input type="hidden" id="editUserId">
-          <div class="mb-3">
-            <label for="editNombre" class="form-label">Nombre</label>
-            <input type="text" class="form-control" id="editNombre" required>
-          </div>
-          <div class="mb-3">
-            <label for="editApellido" class="form-label">Apellido</label>
-            <input type="text" class="form-control" id="editApellido" required>
-          </div>
-          <div class="mb-3">
-            <label for="editUsuario" class="form-label">Usuario</label>
-            <input type="text" class="form-control" id="editUsuario" required>
-          </div>
-          <div class="mb-3">
-            <label for="editEmail" class="form-label">Email</label>
-            <input type="email" class="form-control" id="editEmail" required>
-          </div>
-          <div class="mb-3">
-            <label for="editDepartamento" class="form-label">Departamento</label>
-            <select class="form-control" id="editDepartamento" required>
-              <option value="">-- Seleccionar departamento --</option>
-            </select>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="saveUserChanges">Guardar Cambios</button>
-      </div>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="editUserModalLabel">
+                    <i class="mdi mdi-account-edit me-2"></i>Editar Usuario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm" enctype="multipart/form-data">
+                    <input type="hidden" id="editUserId">
+                    <input type="hidden" id="editCurrentFotoName">
+                    
+                    <!-- Sección de Foto de Perfil -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="edit-photo-section">
+                                <label class="form-label fw-bold">
+                                    <i class="mdi mdi-camera me-1"></i>Foto de Perfil
+                                </label>
+                                
+                                <!-- Contenedor de foto actual -->
+                                <div id="editCurrentPhotoContainer" class="text-center mb-3">
+                                    <img id="editCurrentPhoto" 
+                                         src="../images/default-avatar.png" 
+                                         alt="Foto actual" 
+                                         class="edit-photo-preview">
+                                    <p class="text-muted small mb-2">Foto actual</p>
+                                </div>
+                                
+                                <!-- Contenedor de nueva foto (preview) -->
+                                <div id="editNewPhotoContainer" class="text-center mb-3" style="display: none;">
+                                    <img id="editImagePreview" 
+                                         src="" 
+                                         alt="Nueva foto" 
+                                         class="edit-photo-preview"
+                                         style="border-color: #28a745;">
+                                    <p class="text-success small mb-2">
+                                        <i class="mdi mdi-check-circle"></i> Nueva foto seleccionada
+                                    </p>
+                                </div>
+                                
+                                <!-- Drop Zone para nueva foto -->
+                                <div id="editProfilePictureDropZone" class="edit-photo-dropzone">
+                                    <input type="file" 
+                                           id="editFotoPerfil" 
+                                           name="foto_perfil" 
+                                           accept="image/jpeg,image/png,image/gif,image/webp"
+                                           style="display: none;">
+                                    <i class="mdi mdi-cloud-upload" style="font-size: 32px; color: #ccc;"></i>
+                                    <p class="mb-0 small">Arrastra una imagen o haz clic para cambiar la foto</p>
+                                    <small class="text-muted">JPG, PNG, GIF o WebP - Máximo 5MB</small>
+                                </div>
+                                
+                                <!-- Botones de acción para foto -->
+                                <div class="mt-2 d-flex gap-2 justify-content-center">
+                                    <button type="button" 
+                                            id="editChangeProfilePicture" 
+                                            class="btn btn-sm btn-outline-primary">
+                                        <i class="mdi mdi-camera"></i> Cambiar foto
+                                    </button>
+                                    <button type="button" 
+                                            id="editRemoveProfilePicture" 
+                                            class="btn btn-sm btn-outline-danger"
+                                            style="display: none;">
+                                        <i class="mdi mdi-delete"></i> Eliminar foto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="mb-4">
+                    
+                    <!-- Datos del Usuario -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editNombre" class="form-label">
+                                    <i class="mdi mdi-account me-1"></i>Nombre <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="editNombre" required maxlength="100">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editApellido" class="form-label">
+                                    <i class="mdi mdi-account me-1"></i>Apellido <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="editApellido" required maxlength="100">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editUsuario" class="form-label">
+                                    <i class="mdi mdi-account-circle me-1"></i>Usuario <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="editUsuario" required maxlength="100">
+                                <small class="form-text text-muted">Solo letras, números, punto, guión y guión bajo</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editEmail" class="form-label">
+                                    <i class="mdi mdi-email me-1"></i>Email <span class="text-danger">*</span>
+                                </label>
+                                <input type="email" class="form-control" id="editEmail" required maxlength="200">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editDepartamento" class="form-label">
+                                    <i class="mdi mdi-domain me-1"></i>Departamento <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-control" id="editDepartamento" required>
+                                    <option value="">-- Seleccionar departamento --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="mdi mdi-close me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-success" id="saveUserChanges">
+                    <i class="mdi mdi-content-save me-1"></i>Guardar Cambios
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
+
 
 <div class="modal fade" id="viewProjectsModal" tabindex="-1" aria-labelledby="viewProjectsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">

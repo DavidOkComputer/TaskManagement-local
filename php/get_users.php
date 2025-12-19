@@ -1,5 +1,6 @@
 <?php
 /*get_users.php saber la lista de usuarios para asignacion de tareas*/
+/* ACTUALIZADO: Soporte para fotos de perfil */
 
 header('Content-Type: application/json');
 require_once('db_config.php');
@@ -19,6 +20,13 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
+    // Verificar si la columna foto_perfil existe (para compatibilidad)
+    $checkColumn = $conn->query("SHOW COLUMNS FROM tbl_usuarios LIKE 'foto_perfil'");
+    $hasFotoColumn = $checkColumn && $checkColumn->num_rows > 0;
+    
+    // Campo adicional para foto de perfil (solo si existe la columna)
+    $fotoField = $hasFotoColumn ? ", u.foto_perfil" : "";
+
     // Obtener filtros
     $filter_rol = isset($_GET['id_rol']) ? intval($_GET['id_rol']) : null;
     $filter_departamento = isset($_GET['id_departamento']) ? intval($_GET['id_departamento']) : null;
@@ -37,6 +45,7 @@ try {
                          u.id_superior, 
                          u.e_mail,
                          d.nombre as area
+                         {$fotoField}
                   FROM tbl_usuarios u
                   LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
                   WHERE u.id_rol = ? AND u.id_departamento = ?
@@ -62,6 +71,7 @@ try {
                          u.id_superior, 
                          u.e_mail,
                          d.nombre as area
+                         {$fotoField}
                   FROM tbl_usuarios u
                   LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
                   WHERE u.id_rol = ? 
@@ -87,6 +97,7 @@ try {
                          u.id_superior, 
                          u.e_mail,
                          d.nombre as area
+                         {$fotoField}
                   FROM tbl_usuarios u
                   LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
                   WHERE u.id_departamento = ?
@@ -112,6 +123,7 @@ try {
                          u.id_superior, 
                          u.e_mail,
                          d.nombre as area
+                         {$fotoField}
                   FROM tbl_usuarios u
                   LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
                   ORDER BY u.apellido ASC, u.nombre ASC";
@@ -125,7 +137,7 @@ try {
     $usuarios = [];
     
     while ($row = $result->fetch_assoc()) {
-        $usuarios[] = [
+        $usuario = [
             'id_usuario' => (int)$row['id_usuario'],
             'nombre' => $row['nombre'],
             'apellido' => $row['apellido'],
@@ -140,6 +152,26 @@ try {
             'e_mail' => $row['e_mail'] ?? '',
             'area' => $row['area'] ?? ''
         ];
+        
+        // Agregar campos de foto de perfil
+        if ($hasFotoColumn && isset($row['foto_perfil'])) {
+            $fotoPerfil = $row['foto_perfil'];
+            $usuario['foto_perfil'] = $fotoPerfil;
+            
+            if (!empty($fotoPerfil)) {
+                $usuario['foto_url'] = 'uploads/profile_pictures/' . $fotoPerfil;
+                $usuario['foto_thumbnail'] = 'uploads/profile_pictures/thumbnails/thumb_' . $fotoPerfil;
+            } else {
+                $usuario['foto_url'] = null;
+                $usuario['foto_thumbnail'] = null;
+            }
+        } else {
+            $usuario['foto_perfil'] = null;
+            $usuario['foto_url'] = null;
+            $usuario['foto_thumbnail'] = null;
+        }
+        
+        $usuarios[] = $usuario;
     }
     
     echo json_encode([

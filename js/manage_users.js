@@ -1,38 +1,58 @@
+// manage_users.js - FIXED VERSION con manejo correcto de fotos de perfil
 const Config = { 
     API_ENDPOINTS: {  
         DELETE: '../php/delete_users.php',
         GET_DEPARTMENTS: '../php/get_departments.php',
-        GET_USERS: '../php/get_users.php'
-    } 
+        GET_USERS: '../php/get_users.php',
+        UPDATE_USER: '../php/update_users.php'
+    },
+    // Ruta correcta para el avatar por defecto (relativa a gestionDeEmpleados/)
+    DEFAULT_AVATAR: '../images/default-avatar.png',
+    // Base path para uploads (relativa a gestionDeEmpleados/)
+    UPLOADS_BASE: '../uploads/profile_pictures/'
 }; 
 
 const AUTO_REFRESH_CONFIG = {
-    USERS_INTERVAL: 60000,      // minuto - refrescar lista de usuarios y progreso
-    MODAL_INTERVAL: 60000,      // 1minuto - refrescar el modal de proyectos cuando este abierto
-    DEBUG: true
+    USERS_INTERVAL: 120000,     // 2 minutos - reducido para evitar llamadas excesivas
+    MODAL_INTERVAL: 120000,     // 2 minutos
+    DEBUG: false                // Desactivar debug en producción
 };
 
-let allUsuarios = []; //guardar todos los usuarios para filtrar posteriormente
+const IMAGE_CONFIG = {
+    MAX_SIZE: 5 * 1024 * 1024,
+    ALLOWED_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+    ALLOWED_EXTENSIONS: ['jpg', 'jpeg', 'png', 'gif', 'webp']
+};
+
+let allUsuarios = [];
 let filteredUsuarios = [];
-let allDepartamentos = []; //guardar todos los departamentos
-let allUsersData=[];//guardat todos los usuarios con su informacion de proyecto
-let usersProgressCache=[];
+let allDepartamentos = [];
+let usersProgressCache = {};
 let currentSortColumn = null;
 let sortDirection = 'asc';
 let currentPage = 1;
 let rowsPerPage = 10;
 let totalPages = 0;
-let projectUsersData = [];
-//variables de refresco automatico
 let autoRefreshInterval = null;
 let modalRefreshInterval = null;
 let currentUserIdForProject = null;
 
+// Variables para foto de perfil en edición
+let editSelectedImage = null;
+let editRemovePhoto = false;
+
+// Cache para evitar llamadas repetidas
+let lastUsersLoad = 0;
+const MIN_LOAD_INTERVAL = 5000; // Mínimo 5 segundos entre cargas
+
 document.addEventListener('DOMContentLoaded', function() {
-    // inicializar
     loadDepartamentos();
     loadUsuarios();
-    startAutoRefresh();
+    
+    // Iniciar auto-refresh después de un delay
+    setTimeout(() => {
+        startAutoRefresh();
+    }, 5000);
 
     const searchInput = document.getElementById('searchUser');
     if (searchInput) {
@@ -44,11 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
         selectAllCheckbox.addEventListener('change', toggleSelectAll);
     }
     
-    const editUserForm = document.getElementById('editUserForm');
-    if (editUserForm) {
-        editUserForm.addEventListener('submit', handleSaveUserChanges);
-    }
-    
     const saveUserChanges = document.getElementById('saveUserChanges');
     if (saveUserChanges) {
         saveUserChanges.addEventListener('click', handleSaveUserChanges);
@@ -57,214 +72,346 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSorting();
     setupPagination();
     setupModalEventListeners();
+    setupEditProfilePictureHandlers();
 });
 
 createCustomDialogSystem();
 
-// listeners para modal de eventos de abrir o cerrar
+// ========== FUNCIONES DE FOTO DE PERFIL ==========
+
+/**
+ * Obtiene la URL correcta para la foto de perfil
+ * @param {object} usuario - Objeto usuario con datos de foto
+ * @param {boolean} thumbnail - Si usar thumbnail o imagen completa
+ * @returns {string} URL de la imagen
+ */
+function getProfilePictureUrl(usuario, thumbnail = true) {
+    // Si no hay foto, retornar default
+    if (!usuario || !usuario.foto_perfil) {
+        return Config.DEFAULT_AVATAR;
+    }
+    
+    // Construir path correcto
+    if (thumbnail && usuario.foto_thumbnail) {
+        return '../' + usuario.foto_thumbnail;
+    } else if (usuario.foto_url) {
+        return '../' + usuario.foto_url;
+    } else if (usuario.foto_perfil) {
+        // Fallback: construir URL manualmente
+        if (thumbnail) {
+            return Config.UPLOADS_BASE + 'thumbnails/thumb_' + usuario.foto_perfil;
+        }
+        return Config.UPLOADS_BASE + usuario.foto_perfil;
+    }
+    
+    return Config.DEFAULT_AVATAR;
+}
+
+/**
+ * Maneja errores de carga de imagen - solo una vez
+ */
+function handleImageError(imgElement) {
+    // Evitar loop infinito verificando si ya se intentó el fallback
+    if (imgElement.dataset.fallbackApplied === 'true') {
+        return;
+    }
+    imgElement.dataset.fallbackApplied = 'true';
+    imgElement.src = Config.DEFAULT_AVATAR;
+}
+
+function setupEditProfilePictureHandlers() {
+    const fileInput = document.getElementById('editFotoPerfil');
+    const dropZone = document.getElementById('editProfilePictureDropZone');
+    const removeBtn = document.getElementById('editRemoveProfilePicture');
+    const changeBtn = document.getElementById('editChangeProfilePicture');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', handleEditFileSelect);
+    }
+
+    if (dropZone) {
+        dropZone.addEventListener('dragover', handleEditDragOver);
+        dropZone.addEventListener('dragleave', handleEditDragLeave);
+        dropZone.addEventListener('drop', handleEditDrop);
+        dropZone.addEventListener('click', () => fileInput?.click());
+    }
+
+    if (removeBtn) {
+        removeBtn.addEventListener('click', handleRemoveEditPhoto);
+    }
+
+    if (changeBtn) {
+        changeBtn.addEventListener('click', () => fileInput?.click());
+    }
+
+    const editModal = document.getElementById('editUserModal');
+    if (editModal) {
+        editModal.addEventListener('hidden.bs.modal', resetEditImageState);
+    }
+}
+
+function handleEditDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.add('drag-over');
+}
+
+function handleEditDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.remove('drag-over');
+}
+
+function handleEditDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.classList.remove('drag-over');
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        processEditImageFile(files[0]);
+    }
+}
+
+function handleEditFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) {
+        processEditImageFile(file);
+    }
+}
+
+function processEditImageFile(file) {
+    if (!IMAGE_CONFIG.ALLOWED_TYPES.includes(file.type)) {
+        showError('Tipo de archivo no permitido. Use JPG, PNG, GIF o WebP');
+        return;
+    }
+
+    if (file.size > IMAGE_CONFIG.MAX_SIZE) {
+        showError('El archivo es demasiado grande. Máximo 5MB');
+        return;
+    }
+
+    const extension = file.name.split('.').pop().toLowerCase();
+    if (!IMAGE_CONFIG.ALLOWED_EXTENSIONS.includes(extension)) {
+        showError('Extensión de archivo no permitida');
+        return;
+    }
+
+    editSelectedImage = file;
+    editRemovePhoto = false;
+    showEditImagePreview(file);
+}
+
+function showEditImagePreview(file) {
+    const reader = new FileReader();
+    const previewImage = document.getElementById('editImagePreview');
+    const currentPhotoContainer = document.getElementById('editCurrentPhotoContainer');
+    const newPhotoContainer = document.getElementById('editNewPhotoContainer');
+    const removeBtn = document.getElementById('editRemoveProfilePicture');
+
+    reader.onload = function(e) {
+        if (previewImage) {
+            previewImage.src = e.target.result;
+        }
+        if (currentPhotoContainer) {
+            currentPhotoContainer.style.display = 'none';
+        }
+        if (newPhotoContainer) {
+            newPhotoContainer.style.display = 'block';
+        }
+        if (removeBtn) {
+            removeBtn.style.display = 'inline-block';
+        }
+    };
+
+    reader.readAsDataURL(file);
+}
+
+function handleRemoveEditPhoto() {
+    editSelectedImage = null;
+    editRemovePhoto = true;
+    
+    const fileInput = document.getElementById('editFotoPerfil');
+    const previewImage = document.getElementById('editImagePreview');
+    const currentPhotoContainer = document.getElementById('editCurrentPhotoContainer');
+    const newPhotoContainer = document.getElementById('editNewPhotoContainer');
+    const currentPhoto = document.getElementById('editCurrentPhoto');
+    const removeBtn = document.getElementById('editRemoveProfilePicture');
+
+    if (fileInput) fileInput.value = '';
+    if (previewImage) previewImage.src = '';
+    if (newPhotoContainer) newPhotoContainer.style.display = 'none';
+    if (currentPhotoContainer) currentPhotoContainer.style.display = 'block';
+    if (currentPhoto) currentPhoto.src = Config.DEFAULT_AVATAR;
+    if (removeBtn) removeBtn.style.display = 'none';
+}
+
+function resetEditImageState() {
+    editSelectedImage = null;
+    editRemovePhoto = false;
+    
+    const fileInput = document.getElementById('editFotoPerfil');
+    if (fileInput) fileInput.value = '';
+}
+
+function setEditCurrentPhoto(photoUrl, hasPhoto) {
+    const currentPhoto = document.getElementById('editCurrentPhoto');
+    const currentPhotoContainer = document.getElementById('editCurrentPhotoContainer');
+    const newPhotoContainer = document.getElementById('editNewPhotoContainer');
+    const removeBtn = document.getElementById('editRemoveProfilePicture');
+
+    editSelectedImage = null;
+    editRemovePhoto = false;
+
+    if (currentPhoto) {
+        currentPhoto.src = photoUrl || Config.DEFAULT_AVATAR;
+        currentPhoto.onerror = function() { 
+            this.src = Config.DEFAULT_AVATAR; 
+            this.onerror = null; // Prevenir loop
+        };
+    }
+    if (currentPhotoContainer) {
+        currentPhotoContainer.style.display = 'block';
+    }
+    if (newPhotoContainer) {
+        newPhotoContainer.style.display = 'none';
+    }
+    if (removeBtn) {
+        removeBtn.style.display = hasPhoto ? 'inline-block' : 'none';
+    }
+}
+
+// ========== FUNCIONES DE MODAL Y REFRESH ==========
+
 function setupModalEventListeners() {
     const modal = document.getElementById('viewProjectsModal');
     if (!modal) return;
     
-    modal.addEventListener('show.bs.modal', function() {
-        if (AUTO_REFRESH_CONFIG.DEBUG) {
-        }
-    });
-    
     modal.addEventListener('hide.bs.modal', function() {
-        if (AUTO_REFRESH_CONFIG.DEBUG) {
-        }
         currentUserIdForProject = null;
     });
 }
 
-function startAutoRefresh(){
-    if(autoRefreshInterval){
+function startAutoRefresh() {
+    if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval);
     }
     
-    //auto refrescar info de usuarios y progreso
     autoRefreshInterval = setInterval(() => {
-        if(AUTO_REFRESH_CONFIG.DEBUG) {
+        // Solo refrescar si la pestaña está visible
+        if (!document.hidden) {
+            refreshUserData();
         }
-        refreshUserData();
     }, AUTO_REFRESH_CONFIG.USERS_INTERVAL);
-    
-    //separar intervalo para modal de proyectos cuando se abra
-    startModalAutoRefresh();
-    
-    if(AUTO_REFRESH_CONFIG.DEBUG) {
-    }
 }
 
-function startModalAutoRefresh(){
-    if(modalRefreshInterval){
-        clearInterval(modalRefreshInterval);
-    }
-    
-    //revisar cada tanto tiempo si el modal esta abierto y refrescar si es necesario
-    modalRefreshInterval = setInterval(() => {
-        const modal = document.getElementById('viewProjectsModal');
-        if(modal && modal.classList.contains('show')) {
-            if(currentUserIdForProject) {
-                if(AUTO_REFRESH_CONFIG.DEBUG) {
-                }
-                refreshUserProjectData();
-            }
-        }
-    }, AUTO_REFRESH_CONFIG.MODAL_INTERVAL);
-}
-
-function stopAutoRefresh(){
-    if(autoRefreshInterval){
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval);
         autoRefreshInterval = null;
     }
-    if(modalRefreshInterval){
+    if (modalRefreshInterval) {
         clearInterval(modalRefreshInterval);
         modalRefreshInterval = null;
     }
 }
 
-function refreshUserData(){
-    fetch('../php/get_users.php')
-    .then(response =>{
-        if(!response.ok){
+function refreshUserData() {
+    // Evitar llamadas muy frecuentes
+    const now = Date.now();
+    if (now - lastUsersLoad < MIN_LOAD_INTERVAL) {
+        return;
+    }
+    
+    fetch(Config.API_ENDPOINTS.GET_USERS)
+    .then(response => {
+        if (!response.ok) {
             throw new Error('La respuesta de red no fue ok');
         }
         return response.json();
     })
-    .then(data =>{
-        if(data.success && data.usuarios){
-            //guardar el estado actual de la busqueda
-            const searchInput = document.getElementById('searchUser');
-            const currentSearchQuery = searchInput ? searchInput.value:'';
+    .then(data => {
+        if (data.success && data.usuarios) {
+            lastUsersLoad = Date.now();
             
-            Promise.all(
-                data.usuarios.map(async usuario => {
-                    const progress = await calculateUserProgress(usuario.id_usuario);
-                    usersProgressCache[usuario.id_usuario] = progress;
-                    return { ...usuario, ...progress };
-                })
-            ).then(usersWithProgress => {
-                allUsuarios = usersWithProgress;
-                
-                if(currentSearchQuery.trim()!==''){//reaplicar los filtros de busqueda si existen
-                    performSearch(currentSearchQuery);
-                } else{
-                    filteredUsuarios = [...allUsuarios];
+            const searchInput = document.getElementById('searchUser');
+            const currentSearchQuery = searchInput ? searchInput.value : '';
+            
+            // Usar cache de progreso si está disponible para evitar llamadas extra
+            const usersWithProgress = data.usuarios.map(usuario => {
+                const cachedProgress = usersProgressCache[usuario.id_usuario];
+                if (cachedProgress) {
+                    return { ...usuario, ...cachedProgress };
                 }
-                
-                if(currentSortColumn){//reaplicar ordenamiento si existe
-                    filteredUsuarios = sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection);
-                }
-                
-                const newTotalPages = calculatePages(filteredUsuarios);//actualizar la vista manteniendo la pagina actual si es posible
-                if(currentPage > newTotalPages && newTotalPages > 0){
-                    currentPage = newTotalPages;
-                }
-                
-                displayUsuarios(filteredUsuarios);
+                return { 
+                    ...usuario, 
+                    avgProgress: 0, 
+                    totalProjects: 0, 
+                    totalTasks: 0, 
+                    completedTasks: 0 
+                };
             });
+            
+            allUsuarios = usersWithProgress;
+            
+            if (currentSearchQuery.trim() !== '') {
+                filterUsuarios();
+            } else {
+                filteredUsuarios = [...allUsuarios];
+            }
+            
+            if (currentSortColumn) {
+                filteredUsuarios = sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection);
+            }
+            
+            const newTotalPages = calculatePages(filteredUsuarios);
+            if (currentPage > newTotalPages && newTotalPages > 0) {
+                currentPage = newTotalPages;
+            }
+            
+            displayUsuarios(filteredUsuarios);
+            
+            // Actualizar progreso en segundo plano (sin bloquear UI)
+            updateProgressInBackground(data.usuarios);
         }
     })
-    .catch(error =>{
+    .catch(error => {
         console.error('Error al refrescar usuarios:', error);
-        //no mostrar alerta para no interrumpir al usuario
     });
 }
 
-async function refreshUserProjectData(){
-    if(!currentUserIdForProject) return;
-    
-    try {
-        const projects = await fetchUserProjects(currentUserIdForProject);
-        
-        if(projects.length === 0) {
-            if(AUTO_REFRESH_CONFIG.DEBUG) {
-                
-            }
-            return;
+// Actualizar progreso en segundo plano sin bloquear
+async function updateProgressInBackground(usuarios) {
+    for (const usuario of usuarios) {
+        // No actualizar si ya tenemos datos recientes
+        if (usersProgressCache[usuario.id_usuario]?.lastUpdate > Date.now() - 60000) {
+            continue;
         }
         
-        updateProjectsModal(projects);//actualizar contenido del modal con nueva informacion del proyecto
+        try {
+            const progress = await calculateUserProgress(usuario.id_usuario);
+            usersProgressCache[usuario.id_usuario] = {
+                ...progress,
+                lastUpdate: Date.now()
+            };
+            
+            // Actualizar en el array
+            const index = allUsuarios.findIndex(u => u.id_usuario === usuario.id_usuario);
+            if (index !== -1) {
+                allUsuarios[index] = { ...allUsuarios[index], ...progress };
+            }
+        } catch (e) {
+            // Ignorar errores individuales
+        }
         
-    } catch(error) {
-        console.error('Error al refrescar proyectos en modal:', error);
+        // Pequeña pausa para no sobrecargar
+        await new Promise(r => setTimeout(r, 100));
     }
 }
 
-function updateProjectsModal(projects) {//actualizar modal de proyectos con la nueva info
-    if(projects.length === 0) {
-        document.getElementById('projectsContainer').style.display = 'none';
-        document.getElementById('noProjects').style.display = 'block';
-        return;
-    }
-    
-    let totalTasks = 0;//calcular nuevas estadisticas
-    let completedTasks = 0;
-    let totalProgress = 0;
-    
-    projects.forEach(project => {
-        totalTasks += project.tareas_totales;
-        completedTasks += project.tareas_completadas;
-        totalProgress += project.progreso;
-    });
-    
-    const avgProgress = projects.length > 0 ? totalProgress / projects.length : 0;
-    
-    document.getElementById('totalProjects').textContent = projects.length;//actuializar estadisticas
-    document.getElementById('totalTasks').textContent = totalTasks;
-    document.getElementById('avgProgress').textContent = avgProgress.toFixed(1) + '%';
-    
-    const projectsList = document.getElementById('projectsList');//actualizar lista de proyectos 
-    const newHTML = projects.map(project => `
-        <div class="card mb-3 project-card-update">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <h6 class="mb-1 fw-bold">${escapeHtml(project.nombre)}</h6>
-                        <p class="text-muted mb-2 small">${escapeHtml(project.descripcion || 'Sin descripción')}</p>
-                    </div>
-                    <span class="badge ${getStatusBadgeClass(project.estado)}">${project.estado}</span>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-6">
-                        <small class="text-muted">
-                            <i class="mdi mdi-view-grid"></i> Área: ${escapeHtml(project.area || 'N/A')}
-                        </small>
-                    </div>
-                    <div class="col-6">
-                        <small class="text-muted">
-                            <i class="mdi mdi-calendar"></i> ${formatDate(project.fecha_cumplimiento)}
-                        </small>
-                    </div>
-                </div>
-                <div class="mb-2">
-                    <div class="d-flex justify-content-between mb-1">
-                        <small class="text-muted">Progreso: ${project.progreso_porcentaje}%</small>
-                        <small class="text-muted">${project.tareas_completadas}/${project.tareas_totales} tareas</small>
-                    </div>
-                    <div class="progress" style="height: 10px;">
-                        <div class="progress-bar ${getProgressBarClass(project.progreso)}"
-                             role="progressbar"
-                             style="width: ${project.progreso}%; transition: width 0.5s ease;"
-                             aria-valuenow="${project.progreso}"
-                             aria-valuemin="0"
-                             aria-valuemax="100">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
-    
-    projectsList.innerHTML = newHTML;
-}
+// ========== FUNCIONES DE CARGA DE DATOS ==========
 
-// Cargar departamentos para el dropdown
 function loadDepartamentos() {
-    
     fetch(Config.API_ENDPOINTS.GET_DEPARTMENTS, {
         method: 'GET',
         headers: {
@@ -288,35 +435,28 @@ function loadDepartamentos() {
     })
     .catch(error => {
         console.error('Error de conexión en loadDepartamentos:', error);
-        showError('Error de conexión: ' + error.message, error);
     });
 }
 
-// Poblar el dropdown de departamentos
 function populateDepartamentosDropdown() {
     const dropdown = document.getElementById('editDepartamento');
-    if (!dropdown) {
-        console.warn('Dropdown de departamentos no encontrado');
-        return;
-    }
+    if (!dropdown) return;
     
-    // Limpiar opciones excepto la primera
     dropdown.innerHTML = '<option value="">-- Seleccionar departamento --</option>';
     
-    // Agregar departamentos
     allDepartamentos.forEach(dept => {
         const option = document.createElement('option');
         option.value = dept.id_departamento;
         option.textContent = dept.nombre;
-        option.dataset.nombre = dept.nombre;
         dropdown.appendChild(option);
     });
 }
 
 async function loadUsuarios() { 
     const tableBody = document.getElementById('usuariosTableBody'); 
+    
     try { 
-        const response = await fetch('../php/get_users.php', { 
+        const response = await fetch(Config.API_ENDPOINTS.GET_USERS, { 
             method: 'GET', 
             headers: { 
                 'Content-Type': 'application/json' 
@@ -326,23 +466,28 @@ async function loadUsuarios() {
         if (!response.ok) { 
             throw new Error(`HTTP error! status: ${response.status}`); 
         } 
+        
         const data = await response.json(); 
+        
         if (data.success && data.usuarios) { 
-            allUsuarios = data.usuarios; 
-            // Calcular progreso para TODOS los usuarios 
-            const usersWithProgress = await Promise.all( 
-                allUsuarios.map(async usuario => { 
-                    const progress = await calculateUserProgress(usuario.id_usuario); 
-                    // Guardar en cache 
-                    usersProgressCache[usuario.id_usuario] = progress; 
-                    return { ...usuario, ...progress }; 
-                }) 
-            ); 
-            allUsuarios = usersWithProgress; 
+            lastUsersLoad = Date.now();
+            allUsuarios = data.usuarios;
+            
+            // Inicializar con progreso 0, luego cargar en segundo plano
+            allUsuarios = allUsuarios.map(usuario => ({
+                ...usuario,
+                avgProgress: 0,
+                totalProjects: 0,
+                totalTasks: 0,
+                completedTasks: 0
+            }));
+            
             filteredUsuarios = [...allUsuarios];  
             currentPage = 1; 
-            console.table(data.usuarios); 
-            displayUsuarios(allUsuarios);  
+            displayUsuarios(allUsuarios);
+            
+            // Cargar progreso en segundo plano
+            loadProgressAsync();
         } else { 
             const errorMsg = data.message || 'Error desconocido'; 
             showError('Error al cargar usuarios: ' + errorMsg); 
@@ -350,10 +495,71 @@ async function loadUsuarios() {
         } 
     } catch (error) { 
         console.error('Error de conexión en loadUsuarios:', error); 
-        showError('Error de conexión: ' + error.message, error); 
         tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error de conexión</td></tr>'; 
     } 
-} 
+}
+
+async function loadProgressAsync() {
+    for (const usuario of allUsuarios) {
+        try {
+            const progress = await calculateUserProgress(usuario.id_usuario);
+            usersProgressCache[usuario.id_usuario] = {
+                ...progress,
+                lastUpdate: Date.now()
+            };
+            
+            // Actualizar usuario en el array
+            const index = allUsuarios.findIndex(u => u.id_usuario === usuario.id_usuario);
+            if (index !== -1) {
+                allUsuarios[index] = { ...allUsuarios[index], ...progress };
+                
+                // Actualizar también en filteredUsuarios
+                const filteredIndex = filteredUsuarios.findIndex(u => u.id_usuario === usuario.id_usuario);
+                if (filteredIndex !== -1) {
+                    filteredUsuarios[filteredIndex] = { ...filteredUsuarios[filteredIndex], ...progress };
+                }
+            }
+            
+            // Actualizar la fila específica en la tabla sin recargar todo
+            updateUserRowProgress(usuario.id_usuario, progress);
+            
+        } catch (e) {
+            console.error('Error loading progress for user', usuario.id_usuario, e);
+        }
+        
+        // Pequeña pausa
+        await new Promise(r => setTimeout(r, 50));
+    }
+}
+
+function updateUserRowProgress(userId, progress) {
+    // Buscar la fila del usuario y actualizar solo el progreso
+    const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+    if (row) {
+        const progressCell = row.querySelector('.progress-cell');
+        if (progressCell) {
+            progressCell.innerHTML = `
+                <div class="d-flex flex-column">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>${progress.avgProgress ? progress.avgProgress.toFixed(1) : '0.0'}%</small>
+                        <small>${progress.totalProjects || 0} proyecto${progress.totalProjects !== 1 ? 's' : ''}</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar ${getProgressBarClass(progress.avgProgress || 0)}"
+                             role="progressbar"
+                             style="width: ${progress.avgProgress || 0}%;"
+                             aria-valuenow="${progress.avgProgress || 0}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+// ========== FUNCIONES DE ORDENAMIENTO Y PAGINACIÓN ==========
 
 function setupSorting() {
     const headers = document.querySelectorAll('th.sortable-header');
@@ -411,14 +617,9 @@ function sortUsuarios(usuarios, column, direction) {
             valueA = getRolText(a.id_rol); 
             valueB = getRolText(b.id_rol); 
         } else if (column === 'progreso') { 
-            valueA = a.avgProgress || 0; //ordenar por progreso
+            valueA = a.avgProgress || 0;
             valueB = b.avgProgress || 0; 
-            // Para números, comparar directamente 
-            if (direction === 'asc') { 
-                return valueA - valueB; 
-            } else { 
-                return valueB - valueA; 
-            } 
+            return direction === 'asc' ? valueA - valueB : valueB - valueA;
         } else { 
             valueA = a[column]; 
             valueB = b[column]; 
@@ -449,7 +650,7 @@ function setupPagination() {
     if (rowsPerPageSelect) {
         rowsPerPageSelect.addEventListener('change', function() {
             rowsPerPage = parseInt(this.value);
-            currentPage = 1; //reiniciar a la primer pagina cuando cargan las filas por pagina
+            currentPage = 1;
             displayUsuarios(filteredUsuarios);
         });
     }
@@ -476,41 +677,43 @@ function updatePaginationControls() {
     const paginationContainer = document.querySelector('.pagination-container');
     if (!paginationContainer) return;
 
-    paginationContainer.innerHTML = '';// limpiar paginacion existente
+    paginationContainer.innerHTML = '';
 
-    const infoText = document.createElement('div');// crear texto de info de paginacion
+    const infoText = document.createElement('div');
     infoText.className = 'pagination-info';
-    const startItem = ((currentPage - 1) * rowsPerPage) + 1;
+    const startItem = filteredUsuarios.length > 0 ? ((currentPage - 1) * rowsPerPage) + 1 : 0;
     const endItem = Math.min(currentPage * rowsPerPage, filteredUsuarios.length);
     infoText.innerHTML = `
         <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredUsuarios.length}</strong> empleados</p>
     `;
     paginationContainer.appendChild(infoText);
 
-    const buttonContainer = document.createElement('div'); //crear contenedor de boton
+    if (totalPages <= 1) return;
+
+    const buttonContainer = document.createElement('div');
     buttonContainer.className = 'pagination-buttons';
 
-    const prevBtn = document.createElement('button'); //boton d eanterior
+    const prevBtn = document.createElement('button');
     prevBtn.className = 'btn btn-sm btn-outline-primary';
     prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
     prevBtn.disabled = currentPage === 1;
     prevBtn.addEventListener('click', () => changePage(currentPage - 1));
     buttonContainer.appendChild(prevBtn);
 
-    const pageButtonsContainer = document.createElement('div');//contenedor de botones de pagina
+    const pageButtonsContainer = document.createElement('div');
     pageButtonsContainer.className = 'page-buttons';
 
-    let startPage = Math.max(1, currentPage - 2);//calcular que pagina mostrar
+    let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, currentPage + 2);
 
-    if (currentPage <= 3) {//ajustar dependiendo de si esta al principio o al fin
+    if (currentPage <= 3) {
         endPage = Math.min(totalPages, 5);
     }
     if (currentPage > totalPages - 3) {
         startPage = Math.max(1, totalPages - 4);
     }
 
-    if (startPage > 1) {//boton de primer pagina
+    if (startPage > 1) {
         const firstBtn = document.createElement('button');
         firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
         firstBtn.textContent = '1';
@@ -525,7 +728,7 @@ function updatePaginationControls() {
         }
     }
 
-    for (let i = startPage; i <= endPage; i++) {//botones de numero d epaginas
+    for (let i = startPage; i <= endPage; i++) {
         const pageBtn = document.createElement('button');
         pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
         pageBtn.textContent = i;
@@ -533,7 +736,7 @@ function updatePaginationControls() {
         pageButtonsContainer.appendChild(pageBtn);
     }
 
-    if (endPage < totalPages) {//boton de ultima pagina
+    if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
             const ellipsis = document.createElement('span');
             ellipsis.className = 'pagination-ellipsis';
@@ -550,7 +753,7 @@ function updatePaginationControls() {
 
     buttonContainer.appendChild(pageButtonsContainer);
 
-    const nextBtn = document.createElement('button');//proximo boton
+    const nextBtn = document.createElement('button');
     nextBtn.className = 'btn btn-sm btn-outline-primary';
     nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
     nextBtn.disabled = currentPage === totalPages;
@@ -560,14 +763,16 @@ function updatePaginationControls() {
     paginationContainer.appendChild(buttonContainer);
 }
 
+// ========== FUNCIONES DE PROYECTOS ==========
+
 async function fetchUserProjects(userId) { 
     try { 
         const response = await fetch(`../php/get_user_projects.php?id_usuario=${userId}`); 
         const data = await response.json(); 
         if (data.success) { 
-            return data.proyectos; 
+            return data.proyectos || []; 
         } else { 
-            throw new Error(data.message || 'Error al cargar proyectos'); 
+            return [];
         } 
     } catch (error) { 
         console.error('Error fetching user projects:', error); 
@@ -577,7 +782,7 @@ async function fetchUserProjects(userId) {
 
 async function calculateUserProgress(userId) { 
     const projects = await fetchUserProjects(userId); 
-    if (projects.length === 0) { 
+    if (!projects || projects.length === 0) { 
         return { 
             avgProgress: 0, 
             totalProjects: 0, 
@@ -589,9 +794,9 @@ async function calculateUserProgress(userId) {
     let totalTasks = 0; 
     let completedTasks = 0; 
     projects.forEach(project => { 
-        totalProgress += project.progreso; 
-        totalTasks += project.tareas_totales; 
-        completedTasks += project.tareas_completadas; 
+        totalProgress += project.progreso || 0; 
+        totalTasks += project.tareas_totales || 0; 
+        completedTasks += project.tareas_completadas || 0; 
     }); 
     return { 
         avgProgress: projects.length > 0 ? totalProgress / projects.length : 0, 
@@ -603,48 +808,49 @@ async function calculateUserProgress(userId) {
 
 async function showUserProjects(userId, userName, userEmail) { 
     const modal = new bootstrap.Modal(document.getElementById('viewProjectsModal')); 
-    document.getElementById('employeeName').textContent = userName; //informacion de empleado
+    document.getElementById('employeeName').textContent = userName;
     document.getElementById('employeeEmail').textContent = userEmail; 
-    document.getElementById('projectsLoading').style.display = 'block'; //mostrar estado de carga
+    document.getElementById('projectsLoading').style.display = 'block';
     document.getElementById('projectsContainer').style.display = 'none'; 
     document.getElementById('noProjects').style.display = 'none'; 
     
-    currentUserIdForProject = userId; //configurar usuario actual para la actualizacion automatica
+    currentUserIdForProject = userId;
     
     modal.show(); 
-    const projects = await fetchUserProjects(userId); //obtener proyectos
-    document.getElementById('projectsLoading').style.display = 'none'; //ocular carga
-    if (projects.length === 0) { 
+    const projects = await fetchUserProjects(userId);
+    document.getElementById('projectsLoading').style.display = 'none';
+    
+    if (!projects || projects.length === 0) { 
         document.getElementById('noProjects').style.display = 'block'; 
         return; 
     } 
 
-    //mostrar contendor de proyectos
     document.getElementById('projectsContainer').style.display = 'block'; 
 
-    let totalTasks = 0; //calcular y mostrar resumen de estadisticas 
+    let totalTasks = 0;
     let completedTasks = 0; 
     let totalProgress = 0; 
     projects.forEach(project => { 
-        totalTasks += project.tareas_totales; 
-        completedTasks += project.tareas_completadas; 
-        totalProgress += project.progreso; 
+        totalTasks += project.tareas_totales || 0; 
+        completedTasks += project.tareas_completadas || 0; 
+        totalProgress += project.progreso || 0; 
     }); 
 
     const avgProgress = projects.length > 0 ? totalProgress / projects.length : 0; 
     document.getElementById('totalProjects').textContent = projects.length; 
     document.getElementById('totalTasks').textContent = totalTasks; 
     document.getElementById('avgProgress').textContent = avgProgress.toFixed(1) + '%'; 
-    const projectsList = document.getElementById('projectsList'); //construir lista de proyectos
+    
+    const projectsList = document.getElementById('projectsList');
     projectsList.innerHTML = projects.map(project => ` 
         <div class="card mb-3"> 
             <div class="card-body"> 
                 <div class="d-flex justify-content-between align-items-start mb-2"> 
                     <div> 
-                        <h6 class="mb-1 fw-bold">${escapeHtml(project.nombre)}</h6> 
+                        <h6 class="mb-1 fw-bold">${escapeHtml(project.nombre || '')}</h6> 
                         <p class="text-muted mb-2 small">${escapeHtml(project.descripcion || 'Sin descripción')}</p> 
                     </div> 
-                    <span class="badge ${getStatusBadgeClass(project.estado)}">${project.estado}</span> 
+                    <span class="badge ${getStatusBadgeClass(project.estado)}">${project.estado || 'N/A'}</span> 
                 </div> 
                 <div class="row mb-2"> 
                     <div class="col-6"> 
@@ -660,14 +866,14 @@ async function showUserProjects(userId, userName, userEmail) {
                 </div> 
                 <div class="mb-2"> 
                     <div class="d-flex justify-content-between mb-1"> 
-                        <small class="text-muted">Progreso: ${project.progreso_porcentaje}%</small> 
-                        <small class="text-muted">${project.tareas_completadas}/${project.tareas_totales} tareas</small> 
+                        <small class="text-muted">Progreso: ${project.progreso_porcentaje || project.progreso || 0}%</small> 
+                        <small class="text-muted">${project.tareas_completadas || 0}/${project.tareas_totales || 0} tareas</small> 
                     </div> 
                     <div class="progress" style="height: 10px;"> 
-                        <div class="progress-bar ${getProgressBarClass(project.progreso)}"  
+                        <div class="progress-bar ${getProgressBarClass(project.progreso || 0)}"  
                              role="progressbar"  
-                             style="width: ${project.progreso}%; transition: width 0.5s ease;" 
-                             aria-valuenow="${project.progreso}"  
+                             style="width: ${project.progreso || 0}%;" 
+                             aria-valuenow="${project.progreso || 0}"  
                              aria-valuemin="0"  
                              aria-valuemax="100"> 
                         </div> 
@@ -701,19 +907,25 @@ function formatDate(dateString) {
     return date.toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }); 
 } 
 
+// ========== FUNCIONES DE DISPLAY ==========
+
 async function displayUsuarios(usuarios) { 
     const tableBody = document.getElementById('usuariosTableBody'); 
     if (!tableBody) return; 
+    
     totalPages = calculatePages(usuarios); 
     if (currentPage > totalPages && totalPages > 0) { 
         currentPage = totalPages; 
     } 
+    
     const paginatedUsuarios = getPaginatedUsuarios(usuarios); 
+    
     if (!usuarios || usuarios.length === 0) { 
         tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No hay usuarios registrados</td></tr>'; 
         updatePaginationControls(); 
         return; 
     } 
+    
     if (paginatedUsuarios.length === 0) { 
         tableBody.innerHTML = ` 
             <tr> 
@@ -726,33 +938,44 @@ async function displayUsuarios(usuarios) {
         updatePaginationControls(); 
         return; 
     } 
+    
     tableBody.innerHTML = ''; 
     paginatedUsuarios.forEach(usuario => { 
         const row = createUsuarioRow(usuario); 
         tableBody.appendChild(row); 
     }); 
-    attachCheckboxListeners(); 
+    
     attachButtonListeners(); 
     updatePaginationControls(); 
 } 
 
 function createUsuarioRow(usuario) {
     const tr = document.createElement('tr');
+    tr.dataset.userId = usuario.id_usuario; // Para actualizaciones parciales
+    
     const rolBadge = getRolBadge(usuario.id_rol);
     const nombreCompleto = `${usuario.nombre} ${usuario.apellido}`;
+    
+    // Usar la función helper para obtener URL correcta
+    const fotoUrl = getProfilePictureUrl(usuario, true);
     
     tr.innerHTML = `
         <td>
             <div class="d-flex align-items-center">
+                <img src="${fotoUrl}" 
+                     alt="Foto de ${escapeHtml(nombreCompleto)}" 
+                     class="profile-thumbnail me-3"
+                     style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #e9ecef;"
+                     onerror="handleImageError(this)">
                 <div>
                     <h6 class="mb-0">${escapeHtml(nombreCompleto)}</h6>
-                    <small class="text-muted">${escapeHtml(usuario.e_mail)}</small>
+                    <small class="text-muted">${escapeHtml(usuario.e_mail || '')}</small>
                 </div>
             </div>
         </td>
         <td>
             <h6>${getDepartamentoName(usuario.id_departamento)}</h6>
-            <p class="text-muted mb-0">${escapeHtml(usuario.usuario)}</p>
+            <p class="text-muted mb-0">${escapeHtml(usuario.usuario || '')}</p>
         </td>
         <td>
             <h6>${getSuperiorName(usuario.id_superior)}</h6>
@@ -760,7 +983,7 @@ function createUsuarioRow(usuario) {
         <td>
             ${rolBadge}
         </td>
-        <td>
+        <td class="progress-cell">
             <div class="d-flex flex-column">
                 <div class="d-flex justify-content-between mb-1">
                     <small>${usuario.avgProgress ? usuario.avgProgress.toFixed(1) : '0.0'}%</small>
@@ -769,7 +992,7 @@ function createUsuarioRow(usuario) {
                 <div class="progress" style="height: 8px;">
                     <div class="progress-bar ${getProgressBarClass(usuario.avgProgress || 0)}"
                          role="progressbar"
-                         style="width: ${usuario.avgProgress || 0}%; transition: width 0.5s ease;"
+                         style="width: ${usuario.avgProgress || 0}%;"
                          aria-valuenow="${usuario.avgProgress || 0}"
                          aria-valuemin="0"
                          aria-valuemax="100">
@@ -782,17 +1005,19 @@ function createUsuarioRow(usuario) {
                 <button type="button" class="btn btn-sm btn-info btn-view-projects"
                         data-user-id="${usuario.id_usuario}"
                         data-nombre="${escapeHtml(nombreCompleto)}"
-                        data-email="${escapeHtml(usuario.e_mail)}"
+                        data-email="${escapeHtml(usuario.e_mail || '')}"
                         title="Ver proyectos">
                     <i class="mdi mdi-folder-account"></i>
                 </button>
                 <button type="button" class="btn btn-sm btn-success btn-edit"
                         data-user-id="${usuario.id_usuario}"
-                        data-nombre="${escapeHtml(usuario.nombre)}"
-                        data-apellido="${escapeHtml(usuario.apellido)}"
-                        data-usuario="${escapeHtml(usuario.usuario)}"
-                        data-email="${escapeHtml(usuario.e_mail)}"
-                        data-depart="${usuario.id_departamento}">
+                        data-nombre="${escapeHtml(usuario.nombre || '')}"
+                        data-apellido="${escapeHtml(usuario.apellido || '')}"
+                        data-usuario="${escapeHtml(usuario.usuario || '')}"
+                        data-email="${escapeHtml(usuario.e_mail || '')}"
+                        data-depart="${usuario.id_departamento}"
+                        data-foto="${usuario.foto_perfil || ''}"
+                        data-foto-url="${usuario.foto_url || ''}">
                     <i class="mdi mdi-pencil"></i>
                 </button>
                 <button type="button" class="btn btn-sm btn-danger btn-delete"
@@ -805,10 +1030,6 @@ function createUsuarioRow(usuario) {
     `;
  
     return tr;
-}
-
-function renderUsuariosTable(usuarios) {
-    displayUsuarios(usuarios);
 }
 
 function getRolBadge(roleId) {
@@ -824,21 +1045,22 @@ function getRolBadge(roleId) {
 }
 
 function getDepartamentoName(deptId) {
-    const dept = allDepartamentos.find(d => d.id_departamento === deptId);
+    if (!deptId) return 'Sin departamento';
+    const dept = allDepartamentos.find(d => d.id_departamento == deptId);
     return dept ? dept.nombre : 'Departamento ' + deptId;
 }
 
 function getSuperiorName(superiorId) {
     if (!superiorId || superiorId === 0) return 'N/A';
-    
-    const superior = allUsuarios.find(u => u.id_usuario === superiorId);
+    const superior = allUsuarios.find(u => u.id_usuario == superiorId);
     return superior ? `${superior.nombre} ${superior.apellido}` : 'N/A';
 }
 
 function filterUsuarios() {
-    const searchInput = document.getElementById('searchUser').value.toLowerCase();
+    const searchInput = document.getElementById('searchUser');
+    const searchValue = searchInput ? searchInput.value.toLowerCase() : '';
     
-    if (!searchInput.trim()) {
+    if (!searchValue.trim()) {
         filteredUsuarios = [...allUsuarios]; 
         currentPage = 1; 
         const sorted = currentSortColumn
@@ -849,15 +1071,15 @@ function filterUsuarios() {
     }
     
     const filtered = allUsuarios.filter(usuario => {
-        const fullName = `${usuario.nombre} ${usuario.apellido}`.toLowerCase();
-        const email = usuario.e_mail.toLowerCase();
-        const numEmpleado = usuario.num_empleado.toString();
-        const username = usuario.usuario.toLowerCase();
+        const fullName = `${usuario.nombre || ''} ${usuario.apellido || ''}`.toLowerCase();
+        const email = (usuario.e_mail || '').toLowerCase();
+        const numEmpleado = String(usuario.num_empleado || '');
+        const username = (usuario.usuario || '').toLowerCase();
         
-        return fullName.includes(searchInput) || 
-               email.includes(searchInput) || 
-               numEmpleado.includes(searchInput) ||
-               username.includes(searchInput);
+        return fullName.includes(searchValue) || 
+               email.includes(searchValue) || 
+               numEmpleado.includes(searchValue) ||
+               username.includes(searchValue);
     });
     
     filteredUsuarios = filtered; 
@@ -868,19 +1090,8 @@ function filterUsuarios() {
     displayUsuarios(sorted);
 }
 
-function performSearch(query) {
-    filterUsuarios();
-}
-
-function attachCheckboxListeners() {
-    const checkboxes = document.querySelectorAll('.usuario-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateSelectAllCheckbox);
-    });
-}
-
 function attachButtonListeners() {
-    const editButtons = document.querySelectorAll('.btn-edit');//editar listener de botones
+    const editButtons = document.querySelectorAll('.btn-edit');
     editButtons.forEach(button => {
         button.addEventListener('click', function() {
             const userId = this.getAttribute('data-user-id');
@@ -889,11 +1100,13 @@ function attachButtonListeners() {
             const usuario = this.getAttribute('data-usuario');
             const email = this.getAttribute('data-email');
             const depart = this.getAttribute('data-depart');
-            openEditModal(userId, nombre, apellido, usuario, email, depart);
+            const foto = this.getAttribute('data-foto');
+            const fotoUrl = this.getAttribute('data-foto-url');
+            openEditModal(userId, nombre, apellido, usuario, email, depart, foto, fotoUrl);
         });
     });
  
-    const deleteButtons = document.querySelectorAll('.btn-delete');//eliminar listeners de botones
+    const deleteButtons = document.querySelectorAll('.btn-delete');
     deleteButtons.forEach(button => {
         button.addEventListener('click', function() {
             const userId = this.getAttribute('data-user-id');
@@ -902,7 +1115,7 @@ function attachButtonListeners() {
         });
     });
  
-    const viewProjectsButtons = document.querySelectorAll('.btn-view-projects');//ver listeners de botones de proyecto
+    const viewProjectsButtons = document.querySelectorAll('.btn-view-projects');
     viewProjectsButtons.forEach(button => {
         button.addEventListener('click', function() {
             const userId = this.getAttribute('data-user-id');
@@ -921,29 +1134,38 @@ function toggleSelectAll(event) {
     });
 }
 
-function updateSelectAllCheckbox() {
-    const checkboxes = document.querySelectorAll('.usuario-checkbox');
-    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
-    const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
-    const someChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
-    
-    if(selectAllCheckbox) {
-        selectAllCheckbox.checked = allChecked;
-        selectAllCheckbox.indeterminate = someChecked && !allChecked;
-    }
-}
+// ========== FUNCIONES DE EDICIÓN ==========
 
-
-function openEditModal(userId, nombre, apellido, usuario, email, departId) {
+function openEditModal(userId, nombre, apellido, usuario, email, departId, foto, fotoUrl) {
     document.getElementById('editUserId').value = userId;
-    document.getElementById('editNombre').value = nombre;
-    document.getElementById('editApellido').value = apellido;
-    document.getElementById('editUsuario').value = usuario;
-    document.getElementById('editEmail').value = email;
+    document.getElementById('editNombre').value = nombre || '';
+    document.getElementById('editApellido').value = apellido || '';
+    document.getElementById('editUsuario').value = usuario || '';
+    document.getElementById('editEmail').value = email || '';
     
-    // Establecer el valor del dropdown
     const departmentDropdown = document.getElementById('editDepartamento');
-    departmentDropdown.value = departId;
+    if (departmentDropdown) {
+        departmentDropdown.value = departId || '';
+    }
+    
+    // Configurar foto actual
+    const hasPhoto = foto && foto.length > 0;
+    let photoUrl = Config.DEFAULT_AVATAR;
+    
+    if (hasPhoto) {
+        if (fotoUrl) {
+            photoUrl = '../' + fotoUrl;
+        } else {
+            photoUrl = Config.UPLOADS_BASE + foto;
+        }
+    }
+    
+    setEditCurrentPhoto(photoUrl, hasPhoto);
+    
+    const currentPhotoInput = document.getElementById('editCurrentFotoName');
+    if (currentPhotoInput) {
+        currentPhotoInput.value = foto || '';
+    }
     
     const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
     modal.show();
@@ -952,11 +1174,9 @@ function openEditModal(userId, nombre, apellido, usuario, email, departId) {
 function handleSaveUserChanges(event) {
     event.preventDefault();
 
-    const validation = validateEditForm();//validar form
+    const validation = validateEditForm();
     if (!validation.isValid) {
-        console.error('Validación fallida. Errores:', validation.errors);
-        
-        validation.errors.forEach(error => {//mostrar cada error
+        validation.errors.forEach(error => {
             showError(error);
         });
         return;
@@ -967,25 +1187,29 @@ function handleSaveUserChanges(event) {
     const apellido = document.getElementById('editApellido').value.trim();
     const usuario = document.getElementById('editUsuario').value.trim();
     const email = document.getElementById('editEmail').value.trim();
-    const id_departamento = parseInt(document.getElementById('editDepartamento').value);
+    const id_departamento = parseInt(document.getElementById('editDepartamento').value) || 0;
     
-    const data = {
-        id_usuario: parseInt(userId),
-        nombre: nombre,
-        apellido: apellido,
-        usuario: usuario,
-        e_mail: email,
-        id_departamento: id_departamento
-    };
-
     showInfo('Guardando cambios...');
+    
+    const formData = new FormData();
+    formData.append('id_usuario', userId);
+    formData.append('nombre', nombre);
+    formData.append('apellido', apellido);
+    formData.append('usuario', usuario);
+    formData.append('e_mail', email);
+    formData.append('id_departamento', id_departamento);
+    
+    if (editSelectedImage) {
+        formData.append('foto_perfil', editSelectedImage);
+    }
+    
+    if (editRemovePhoto) {
+        formData.append('remove_photo', 'true');
+    }
     
     fetch('../php/update_users.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+        body: formData
     })
     .then(response => {
         if (!response.ok) {
@@ -995,10 +1219,10 @@ function handleSaveUserChanges(event) {
     })
     .then(responseData => {
         if (responseData.success) {
-            showSuccess('Usuario actualizado exitosamente', responseData.usuario);
+            showSuccess('Usuario actualizado exitosamente');
             const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
             modal.hide();
-            loadUsuarios(); //recargar la tabla
+            loadUsuarios();
         } else {
             const errorMsg = responseData.message || responseData.error || 'Error desconocido';
             showError('Error al actualizar usuario: ' + errorMsg);
@@ -1006,9 +1230,11 @@ function handleSaveUserChanges(event) {
     })
     .catch(error => {
         console.error('Error de conexión:', error);
-        showError('Error de conexión: ' + error.message, error);
+        showError('Error de conexión: ' + error.message);
     });
 }
+
+// ========== FUNCIONES DE ELIMINACIÓN ==========
 
 function confirmDelete(id, nombre) { 
     showConfirm(
@@ -1026,7 +1252,6 @@ function confirmDelete(id, nombre) {
 } 
 
 function deleteUser(id) {
-    //se envia json en ves de data
     fetch(Config.API_ENDPOINTS.DELETE, {
         method: 'POST',
         headers: {
@@ -1046,10 +1271,7 @@ function deleteUser(id) {
                 currentPage = totalPages;
             }
             
-            const sorted = currentSortColumn
-                ? sortUsuarios(filteredUsuarios, currentSortColumn, sortDirection)
-                : filteredUsuarios;
-            displayUsuarios(sorted);
+            displayUsuarios(filteredUsuarios);
         } else {
             showErrorAlert(data.message || 'Error al eliminar el usuario');
         }
@@ -1059,6 +1281,8 @@ function deleteUser(id) {
         showErrorAlert('Error al conectar con el servidor');
     });
 }
+
+// ========== FUNCIONES DE ALERTAS ==========
 
 function showSuccessAlert(message) { 
     showAlert(message, 'success'); 
@@ -1081,8 +1305,6 @@ function showAlert(message, type) {
     `; 
     alertDiv.style.display = 'block'; 
 
-    alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
-
     setTimeout(() => { 
         if (alertDiv.style.display !== 'none') { 
             alertDiv.style.display = 'none'; 
@@ -1090,47 +1312,20 @@ function showAlert(message, type) {
     }, 5000); 
 }
 
-
-
-function showSuccess(message, data = null) {
-    const timestamp = new Date().toLocaleTimeString();
-    const logMessage = `[${timestamp}] hecho: ${message}`;
-    
-    if (data) {
-    }
-    
-    displayNotification(message, 'success');//mostrar notificacion en estilo de tostador
+function showSuccess(message) {
+    displayNotification(message, 'success');
 }
 
-function showError(message, error = null) {
-    const timestamp = new Date().toLocaleTimeString();
-    const logMessage = `[${timestamp}] ERROR: ${message}`;
-    
-    console.error(logMessage);//detalles de error en log
-    if (error) {
-        console.error('Error Details:', error);
-    }
+function showError(message) {
+    console.error('Error:', message);
     displayNotification(message, 'error');
 }
 
 function showInfo(message) {
-    const timestamp = new Date().toLocaleTimeString();
-    const logMessage = `[${timestamp}]INFO: ${message}`;
-    
-    console.info(logMessage);
     displayNotification(message, 'info');
 }
 
-function showWarning(message) {
-    const timestamp = new Date().toLocaleTimeString();
-    const logMessage = `[${timestamp}]Advertencia: ${message}`;
-    
-    console.warn(logMessage);
-    displayNotification(message, 'advertencia');
-}
-
 function displayNotification(message, type = 'info') {
-    //crear contenedor para la notificacin si no existe
     let toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) {
         toastContainer = document.createElement('div');
@@ -1146,62 +1341,45 @@ function displayNotification(message, type = 'info') {
     }
 
     const toastId = 'toast-' + Date.now();
-    const bgColor = {//elementos de la notificacion
+    const bgColor = {
         'success': '#009B4A',
-        'error': '#000000',
-        'info': '#666666',
-        'warning': '#666666'
-    }[type] || '#009B4A';
+        'error': '#dc3545',
+        'info': '#17a2b8'
+    }[type] || '#6c757d';
 
-    const toastHTML = `
-        <div id="${toastId}" style="
-            background-color: ${bgColor};
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            animation: slideIn 0.3s ease-out;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        ">
-            <span>${message}</span>
-            <button style="
-                background: none;
-                border: none;
-                color: inherit;
-                cursor: pointer;
-                font-size: 18px;
-                margin-left: auto;
-                padding: 0;
-            " onclick="document.getElementById('${toastId}').remove()">×</button>
-        </div>
-        <style>
-            @keyframes slideIn {
-                from {
-                    transform: translateX(400px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-        </style>
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.style.cssText = `
+        background-color: ${bgColor};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease-out;
     `;
+    toast.innerHTML = `
+        <span>${message}</span>
+        <button style="background:none;border:none;color:white;cursor:pointer;font-size:18px;margin-left:auto;padding:0;" 
+                onclick="this.parentElement.remove()">×</button>
+    `;
+    
+    toastContainer.appendChild(toast);
 
-
-    setTimeout(() => {//esconder notificacion despues de 5seg
-        const toastElement = document.getElementById(toastId);
-        if (toastElement) {
-            toastElement.style.animation = 'slideOut 0.3s ease-out';
-            setTimeout(() => toastElement.remove(), 300);
+    setTimeout(() => {
+        if (document.getElementById(toastId)) {
+            toast.remove();
         }
-    }, 5000);
+    }, 4000);
 }
 
+// ========== FUNCIONES DE UTILIDAD ==========
 
 function escapeHtml(text) {
+    if (!text) return '';
     const map = {
         '&': '&amp;',
         '<': '&lt;',
@@ -1212,50 +1390,6 @@ function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, function(m) { return map[m]; }); 
 }
 
-function logAction(action, details = {}) {
-    const timestamp = new Date().toLocaleTimeString();
-    console.group(`[${timestamp}] ${action}`);
-    if (Object.keys(details).length > 0) {
-    }
-    console.groupEnd();
-}
-
-function validateEmail(email) {
-    if (!email || email.trim() === '') {
-        return { isValid: false, message: 'El email es requerido' };
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return { isValid: false, message: 'Formato de email inválido (ej: usuario@ejemplo.com)' };
-    }
-
-    return { isValid: true, message: '' };
-}
-
-function validateTextField(value, fieldName = 'Campo', minLength = 1) {
-    if (!value || value.trim() === '') {
-        return { isValid: false, message: `${fieldName} es requerido` };
-    }
-
-    if (value.trim().length < minLength) {
-        return { isValid: false, message: `${fieldName} debe tener al menos ${minLength} caracteres` };
-    }
-
-    if (value.trim().length > 100) {
-        return { isValid: false, message: `${fieldName} no puede exceder 100 caracteres` };
-    }
-
-    return { isValid: true, message: '' };
-}
-
-function validateDepartment(departmentId) {
-    if (!departmentId || departmentId === '') {
-        return { isValid: false, message: 'Departamento es requerido' };
-    }
-    return { isValid: true, message: '' };
-}
-
 function validateEditForm() {
     const errors = [];
     const nombre = document.getElementById('editNombre').value;
@@ -1264,45 +1398,25 @@ function validateEditForm() {
     const email = document.getElementById('editEmail').value;
     const departamento = document.getElementById('editDepartamento').value;
 
-    console.group('Validando formulario de edición');
-
-    const nombreValid = validateTextField(nombre, 'Nombre', 2);//validar nombre 
-    if (!nombreValid.isValid) {
-        errors.push(nombreValid.message);
-        console.warn('Nombre inválido:', nombreValid.message);
-    } else {
+    if (!nombre || nombre.trim().length < 2) {
+        errors.push('El nombre debe tener al menos 2 caracteres');
     }
 
-    const apellidoValid = validateTextField(apellido, 'Apellido', 2);//validar apllido
-    if (!apellidoValid.isValid) {
-        errors.push(apellidoValid.message);
-        console.warn('Apellido inválido:', apellidoValid.message);
-    } else {
+    if (!apellido || apellido.trim().length < 2) {
+        errors.push('El apellido debe tener al menos 2 caracteres');
     }
 
-    const usuarioValid = validateTextField(usuario, 'Usuario', 3);//validar suario
-    if (!usuarioValid.isValid) {
-        errors.push(usuarioValid.message);
-        console.warn('Usuario inválido:', usuarioValid.message);
-    } else {
+    if (!usuario || usuario.trim().length < 3) {
+        errors.push('El usuario debe tener al menos 3 caracteres');
     }
 
-    const emailValid = validateEmail(email);//validar email
-    if (!emailValid.isValid) {
-        errors.push(emailValid.message);
-        console.warn('Email inválido:', emailValid.message);
-    } else {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.push('Formato de email inválido');
     }
 
-    // Validar departamento
-    const deptValid = validateDepartment(departamento);
-    if (!deptValid.isValid) {
-        errors.push(deptValid.message);
-        console.warn('Departamento inválido:', deptValid.message);
-    } else {
+    if (!departamento) {
+        errors.push('Debe seleccionar un departamento');
     }
-
-    console.groupEnd();
 
     return {
         isValid: errors.length === 0,
@@ -1310,39 +1424,21 @@ function validateEditForm() {
     };
 }
 
+// ========== DIALOGO PERSONALIZADO ==========
+
 function createCustomDialogSystem() {
+    if (document.getElementById('customConfirmModal')) return;
+    
     const dialogHTML = `
-        <!-- Custom Alert Dialog -->
-        <div class="modal fade" id="customAlertModal" tabindex="-1" role="dialog" aria-labelledby="customAlertLabel" aria-hidden="true">
+        <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="customAlertLabel">
-                            <i class="mdi mdi-information-outline me-2"></i>
-                            <span id="alertTitle">Información</span>
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p id="alertMessage" class="mb-0"></p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Custom Confirm Dialog -->
-        <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog" aria-labelledby="customConfirmLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="customConfirmLabel">
+                        <h5 class="modal-title">
                             <i class="mdi mdi-help-circle-outline me-2"></i>
                             <span id="confirmTitle">Confirmar acción</span>
                         </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <p id="confirmMessage" class="mb-0"></p>
@@ -1359,17 +1455,14 @@ function createCustomDialogSystem() {
     document.body.insertAdjacentHTML('beforeend', dialogHTML);
 }
 
-// mostrar dialogo de confirmacion de la app y no navegador
 function showConfirm(message, onConfirm, title = 'Confirmar acción', options = {}) {
     const modal = document.getElementById('customConfirmModal');
     const titleElement = document.getElementById('confirmTitle');
     const messageElement = document.getElementById('confirmMessage');
     const headerElement = modal.querySelector('.modal-header');
-    const iconElement = modal.querySelector('.modal-title i');
     const confirmBtn = document.getElementById('confirmOkBtn');
     const cancelBtn = document.getElementById('confirmCancelBtn');
     
-    //opciones default
     const config = {
         confirmText: 'Aceptar',
         cancelText: 'Cancelar',
@@ -1377,55 +1470,27 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         ...options
     };
     
-    //titulo y mensaje
     titleElement.textContent = title;
     messageElement.innerHTML = message.replace(/\n/g, '<br>'); 
     
-    //cambiar el texto de los botones
     confirmBtn.textContent = config.confirmText;
     cancelBtn.textContent = config.cancelText;
     
-    //clases del header
     headerElement.className = 'modal-header';
     
-    const iconMap = {
-        'info': {
-            icon: 'mdi-information-outline',
-            class: 'bg-info text-white',
-            btnClass: 'btn-info'
-        },
-        'warning': {
-            icon: 'mdi-alert-outline',
-            class: 'bg-warning text-white',
-            btnClass: 'btn-warning'
-        },
-        'danger': {
-            icon: 'mdi-alert-octagon-outline',
-            class: 'bg-danger text-white',
-            btnClass: 'btn-danger'
-        },
-        'success': {
-            icon: 'mdi-check-circle-outline',
-            class: 'bg-success text-white',
-            btnClass: 'btn-success'
-        }
+    const typeClasses = {
+        'danger': 'bg-danger text-white',
+        'warning': 'bg-warning',
+        'info': 'bg-info text-white',
+        'success': 'bg-success text-white'
     };
     
-    const typeConfig = iconMap[config.type] || iconMap['warning'];
-    iconElement.className = `mdi ${typeConfig.icon} me-2`;
-    headerElement.classList.add(...typeConfig.class.split(' '));
+    headerElement.classList.add(...(typeClasses[config.type] || 'bg-warning').split(' '));
+    confirmBtn.className = `btn btn-${config.type === 'danger' ? 'danger' : 'primary'}`;
     
-    //actualizar el estilo del boton confirmar
-    confirmBtn.className = `btn ${typeConfig.btnClass}`;
-    
-    //eliminar listeners anteriores clonando y remplazando
     const newConfirmBtn = confirmBtn.cloneNode(true);
     confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
     
-    const newCancelBtn = cancelBtn.cloneNode(true);
-    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-    
-    //agregar nuevo event listener
     newConfirmBtn.addEventListener('click', function() {
         const confirmModal = bootstrap.Modal.getInstance(modal);
         confirmModal.hide();
@@ -1434,12 +1499,23 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         }
     });
     
-    //mostrar modal
     const confirmModal = new bootstrap.Modal(modal);
     confirmModal.show();
 }
 
+// Exponer funciones necesarias globalmente
 window.confirmDelete = confirmDelete;
 window.changePage = changePage;
 window.stopAutoRefresh = stopAutoRefresh;
 window.startAutoRefresh = startAutoRefresh;
+window.handleImageError = handleImageError;
+
+// Agregar estilos para la animación
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);
