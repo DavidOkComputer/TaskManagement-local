@@ -1,13 +1,5 @@
 <?php
-/**
- * process_email_queue.php
- * Script de cron para procesar la cola de emails
- * 
- * Ejecutar cada 5 minutos:
- * / 5 * * * * /usr/bin/php /ruta/a/cron/process_email_queue.php >> /var/log/email_queue.log 2>&1
- * 
- * @package TaskManagement\Email\Cron
- */
+/*process_email_queue.php script de cron para procesar la cola de emails*/
 
 // Permitir ejecución solo desde CLI
 if (php_sapi_name() !== 'cli') {
@@ -44,9 +36,6 @@ if (!is_dir($log_dir)) {
 }
 $log_file = $log_dir . '/email_queue_' . date('Y-m-d') . '.log';
 
-/**
- * Registrar mensaje en log
- */
 function logMessage($message, $level = 'INFO') {
     global $log_file;
     $timestamp = date('Y-m-d H:i:s');
@@ -107,7 +96,7 @@ try {
         }
     }
     
-    // Limpiar emails antiguos (opcional - emails enviados hace más de 30 días)
+    // Limpiar emails antiguos emails enviados hace más de 30 días
     $cleanup_result = $conn->query(
         "DELETE FROM tbl_email_queue 
          WHERE estado = 'enviado' 
