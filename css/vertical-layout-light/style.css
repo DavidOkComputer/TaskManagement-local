@@ -12228,14 +12228,14 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .btn-outline-danger {
-  color: #F95F53;
-  border-color: #F95F53;
+  color: #000000;
+  border-color: #000000;
 }
 
 .btn-outline-danger:hover {
-  color: #000;
-  background-color: #F95F53;
-  border-color: #F95F53;
+  color: #ffffff;
+  background-color: #C62828;
+  border-color: #000000;
 }
 
 .btn-check:focus + .btn-outline-danger, .btn-outline-danger:focus {
@@ -12245,8 +12245,8 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 .btn-check:checked + .btn-outline-danger,
 .btn-check:active + .btn-outline-danger, .btn-outline-danger:active, .btn-outline-danger.active, .btn-outline-danger.dropdown-toggle.show {
   color: #000;
-  background-color: #F95F53;
-  border-color: #F95F53;
+  background-color: #C62828;
+  border-color: #C62828;
 }
 
 .btn-check:checked + .btn-outline-danger:focus,
@@ -12255,7 +12255,7 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .btn-outline-danger:disabled, .btn-outline-danger.disabled {
-  color: #F95F53;
+  color: #000000;
   background-color: transparent;
 }
 
@@ -21384,7 +21384,7 @@ code {
 }
 
 .btn-outline-danger:hover {
-  background: #000000;
+  background: #C62828;
   color: #ffffff;
 }
 
@@ -43961,14 +43961,14 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .btn-outline-danger {
-  color: #F95F53;
-  border-color: #F95F53;
+  color: #000000;
+  border-color: #000000;
 }
 
 .btn-outline-danger:hover {
-  color: #000;
-  background-color: #F95F53;
-  border-color: #F95F53;
+  color: #ffffff;
+  background-color: #C62828;
+  border-color: #C62828;
 }
 
 .btn-check:focus + .btn-outline-danger, .btn-outline-danger:focus {
@@ -43988,7 +43988,7 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .btn-outline-danger:disabled, .btn-outline-danger.disabled {
-  color: #F95F53;
+  color: #000000;
   background-color: transparent;
 }
 
@@ -53328,11 +53328,11 @@ code {
 
 .btn-outline-danger {
   border: 1px solid #000000;
-  color: #ffffff;
+  color: #000000;
 }
 
 .btn-outline-danger:hover {
-  background: #000000;
+  background: #C62828;
   color: #ffffff;
 }
 
@@ -54612,7 +54612,7 @@ code {
          }
          
          .stat-today {
-            background: #009b4a;
+            background: #004225;
             color: #ffffff;
          }
          

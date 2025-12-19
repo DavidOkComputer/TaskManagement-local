@@ -1,4 +1,4 @@
-// manage_users.js - FIXED VERSION con manejo correcto de fotos de perfil
+// manage_users.js para manejar los usuarios creados
 const Config = { 
     API_ENDPOINTS: {  
         DELETE: '../php/delete_users.php',
@@ -6,16 +6,14 @@ const Config = {
         GET_USERS: '../php/get_users.php',
         UPDATE_USER: '../php/update_users.php'
     },
-    // Ruta correcta para el avatar por defecto (relativa a gestionDeEmpleados/)
     DEFAULT_AVATAR: '../images/default-avatar.png',
-    // Base path para uploads (relativa a gestionDeEmpleados/)
     UPLOADS_BASE: '../uploads/profile_pictures/'
 }; 
 
 const AUTO_REFRESH_CONFIG = {
-    USERS_INTERVAL: 120000,     // 2 minutos - reducido para evitar llamadas excesivas
+    USERS_INTERVAL: 120000,     // 2 minutos 
     MODAL_INTERVAL: 120000,     // 2 minutos
-    DEBUG: false                // Desactivar debug en producción
+    DEBUG: false                
 };
 
 const IMAGE_CONFIG = {
@@ -77,14 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 createCustomDialogSystem();
 
-// ========== FUNCIONES DE FOTO DE PERFIL ==========
-
-/**
- * Obtiene la URL correcta para la foto de perfil
- * @param {object} usuario - Objeto usuario con datos de foto
- * @param {boolean} thumbnail - Si usar thumbnail o imagen completa
- * @returns {string} URL de la imagen
- */
 function getProfilePictureUrl(usuario, thumbnail = true) {
     // Si no hay foto, retornar default
     if (!usuario || !usuario.foto_perfil) {
@@ -107,9 +97,6 @@ function getProfilePictureUrl(usuario, thumbnail = true) {
     return Config.DEFAULT_AVATAR;
 }
 
-/**
- * Maneja errores de carga de imagen - solo una vez
- */
 function handleImageError(imgElement) {
     // Evitar loop infinito verificando si ya se intentó el fallback
     if (imgElement.dataset.fallbackApplied === 'true') {
@@ -281,8 +268,6 @@ function setEditCurrentPhoto(photoUrl, hasPhoto) {
     }
 }
 
-// ========== FUNCIONES DE MODAL Y REFRESH ==========
-
 function setupModalEventListeners() {
     const modal = document.getElementById('viewProjectsModal');
     if (!modal) return;
@@ -408,8 +393,6 @@ async function updateProgressInBackground(usuarios) {
         await new Promise(r => setTimeout(r, 100));
     }
 }
-
-// ========== FUNCIONES DE CARGA DE DATOS ==========
 
 function loadDepartamentos() {
     fetch(Config.API_ENDPOINTS.GET_DEPARTMENTS, {
@@ -559,8 +542,6 @@ function updateUserRowProgress(userId, progress) {
     }
 }
 
-// ========== FUNCIONES DE ORDENAMIENTO Y PAGINACIÓN ==========
-
 function setupSorting() {
     const headers = document.querySelectorAll('th.sortable-header');
     headers.forEach(header => {
@@ -591,7 +572,7 @@ function updateSortIndicators() {
                 ? 'mdi mdi-sort-ascending' 
                 : 'mdi mdi-sort-descending';
             header.style.fontWeight = 'bold';
-            header.style.color = '#007bff';
+            header.style.color = '#009b4a';
         } else {
             icon.className = 'mdi mdi-sort-variant';
             header.style.fontWeight = 'normal';
@@ -763,8 +744,6 @@ function updatePaginationControls() {
     paginationContainer.appendChild(buttonContainer);
 }
 
-// ========== FUNCIONES DE PROYECTOS ==========
-
 async function fetchUserProjects(userId) { 
     try { 
         const response = await fetch(`../php/get_user_projects.php?id_usuario=${userId}`); 
@@ -906,8 +885,6 @@ function formatDate(dateString) {
     const date = new Date(dateString); 
     return date.toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }); 
 } 
-
-// ========== FUNCIONES DE DISPLAY ==========
 
 async function displayUsuarios(usuarios) { 
     const tableBody = document.getElementById('usuariosTableBody'); 
@@ -1134,8 +1111,6 @@ function toggleSelectAll(event) {
     });
 }
 
-// ========== FUNCIONES DE EDICIÓN ==========
-
 function openEditModal(userId, nombre, apellido, usuario, email, departId, foto, fotoUrl) {
     document.getElementById('editUserId').value = userId;
     document.getElementById('editNombre').value = nombre || '';
@@ -1188,9 +1163,7 @@ function handleSaveUserChanges(event) {
     const usuario = document.getElementById('editUsuario').value.trim();
     const email = document.getElementById('editEmail').value.trim();
     const id_departamento = parseInt(document.getElementById('editDepartamento').value) || 0;
-    
-    showInfo('Guardando cambios...');
-    
+    //showInfo('Guardando cambios...');
     const formData = new FormData();
     formData.append('id_usuario', userId);
     formData.append('nombre', nombre);
@@ -1219,7 +1192,7 @@ function handleSaveUserChanges(event) {
     })
     .then(responseData => {
         if (responseData.success) {
-            showSuccess('Usuario actualizado exitosamente');
+            //showSuccess('Usuario actualizado exitosamente');
             const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
             modal.hide();
             loadUsuarios();
@@ -1233,8 +1206,6 @@ function handleSaveUserChanges(event) {
         showError('Error de conexión: ' + error.message);
     });
 }
-
-// ========== FUNCIONES DE ELIMINACIÓN ==========
 
 function confirmDelete(id, nombre) { 
     showConfirm(
@@ -1262,7 +1233,7 @@ function deleteUser(id) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showSuccessAlert(data.message || 'Usuario eliminado exitosamente');
+           // showSuccessAlert(data.message || 'Usuario eliminado exitosamente');
             allUsuarios = allUsuarios.filter(u => u.id_usuario != id);
             filteredUsuarios = filteredUsuarios.filter(u => u.id_usuario != id);
             
@@ -1281,8 +1252,6 @@ function deleteUser(id) {
         showErrorAlert('Error al conectar con el servidor');
     });
 }
-
-// ========== FUNCIONES DE ALERTAS ==========
 
 function showSuccessAlert(message) { 
     showAlert(message, 'success'); 
@@ -1344,7 +1313,7 @@ function displayNotification(message, type = 'info') {
     const bgColor = {
         'success': '#009B4A',
         'error': '#dc3545',
-        'info': '#17a2b8'
+        'info': '#666666'
     }[type] || '#6c757d';
 
     const toast = document.createElement('div');
@@ -1375,8 +1344,6 @@ function displayNotification(message, type = 'info') {
         }
     }, 4000);
 }
-
-// ========== FUNCIONES DE UTILIDAD ==========
 
 function escapeHtml(text) {
     if (!text) return '';
@@ -1423,8 +1390,6 @@ function validateEditForm() {
         errors: errors
     };
 }
-
-// ========== DIALOGO PERSONALIZADO ==========
 
 function createCustomDialogSystem() {
     if (document.getElementById('customConfirmModal')) return;

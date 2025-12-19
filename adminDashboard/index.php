@@ -121,7 +121,7 @@
                   </li>
                   <li class="nav-item dropdown d-none d-lg-block user-dropdown">
                      <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false"> 
-                     <i class="mdi mdi-account" alt="profile icon"></i> 
+                        <i class="mdi mdi-account" alt="profile icon"></i> 
                      </a> 
                      <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                         <div class="dropdown-header text-center">
@@ -318,10 +318,6 @@
                                                 <table class="table select-table table-sm">
                                                    <thead style="position: sticky; top: 0; background: white; z-index: 10;">
                                                       <tr>
-                                                         <th class="sortable-header" data-sort="id_proyecto" style="cursor: pointer; user-select: none; font-size: 0.85rem; padding: 8px;"> 
-                                                            # 
-                                                            <i class="mdi mdi-sort-variant"></i> 
-                                                         </th>
                                                          <th class="sortable-header" data-sort="nombre" style="cursor: pointer; user-select: none; font-size: 0.85rem; padding: 8px;"> 
                                                             Título 
                                                             <i class="mdi mdi-sort-variant"></i> 

@@ -116,9 +116,7 @@ require_once('../php/check_auth.php');
             </li>
             <li class="nav-item dropdown d-none d-lg-block user-dropdown">
               <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <div class="preview-thumbnail">
-                  <img src="../images/faces/face10.jpg" alt="image" class="img-sm profile-pic" style="border-radius: 35px;">
-                </div>
+                <i class="mdi mdi-account" alt="profile icon"></i> 
               </a>
               <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                 <div class="dropdown-header text-center">

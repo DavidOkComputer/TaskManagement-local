@@ -11,7 +11,7 @@ let sortDirection = 'asc';
 let filteredProjects = [];
 //variables de paginacion 
 let currentPage = 1;
-let rowsPerPage = 12;
+let rowsPerPage = 10;
 let totalPages = 0;
 // Variable para el auto-refresh 
 let autoRefreshInterval = null;
@@ -552,7 +552,6 @@ function createProjectRow(proyecto, index) {
         </div> 
     `;
 	row.innerHTML = ` 
-        <td>${index}</td> 
         <td> 
             <strong>${truncateText(proyecto.nombre, 30)}</strong> 
         </td> 

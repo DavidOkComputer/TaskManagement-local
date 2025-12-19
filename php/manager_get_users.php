@@ -1,6 +1,5 @@
 <?php
 /*manager_get_users.php obtener losusuarios del mismo departamento que el gerente*/
-/* ACTUALIZADO: Soporte para fotos de perfil */
  
 session_start();
 header('Content-Type: application/json');

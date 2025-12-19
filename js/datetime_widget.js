@@ -38,8 +38,8 @@
             return;
         }
 
-        //limitar a los 6 primeros departamentos
-        const displayDepts = departments.slice(0, 6);
+        //limitar a los 5 primeros departamentos
+        const displayDepts = departments.slice(0, 5);
         
         let html = '';
         displayDepts.forEach((dept, index) => {
@@ -62,7 +62,7 @@
         });
 
         //agregar indicador de mas si hay mas departamentos
-        if (departments.length > 6) {
+        if (departments.length > 5) {
             html += `
                 <div class="dept-flag dept-flag-more" 
                      title="Ver todos los departamentos (${departments.length} total)"

@@ -1,6 +1,5 @@
 <?php
 /*get_users.php saber la lista de usuarios para asignacion de tareas*/
-/* ACTUALIZADO: Soporte para fotos de perfil */
 
 header('Content-Type: application/json');
 require_once('db_config.php');
