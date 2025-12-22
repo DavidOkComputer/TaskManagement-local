@@ -24,21 +24,21 @@
               pointBorderWidth: 1,
               pointRadius: [4, 4, 4, 4, 4,4, 4, 4, 4, 4,4, 4, 4],
               pointHoverRadius: [2, 2, 2, 2, 2,2, 2, 2, 2, 2,2, 2, 2],
-              pointBackgroundColor: ['#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)'],
+              pointBackgroundColor: ['#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)'],
               pointBorderColor: ['#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff',],
           },{
             label: 'Semana anterior',
             data: [30, 150, 190, 250, 120, 150, 130, 20, 30, 15, 40, 95, 180],
             backgroundColor: saleGradientBg2,
             borderColor: [
-                '#52CDFF',
+                '#009B4A',
             ],
             borderWidth: 1.5,
             fill: true, // 3: no fill
             pointBorderWidth: 1,
             pointRadius: [0, 0, 0, 4, 0],
             pointHoverRadius: [0, 0, 0, 2, 0],
-            pointBackgroundColor: ['#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)'],
+            pointBackgroundColor: ['#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)'],
               pointBorderColor: ['#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff',],
         }]
       };
@@ -97,7 +97,7 @@
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009B4A',
           }
       }
       var salesTop = new Chart(graphGradient, {
@@ -130,7 +130,7 @@
               pointBorderWidth: 1,
               pointRadius: [4, 4, 4, 4, 4,4, 4, 4, 4, 4,4, 4, 4],
               pointHoverRadius: [2, 2, 2, 2, 2,2, 2, 2, 2, 2,2, 2, 2],
-              pointBackgroundColor: ['#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)'],
+              pointBackgroundColor: ['#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)'],
               pointBorderColor: ['#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437',],
           },{
             label: '# de votos',
@@ -144,7 +144,7 @@
             pointBorderWidth: 1,
             pointRadius: [0, 0, 0, 4, 0],
             pointHoverRadius: [0, 0, 0, 2, 0],
-            pointBackgroundColor: ['#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)'],
+            pointBackgroundColor: ['#009b4a', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)', '#009b4a', '#009b4a', '#009b4a','#009b4a)'],
               pointBorderColor: ['#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437','#222437',],
         }]
       };
@@ -203,7 +203,7 @@
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009B4A',
           }
       }
       var salesTopDark = new Chart(graphGradient, {
@@ -227,9 +227,9 @@
           datasets: [{
               label: '# de Votos',
               data: [50, 68, 70, 10, 12, 80],
-              backgroundColor: "#ffcc00",
+              backgroundColor: "009B4A",
               borderColor: [
-                  '#01B6A0',
+                  '#009B4A',
               ],
               borderWidth: 2,
               fill: false, // 3: no fill
@@ -281,7 +281,7 @@
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009B4A',
           }
       }
       var statusSummaryChart = new Chart(statusSummaryChartCanvas, {
@@ -303,11 +303,11 @@
           autoStyleContainer: false
         },
         from: {
-          color: '#52CDFF',
+          color: '#009B4A',
           width: 15
         },
         to: {
-          color: '#677ae4',
+          color: '#009B4A',
           width: 15
         },
         // Set default step function for all animate calls
@@ -341,11 +341,11 @@
           autoStyleContainer: false
         },
         from: {
-          color: '#34B1AA',
+          color: '#009B4A',
           width: 15
         },
         to: {
-          color: '#677ae4',
+          color: '#009B4A',
           width: 15
         },
         // Set default step function for all animate calls
@@ -373,9 +373,9 @@
           datasets: [{
               label: 'Last week',
               data: [110, 220, 200, 190, 220, 110, 210, 110, 205, 202, 201, 150],
-              backgroundColor: "#52CDFF",
+              backgroundColor: "#009B4A",
               borderColor: [
-                  '#52CDFF',
+                  '#009B4A',
               ],
               borderWidth: 0,
               fill: true, // 3: no fill
@@ -383,9 +383,9 @@
           },{
             label: 'Esta semana',
             data: [215, 290, 210, 250, 290, 230, 290, 210, 280, 220, 190, 300],
-            backgroundColor: "#1F3BB3",
+            backgroundColor: "#009B4A",
             borderColor: [
-                '#1F3BB3',
+                '#009B4A',
             ],
             borderWidth: 0,
             fill: true, // 3: no fill
@@ -448,7 +448,7 @@
               }
           },
           tooltips: {
-              backgroundColor: 'rgba(31, 59, 179, 1)',
+              backgroundColor: '#009B4A',
           }
       }
       var marketingOverview = new Chart(marketingOverviewChart, {
@@ -465,9 +465,9 @@
           datasets: [{
               label: 'Semana Pasada',
               data: [110, 220, 200, 190, 220, 110, 210, 110, 205, 202, 201, 150],
-              backgroundColor: "#52CDFF",
+              backgroundColor: "#009B4A",
               borderColor: [
-                  '#52CDFF',
+                  '#009B4A',
               ],
               borderWidth: 0,
               fill: true, // 3: no fill
@@ -475,7 +475,7 @@
           },{
             label: 'Esta semana',
             data: [215, 290, 210, 250, 290, 230, 290, 210, 280, 220, 190, 300],
-            backgroundColor: "#1F3BB3",
+            backgroundColor: "#009B4A",
             borderColor: [
                 '#1F3BB3',
             ],
