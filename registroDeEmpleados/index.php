@@ -437,7 +437,7 @@ $user_id = $_SESSION['user_id'];
         <!-- page-body-wrapper ends --> 
     </div> 
     <!-- container-scroller --> 
-
+    
     <!-- plugins:js --> 
     <script src="../vendors/js/vendor.bundle.base.js"></script> 
     <!-- endinject --> 
@@ -450,6 +450,7 @@ $user_id = $_SESSION['user_id'];
     <script src="../js/dashboard.js"></script> 
     <script src="../js/user_register.js"></script> 
     <script src="../js/notifications.js"></script>
+    <script src="../js/user_roles_manager.js"></script>
     <!-- End custom js for this page--> 
 </body> 
 </html>
