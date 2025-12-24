@@ -52714,6 +52714,101 @@ code {
   border: 1px solid #000000;
 }
 
+/* Asegurar que el modal de roles tenga z-index correcto */
+#rolesManagerModal {
+	z-index: 1060!important;
+}
+#rolesManagerModal.modal-dialog {
+	z-index: 1061!important;
+}
+#rolesManagerModal.modal-content {
+		z-index: 1062!important;
+	}
+	/* Backdrop debe estar detrás del modal */
+	.modal-backdrop {
+		z-index: 1055!important;
+	}
+/* Asegurar que el modal se muestre correctamente */
+#rolesManagerModal.show {
+	display: block!important;
+	opacity: 1!important;
+}
+#rolesManagerModal.show.modal-dialog {
+	transform: none!important;
+	opacity: 1!important;
+}
+/* Estilos adicionales para el modal de roles */
+#rolesManagerModal.modal-header {
+	border-bottom: 1 px solid #dee2e6;
+}
+#rolesManagerModal.modal-footer {
+	border-top: 1 px solid #dee2e6;
+}
+#rolesManagerModal.card {
+	border-radius: 8 px;
+	box-shadow: 0 2 px 4 px rgba(0, 0, 0, 0.05);
+}
+#rolesManagerModal.card-header {
+	font-weight: 600;
+}
+#rolesManagerModal.table th {
+	font-weight: 600;
+	font-size: 0.875 rem;
+	border-top: none;
+}
+#rolesManagerModal.table td {
+	vertical-align: middle;
+}
+#rolesManagerModal.badge {
+	font-weight: 500;
+}
+/* Hover effects para botones en la tabla */
+#rolesManagerModal.btn-outline-primary:hover,
+	#rolesManagerModal.btn-outline-danger:hover {
+		transform: scale(1.05);
+		transition: transform 0.2 s ease;
+	}
+/* Loading spinner */
+#rolesManagerModal.spinner-border-sm {
+	width: 1.5 rem;
+	height:1.5 rem;
+}
+/* Alerta dentro del modal */
+#rolesManagerModal.alert {
+	margin-bottom:1rem;
+}
+/* Select styling */
+#rolesManagerModal.form-select {
+	border-radius:6px;
+}
+#rolesManagerModal.form-select:focus {
+		border-color: #009b4a; 
+    box-shadow: 0 0 0 0.2rem rgba(0, 155, 74, 0.25); 
+} 
+
+ 
+
+/* Checkbox styling */ 
+
+#rolesManagerModal.form-check-input:checked {
+			background-color: #009b4a; 
+
+    border-color:#009b4a;
+		}
+		/* Responsive adjustments */
+		@media(max-width:768px) {
+			#rolesManagerModal.modal-dialog {
+				margin:0.5rem;
+			}
+			#rolesManagerModal.table {
+				font-size:0.875rem;
+			}
+			#rolesManagerModal.btn-sm {
+				padding:0.25rem 0.5rem;
+				font-size:0.75rem;
+			}
+		}
+
 /* Contenedor principal del widget */ 
 .employees-widget { 
     display: flex; 

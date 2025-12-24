@@ -1,6 +1,5 @@
 <?php
-
-/*send_weekly_summary.php Script de cron para enviar resumen semanal */
+/*send_weekly_summary.php Script de cron para enviar resumen semanal  */
 
 if (php_sapi_name() !== "cli") {
   die("Este script solo puede ejecutarse desde la línea de comandos");
@@ -10,7 +9,6 @@ set_time_limit(600);
 ini_set("memory_limit", "256M");
 
 // Cargar configuración
-
 $config_path = __DIR__ . "/../php/db_config.php";
 
 if (!file_exists($config_path)) {
@@ -27,7 +25,7 @@ if (file_exists($config_path)) {
 }
 
 require_once __DIR__ . "/../email/EmailService.php";
-require_once __DIR__ . "/../email/EmailTemplates.php";
+require_once __DIR__ . "/../email/EmailTemplate.php";
 
 // Logging
 $log_dir = __DIR__ . "/logs";
@@ -51,7 +49,6 @@ logMessage("=== Iniciando envío de resumen semanal ===");
 
 try {
   // Conectar a base de datos
-
   if (function_exists("getDBConnection")) {
     $conn = getDBConnection();
   } else {
@@ -76,31 +73,34 @@ try {
   $system_url = $config->get("system_url", "http://localhost/taskManagement");
   $queued_count = 0;
 
-  // Obtener usuarios que desean resumen semanal con info completa
-
+  // Usa el rol/departamento principal (es_principal = 1)
   $users_stmt = $conn->prepare(" 
         SELECT  
             u.id_usuario,  
             u.nombre,  
             u.apellido,  
-            u.e_mail, 
+            u.e_mail,  
             u.foto_perfil, 
-            u.id_departamento, 
-            u.id_rol, 
+            ur.id_departamento, 
+            ur.id_rol, 
             d.nombre as departamento_nombre, 
             r.nombre as rol_nombre, 
             np.hora_preferida 
         FROM tbl_usuarios u 
+        LEFT JOIN tbl_usuario_roles ur ON u.id_usuario = ur.id_usuario  
+            AND ur.es_principal = 1  
+            AND ur.activo = 1 
         LEFT JOIN tbl_notificacion_preferencias np ON u.id_usuario = np.id_usuario 
-        LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
-        LEFT JOIN tbl_roles r ON u.id_rol = r.id_rol 
+        LEFT JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento 
+        LEFT JOIN tbl_roles r ON ur.id_rol = r.id_rol 
         WHERE (np.notif_resumen_semanal = 1 OR np.id_preferencia IS NULL) 
-        AND u.e_mail IS NOT NULL  
-        AND u.e_mail != '' 
+            AND u.e_mail IS NOT NULL  
+            AND u.e_mail != '' 
     ");
 
   $users_stmt->execute();
   $users_result = $users_stmt->get_result();
+
   logMessage("Usuarios para enviar resumen: " . $users_result->num_rows);
 
   while ($user = $users_result->fetch_assoc()) {
@@ -109,30 +109,20 @@ try {
     );
 
     // Obtener estadísticas del usuario (adaptado para fecha_cumplimiento nullable)
+
     $stats_stmt = $conn->prepare(" 
             SELECT  
-                SUM(CASE  
-                    WHEN estado = 'completado'  
-                    AND fecha_inicio >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)  
-                    THEN 1 ELSE 0  
-                END) as completadas, 
-                SUM(CASE  
-                    WHEN estado != 'completado'  
-                    AND ( 
-                        fecha_cumplimiento IS NULL  
-                        OR fecha_cumplimiento = '0000-00-00'  
-                        OR fecha_cumplimiento >= CURDATE() 
-                    )  
-                    THEN 1 ELSE 0  
-                END) as pendientes, 
-                SUM(CASE  
-                    WHEN estado != 'completado'  
-                    AND fecha_cumplimiento IS NOT NULL  
-                    AND fecha_cumplimiento != '0000-00-00'  
-                    AND fecha_cumplimiento < CURDATE()  
-                    THEN 1 ELSE 0  
-                END) as vencidas 
-            FROM tbl_tareas  
+                SUM(CASE WHEN estado = 'completado' AND fecha_inicio >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as completadas, 
+                SUM(CASE WHEN estado != 'completado' AND ( 
+                    fecha_cumplimiento IS NULL OR  
+                    fecha_cumplimiento = '0000-00-00' OR  
+                    fecha_cumplimiento >= CURDATE() 
+                ) THEN 1 ELSE 0 END) as pendientes, 
+                SUM(CASE WHEN estado != 'completado' AND  
+                    fecha_cumplimiento IS NOT NULL AND  
+                    fecha_cumplimiento != '0000-00-00' AND  
+                    fecha_cumplimiento < CURDATE() THEN 1 ELSE 0 END) as vencidas 
+            FROM tbl_tareas 
             WHERE id_participante = ? OR id_creador = ? 
         ");
 
@@ -142,7 +132,6 @@ try {
     $stats_stmt->close();
 
     // Obtener tareas próximas a vencer (con fecha_cumplimiento válida)
-
     $upcoming_stmt = $conn->prepare(" 
             SELECT  
                 t.nombre,  
@@ -153,10 +142,10 @@ try {
             LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto 
             LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento 
             WHERE (t.id_participante = ? OR t.id_creador = ?) 
-            AND t.estado != 'completado' 
-            AND t.fecha_cumplimiento IS NOT NULL 
-            AND t.fecha_cumplimiento != '0000-00-00' 
-            AND t.fecha_cumplimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) 
+                AND t.estado != 'completado' 
+                AND t.fecha_cumplimiento IS NOT NULL 
+                AND t.fecha_cumplimiento != '0000-00-00' 
+                AND t.fecha_cumplimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) 
             ORDER BY t.fecha_cumplimiento ASC 
             LIMIT 5 
         ");
@@ -173,13 +162,12 @@ try {
     $upcoming_stmt->close();
 
     // Obtener proyectos activos del usuario
-
     $projects_stmt = $conn->prepare(" 
-            SELECT DISTINCT 
-                p.id_proyecto, 
-                p.nombre, 
-                p.progreso, 
-                p.estado, 
+            SELECT DISTINCT  
+                p.id_proyecto,  
+                p.nombre,  
+                p.progreso,  
+                p.estado,  
                 p.fecha_cumplimiento, 
                 d.nombre as departamento_nombre, 
                 (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto AND t.estado = 'completado') as tareas_completadas, 
@@ -188,7 +176,7 @@ try {
             LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento 
             LEFT JOIN tbl_proyecto_usuarios pu ON p.id_proyecto = pu.id_proyecto 
             WHERE (p.id_participante = ? OR p.id_creador = ? OR pu.id_usuario = ?) 
-            AND p.estado NOT IN ('completado', 'cancelado') 
+                AND p.estado NOT IN ('completado', 'cancelado') 
             ORDER BY p.fecha_cumplimiento ASC 
             LIMIT 5 
         ");
@@ -210,24 +198,26 @@ try {
 
     $projects_stmt->close();
 
-    // Obtener objetivos activos del departamento del usuario
-
     $objectives_stmt = $conn->prepare(" 
             SELECT  
-                o.id_objetivo, 
-                o.nombre, 
-                o.estado, 
+                o.id_objetivo,  
+                o.nombre,  
+                o.estado,  
                 o.fecha_cumplimiento, 
                 d.nombre as departamento_nombre 
             FROM tbl_objetivos o 
             LEFT JOIN tbl_departamentos d ON o.id_departamento = d.id_departamento 
-            WHERE o.id_departamento = ? 
+            WHERE o.id_departamento IN ( 
+                SELECT ur.id_departamento  
+                FROM tbl_usuario_roles ur  
+                WHERE ur.id_usuario = ? AND ur.activo = 1 
+            ) 
             AND o.estado NOT IN ('completado') 
             ORDER BY o.fecha_cumplimiento ASC 
-            LIMIT 3 
+            LIMIT 5 
         ");
 
-    $objectives_stmt->bind_param("i", $user["id_departamento"]);
+    $objectives_stmt->bind_param("i", $user["id_usuario"]);
     $objectives_stmt->execute();
     $objectives_result = $objectives_stmt->get_result();
     $active_objectives = [];
@@ -279,6 +269,7 @@ try {
       logMessage(
         "Error al encolar email para {$user["e_mail"]}: " .
           $emailService->getLastError(),
+
         "ERROR",
       );
     }
@@ -291,8 +282,6 @@ try {
   $conn->close();
 } catch (Exception $e) {
   logMessage("ERROR CRÍTICO: " . $e->getMessage(), "CRITICAL");
-
   exit(1);
 }
-
 exit(0);

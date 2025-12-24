@@ -295,6 +295,81 @@ $user_id = $_SESSION['user_id'];
 </div>
 <!-- container-scroller -->
 
+<!-- Modal de Gestión de Roles --> 
+    <div class="modal fade" id="rolesManagerModal" tabindex="-1" aria-labelledby="rolesManagerTitle" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+              <div class="modal-header bg-primary text-white">
+                  <h5 class="modal-title" id="rolesManagerTitle"> 
+                  <i class="mdi mdi-account-key me-2"></i>Gestionar Roles 
+                  </h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button> 
+              </div>
+              <div class="modal-body">
+                  <!-- Alerta para mensajes --> 
+                  <div id="rolesManagerAlert" class="alert" style="display: none;"></div>
+                  <!-- Roles Actuales --> 
+                  <div class="card mb-4">
+                  <div class="card-header bg-light">
+                      <h6 class="mb-0"> 
+                          <i class="mdi mdi-format-list-bulleted me-2"></i>Roles Asignados 
+                      </h6>
+                  </div>
+                  <div class="card-body p-0">
+                      <div id="currentRolesList">
+                          <!-- Se llena dinámicamente --> 
+                      </div>
+                  </div>
+                  </div>
+                  <!-- Agregar Nuevo Rol --> 
+                  <div class="card border-success">
+                  <div class="card-header bg-success text-white">
+                      <h6 class="mb-0"> 
+                          <i class="mdi mdi-plus-circle me-2"></i>Agregar Nuevo Rol 
+                      </h6>
+                  </div>
+                  <div class="card-body">
+                      <div class="row g-3">
+                          <div class="col-md-5">
+                              <label class="form-label">Departamento</label> 
+                              <select class="form-select" id="newRoleDepartamento">
+                              <option value="">Seleccione un departamento</option>
+                              </select>
+                              <small class="text-muted">Solo departamentos sin rol asignado</small> 
+                          </div>
+                          <div class="col-md-4">
+                              <label class="form-label">Rol</label> 
+                              <select class="form-select" id="newRoleRol">
+                              <option value="">Seleccione un rol</option>
+                              </select>
+                          </div>
+                          <div class="col-md-3">
+                              <label class="form-label d-block">&nbsp;</label> 
+                              <div class="form-check mt-2"> 
+                              <input class="form-check-input" type="checkbox" id="newRoleEsPrincipal"> 
+                              <label class="form-check-label" for="newRoleEsPrincipal"> 
+                              <i class="mdi mdi-star text-warning"></i> Principal 
+                              </label> 
+                              </div>
+                          </div>
+                      </div>
+                      <div class="mt-3"> 
+                          <button type="button" class="btn btn-success" id="btnAddRole" onclick="addNewRole()"> 
+                          <i class="mdi mdi-plus"></i> Agregar Rol 
+                          </button> 
+                      </div>
+                  </div>
+                  </div>
+              </div>
+              <div class="modal-footer"> 
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> 
+                  <i class="mdi mdi-close"></i> Cerrar 
+                  </button> 
+              </div>
+          </div>
+      </div>
+    </div> 
+
 <!-- Edit User Modal -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -513,84 +588,12 @@ $user_id = $_SESSION['user_id'];
       </div>
     </div>
   </div>
-  <!-- Modal de Gestión de Roles --> 
-    <div class="modal fade" id="rolesManagerModal" tabindex="-1" aria-labelledby="rolesManagerTitle" aria-hidden="true">
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-          <div class="modal-content">
-              <div class="modal-header bg-primary text-white">
-                  <h5 class="modal-title" id="rolesManagerTitle"> 
-                  <i class="mdi mdi-account-key me-2"></i>Gestionar Roles 
-                  </h5>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button> 
-              </div>
-              <div class="modal-body">
-                  <!-- Alerta para mensajes --> 
-                  <div id="rolesManagerAlert" class="alert" style="display: none;"></div>
-                  <!-- Roles Actuales --> 
-                  <div class="card mb-4">
-                  <div class="card-header bg-light">
-                      <h6 class="mb-0"> 
-                          <i class="mdi mdi-format-list-bulleted me-2"></i>Roles Asignados 
-                      </h6>
-                  </div>
-                  <div class="card-body p-0">
-                      <div id="currentRolesList">
-                          <!-- Se llena dinámicamente --> 
-                      </div>
-                  </div>
-                  </div>
-                  <!-- Agregar Nuevo Rol --> 
-                  <div class="card border-success">
-                  <div class="card-header bg-success text-white">
-                      <h6 class="mb-0"> 
-                          <i class="mdi mdi-plus-circle me-2"></i>Agregar Nuevo Rol 
-                      </h6>
-                  </div>
-                  <div class="card-body">
-                      <div class="row g-3">
-                          <div class="col-md-5">
-                              <label class="form-label">Departamento</label> 
-                              <select class="form-select" id="newRoleDepartamento">
-                              <option value="">Seleccione un departamento</option>
-                              </select>
-                              <small class="text-muted">Solo departamentos sin rol asignado</small> 
-                          </div>
-                          <div class="col-md-4">
-                              <label class="form-label">Rol</label> 
-                              <select class="form-select" id="newRoleRol">
-                              <option value="">Seleccione un rol</option>
-                              </select>
-                          </div>
-                          <div class="col-md-3">
-                              <label class="form-label d-block">&nbsp;</label> 
-                              <div class="form-check mt-2"> 
-                              <input class="form-check-input" type="checkbox" id="newRoleEsPrincipal"> 
-                              <label class="form-check-label" for="newRoleEsPrincipal"> 
-                              <i class="mdi mdi-star text-warning"></i> Principal 
-                              </label> 
-                              </div>
-                          </div>
-                      </div>
-                      <div class="mt-3"> 
-                          <button type="button" class="btn btn-success" id="btnAddRole" onclick="addNewRole()"> 
-                          <i class="mdi mdi-plus"></i> Agregar Rol 
-                          </button> 
-                      </div>
-                  </div>
-                  </div>
-              </div>
-              <div class="modal-footer"> 
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> 
-                  <i class="mdi mdi-close"></i> Cerrar 
-                  </button> 
-              </div>
-          </div>
-      </div>
-    </div> 
+  
   <!-- plugins:js -->
   <script src="../vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
    
+  <script src="../js/user_roles_manager.js"></script>
   <script src="../vendors/chart.js/Chart.min.js"></script>
   <script src="../vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
   <script src="../vendors/progressbar.js/progressbar.min.js"></script>
@@ -607,7 +610,6 @@ $user_id = $_SESSION['user_id'];
   <!-- Employee Management JS -->
   <script src="../js/manage_users.js"></script>
   <script src="../js/notifications.js"></script>
-  <script src="../js/user_roles_manager.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

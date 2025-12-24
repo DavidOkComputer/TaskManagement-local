@@ -1,4 +1,4 @@
-// user_roles_manager.js - Gestión de múltiples roles por usuario 
+// user_roles_manager.js para la gestión de múltiples roles por usuario 
 (function() {
 	'use strict';
 	// Estado de la aplicación 
@@ -7,10 +7,12 @@
 		currentUserName: '',
 		userRoles: [],
 		availableDepartments: [],
-		allRoles: []
+		allRoles: [],
+		modalInstance: null
 	};
 	// Inicialización cuando se abre el modal 
 	window.openRolesManager = function(userId, userName) {
+		console.log('openRolesManager called with:', userId, userName);
 		rolesManager.currentUserId = userId;
 		rolesManager.currentUserName = userName;
 		// Actualizar título del modal 
@@ -18,17 +20,116 @@
 		if (modalTitle) {
 			modalTitle.textContent = `Gestionar Roles - ${userName}`;
 		}
-		// Cargar datos 
+		// Obtener el elemento del modal 
+		const modalElement = document.getElementById('rolesManagerModal');
+		if (!modalElement) {
+			console.error('Modal element not found: rolesManagerModal');
+			alert('Error: No se encontró el modal de roles');
+			return;
+		}
+		// Cerrar cualquier modal existente primero 
+		const existingBackdrops = document.querySelectorAll('.modal-backdrop');
+		existingBackdrops.forEach(backdrop => backdrop.remove());
+		// Remover clases de modal abierto del body 
+		document.body.classList.remove('modal-open');
+		document.body.style.overflow = '';
+		document.body.style.paddingRight = '';
+		// Resetear el estado del modal 
+		modalElement.classList.remove('show');
+		modalElement.style.display = 'none';
+		modalElement.removeAttribute('aria-hidden');
 		loadUserRoles(userId);
 		loadAllRoles();
-		// Mostrar modal 
-		const modal = new bootstrap.Modal(document.getElementById('rolesManagerModal'));
-		modal.show();
+		// Pequeño delay para asegurar que los datos se carguen 
+		setTimeout(() => {
+			try {
+				// Destruir instancia anterior si existe 
+				if (rolesManager.modalInstance) {
+					try {
+						rolesManager.modalInstance.dispose();
+					} catch (e) {
+						console.log('Could not dispose previous modal instance');
+					}
+				}
+				// Crear nueva instancia del modal 
+				rolesManager.modalInstance = new bootstrap.Modal(modalElement, {
+					backdrop: true,
+					keyboard: true,
+					focus: true
+				});
+				// Mostrar el modal 
+				rolesManager.modalInstance.show();
+				// Forzar z-index alto después de mostrar 
+				setTimeout(() => {
+					modalElement.style.zIndex = '1060';
+					modalElement.style.display = 'block';
+					const backdrop = document.querySelector('.modal-backdrop');
+					if (backdrop) {
+						backdrop.style.zIndex = '1055';
+					}
+				}, 50);
+				console.log('Modal should be visible now');
+			} catch (error) {
+				console.error('Error showing modal:', error);
+				// Fallback: mostrar modal manualmente 
+				showModalManually(modalElement);
+			}
+		}, 100);
 	};
-	// Cargar roles actuales del usuario 
+
+	// Fallback para mostrar modal manualmente si Bootstrap falla 
+	function showModalManually(modalElement) {
+		console.log('Using manual modal display');
+		// Crear backdrop 
+		let backdrop = document.querySelector('.modal-backdrop');
+		if (!backdrop) {
+			backdrop = document.createElement('div');
+			backdrop.className = 'modal-backdrop fade show';
+			backdrop.style.zIndex = '1055';
+			document.body.appendChild(backdrop);
+		}
+		// Mostrar modal 
+		modalElement.style.display = 'block';
+		modalElement.style.zIndex = '1060';
+		modalElement.classList.add('show');
+		modalElement.setAttribute('aria-modal', 'true');
+		modalElement.setAttribute('role', 'dialog');
+		modalElement.removeAttribute('aria-hidden');
+		// Agregar clase al body 
+		document.body.classList.add('modal-open');
+		document.body.style.overflow = 'hidden';
+		// Agregar event listener para cerrar 
+		const closeButtons = modalElement.querySelectorAll('[data-bs-dismiss="modal"]');
+		closeButtons.forEach(btn => {
+			btn.addEventListener('click', () => closeModalManually(modalElement), {
+				once: true
+			});
+		});
+		// Cerrar al hacer clic en backdrop 
+		backdrop.addEventListener('click', () => closeModalManually(modalElement), {
+			once: true
+		});
+	}
+
+	function closeModalManually(modalElement) {
+		modalElement.classList.remove('show');
+		modalElement.style.display = 'none';
+		modalElement.setAttribute('aria-hidden', 'true');
+		const backdrop = document.querySelector('.modal-backdrop');
+		if (backdrop) {
+			backdrop.remove();
+		}
+		document.body.classList.remove('modal-open');
+		document.body.style.overflow = '';
+		document.body.style.paddingRight = '';
+	}
+
 	function loadUserRoles(userId) {
 		const container = document.getElementById('currentRolesList');
-		if (!container) return;
+		if (!container) {
+			console.error('Container currentRolesList not found');
+			return;
+		}
 		container.innerHTML = ` 
             <div class="text-center py-3"> 
                 <div class="spinner-border spinner-border-sm text-primary" role="status"> 
@@ -36,39 +137,44 @@
                 </div> 
                 <p class="mt-2 mb-0 text-muted small">Cargando roles...</p> 
             </div> 
-
         `;
 		fetch(`../php/get_user_roles.php?id_usuario=${userId}`)
-			.then(response => response.json())
+			.then(response => {
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				return response.json();
+			})
 			.then(data => {
+				console.log('User roles loaded:', data);
 				if (data.success) {
 					rolesManager.userRoles = data.roles;
 					renderUserRoles(data.roles);
 					loadAvailableDepartments(userId);
 				} else {
 					container.innerHTML = ` 
-                        <div class="alert alert-danger"> 
-                            <i class="mdi mdi-alert-circle me-2"></i>${data.message} 
+                        <div class="alert alert-warning m-3"> 
+                            <i class="mdi mdi-alert me-2"></i>${data.message || 'No se encontraron roles'} 
                         </div> 
                     `;
 				}
 			})
 			.catch(error => {
-				console.error('Error:', error);
+				console.error('Error loading user roles:', error);
 				container.innerHTML = ` 
-                    <div class="alert alert-danger"> 
-                        <i class="mdi mdi-alert-circle me-2"></i>Error de conexión 
+                    <div class="alert alert-danger m-3"> 
+                        <i class="mdi mdi-alert-circle me-2"></i>Error al cargar roles: ${error.message} 
                     </div> 
                 `;
 			});
 	}
-	// Renderizar lista de roles del usuario 
+
 	function renderUserRoles(roles) {
 		const container = document.getElementById('currentRolesList');
 		if (!container) return;
-		if (roles.length === 0) {
+		if (!roles || roles.length === 0) {
 			container.innerHTML = ` 
-                <div class="alert alert-warning"> 
+                <div class="alert alert-warning m-3"> 
                     <i class="mdi mdi-alert me-2"></i>El usuario no tiene roles asignados 
                 </div> 
             `;
@@ -88,7 +194,6 @@
         `;
 		roles.forEach(role => {
 			const isPrincipal = role.es_principal;
-			const badgeClass = isPrincipal ? 'bg-success' : 'bg-secondary';
 			const roleBadge = getRoleBadgeClass(role.id_rol);
 			html += ` 
                 <tr> 
@@ -121,11 +226,12 @@
 		html += '</tbody></table></div>';
 		container.innerHTML = html;
 	}
-	// Cargar departamentos disponibles (donde el usuario no tiene rol) 
+
 	function loadAvailableDepartments(userId) {
 		fetch(`../php/manage_user_roles.php?action=get_available&id_usuario=${userId}`)
 			.then(response => response.json())
 			.then(data => {
+				console.log('Available departments:', data);
 				if (data.success) {
 					rolesManager.availableDepartments = data.departamentos;
 					populateDepartmentSelect(data.departamentos);
@@ -135,11 +241,12 @@
 				console.error('Error al cargar departamentos:', error);
 			});
 	}
-	// Cargar todos los roles disponibles 
+
 	function loadAllRoles() {
 		fetch('../php/get_roles.php')
 			.then(response => response.json())
 			.then(data => {
+				console.log('All roles loaded:', data);
 				if (data.success) {
 					rolesManager.allRoles = data.roles;
 					populateRoleSelect(data.roles);
@@ -149,12 +256,12 @@
 				console.error('Error al cargar roles:', error);
 			});
 	}
-	// Popular select de departamentos 
+
 	function populateDepartmentSelect(departamentos) {
 		const select = document.getElementById('newRoleDepartamento');
 		if (!select) return;
 		select.innerHTML = '<option value="">Seleccione un departamento</option>';
-		if (departamentos.length === 0) {
+		if (!departamentos || departamentos.length === 0) {
 			select.innerHTML = '<option value="">No hay departamentos disponibles</option>';
 			select.disabled = true;
 			return;
@@ -167,11 +274,12 @@
 			select.appendChild(option);
 		});
 	}
-	// Popular select de roles 
+
 	function populateRoleSelect(roles) {
 		const select = document.getElementById('newRoleRol');
 		if (!select) return;
 		select.innerHTML = '<option value="">Seleccione un rol</option>';
+		if (!roles) return;
 		roles.forEach(rol => {
 			const option = document.createElement('option');
 			option.value = rol.id_rol;
@@ -226,7 +334,7 @@
 			})
 			.catch(error => {
 				console.error('Error:', error);
-				showRolesAlert('error', 'Error de conexión');
+				showRolesAlert('error', 'Error de conexión: ' + error.message);
 			})
 			.finally(() => {
 				if (btn) {
@@ -286,7 +394,7 @@
 				showRolesAlert('error', 'Error de conexión');
 			});
 	};
-	// Mostrar alerta en el modal 
+
 	function showRolesAlert(type, message) {
 		const alertDiv = document.getElementById('rolesManagerAlert');
 		if (!alertDiv) return;
@@ -304,7 +412,7 @@
 			}, 3000);
 		}
 	}
-	// Obtener clase de badge según el rol 
+
 	function getRoleBadgeClass(id_rol) {
 		switch (parseInt(id_rol)) {
 			case 1:
@@ -317,6 +425,7 @@
 				return 'bg-secondary';
 		}
 	}
+
 	// Escapar HTML para prevenir XSS 
 	function escapeHtml(text) {
 		if (!text) return '';
@@ -324,4 +433,25 @@
 		div.textContent = text;
 		return div.innerHTML;
 	}
+	// Limpiar al cerrar el modal 
+	document.addEventListener('DOMContentLoaded', function() {
+		const modalElement = document.getElementById('rolesManagerModal');
+		if (modalElement) {
+			modalElement.addEventListener('hidden.bs.modal', function() {
+				rolesManager.currentUserId = null;
+				rolesManager.currentUserName = '';
+				rolesManager.userRoles = [];
+				// Limpiar formulario 
+				const deptSelect = document.getElementById('newRoleDepartamento');
+				const rolSelect = document.getElementById('newRoleRol');
+				const principalCheck = document.getElementById('newRoleEsPrincipal');
+				if (deptSelect) deptSelect.value = '';
+				if (rolSelect) rolSelect.value = '';
+				if (principalCheck) principalCheck.checked = false;
+				// Ocultar alerta 
+				const alertDiv = document.getElementById('rolesManagerAlert');
+				if (alertDiv) alertDiv.style.display = 'none';
+			});
+		}
+	});
 })();

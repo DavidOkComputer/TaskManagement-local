@@ -473,37 +473,21 @@ function updateUserRowProgress(userId, progress) {
 		const progressCell = row.querySelector('.progress-cell');
 		if (progressCell) {
 			progressCell.innerHTML = ` 
-
                 <div class="d-flex flex-column"> 
-
                     <div class="d-flex justify-content-between mb-1"> 
-
                         <small>${progress.avgProgress ? progress.avgProgress.toFixed(1) : '0.0'}%</small> 
-
                         <small>${progress.totalProjects || 0} proyecto${progress.totalProjects !== 1 ? 's' : ''}</small> 
-
                     </div> 
-
                     <div class="progress" style="height: 8px;"> 
-
                         <div class="progress-bar ${getProgressBarClass(progress.avgProgress || 0)}" 
-
                              role="progressbar" 
-
                              style="width: ${progress.avgProgress || 0}%;" 
-
                              aria-valuenow="${progress.avgProgress || 0}" 
-
                              aria-valuemin="0" 
-
                              aria-valuemax="100"> 
-
                         </div> 
-
                     </div> 
-
                 </div> 
-
             `;
 		}
 	}
@@ -763,83 +747,44 @@ async function showUserProjects(userId, userName, userEmail) {
 	document.getElementById('avgProgress').textContent = avgProgress.toFixed(1) + '%';
 	const projectsList = document.getElementById('projectsList');
 	projectsList.innerHTML = projects.map(project => `  
-
         <div class="card mb-3">  
-
             <div class="card-body">  
-
                 <div class="d-flex justify-content-between align-items-start mb-2">  
-
                     <div>  
-
                         <h6 class="mb-1 fw-bold">${escapeHtml(project.nombre || '')}</h6>  
-
                         <p class="text-muted mb-2 small">${escapeHtml(project.descripcion || 'Sin descripción')}</p>  
-
                     </div>  
-
                     <span class="badge ${getStatusBadgeClass(project.estado)}">${project.estado || 'N/A'}</span>  
-
                 </div>  
-
                 <div class="row mb-2">  
-
                     <div class="col-6">  
-
                         <small class="text-muted">  
-
                             <i class="mdi mdi-view-grid"></i> Área: ${escapeHtml(project.area || 'N/A')}  
-
                         </small>  
-
                     </div>  
-
                     <div class="col-6">  
-
                         <small class="text-muted">  
-
                             <i class="mdi mdi-calendar"></i> ${formatDate(project.fecha_cumplimiento)}  
-
                         </small>  
-
                     </div>  
-
                 </div>  
-
                 <div class="mb-2">  
-
                     <div class="d-flex justify-content-between mb-1">  
-
                         <small class="text-muted">Progreso: ${project.progreso_porcentaje || project.progreso || 0}%</small>  
-
                         <small class="text-muted">${project.tareas_completadas || 0}/${project.tareas_totales || 0} tareas</small>  
-
                     </div>  
-
                     <div class="progress" style="height: 10px;">  
-
                         <div class="progress-bar ${getProgressBarClass(project.progreso || 0)}"   
-
                              role="progressbar"   
-
                              style="width: ${project.progreso || 0}%;"  
-
                              aria-valuenow="${project.progreso || 0}"   
-
                              aria-valuemin="0"   
-
                              aria-valuemax="100">  
-
                         </div>  
-
                     </div>  
-
                 </div>  
-
             </div>  
-
         </div>  
-
     `).join('');
 }
 
@@ -884,19 +829,12 @@ async function displayUsuarios(usuarios) {
 	}
 	if (paginatedUsuarios.length === 0) {
 		tableBody.innerHTML = `  
-
             <tr>  
-
                 <td colspan="6" class="text-center empty-state">  
-
                     <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i>  
-
                     <h5 class="mt-3">No se encontraron resultados en esta página</h5>  
-
                 </td>  
-
             </tr>  
-
         `;
 		updatePaginationControls();
 		return;
@@ -918,157 +856,81 @@ function createUsuarioRow(usuario) {
 	// Usar la función helper para obtener URL correcta 
 	const fotoUrl = getProfilePictureUrl(usuario, true);
 	tr.innerHTML = ` 
-
         <td> 
-
             <div class="d-flex align-items-center"> 
-
                 <img src="${fotoUrl}"  
-
                      alt="Foto de ${escapeHtml(nombreCompleto)}"  
-
                      class="profile-thumbnail me-3" 
-
                      style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #e9ecef;" 
-
                      onerror="handleImageError(this)"> 
-
                 <div> 
-
                     <h6 class="mb-0">${escapeHtml(nombreCompleto)}</h6> 
-
                     <small class="text-muted">${escapeHtml(usuario.e_mail || '')}</small> 
-
                 </div> 
-
             </div> 
-
         </td> 
-
         <td> 
-
             <h6>${getDepartamentoName(usuario.id_departamento)}</h6> 
-
             <p class="text-muted mb-0">${escapeHtml(usuario.usuario || '')}</p> 
-
         </td> 
-
         <td> 
-
             <h6>${getSuperiorName(usuario.id_superior)}</h6> 
-
         </td> 
-
         <td> 
-
             ${rolBadge} 
-
         </td> 
-
         <td class="progress-cell"> 
-
             <div class="d-flex flex-column"> 
-
                 <div class="d-flex justify-content-between mb-1"> 
-
                     <small>${usuario.avgProgress ? usuario.avgProgress.toFixed(1) : '0.0'}%</small> 
-
                     <small>${usuario.totalProjects || 0} proyecto${usuario.totalProjects !== 1 ? 's' : ''}</small> 
-
                 </div> 
-
                 <div class="progress" style="height: 8px;"> 
-
                     <div class="progress-bar ${getProgressBarClass(usuario.avgProgress || 0)}" 
-
                          role="progressbar" 
-
                          style="width: ${usuario.avgProgress || 0}%;" 
-
                          aria-valuenow="${usuario.avgProgress || 0}" 
-
                          aria-valuemin="0" 
-
                          aria-valuemax="100"> 
-
                     </div> 
-
                 </div> 
-
             </div> 
-
         </td> 
-
         <td class="action-buttons"> 
-
             <div class="btn-group" role="group"> 
-
                 <button type="button" class="btn btn-sm btn-info btn-view-projects" 
-
                         data-user-id="${usuario.id_usuario}" 
-
                         data-nombre="${escapeHtml(nombreCompleto)}" 
-
                         data-email="${escapeHtml(usuario.e_mail || '')}" 
-
                         title="Ver proyectos"> 
-
                     <i class="mdi mdi-folder-account"></i> 
-
                 </button> 
-
                 <button type="button" class="btn btn-sm btn-success btn-edit" 
-
                         data-user-id="${usuario.id_usuario}" 
-
                         data-nombre="${escapeHtml(usuario.nombre || '')}" 
-
                         data-apellido="${escapeHtml(usuario.apellido || '')}" 
-
                         data-usuario="${escapeHtml(usuario.usuario || '')}" 
-
                         data-email="${escapeHtml(usuario.e_mail || '')}" 
-
                         data-depart="${usuario.id_departamento}" 
-
                         data-foto="${usuario.foto_perfil || ''}" 
-
                         data-foto-url="${usuario.foto_url || ''}" 
-
                         title="Editar usuario"> 
-
                     <i class="mdi mdi-pencil"></i> 
-
                 </button> 
-
                 <button type="button" class="btn btn-sm btn-primary btn-manage-roles" 
-
                         data-user-id="${usuario.id_usuario}" 
-
                         data-user-name="${escapeHtml(nombreCompleto)}" 
-
                         title="Gestionar roles"> 
-
                     <i class="mdi mdi-account-key"></i> 
-
                 </button> 
-
                 <button type="button" class="btn btn-sm btn-danger btn-delete" 
-
                         data-user-id="${usuario.id_usuario}" 
-
                         data-nombre="${escapeHtml(nombreCompleto)}" 
-
                         title="Eliminar usuario"> 
-
                     <i class="mdi mdi-delete"></i> 
-
                 </button> 
-
             </div> 
-
         </td> 
-
     `;
 	return tr;
 }
@@ -1176,9 +1038,6 @@ function attachButtonListeners() {
 			showUserProjects(userId, nombre, email);
 		});
 	});
-	// ============================================================ 
-	// NUEVO: Botones de gestionar roles 
-	// ============================================================ 
 	const manageRolesButtons = document.querySelectorAll('.btn-manage-roles');
 	manageRolesButtons.forEach(button => {
 		button.addEventListener('click', function() {
@@ -1347,13 +1206,9 @@ function showAlert(message, type) {
 	const icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle';
 	alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
 	alertDiv.innerHTML = `  
-
         <i class="mdi ${icon} me-2"></i>  
-
         ${message}  
-
         <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button>  
-
     `;
 	alertDiv.style.display = 'block';
 	setTimeout(() => {
@@ -1382,17 +1237,11 @@ function displayNotification(message, type = 'info') {
 		toastContainer = document.createElement('div');
 		toastContainer.id = 'toastContainer';
 		toastContainer.style.cssText = ` 
-
             position: fixed; 
-
             top: 20px; 
-
             right: 20px; 
-
             z-index: 9999; 
-
             max-width: 400px; 
-
         `;
 		document.body.appendChild(toastContainer);
 	}
@@ -1405,36 +1254,21 @@ function displayNotification(message, type = 'info') {
 	const toast = document.createElement('div');
 	toast.id = toastId;
 	toast.style.cssText = ` 
-
         background-color: ${bgColor}; 
-
         color: white; 
-
         padding: 15px 20px; 
-
         border-radius: 8px; 
-
         margin-bottom: 10px; 
-
         box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-
         display: flex; 
-
         align-items: center; 
-
         gap: 10px; 
-
         animation: slideIn 0.3s ease-out; 
-
     `;
 	toast.innerHTML = ` 
-
         <span>${message}</span> 
-
         <button style="background:none;border:none;color:white;cursor:pointer;font-size:18px;margin-left:auto;padding:0;"  
-
                 onclick="this.parentElement.remove()">×</button> 
-
     `;
 	toastContainer.appendChild(toast);
 	setTimeout(() => {
@@ -1489,47 +1323,26 @@ function validateEditForm() {
 function createCustomDialogSystem() {
 	if (document.getElementById('customConfirmModal')) return;
 	const dialogHTML = ` 
-
         <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog"> 
-
             <div class="modal-dialog modal-dialog-centered" role="document"> 
-
                 <div class="modal-content"> 
-
                     <div class="modal-header"> 
-
                         <h5 class="modal-title"> 
-
                             <i class="mdi mdi-help-circle-outline me-2"></i> 
-
                             <span id="confirmTitle">Confirmar acción</span> 
-
                         </h5> 
-
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button> 
-
                     </div> 
-
                     <div class="modal-body"> 
-
                         <p id="confirmMessage" class="mb-0"></p> 
-
                     </div> 
-
                     <div class="modal-footer"> 
-
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="confirmCancelBtn">Cancelar</button> 
-
                         <button type="button" class="btn btn-primary" id="confirmOkBtn">Aceptar</button> 
-
                     </div> 
-
                 </div> 
-
             </div> 
-
         </div> 
-
     `;
 	document.body.insertAdjacentHTML('beforeend', dialogHTML);
 }
@@ -1581,14 +1394,9 @@ window.handleImageError = handleImageError;
 // Agregar estilos para la animación 
 const style = document.createElement('style');
 style.textContent = ` 
-
     @keyframes slideIn { 
-
         from { transform: translateX(100%); opacity: 0; } 
-
         to { transform: translateX(0); opacity: 1; } 
-
     } 
-
 `;
 document.head.appendChild(style);

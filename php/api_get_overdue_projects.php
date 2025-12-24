@@ -1,5 +1,6 @@
 <?php
-/* api_get_overdue_projects.php  Obtener proyectos vencidos según el rol del usuario */
+
+/* api_get_overdue_projects.php para obtener proyectos vencidos según el rol del usuario  */
 
 ob_start();
 session_start();
@@ -11,7 +12,6 @@ set_error_handler(function ($errno, $errstr, $errfile, $errline) {
 });
 
 require_once "db_config.php";
-
 
 $conexion = getDBConnection();
 
@@ -29,11 +29,18 @@ $usuario_id = $_SESSION["user_id"];
 $proyectos = [];
 
 try {
-  // Obtener información del usuario actual (rol y departamento)
   $stmt_user = $conexion->prepare(" 
-        SELECT id_rol, id_departamento  
-        FROM tbl_usuarios  
-        WHERE id_usuario = ? 
+        SELECT  
+            ur.id_rol,  
+            ur.id_departamento, 
+            r.nombre as rol_nombre, 
+            d.nombre as departamento_nombre 
+        FROM tbl_usuario_roles ur 
+        JOIN tbl_roles r ON ur.id_rol = r.id_rol 
+        JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento 
+        WHERE ur.id_usuario = ?  
+            AND ur.es_principal = 1  
+            AND ur.activo = 1 
     ");
 
   $stmt_user->bind_param("i", $usuario_id);
@@ -42,15 +49,36 @@ try {
   $stmt_user->close();
 
   if (!$user_info) {
-    throw new Exception("Usuario no encontrado");
+    throw new Exception("Usuario no encontrado o sin rol asignado");
   }
 
   $id_rol = $user_info["id_rol"];
   $id_departamento = $user_info["id_departamento"];
 
+  $departamentos_gerente = [];
+
+  if ($id_rol == 2) {
+    $stmt_deptos = $conexion->prepare(" 
+            SELECT id_departamento  
+            FROM tbl_usuario_roles  
+            WHERE id_usuario = ?  
+                AND id_rol = 2  
+                AND activo = 1 
+        ");
+
+    $stmt_deptos->bind_param("i", $usuario_id);
+    $stmt_deptos->execute();
+    $result_deptos = $stmt_deptos->get_result();
+
+    while ($row = $result_deptos->fetch_assoc()) {
+      $departamentos_gerente[] = $row["id_departamento"];
+    }
+    $stmt_deptos->close();
+  }
+
   // Construir query según el rol del usuario
   $query = " 
-        SELECT DISTINCT  
+        SELECT DISTINCT 
             p.id_proyecto, 
             p.nombre, 
             p.descripcion, 
@@ -80,12 +108,14 @@ try {
       $query . " ORDER BY p.fecha_cumplimiento ASC, p.fecha_creacion DESC",
     );
   } elseif ($id_rol == 2) {
-    // GERENTE: Ve proyectos vencidos de su departamento + proyectos donde está asignado
-    $query .= " 
+    $query .=
+      " 
             LEFT JOIN tbl_proyecto_usuarios pu ON p.id_proyecto = pu.id_proyecto 
             WHERE p.estado = 'vencido' 
             AND ( 
-                p.id_departamento = ?  
+                p.id_departamento IN (" .
+      implode(",", array_map("intval", $departamentos_gerente)) .
+      ") 
                 OR p.id_creador = ? 
                 OR pu.id_usuario = ? 
             ) 
@@ -93,7 +123,7 @@ try {
         ";
 
     $stmt = $conexion->prepare($query);
-    $stmt->bind_param("iii", $id_departamento, $usuario_id, $usuario_id);
+    $stmt->bind_param("ii", $usuario_id, $usuario_id);
   } else {
     // USUARIO: Solo ve proyectos vencidos donde está asignado o creó
     $query .= " 
@@ -120,7 +150,7 @@ try {
 
   $result = $stmt->get_result();
 
-  // Formatear resultados
+  //formato para los resultados
   while ($proyecto = $result->fetch_assoc()) {
     $estado_display = match ($proyecto["estado"]) {
       "pendiente" => "Pendiente",
@@ -151,20 +181,22 @@ try {
     $fecha_hoy = new DateTime();
     $dias_vencidos = $fecha_hoy->diff($fecha_vencimiento)->days;
 
-    // Verificar si el usuario puede editar este proyecto
     $puede_editar = false;
+
     if ($id_rol == 1) {
       // Administrador puede editar todo
 
       $puede_editar = true;
     } elseif ($id_rol == 2) {
-      // Gerente puede editar proyectos de su departamento o que creó
+      // Gerente puede editar proyectos de sus departamentos o que creó
+
       $puede_editar =
-        $proyecto["id_departamento"] == $id_departamento ||
+        in_array($proyecto["id_departamento"], $departamentos_gerente) ||
         $proyecto["id_creador"] == $usuario_id ||
         $proyecto["puede_editar_otros"] == 1;
     } else {
       // Usuario solo puede editar proyectos que creó
+
       $puede_editar = $proyecto["id_creador"] == $usuario_id;
     }
 
@@ -203,6 +235,8 @@ try {
     "total" => count($proyectos),
     "user_role" => $id_rol,
     "user_department" => $id_departamento,
+    "user_departments_count" =>
+      $id_rol == 2 ? count($departamentos_gerente) : 1,
   ]);
 } catch (Exception $e) {
   error_log("Error en api_get_overdue_projects.php: " . $e->getMessage());
@@ -215,5 +249,6 @@ try {
     "error" => $e->getMessage(),
   ]);
 }
+
 restore_error_handler();
 ?> 
