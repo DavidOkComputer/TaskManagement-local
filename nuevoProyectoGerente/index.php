@@ -241,23 +241,22 @@ $user_id = $_SESSION['user_id'];
                   </div>
 
                   <div class="row">
-                    <!-- Modified department field for manager - replace existing department field -->
+                    <!-- Department field - enabled for managers with multiple departments -->
                     <div class="col-md-6">
                       <div class="form-group row">
                         <label class="col-sm-3 col-form-label">Departamento<span class="text-danger">*</span></label>
                         <div class="col-sm-9">
                           <select id="id_departamento" 
                                   name="id_departamento_display" 
-                                  class="form-control" 
-                                  disabled
-                                  style="background-color: #ffffff; cursor: not-allowed;">
-                            <option value="">Cargando departamento...</option>
+                                  class="form-control"
+                                  style="background-color: #ffffff;">
+                            <option value="">Cargando departamentos...</option>
                           </select>
                           <!-- Hidden field para enviar el ID real del departamento -->
                           <input type="hidden" id="id_departamento_hidden" name="id_departamento">
                           <small class="form-text text-muted">
                             <i class="mdi mdi-information-outline"></i> 
-                            Tu departamento está asignado automáticamente
+                            Selecciona el departamento para el proyecto
                           </small>
                         </div>
                       </div>
@@ -274,6 +273,10 @@ $user_id = $_SESSION['user_id'];
                               <i class="mdi mdi-account-multiple-plus"></i> Grupo
                             </button>
                           </div>
+                          <small class="form-text text-muted">
+                            <i class="mdi mdi-account"></i> 
+                            Los usuarios disponibles corresponden al departamento seleccionado
+                          </small>
                         </div>
                       </div>
                     </div>
@@ -431,10 +434,17 @@ $user_id = $_SESSION['user_id'];
                     <div class="modal-dialog modal-lg">
                       <div class="modal-content">
                         <div class="modal-header">
-                          <h5 class="modal-title" id="grupalUsuariosLabel">Seleccionar integrantes del proyecto grupal</h5>
+                          <h5 class="modal-title" id="grupalUsuariosLabel">
+                            <i class="mdi mdi-account-group me-2"></i>
+                            Seleccionar integrantes del proyecto grupal
+                          </h5>
                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
+                          <div class="alert alert-info mb-3">
+                            <i class="mdi mdi-information me-2"></i>
+                            Los usuarios mostrados pertenecen al departamento seleccionado. Si cambias el departamento, la lista se actualizará.
+                          </div>
                           <div class="row mb-3">
                             <div class="col-md-12">
                               <input type="text" id="searchUsuarios" class="form-control" placeholder="Buscar usuario por nombre o email...">
@@ -446,10 +456,12 @@ $user_id = $_SESSION['user_id'];
                         </div>
                         <div class="modal-footer">
                           <div class="col-md-12" id="selectedUsersDisplay" class="mb-2">
-                            <small class="text-muted">Usuarios seleccionados: <span id="countSelected">0</span></small>
+                            <small class="text-muted">Usuarios seleccionados: <span id="countSelected" class="badge bg-success">0</span></small>
                           </div>
                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                          <button type="button" class="btn btn-success" id="btnConfirmarGrupal">Confirmar selección</button>
+                          <button type="button" class="btn btn-success" id="btnConfirmarGrupal">
+                            <i class="mdi mdi-check me-1"></i>Confirmar selección
+                          </button>
                         </div>
                       </div>
                     </div>

@@ -1,5 +1,5 @@
 <?php
-/*user_update_project.php para acutalizar proyectos*/ 
+/*user_update_project.php para actualizar proyectos*/ 
 
 ob_start(); 
 header('Content-Type: application/json; charset=UTF-8'); 
@@ -26,7 +26,7 @@ try {
         throw new Exception('ID de proyecto inválido'); 
     } 
 
-    // Obtener ID de usuario desde la sesión (soportar múltiples nombres de variable) 
+    // Obtener ID de usuario desde la sesión
     $id_usuario = null; 
     if (isset($_SESSION['user_id'])) { 
         $id_usuario = intval($_SESSION['user_id']); 
@@ -34,7 +34,6 @@ try {
         $id_usuario = intval($_SESSION['id_usuario']); 
     } 
 
-    // Validar que tenemos un ID de usuario 
     if (!$id_usuario) { 
         throw new Exception('Sesión no válida. Por favor, inicie sesión nuevamente'); 
     } 
@@ -44,7 +43,18 @@ try {
         throw new Exception('Error de conexión a la base de datos'); 
     } 
 
-    $query_user = "SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?"; 
+    $query_user = "
+        SELECT 
+            ur.id_departamento,
+            ur.id_rol,
+            ur.es_principal
+        FROM tbl_usuario_roles ur
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC
+        LIMIT 1
+    ";
+    
     $stmt_user = $conn->prepare($query_user); 
     if (!$stmt_user) { 
         throw new Exception('Error al preparar consulta de usuario: ' . $conn->error); 
@@ -60,7 +70,7 @@ try {
     $stmt_user->close(); 
 
     if (!$user_data) { 
-        throw new Exception('Usuario no encontrado en la base de datos'); 
+        throw new Exception('Usuario no tiene roles asignados. Por favor contacte al administrador.'); 
     } 
 
     if (!$user_data['id_departamento'] || $user_data['id_departamento'] == 0) { 
@@ -69,7 +79,7 @@ try {
 
     $id_usuario_actual = $id_usuario; 
     $id_departamento = intval($user_data['id_departamento']); 
-    $id_participante = $id_usuario_actual; // El usuario se mantiene asignado a sí mismo 
+    $id_participante = $id_usuario_actual;
 
     // Validar campos requeridos 
     $required_fields = [ 
@@ -99,8 +109,8 @@ try {
     $archivo_adjunto = isset($_POST['archivo_adjunto']) ? trim($_POST['archivo_adjunto']) : ''; 
 
     // Para usuarios regulares, siempre es proyecto individual y solo el creador puede editar 
-    $id_tipo_proyecto = 2; // Individual 
-    $puede_editar_otros = 0; // Solo el creador puede editar 
+    $id_tipo_proyecto = 2;
+    $puede_editar_otros = 0;
 
     // Validaciones de longitud 
     if (strlen($nombre) > 100) { 
@@ -147,15 +157,8 @@ try {
         $estado = 'pendiente'; 
     } 
 
-    // Conectar a la base de datos 
-    $conn = getDBConnection(); 
-
-    if (!$conn) { 
-        throw new Exception('Error de conexión a la base de datos'); 
-    } 
-
     // Verificar que el proyecto pertenezca al usuario actual 
-    $sql_check = "SELECT id_creador, id_participante FROM tbl_proyectos WHERE id_proyecto = ?"; 
+    $sql_check = "SELECT id_creador, id_participante, id_departamento FROM tbl_proyectos WHERE id_proyecto = ?"; 
     $stmt_check = $conn->prepare($sql_check); 
 
     if (!$stmt_check) { 
@@ -176,7 +179,10 @@ try {
     // Verificar que el usuario sea el creador o participante del proyecto 
     if ($proyecto['id_creador'] != $id_usuario_actual && $proyecto['id_participante'] != $id_usuario_actual) { 
         throw new Exception('No tienes permisos para editar este proyecto'); 
-    } 
+    }
+    
+    // Mantener el departamento original del proyecto (no cambiarlo)
+    $id_departamento_proyecto = (int)$proyecto['id_departamento'];
 
     // Actualizar el proyecto 
     $sql = "UPDATE tbl_proyectos SET 
@@ -202,19 +208,19 @@ try {
 
     $stmt->bind_param( 
         "ssissississii", 
-        $nombre,                // s-1 
-        $descripcion,           // s-2 
-        $id_departamento,       // i-3 (desde sesión) 
-        $fecha_creacion,        // s-4 
-        $fecha_cumplimiento,    // s-5 
-        $progreso,              // i-6 
-        $ar,                    // s-7 
-        $estado,                // s-8 (auto-calculado) 
-        $archivo_adjunto,       // s-9 
-        $id_participante,       // i-10 (mismo que usuario actual) 
-        $id_tipo_proyecto,      // i-11 (siempre 2 - individual) 
-        $puede_editar_otros,    // i-12 (siempre 0 - solo creador) 
-        $id_proyecto            // i-13 
+        $nombre,
+        $descripcion,
+        $id_departamento_proyecto,  // Mantener departamento original
+        $fecha_creacion,
+        $fecha_cumplimiento,
+        $progreso,
+        $ar,
+        $estado,
+        $archivo_adjunto,
+        $id_participante,
+        $id_tipo_proyecto,
+        $puede_editar_otros,
+        $id_proyecto
     ); 
 
     if (!$stmt->execute()) { 

@@ -26,7 +26,6 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    //obtener id desde la sesion
     $id_usuario = null;
     
     if (isset($_SESSION['id_usuario'])) {
@@ -39,64 +38,105 @@ try {
         throw new Exception('Usuario no autenticado');
     }
 
-    //query para saber el rol y departamento
-    $user_query = "
+    $role_query = "
         SELECT 
-            u.id_usuario,
-            u.id_rol,
-            u.id_departamento
-        FROM tbl_usuarios u
-        WHERE u.id_usuario = ?
-        LIMIT 1
+            ur.id_rol,
+            ur.id_departamento,
+            ur.es_principal,
+            d.nombre as departamento_nombre
+        FROM tbl_usuario_roles ur
+        JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC
     ";
     
-    $user_stmt = $conn->prepare($user_query);
-    if (!$user_stmt) {
-        throw new Exception('Error preparando consulta de usuario: ' . $conn->error);
+    $role_stmt = $conn->prepare($role_query);
+    if (!$role_stmt) {
+        throw new Exception('Error preparando consulta de roles: ' . $conn->error);
     }
     
-    $user_stmt->bind_param('i', $id_usuario);
-    $user_stmt->execute();
-    $user_result = $user_stmt->get_result();
-    $user_data = $user_result->fetch_assoc();
-    $user_stmt->close();
+    $role_stmt->bind_param('i', $id_usuario);
+    $role_stmt->execute();
+    $role_result = $role_stmt->get_result();
     
-    if (!$user_data) {
-        throw new Exception('Usuario no encontrado');
+    $is_manager = false;
+    $is_admin = false;
+    $departamentos_gerente = [];
+    $departamento_principal = null;
+    
+    while ($row = $role_result->fetch_assoc()) {
+        if ($row['id_rol'] == 1) {
+            $is_admin = true;
+        }
+        
+        if ($row['id_rol'] == 2) {
+            $is_manager = true;
+            $departamentos_gerente[] = (int)$row['id_departamento'];
+        }
+        
+        if ($row['es_principal'] == 1 || $departamento_principal === null) {
+            $departamento_principal = (int)$row['id_departamento'];
+        }
+    }
+    $role_stmt->close();
+    
+    // Verificar que sea gerente o admin
+    if (!$is_manager && !$is_admin) {
+        throw new Exception('Acceso no autorizado - Solo gerentes o administradores');
     }
     
-    $id_rol = (int)$user_data['id_rol'];
-    $id_departamento = (int)$user_data['id_departamento'];
-    
-    //verificar el id del usuaio
-    if ($id_rol !== 2) {
-        throw new Exception('Acceso no autorizado - Solo gerentes');
-    }
-    
-    if ($id_departamento <= 0) {//saber si el usuario tiene un departamento asignado
-        throw new Exception('Usuario sin departamento asignado');
+    if (empty($departamentos_gerente) && !$is_admin) {
+        throw new Exception('Usuario sin departamentos asignados como gerente');
     }
 
-    //saber objetivos del departamento del usuario
-    $query = "SELECT 
+    if ($is_admin) {
+        // Admin ve todos los objetivos
+        $query = "
+            SELECT 
                 o.id_objetivo,
                 o.nombre,
                 o.descripcion,
                 o.fecha_cumplimiento,
                 o.estado,
                 o.archivo_adjunto,
+                o.id_departamento,
                 d.nombre as area
-              FROM tbl_objetivos o
-              INNER JOIN tbl_departamentos d ON o.id_departamento = d.id_departamento
-              WHERE o.id_departamento = ?
-              ORDER BY o.fecha_cumplimiento ASC";
+            FROM tbl_objetivos o
+            INNER JOIN tbl_departamentos d ON o.id_departamento = d.id_departamento
+            ORDER BY o.fecha_cumplimiento ASC
+        ";
+        $stmt = $conn->prepare($query);
+    } else {
+        // Gerente ve objetivos de sus departamentos
+        $placeholders = implode(',', array_fill(0, count($departamentos_gerente), '?'));
+        $query = "
+            SELECT 
+                o.id_objetivo,
+                o.nombre,
+                o.descripcion,
+                o.fecha_cumplimiento,
+                o.estado,
+                o.archivo_adjunto,
+                o.id_departamento,
+                d.nombre as area
+            FROM tbl_objetivos o
+            INNER JOIN tbl_departamentos d ON o.id_departamento = d.id_departamento
+            WHERE o.id_departamento IN ($placeholders)
+            ORDER BY o.fecha_cumplimiento ASC
+        ";
+        $stmt = $conn->prepare($query);
+        
+        if ($stmt) {
+            $types = str_repeat('i', count($departamentos_gerente));
+            $stmt->bind_param($types, ...$departamentos_gerente);
+        }
+    }
     
-    $stmt = $conn->prepare($query);
     if (!$stmt) {
         throw new Exception("Error al preparar la consulta: " . $conn->error);
     }
     
-    $stmt->bind_param("i", $id_departamento);
     $stmt->execute();
     $result = $stmt->get_result();
     
@@ -107,6 +147,8 @@ try {
     $objetivos = [];
     
     while ($row = $result->fetch_assoc()) {
+        $is_managed_dept = in_array((int)$row['id_departamento'], $departamentos_gerente);
+        
         $objetivos[] = [
             'id_objetivo' => (int)$row['id_objetivo'],
             'nombre' => $row['nombre'],
@@ -114,7 +156,9 @@ try {
             'area' => $row['area'] ?? 'Sin asignar',
             'fecha_cumplimiento' => $row['fecha_cumplimiento'],
             'estado' => $row['estado'],
-            'archivo_adjunto' => $row['archivo_adjunto'] ?? null
+            'archivo_adjunto' => $row['archivo_adjunto'] ?? null,
+            'id_departamento' => (int)$row['id_departamento'],
+            'is_managed_department' => $is_managed_dept
         ];
     }
     
@@ -122,7 +166,10 @@ try {
         'success' => true,
         'objetivos' => $objetivos,
         'total' => count($objetivos),
-        'id_departamento' => $id_departamento
+        'id_departamento' => $departamento_principal,
+        'managed_departments' => $departamentos_gerente,
+        'managed_departments_count' => count($departamentos_gerente),
+        'is_admin' => $is_admin
     ], JSON_UNESCAPED_UNICODE);
     
     $result->free();

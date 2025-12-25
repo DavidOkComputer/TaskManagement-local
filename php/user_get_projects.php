@@ -1,34 +1,55 @@
 <?php
-/*user_get_projects.php para saber los proyectos del usuario actual*/
+/*user_get_projects.php para saber los proyectos del usuario actual */
+
 header('Content-Type: application/json');
 session_start();
 require_once 'db_config.php';
 ob_start();
- 
+
 $response = [
     'success' => false,
     'message' => '',
     'proyectos' => [],
     'total' => 0
 ];
- 
+
 try {
-    if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_department'])) {
+    // Solo verificar autenticación
+    $id_usuario = $_SESSION['user_id'] ?? $_SESSION['id_usuario'] ?? null;
+    
+    if (!$id_usuario) {
         throw new Exception('Usuario no autenticado');
     }
- 
-    $id_usuario = (int)$_SESSION['user_id'];
-    $id_departamento = (int)$_SESSION['user_department'];
- 
+    
+    $id_usuario = (int)$id_usuario;
+
     $conn = getDBConnection();
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
- 
+
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
         throw new Exception('Método no permitido');
     }
- 
+
+    $dept_query = "
+        SELECT ur.id_departamento
+        FROM tbl_usuario_roles ur
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC
+        LIMIT 1
+    ";
+    
+    $dept_stmt = $conn->prepare($dept_query);
+    $dept_stmt->bind_param('i', $id_usuario);
+    $dept_stmt->execute();
+    $dept_result = $dept_stmt->get_result();
+    $dept_row = $dept_result->fetch_assoc();
+    $id_departamento = $dept_row ? (int)$dept_row['id_departamento'] : 0;
+    $dept_stmt->close();
+
+    // Query para obtener proyectos donde el usuario está involucrado
     $query = "
         SELECT DISTINCT
             p.id_proyecto,
@@ -39,6 +60,7 @@ try {
             p.estado,
             p.id_tipo_proyecto,
             p.id_creador,
+            p.puede_editar_otros,
             d.nombre as area,
             u.nombre as participante_nombre,
             u.apellido as participante_apellido,
@@ -61,21 +83,21 @@ try {
             END, 
             p.fecha_cumplimiento ASC
     ";
- 
+
     $stmt = $conn->prepare($query);
     if (!$stmt) {
         throw new Exception('Error al preparar la consulta: ' . $conn->error);
     }
- 
+
     $stmt->bind_param("iii", $id_usuario, $id_usuario, $id_usuario);
- 
+
     if (!$stmt->execute()) {
         throw new Exception('Error al ejecutar la consulta: ' . $stmt->error);
     }
- 
+
     $result = $stmt->get_result();
     $proyectos = [];
- 
+
     while ($row = $result->fetch_assoc()) {
         // Determinar el texto del participante
         if ((int)$row['id_tipo_proyecto'] === 1) {
@@ -85,12 +107,12 @@ try {
         } else {
             $participante_text = 'Sin asignar';
         }
- 
+
         // Verificar relación con el proyecto
         $es_creador = (int)$row['id_creador'] === $id_usuario;
         $es_participante = (int)$row['id_participante'] === $id_usuario;
         $es_mi_proyecto = $es_creador || $es_participante;
- 
+
         // Para proyectos grupales
         if ((int)$row['id_tipo_proyecto'] === 1 && !$es_mi_proyecto) {
             $queryGrupo = "SELECT 1 FROM tbl_proyecto_usuarios WHERE id_proyecto = ? AND id_usuario = ?";
@@ -103,12 +125,12 @@ try {
                 $stmtGrupo->close();
             }
         }
- 
+
         // LÓGICA DE PERMISOS:
         // El CREADOR siempre puede crear tareas
         // No-creadores solo si puede_editar_otros = 1
         $puede_crear_tareas = $es_creador || ((int)$row['puede_editar_otros'] === 1 && $es_mi_proyecto);
- 
+
         $proyectos[] = [
             'id_proyecto' => (int)$row['id_proyecto'],
             'nombre' => $row['nombre'],
@@ -128,25 +150,24 @@ try {
             'total_tareas' => (int)$row['total_tareas']  
         ];
     }
- 
+
     $stmt->close();
     $conn->close();
- 
+
     $response['success'] = true;
     $response['proyectos'] = $proyectos;
     $response['total'] = count($proyectos);
     $response['id_usuario'] = $id_usuario;
     $response['id_departamento'] = $id_departamento;
     $response['message'] = 'Proyectos cargados exitosamente';
- 
+
 } catch (Exception $e) {
     $response['success'] = false;
     $response['message'] = 'Error al cargar proyectos: ' . $e->getMessage();
     error_log('user_get_projects.php Error: ' . $e->getMessage());
 }
- 
+
 ob_clean();
 echo json_encode($response, JSON_UNESCAPED_UNICODE);
 ob_end_flush();
 ?>
- 

@@ -1,6 +1,6 @@
 <?php 
 
-/*user_create_project.php para crear proyectos para usuarios */ 
+/*user_create_project.php para crear proyectos para usuarios*/ 
 
 ob_start(); 
 header('Content-Type: application/json; charset=UTF-8'); 
@@ -36,8 +36,19 @@ try {
         throw new Exception('Error de conexión a la base de datos'); 
     } 
 
-    // Obtener el departamento del usuario desde la base de datos 
-    $query_user = "SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?"; 
+    $query_user = "
+        SELECT 
+            ur.id_departamento,
+            ur.id_rol,
+            d.nombre as departamento_nombre
+        FROM tbl_usuario_roles ur
+        JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC
+        LIMIT 1
+    ";
+    
     $stmt_user = $conn->prepare($query_user); 
     if (!$stmt_user) { 
         throw new Exception('Error al preparar consulta de usuario: ' . $conn->error); 
@@ -53,17 +64,34 @@ try {
     $stmt_user->close(); 
 
     if (!$user_data) { 
-        throw new Exception('Usuario no encontrado en la base de datos'); 
+        throw new Exception('Usuario no tiene roles asignados. Por favor contacte al administrador.'); 
     } 
 
     if (!$user_data['id_departamento'] || $user_data['id_departamento'] == 0) { 
         throw new Exception('El usuario no tiene un departamento asignado. Por favor contacte al administrador.'); 
     } 
 
-    // Ahora tenemos el departamento del usuario desde la BD 
+    // Ahora tenemos el departamento del usuario desde tbl_usuario_roles
     $id_creador = $id_usuario; 
     $id_departamento = intval($user_data['id_departamento']); 
     $id_participante = $id_creador; // El usuario se asigna a sí mismo 
+
+    if (isset($_POST['id_departamento']) && !empty($_POST['id_departamento'])) {
+        $id_departamento_solicitado = intval($_POST['id_departamento']);
+        
+        // Verificar que el usuario tiene acceso a este departamento
+        $verify_dept = $conn->prepare("
+            SELECT 1 FROM tbl_usuario_roles 
+            WHERE id_usuario = ? AND id_departamento = ? AND activo = 1
+        ");
+        $verify_dept->bind_param("ii", $id_usuario, $id_departamento_solicitado);
+        $verify_dept->execute();
+        
+        if ($verify_dept->get_result()->num_rows > 0) {
+            $id_departamento = $id_departamento_solicitado;
+        }
+        $verify_dept->close();
+    }
 
     // Validar campos requeridos 
     $required_fields = [
@@ -135,12 +163,6 @@ try {
         throw new Exception('La fecha de entrega debe ser posterior o igual a la fecha de inicio'); 
     } 
 
-    // Conectar a la base de datos 
-    $conn = getDBConnection(); 
-    if (!$conn) { 
-        throw new Exception('Error de conexión a la base de datos'); 
-    } 
-
     // Insertar proyecto 
     $sql = "INSERT INTO tbl_proyectos ( 
         nombre, 
@@ -167,7 +189,7 @@ try {
         "ssissississii", 
         $nombre,                // s-1 
         $descripcion,           // s-2 
-        $id_departamento,       // i-3 (desde sesión) 
+        $id_departamento,       // i-3 (desde tbl_usuario_roles) 
         $fecha_creacion,        // s-4 
         $fecha_cumplimiento,    // s-5 
         $progreso,              // i-6 
@@ -187,15 +209,18 @@ try {
     $id_proyecto = $stmt->insert_id; 
     $stmt->close(); 
     $conn->close(); 
+    
     $response['success'] = true; 
     $response['message'] = 'Proyecto creado exitosamente'; 
-    $response['id_proyecto'] = $id_proyecto; 
+    $response['id_proyecto'] = $id_proyecto;
+    $response['id_departamento'] = $id_departamento;
 
 } catch (Exception $e) { 
     $response['success'] = false; 
     $response['message'] = $e->getMessage(); 
     error_log('Error in user_create_project.php: ' . $e->getMessage()); 
 } 
+
 ob_end_clean(); 
 echo json_encode($response); 
 exit; 

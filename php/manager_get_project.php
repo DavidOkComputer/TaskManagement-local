@@ -18,7 +18,7 @@ $response = [
 ];
 
 try {
-    //validar id del departamento
+    // Validar id del departamento
     if (!isset($_GET['id_departamento']) || empty($_GET['id_departamento'])) {
         throw new Exception('ID de departamento requerido');
     }
@@ -35,7 +35,42 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    //obtener todos los proyectos del departamento
+    $id_usuario = $_SESSION['user_id'] ?? $_SESSION['id_usuario'] ?? null;
+    
+    if ($id_usuario) {
+        $perm_query = "
+            SELECT ur.id_rol 
+            FROM tbl_usuario_roles ur 
+            WHERE ur.id_usuario = ? 
+                AND ur.activo = 1
+                AND (ur.id_rol = 1 OR (ur.id_rol = 2 AND ur.id_departamento = ?))
+            LIMIT 1
+        ";
+        $perm_stmt = $conn->prepare($perm_query);
+        $perm_stmt->bind_param('ii', $id_usuario, $id_departamento);
+        $perm_stmt->execute();
+        $perm_result = $perm_stmt->get_result();
+        
+        if ($perm_result->num_rows === 0) {
+            // No es admin ni gerente de este departamento
+            // Verificar si al menos tiene algún rol activo
+            $any_role = $conn->prepare("
+                SELECT 1 FROM tbl_usuario_roles 
+                WHERE id_usuario = ? AND activo = 1
+                LIMIT 1
+            ");
+            $any_role->bind_param('i', $id_usuario);
+            $any_role->execute();
+            
+            if ($any_role->get_result()->num_rows > 0) {
+                throw new Exception('No tiene permiso para ver proyectos de este departamento');
+            }
+            $any_role->close();
+        }
+        $perm_stmt->close();
+    }
+    
+    // Obtener todos los proyectos del departamento
     $query = "
         SELECT 
             p.id_proyecto,
@@ -78,7 +113,7 @@ try {
     $proyectos = [];
     
     while ($row = $result->fetch_assoc()) {
-        //detarminar texto del participante
+        // Determinar texto del participante
         if ((int)$row['id_tipo_proyecto'] === 1) {
             $participante = 'Grupo';
         } elseif ($row['participante_nombre']) {
@@ -110,7 +145,7 @@ try {
 } catch (Exception $e) {
     $response['success'] = false;
     $response['message'] = $e->getMessage();
-    error_log('manager_get_projects.php Error: ' . $e->getMessage());
+    error_log('manager_get_project.php Error: ' . $e->getMessage());
 }
 
 echo json_encode($response, JSON_UNESCAPED_UNICODE);

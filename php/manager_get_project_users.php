@@ -1,5 +1,5 @@
 <?php
-/*manager_get_project_users.php - obtener usuarios de un proyecto validando que pertenezca al departamento del gerente*/
+/*manager_get_project_users.php para obtener usuarios de un proyecto validando que pertenezca al departamento del gerente*/
 
 session_start();
 header('Content-Type: application/json');
@@ -37,32 +37,38 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Obtener el departamento del usuario logueado
-    $id_departamento_usuario = null;
+    $role_query = "
+        SELECT 
+            ur.id_rol,
+            ur.id_departamento,
+            ur.es_principal
+        FROM tbl_usuario_roles ur
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC
+    ";
     
-    if (isset($_SESSION['id_departamento']) && $_SESSION['id_departamento'] > 0) {
-        $id_departamento_usuario = (int)$_SESSION['id_departamento'];
-    } else {
-        $user_query = "SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?";
-        $user_stmt = $conn->prepare($user_query);
-        $user_stmt->bind_param("i", $id_usuario);
-        $user_stmt->execute();
-        $user_result = $user_stmt->get_result();
-        
-        if ($user_row = $user_result->fetch_assoc()) {
-            $id_departamento_usuario = (int)$user_row['id_departamento'];
-            $_SESSION['id_departamento'] = $id_departamento_usuario;
+    $role_stmt = $conn->prepare($role_query);
+    $role_stmt->bind_param('i', $id_usuario);
+    $role_stmt->execute();
+    $role_result = $role_stmt->get_result();
+    
+    $is_admin = false;
+    $departamentos_gerente = [];
+    
+    while ($row = $role_result->fetch_assoc()) {
+        if ($row['id_rol'] == 1) {
+            $is_admin = true;
         }
-        $user_stmt->close();
+        if ($row['id_rol'] == 2) {
+            $departamentos_gerente[] = (int)$row['id_departamento'];
+        }
     }
-    
-    if (!$id_departamento_usuario) {
-        throw new Exception('No se pudo determinar el departamento del usuario');
-    }
+    $role_stmt->close();
 
-    // Obtener información del proyecto y verificar que pertenece al departamento del usuario
+    // Obtener información del proyecto
     $stmt = $conn->prepare("
-        SELECT id_tipo_proyecto, id_participante, id_departamento
+        SELECT id_tipo_proyecto, id_participante, id_departamento, id_creador
         FROM tbl_proyectos
         WHERE id_proyecto = ?
     ");
@@ -87,11 +93,43 @@ try {
     $id_tipo_proyecto = intval($proyecto['id_tipo_proyecto']);
     $id_participante_individual = $proyecto['id_participante'];
     $id_departamento_proyecto = intval($proyecto['id_departamento']);
+    $id_creador_proyecto = intval($proyecto['id_creador']);
 
     $stmt->close();
 
-    // Validar que el proyecto pertenece al departamento del usuario
-    if ($id_departamento_proyecto !== $id_departamento_usuario) {
+    $has_access = false;
+    
+    // Admin tiene acceso a todo
+    if ($is_admin) {
+        $has_access = true;
+    }
+    // Gerente tiene acceso a proyectos de sus departamentos
+    elseif (in_array($id_departamento_proyecto, $departamentos_gerente)) {
+        $has_access = true;
+    }
+    // Usuario es creador del proyecto
+    elseif ($id_creador_proyecto == $id_usuario) {
+        $has_access = true;
+    }
+    // Usuario está asignado al proyecto (individual)
+    elseif ($id_participante_individual == $id_usuario) {
+        $has_access = true;
+    }
+    // Usuario está en el grupo del proyecto
+    else {
+        $group_check = $conn->prepare("
+            SELECT 1 FROM tbl_proyecto_usuarios 
+            WHERE id_proyecto = ? AND id_usuario = ?
+        ");
+        $group_check->bind_param('ii', $id_proyecto, $id_usuario);
+        $group_check->execute();
+        if ($group_check->get_result()->num_rows > 0) {
+            $has_access = true;
+        }
+        $group_check->close();
+    }
+    
+    if (!$has_access) {
         throw new Exception('No tiene permiso para acceder a este proyecto');
     }
 
@@ -186,6 +224,7 @@ try {
     $response['usuarios'] = $usuarios;
     $response['tipo_proyecto'] = $id_tipo_proyecto;
     $response['total_usuarios'] = count($usuarios);
+    $response['id_departamento'] = $id_departamento_proyecto;
 
 } catch (Exception $e) {
     $response['message'] = 'Error al cargar usuarios del proyecto: ' . $e->getMessage();

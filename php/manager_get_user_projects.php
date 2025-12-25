@@ -1,10 +1,10 @@
 <?php
 /* manager_get_user_projects.php saber proyectos de un usuario en especifico*/
- 
+
 session_start();
 header('Content-Type: application/json');
 require_once('db_config.php');
- 
+
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     echo json_encode([
         'success' => false,
@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     ]);
     exit;
 }
- 
+
 if (!isset($_GET['id_usuario'])) {
     echo json_encode([
         'success' => false,
@@ -20,66 +20,84 @@ if (!isset($_GET['id_usuario'])) {
     ]);
     exit;
 }
- 
+
 try {
     $conn = getDBConnection();
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
- 
-    $id_usuario = (int)$_GET['id_usuario'];
+
+    $id_usuario_solicitado = (int)$_GET['id_usuario'];
+    $id_usuario_manager = $_SESSION['user_id'] ?? $_SESSION['id_usuario'] ?? null;
     
-    //saber el id de departamento del gerente desde la sesion
-    $id_departamento_manager = null;
+    if (!$id_usuario_manager) {
+        throw new Exception('Usuario no autenticado');
+    }
+
+    $role_query = "
+        SELECT 
+            ur.id_rol,
+            ur.id_departamento,
+            ur.es_principal
+        FROM tbl_usuario_roles ur
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC
+    ";
     
-    if (isset($_SESSION['id_departamento']) && $_SESSION['id_departamento'] > 0) {
-        $id_departamento_manager = (int)$_SESSION['id_departamento'];
-    } else if (isset($_SESSION['user_id'])) {
-        //fallback saber el departamento desde el record el usuario
-        $user_query = "SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?";
-        $user_stmt = $conn->prepare($user_query);
-        $user_id = (int)$_SESSION['user_id'];
-        $user_stmt->bind_param("i", $user_id);
-        $user_stmt->execute();
-        $user_result = $user_stmt->get_result();
-        if ($user_row = $user_result->fetch_assoc()) {
-            $id_departamento_manager = (int)$user_row['id_departamento'];
-            $_SESSION['id_departamento'] = $id_departamento_manager; 
+    $role_stmt = $conn->prepare($role_query);
+    $role_stmt->bind_param('i', $id_usuario_manager);
+    $role_stmt->execute();
+    $role_result = $role_stmt->get_result();
+    
+    $is_admin = false;
+    $departamentos_gerente = [];
+    
+    while ($row = $role_result->fetch_assoc()) {
+        if ($row['id_rol'] == 1) {
+            $is_admin = true;
         }
-        $user_stmt->close();
+        if ($row['id_rol'] == 2) {
+            $departamentos_gerente[] = (int)$row['id_departamento'];
+        }
     }
+    $role_stmt->close();
     
-    if (!$id_departamento_manager) {
-        throw new Exception('No se pudo determinar el departamento del usuario');
+    if (empty($departamentos_gerente) && !$is_admin) {
+        throw new Exception('No tiene permisos de gerente');
     }
- 
-    //verificar que el usuario solicitado responde al departamento
-    $verify_query = "SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?";
-    $verify_stmt = $conn->prepare($verify_query);
-    $verify_stmt->bind_param("i", $id_usuario);
-    $verify_stmt->execute();
-    $verify_result = $verify_stmt->get_result();
-    
-    if ($verify_result->num_rows === 0) {
-        throw new Exception('Usuario no encontrado');
+
+    if (!$is_admin) {
+        $placeholders = implode(',', array_fill(0, count($departamentos_gerente), '?'));
+        $verify_query = "
+            SELECT 1 
+            FROM tbl_usuario_roles ur 
+            WHERE ur.id_usuario = ? 
+                AND ur.id_departamento IN ($placeholders)
+                AND ur.activo = 1
+            LIMIT 1
+        ";
+        
+        $verify_stmt = $conn->prepare($verify_query);
+        $types = 'i' . str_repeat('i', count($departamentos_gerente));
+        $params = array_merge([$id_usuario_solicitado], $departamentos_gerente);
+        $verify_stmt->bind_param($types, ...$params);
+        $verify_stmt->execute();
+        $verify_result = $verify_stmt->get_result();
+        
+        if ($verify_result->num_rows === 0) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'No tiene permiso para ver los proyectos de este usuario'
+            ]);
+            exit;
+        }
+        $verify_stmt->close();
     }
-    
-    $user_data = $verify_result->fetch_assoc();
-    $id_departamento_usuario = (int)$user_data['id_departamento'];
-    
-    //verificar que el usuario sea del mismo departamento
-    if ($id_departamento_usuario !== $id_departamento_manager) {
-        echo json_encode([
-            'success' => false,
-            'message' => 'No tiene permiso para ver los proyectos de este usuario'
-        ]);
-        exit;
-    }
-    
-    $verify_stmt->close();
- 
-    //saber todos los proyectos donde el usuario esta asignado, grupales o individuales
-    $query = "SELECT DISTINCT
+
+    if ($is_admin) {
+        $query = "
+            SELECT DISTINCT
                 p.id_proyecto,
                 p.nombre,
                 p.descripcion,
@@ -87,17 +105,10 @@ try {
                 p.fecha_cumplimiento,
                 p.estado,
                 p.id_tipo_proyecto,
+                p.id_departamento,
                 d.nombre as area,
-                -- contar el total de tareas del proyecto
-                (SELECT COUNT(*)
-                 FROM tbl_tareas t
-                 WHERE t.id_proyecto = p.id_proyecto) as tareas_totales,
-                -- contar tareas completadas
-                (SELECT COUNT(*)
-                 FROM tbl_tareas t
-                 WHERE t.id_proyecto = p.id_proyecto
-                 AND t.estado = 'completado') as tareas_completadas,
-                -- calcular el porcentaje de  progreso
+                (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto) as tareas_totales,
+                (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto AND t.estado = 'completado') as tareas_completadas,
                 CASE
                     WHEN (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto) > 0
                     THEN ROUND(
@@ -106,36 +117,81 @@ try {
                     , 1)
                     ELSE 0
                 END as progreso
-              FROM tbl_proyectos p
-              LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento
-              WHERE p.id_departamento = ?
-              AND (
-                  -- proyectos individuales
-                  (p.id_tipo_proyecto = 1 AND p.id_participante = ?)
-                  OR
-                  -- prppyectos grupales
-                  (p.id_tipo_proyecto = 2 AND EXISTS (
-                      SELECT 1 FROM tbl_tareas t
-                      WHERE t.id_proyecto = p.id_proyecto
-                      AND t.id_participante = ?
-                  ))
-              )
-              ORDER BY p.fecha_cumplimiento DESC, p.nombre ASC";
- 
-    $stmt = $conn->prepare($query);
+            FROM tbl_proyectos p
+            LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento
+            LEFT JOIN tbl_proyecto_usuarios pu ON p.id_proyecto = pu.id_proyecto
+            WHERE (
+                p.id_participante = ?
+                OR pu.id_usuario = ?
+                OR EXISTS (
+                    SELECT 1 FROM tbl_tareas t 
+                    WHERE t.id_proyecto = p.id_proyecto AND t.id_participante = ?
+                )
+            )
+            ORDER BY p.fecha_cumplimiento DESC, p.nombre ASC
+        ";
+        
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("iii", $id_usuario_solicitado, $id_usuario_solicitado, $id_usuario_solicitado);
+    } else {
+        $placeholders = implode(',', array_fill(0, count($departamentos_gerente), '?'));
+        
+        $query = "
+            SELECT DISTINCT
+                p.id_proyecto,
+                p.nombre,
+                p.descripcion,
+                p.fecha_inicio,
+                p.fecha_cumplimiento,
+                p.estado,
+                p.id_tipo_proyecto,
+                p.id_departamento,
+                d.nombre as area,
+                (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto) as tareas_totales,
+                (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto AND t.estado = 'completado') as tareas_completadas,
+                CASE
+                    WHEN (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto) > 0
+                    THEN ROUND(
+                        (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto AND t.estado = 'completado') * 100.0 /
+                        (SELECT COUNT(*) FROM tbl_tareas t WHERE t.id_proyecto = p.id_proyecto)
+                    , 1)
+                    ELSE 0
+                END as progreso
+            FROM tbl_proyectos p
+            LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento
+            LEFT JOIN tbl_proyecto_usuarios pu ON p.id_proyecto = pu.id_proyecto
+            WHERE p.id_departamento IN ($placeholders)
+            AND (
+                p.id_participante = ?
+                OR pu.id_usuario = ?
+                OR EXISTS (
+                    SELECT 1 FROM tbl_tareas t 
+                    WHERE t.id_proyecto = p.id_proyecto AND t.id_participante = ?
+                )
+            )
+            ORDER BY p.fecha_cumplimiento DESC, p.nombre ASC
+        ";
+        
+        $stmt = $conn->prepare($query);
+        $types = str_repeat('i', count($departamentos_gerente)) . 'iii';
+        $params = array_merge($departamentos_gerente, [$id_usuario_solicitado, $id_usuario_solicitado, $id_usuario_solicitado]);
+        $stmt->bind_param($types, ...$params);
+    }
+    
     if (!$stmt) {
         throw new Exception('Error al preparar la consulta: ' . $conn->error);
     }
- 
-    $stmt->bind_param("iii", $id_departamento_manager, $id_usuario, $id_usuario);
+
     $stmt->execute();
     $result = $stmt->get_result();
- 
+
     $proyectos = [];
     while ($row = $result->fetch_assoc()) {
         $progreso = (float)$row['progreso'];
         $tareas_totales = (int)$row['tareas_totales'];
         $tareas_completadas = (int)$row['tareas_completadas'];
+        
+        $is_managed = in_array((int)$row['id_departamento'], $departamentos_gerente);
         
         $proyectos[] = [
             'id_proyecto' => (int)$row['id_proyecto'],
@@ -145,26 +201,27 @@ try {
             'fecha_cumplimiento' => $row['fecha_cumplimiento'],
             'estado' => $row['estado'],
             'area' => $row['area'],
+            'id_departamento' => (int)$row['id_departamento'],
             'tareas_totales' => $tareas_totales,
             'tareas_completadas' => $tareas_completadas,
             'progreso' => $progreso,
-            'progreso_porcentaje' => number_format($progreso, 1)
+            'progreso_porcentaje' => number_format($progreso, 1),
+            'is_managed_department' => $is_managed
         ];
     }
- 
+
     echo json_encode([
         'success' => true,
         'proyectos' => $proyectos,
-        'debug' => [
-            'id_usuario' => $id_usuario,
-            'id_departamento' => $id_departamento_manager,
-            'total_proyectos' => count($proyectos)
-        ]
+        'total_proyectos' => count($proyectos),
+        'id_usuario' => $id_usuario_solicitado,
+        'managed_departments' => $departamentos_gerente,
+        'is_admin' => $is_admin
     ]);
- 
+
     $stmt->close();
     $conn->close();
- 
+
 } catch (Exception $e) {
     echo json_encode([
         'success' => false,

@@ -4,26 +4,66 @@ $user_name = $_SESSION['nombre'];
 $user_apellido = $_SESSION['apellido']; 
 $user_email = $_SESSION['e_mail']; 
 $user_id = $_SESSION['user_id']; 
+$user_department = $_SESSION["id_departamento"] ?? null;
+$user_foto_perfil = $_SESSION["foto_perfil"] ?? null;
+$user_rol_nombre = $_SESSION["rol_nombre"] ?? null;
+$user_departamento_nombre = $_SESSION["departamento_nombre"] ?? null;
 
-// Obtener el departamento del usuario si no está en la sesión
-$user_department = $_SESSION['id_departamento'] ?? null;
+$user_department = null;
+$managed_departments = [];
+$is_admin = false;
+$is_manager = false;
 
-if (!$user_department) {
-    require_once('../php/db_config.php');
-    $conn = getDBConnection();
-    if ($conn) {
-        $dept_stmt = $conn->prepare("SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?");
-        $dept_stmt->bind_param("i", $user_id);
-        $dept_stmt->execute();
-        $dept_result = $dept_stmt->get_result();
-        if ($dept_row = $dept_result->fetch_assoc()) {
-            $user_department = $dept_row['id_departamento'];
+require_once('../php/db_config.php');
+$conn = getDBConnection();
+
+if ($conn) {
+    // Obtener roles y departamentos del usuario
+    $role_query = "
+        SELECT 
+            ur.id_rol,
+            ur.id_departamento,
+            ur.es_principal,
+            d.nombre as departamento_nombre
+        FROM tbl_usuario_roles ur
+        JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC
+    ";
+    
+    $role_stmt = $conn->prepare($role_query);
+    $role_stmt->bind_param("i", $user_id);
+    $role_stmt->execute();
+    $role_result = $role_stmt->get_result();
+    
+    while ($row = $role_result->fetch_assoc()) {
+        // Guardar departamento principal
+        if ($row['es_principal'] == 1 || $user_department === null) {
+            $user_department = (int)$row['id_departamento'];
             $_SESSION['id_departamento'] = $user_department;
         }
-        $dept_stmt->close();
-        $conn->close();
+        
+        // Verificar roles
+        if ($row['id_rol'] == 1) {
+            $is_admin = true;
+        }
+        if ($row['id_rol'] == 2) {
+            $is_manager = true;
+            $managed_departments[] = [
+                'id' => (int)$row['id_departamento'],
+                'nombre' => $row['departamento_nombre']
+            ];
+        }
     }
+    $role_stmt->close();
+    $conn->close();
 }
+
+// Guardar en sesión para uso posterior
+$_SESSION['managed_departments'] = $managed_departments;
+$_SESSION['is_admin'] = $is_admin;
+$_SESSION['is_manager'] = $is_manager;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -286,12 +326,14 @@ if (!$user_department) {
   <script src="../js/hoverable-collapse.js"></script>
   <!-- End custom js for this page-->
   
-  <!-- IMPORTANTE: Variables de sesión para JavaScript -->
   <script>
     // Pasar datos de sesión a JavaScript para uso en manager_manage_tasks.js
     window.currentUserId = <?php echo json_encode((int)$user_id); ?>;
     window.currentDepartmentId = <?php echo json_encode($user_department ? (int)$user_department : null); ?>;
     window.currentUserName = <?php echo json_encode($user_name); ?>;
+    window.managedDepartments = <?php echo json_encode(array_column($managed_departments, 'id')); ?>;
+    window.isAdmin = <?php echo json_encode($is_admin); ?>;
+    window.isManager = <?php echo json_encode($is_manager); ?>;
   </script>
   
   <!-- Manager Task Management Script -->

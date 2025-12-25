@@ -1,5 +1,5 @@
 <?php
-/*manager_get_person_efficiency.php calculo de eficiencia de perssonas usado por el scatter chart*/
+/*manager_get_person_efficiency.php calculo de eficiencia de personas usado por el scatter chart*/
 
 ob_start();
 if (session_status() === PHP_SESSION_NONE) {
@@ -18,7 +18,7 @@ $response = [
 ];
 
 try {
-    //validar id del departamento
+    // Validar id del departamento
     if (!isset($_GET['id_departamento']) || empty($_GET['id_departamento'])) {
         throw new Exception('ID de departamento requerido');
     }
@@ -35,21 +35,59 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // obtener todos los usuarios del departamento
+    $id_usuario = $_SESSION['user_id'] ?? $_SESSION['id_usuario'] ?? null;
+    
+    if ($id_usuario) {
+        // Verificar permisos del usuario
+        $perm_query = "
+            SELECT ur.id_rol 
+            FROM tbl_usuario_roles ur 
+            WHERE ur.id_usuario = ? 
+                AND ur.activo = 1
+                AND (ur.id_rol = 1 OR (ur.id_rol = 2 AND ur.id_departamento = ?))
+            LIMIT 1
+        ";
+        $perm_stmt = $conn->prepare($perm_query);
+        $perm_stmt->bind_param('ii', $id_usuario, $id_departamento);
+        $perm_stmt->execute();
+        $perm_result = $perm_stmt->get_result();
+        
+        if ($perm_result->num_rows === 0) {
+            // Verificar si es admin
+            $admin_check = $conn->prepare("
+                SELECT 1 FROM tbl_usuario_roles 
+                WHERE id_usuario = ? AND id_rol = 1 AND activo = 1
+            ");
+            $admin_check->bind_param('i', $id_usuario);
+            $admin_check->execute();
+            
+            if ($admin_check->get_result()->num_rows === 0) {
+                throw new Exception('No tiene permiso para ver este departamento');
+            }
+            $admin_check->close();
+        }
+        $perm_stmt->close();
+    }
+    
     $query = "
         SELECT 
             u.id_usuario,
             u.nombre,
             u.apellido,
+            ur.id_rol,
+            r.nombre as rol_nombre,
             COUNT(t.id_tarea) AS total_tareas,
             SUM(CASE WHEN t.estado = 'completado' THEN 1 ELSE 0 END) AS completadas,
             SUM(CASE WHEN t.estado = 'en proceso' THEN 1 ELSE 0 END) AS en_proceso,
             SUM(CASE WHEN t.estado = 'pendiente' THEN 1 ELSE 0 END) AS pendientes,
             SUM(CASE WHEN t.estado = 'vencido' THEN 1 ELSE 0 END) AS vencidas
         FROM tbl_usuarios u
+        INNER JOIN tbl_usuario_roles ur ON u.id_usuario = ur.id_usuario
+        LEFT JOIN tbl_roles r ON ur.id_rol = r.id_rol
         LEFT JOIN tbl_tareas t ON u.id_usuario = t.id_participante
-        WHERE u.id_departamento = ?
-        GROUP BY u.id_usuario, u.nombre, u.apellido
+        WHERE ur.id_departamento = ?
+            AND ur.activo = 1
+        GROUP BY u.id_usuario, u.nombre, u.apellido, ur.id_rol, r.nombre
         HAVING total_tareas > 0
         ORDER BY total_tareas DESC
     ";
@@ -89,15 +127,15 @@ try {
         $completadas = (int)$row['completadas'];
         $nombreCompleto = $row['nombre'] . ' ' . $row['apellido'];
         
-        //calcular la eficiciencia de la persona dependiendo de las tareas completadas
+        // Calcular la eficiencia de la persona dependiendo de las tareas completadas
         $efficiency = $totalTareas > 0 ? round(($completadas / $totalTareas) * 100, 1) : 0;
         
-        //el tamanio de la burbuja depende del total de tareas
+        // El tamaño de la burbuja depende del total de tareas
         $bubbleSize = max(8, min(25, 8 + ($totalTareas * 2)));
         
         $color = $colors[$colorIndex % count($colors)];
         
-        //agregar informacion para la persona
+        // Agregar información para la persona
         $datasets[] = [
             'label' => $nombreCompleto,
             'data' => [
@@ -113,7 +151,7 @@ try {
             'borderWidth' => 2
         ];
         
-        //guardar detalles para tooltips
+        // Guardar detalles para tooltips
         $details[] = [
             'nombre_completo' => $nombreCompleto,
             'total_tareas' => $totalTareas,
@@ -121,7 +159,9 @@ try {
             'en_proceso' => (int)$row['en_proceso'],
             'pendientes' => (int)$row['pendientes'],
             'vencidas' => (int)$row['vencidas'],
-            'efficiency' => $efficiency
+            'efficiency' => $efficiency,
+            'id_rol' => (int)$row['id_rol'],
+            'rol_nombre' => $row['rol_nombre']
         ];
         
         $colorIndex++;
@@ -134,7 +174,7 @@ try {
         exit;
     }
     
-    //calcular la eficiencia promedio
+    // Calcular la eficiencia promedio
     $avgEfficiency = 0;
     if (!empty($details)) {
         $totalEfficiency = array_sum(array_column($details, 'efficiency'));

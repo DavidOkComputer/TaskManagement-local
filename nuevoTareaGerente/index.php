@@ -1,361 +1,343 @@
- 
 <?php
-/* nuevaTareaGerente para crear nuevas tareas como gerente */
-require_once "../php/check_auth.php";
-
-// Obtener información básica del usuario desde la sesión
-$user_name = $_SESSION["nombre"];
-$user_apellido = $_SESSION["apellido"];
-$user_email = $_SESSION["e_mail"];
-$user_id = $_SESSION["user_id"];
-$user_rol = $_SESSION["id_rol"] ?? null;
-
-// Obtener información completa del usuario incluyendo foto de perfil
+require_once('../php/check_auth.php');
+$user_name = $_SESSION['nombre']; 
+$user_apellido = $_SESSION['apellido']; 
+$user_email = $_SESSION['e_mail']; 
+$user_id = $_SESSION['user_id']; 
 $user_department = $_SESSION["id_departamento"] ?? null;
 $user_foto_perfil = $_SESSION["foto_perfil"] ?? null;
 $user_rol_nombre = $_SESSION["rol_nombre"] ?? null;
 $user_departamento_nombre = $_SESSION["departamento_nombre"] ?? null;
-?> 
 
-<!DOCTYPE html> 
-<html lang="es"> 
-<head> 
-    <!-- Required meta tags --> 
-    <meta charset="utf-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> 
-    <title>Administrador de tareas - Gerente</title> 
-    <!-- plugins:css --> 
-    <link rel="stylesheet" href="../vendors/feather/feather.css"> 
-    <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css"> 
-    <link rel="stylesheet" href="../vendors/ti-icons/css/themify-icons.css"> 
-    <link rel="stylesheet" href="../vendors/typicons/typicons.css"> 
-    <link rel="stylesheet" href="../vendors/simple-line-icons/css/simple-line-icons.css"> 
-    <link rel="stylesheet" href="../vendors/css/vendor.bundle.base.css"> 
-    <!-- inject:css --> 
-    <link rel="stylesheet" href="../css/vertical-layout-light/style.css"> 
-    <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" /> 
-</head> 
-<body> 
-    <div class="container-scroller"> 
-        <!-- partial:partials/_navbar.html --> 
-        <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row"> 
-            <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start"> 
-                <div class="me-3"> 
-                    <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-bs-toggle="minimize"> 
-                        <span class="icon-menu"></span> 
-                    </button> 
-                </div> 
-                <div> 
-                    <a class="navbar-brand brand-logo" href="../managerDashboard"> 
-                        <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" /> 
-                    </a> 
-                    <a class="navbar-brand brand-logo-mini" href="../managerDashboard"> 
-                        <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" /> 
-                    </a> 
-                </div> 
-            </div> 
-            <div class="navbar-menu-wrapper d-flex align-items-top"> 
-                <ul class="navbar-nav"> 
-                    <li class="nav-item font-weight-semibold d-none d-lg-block ms-0"> 
-                        <h1 class="welcome-text">Buenos días,  
-                            <span class="text-black fw-bold"> 
-                                <?php echo htmlspecialchars($user_name); ?> 
-                            </span> 
-                        </h1> 
-                        <h3 class="welcome-sub-text"> 
-                            Crea y desarrolla nuevas tareas 
-                            <?php if ($user_departamento_nombre): ?> 
-                                <span class="user-info-badge"> 
-                                    <i class="mdi mdi-domain"></i> <?php 
-                                      echo htmlspecialchars(
-                                      $user_departamento_nombre,
-                                    ); ?> 
-                                </span> 
-                            <?php endif; ?> 
-                        </h3> 
-                    </li> 
-                </ul> 
-                <ul class="navbar-nav ms-auto"> 
-                    <!-- Notifications Dropdown --> 
-                    <li class="nav-item dropdown"> 
-                        <a class="nav-link count-indicator" id="countDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false"> 
-                            <i class="icon-bell"></i> 
-                            <span class="count" style="display: none;"></span> 
-                        </a> 
+$user_department = null;
+$managed_departments = [];
+$is_admin = false;
+$is_manager = false;
 
-                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown notification-dropdown pb-0" aria-labelledby="countDropdown"> 
-                           <!-- Header del dropdown --> 
-                            <div class="dropdown-header d-flex justify-content-between align-items-center py-3 border-bottom"> 
-                                <span class="font-weight-semibold">Notificaciones</span> 
-                                <a href="javascript:void(0)" id="markAllNotificationsRead" class="text-primary small"> 
-                                    <i class="mdi mdi-check-all me-1"></i>Marcar todas como leídas 
-                                </a> 
-                            </div> 
+require_once('../php/db_config.php');
+$conn = getDBConnection();
 
-                            <!-- Contenedor de notificaciones --> 
-                            <div id="notificationsContainer" style="max-height: 350px; overflow-y: auto;"> 
-                                <div class="notification-loading py-4 text-center"> 
-                                    <div class="spinner-border spinner-border-sm text-primary" role="status"> 
-                                        <span class="visually-hidden">Cargando...</span> 
-                                    </div> 
-                                    <p class="mt-2 mb-0 text-muted small">Cargando notificaciones...</p> 
-                                </div> 
-                            </div> 
-                        </div> 
-                    </li> 
+if ($conn) {
+    // Obtener roles y departamentos del usuario
+    $role_query = "
+        SELECT 
+            ur.id_rol,
+            ur.id_departamento,
+            ur.es_principal,
+            d.nombre as departamento_nombre
+        FROM tbl_usuario_roles ur
+        JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC
+    ";
+    
+    $role_stmt = $conn->prepare($role_query);
+    $role_stmt->bind_param("i", $user_id);
+    $role_stmt->execute();
+    $role_result = $role_stmt->get_result();
+    
+    while ($row = $role_result->fetch_assoc()) {
+        // Guardar departamento principal
+        if ($row['es_principal'] == 1 || $user_department === null) {
+            $user_department = (int)$row['id_departamento'];
+            $_SESSION['id_departamento'] = $user_department;
+        }
+        
+        // Verificar roles
+        if ($row['id_rol'] == 1) {
+            $is_admin = true;
+        }
+        if ($row['id_rol'] == 2) {
+            $is_manager = true;
+            $managed_departments[] = [
+                'id' => (int)$row['id_departamento'],
+                'nombre' => $row['departamento_nombre']
+            ];
+        }
+    }
+    $role_stmt->close();
+    $conn->close();
+}
 
-                    <li class="nav-item dropdown d-none d-lg-block user-dropdown"> 
-                        <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false"> 
-                            <i class="mdi mdi-account" alt="profile icon"></i>
-                        </a> 
+// Guardar en sesión para uso posterior
+$_SESSION['managed_departments'] = $managed_departments;
+$_SESSION['is_admin'] = $is_admin;
+$_SESSION['is_manager'] = $is_manager;
+?>
+<!DOCTYPE html>
+<html lang="en">
 
-                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown"> 
-                            <div class="dropdown-header text-center"> 
-                                <p class="mb-1 mt-3 font-weight-semibold"> 
-                                    <?php echo htmlspecialchars(
-                                      $user_name . " " . $user_apellido,
-                                    ); ?> 
-                                </p> 
-                                <p class="fw-light text-muted mb-0"> 
-                                    <?php echo htmlspecialchars(
-                                      $user_email,
-                                    ); ?> 
-                                </p> 
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Administrador de tareas </title>
+  <!-- plugins:css -->
+  <link rel="stylesheet" href="../vendors/feather/feather.css">
+  <link rel="stylesheet" href="../vendors/mdi/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="../vendors/ti-icons/css/themify-icons.css">
+  <link rel="stylesheet" href="../vendors/typicons/typicons.css">
+  <link rel="stylesheet" href="../vendors/simple-line-icons/css/simple-line-icons.css">
+  <link rel="stylesheet" href="../vendors/css/vendor.bundle.base.css">
+  <!-- endinject -->
+  <!-- inject:css -->
+  <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
+  <!-- endinject -->
+  <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
+</head>
+<body>
+  <div class="container-scroller"> 
+    <!-- partial:partials/_navbar.html -->
+    <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
+      <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
+        <div class="me-3">
+          <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-bs-toggle="minimize">
+            <span class="icon-menu"></span>
+          </button>
+        </div>
+        <div>
+          <a class="navbar-brand brand-logo" href="../managerDashboard">
+            <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
+          </a>
+          <a class="navbar-brand brand-logo-mini" href="../managerDashboard">
+            <img src="../images/Nidec Institutional Logo_Original Version.png" alt="logo" />
+          </a>
+        </div>
+      </div>
+      <div class="navbar-menu-wrapper d-flex align-items-top"> 
+        <ul class="navbar-nav">
+          <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
+            <h1 class="welcome-text">Buenos dias, 
+              <span class="text-black fw-bold">
+                <?php echo htmlspecialchars($user_name); ?>
+              </span>
+            </h1>
+            <h3 class="welcome-sub-text">Crea y desarrolla nuevas tareas </h3>
+          </li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item dropdown"> 
+              <a class="nav-link count-indicator" id="countDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="icon-bell"></i>
+                  <span class="count" style="display: none;"></span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right navbar-dropdown notification-dropdown pb-0" aria-labelledby="countDropdown">
+                  <!-- Header del dropdown -->
+                  <div class="dropdown-header d-flex justify-content-between align-items-center py-3 border-bottom">
+                      <span class="font-weight-semibold">Notificaciones</span>
+                      <a href="javascript:void(0)" id="markAllNotificationsRead" class="text-primary small">
+                          <i class="mdi mdi-check-all me-1"></i>Marcar todas como leídas
+                      </a>
+                  </div>
+                  <!-- Contenedor de notificaciones (se llena dinámicamente) -->
+                  <div id="notificationsContainer" style="max-height: 350px; overflow-y: auto;">
+                      <!-- Loading state -->
+                      <div class="notification-loading py-4 text-center">
+                          <div class="spinner-border spinner-border-sm text-primary" role="status">
+                              <span class="visually-hidden">Cargando...</span>
+                          </div>
+                          <p class="mt-2 mb-0 text-muted small">Cargando notificaciones...</p>
+                      </div>
+                  </div>
+              </div>
+          </li>
+          <li class="nav-item dropdown d-none d-lg-block user-dropdown">
+            <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="mdi mdi-account" alt="profile icon"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
+              <div class="dropdown-header text-center">
+                <p class="mb-1 mt-3 font-weight-semibold">
+                  <?php echo htmlspecialchars($user_name . ' ' . $user_apellido); ?>
+                </p>
+                <p class="fw-light text-muted mb-0">
+                  <?php echo htmlspecialchars($user_email); ?>
+                </p>
+              </div>
+              <a class="dropdown-item" href="../php/logout.php">
+                <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>
+                Cerrar sesion
+              </a>
+            </div>
+          </li>
+        </ul>
+        <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-bs-toggle="offcanvas">
+          <span class="mdi mdi-menu"></span>
+        </button>
+      </div>
+    </nav>
+    <!-- partial -->
+    <div class="container-fluid page-body-wrapper">
+      <!-- partial -->
+      <!-- partial:partials/_sidebar.html -->
+      <nav class="sidebar sidebar-offcanvas" id="sidebar">
+        <ul class="nav">
+          <li class="nav-item nav-category">Gestion de usuarios</li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
+              <i class="menu-icon mdi mdi-account-multiple"></i>
+              <span class="menu-title">Empleados</span>
+              <i class="menu-arrow"></i> 
+            </a>
+            <div class="collapse" id="ui-basic">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="../gestionDeEmpleados-Gerente/">Gestion de empleados</a></li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item nav-category">Proyectos</li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#form-elements" aria-expanded="false" aria-controls="form-elements">
+              <i class="menu-icon mdi mdi-folder-upload"></i>
+              <span class="menu-title">Crear proyecto</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="form-elements">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"><a class="nav-link" href="../nuevoProyectoGerente/">Crear nuevo proyecto</a></li>
+                <li class="nav-item"><a class="nav-link" href="../nuevoObjetivoGerente/">Crear nuevo objetivo</a></li>
+                <li class="nav-item"><a class="nav-link" href="../nuevoTareaGerente/">Crear nueva tarea</a></li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
+              <i class="menu-icon mdi mdi-chart-line"></i>
+              <span class="menu-title">Graficado</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="charts">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="../revisarGraficosGerente">Revisar graficos</a></li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
+              <i class="menu-icon mdi mdi-magnify"></i>
+              <span class="menu-title">Revisar Proyectos</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="tables">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="../revisarProyectosGerente/">Revisar proyectos</a></li>
+              </ul>
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="../revisarObjetivosGerente/">Revisar objetivos</a></li>
+              </ul>
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="../revisarTareasGerente/">Revisar tareas</a></li>
+              </ul>
+            </div>
+          </li>
+          <li class="nav-item nav-category">Sesión</li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
+              <i class="menu-icon mdi mdi-logout"></i>
+              <span class="menu-title">Terminar sesión</span>
+              <i class="menu-arrow"></i>
+            </a>
+            <div class="collapse" id="auth">
+              <ul class="nav flex-column sub-menu">
+                <li class="nav-item"> <a class="nav-link" href="../php/logout.php"> Cerrar Sesión </a></li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </nav>
+      <!-- partial -->
+      <div class="main-panel">        
+        <div class="content-wrapper">
+          <div class="col-12 grid-margin">
+              <div class="card">
+                <div class="card-body">
+                  <div id="alertContainer">
+                    <h4 class="card-title">Asignación de tareas para proyectos</h4>
+                    <p class="card-description">Asigne las tareas a desarrollar dentro del proyecto <small class="text-muted">(Solo proyectos de su departamento)</small></p>
+                  </div>
+                  <hr>
+                  <div class="row">
+                      <div class="col-bg-12">
+                        <div class="form-group row">
+                          <label class="col-sm-3 col-form-label">Seleccione el proyecto</label>
+                          <div class="col-sm-9">
+                            <select class="form-control" 
+                                    id="id_proyecto"
+                                    name="id_proyecto">
+                              <option value="">Seleccione un proyecto</option>
+                            </select>
+                            <small class="form-text text-muted" id="projectPermissionNote" style="display: none;"></small>
+                          </div>
+                          <hr>
+                        </div>
+                      </div>
+                    </div>
+                  <div class="row">
+                    <div class="col-lg-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="card-title card-title-dash">Lista de tareas</h4>
+                              <div class="add-items d-flex mb-0">
+                                <button class="add btn btn-icons btn-rounded btn-primary todo-list-add-btn text-white me-0 pl-12p"><i class="mdi mdi-plus"></i></button>
+                              </div>
+                        </div>
+                        <!-- Loading spinner -->
+                        <div id="tasksLoading" class="text-center py-4" style="display: none;">
+                          <div class="spinner-border" role="status">
+                            <span class="sr-only">Cargando tareas...</span>
+                          </div>
+                        </div>
+                        <!-- Tasks list -->
+                        <div class="list-wrapper">
+                          <ul class="todo-list todo-list-rounded" id="tasksList">
+                            <li class="d-block text-center py-4">
+                              <p class="text-muted">Seleccione un proyecto para ver sus tareas</p>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+        <!-- content-wrapper ends -->
+        <!-- partial -->
+      </div>
+      <!-- main-panel ends -->
+    </div>
+        <!-- content-wrapper ends --> 
+      </div>
+      <!-- main-panel ends -->
+    </div>
+    <!-- page-body-wrapper ends -->
+  </div>
+  <!-- container-scroller -->
 
-                                <?php if ($user_rol_nombre): ?> 
-                                    <span class="badge bg-success mt-2"> 
-                                        <?php echo htmlspecialchars(
-                                          ucfirst($user_rol_nombre),
-                                        ); ?> 
-                                    </span> 
-                                <?php endif; ?> 
-
-                                <?php if ($user_departamento_nombre): ?> 
-                                    <p class="text-muted small mt-1 mb-0"> 
-                                        <i class="mdi mdi-domain"></i> <?php echo htmlspecialchars(
-                                          $user_departamento_nombre,
-                                        ); ?> 
-                                    </p> 
-                                <?php endif; ?> 
-                            </div> 
-
-                            <a class="dropdown-item" href="../php/logout.php"> 
-                                <i class="dropdown-item-icon mdi mdi-power text-primary me-2"></i> 
-                                Cerrar sesión 
-                            </a> 
-                        </div> 
-                    </li> 
-                </ul> 
-                <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-bs-toggle="offcanvas"> 
-                    <span class="mdi mdi-menu"></span> 
-                </button> 
-            </div> 
-        </nav> 
-     
-        <!-- partial --> 
-        <div class="container-fluid page-body-wrapper"> 
-            <!-- partial:partials/_sidebar.html --> 
-            <nav class="sidebar sidebar-offcanvas" id="sidebar"> 
-                <ul class="nav"> 
-                    <li class="nav-item nav-category">Gestión de usuarios</li> 
-                    <li class="nav-item"> 
-                        <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic"> 
-                            <i class="menu-icon mdi mdi-account-multiple"></i> 
-                            <span class="menu-title">Empleados</span> 
-                            <i class="menu-arrow"></i> 
-                        </a> 
-
-                        <div class="collapse" id="ui-basic"> 
-                            <ul class="nav flex-column sub-menu"> 
-                                <li class="nav-item"> 
-                                    <a class="nav-link" href="../gestionDeEmpleados-Gerente/">Gestión de empleados</a> 
-                                </li> 
-                            </ul> 
-                        </div> 
-                    </li> 
-                   
-                    <li class="nav-item nav-category">Proyectos</li> 
-                    <li class="nav-item"> 
-                        <a class="nav-link" data-bs-toggle="collapse" href="#form-elements" aria-expanded="false" aria-controls="form-elements"> 
-                            <i class="menu-icon mdi mdi-folder-upload"></i> 
-                            <span class="menu-title">Crear proyecto</span> 
-                            <i class="menu-arrow"></i> 
-                        </a> 
-
-                        <div class="collapse" id="form-elements"> 
-                            <ul class="nav flex-column sub-menu"> 
-                                <li class="nav-item"> 
-                                    <a class="nav-link" href="../nuevoProyectoGerente/">Crear nuevo proyecto</a> 
-                                </li> 
-
-                                <li class="nav-item"> 
-                                    <a class="nav-link" href="../nuevoObjetivoGerente/">Crear nuevo objetivo</a> 
-                                </li> 
-
-                                <li class="nav-item"> 
-                                    <a class="nav-link" href="../nuevoTareaGerente/">Crear nueva tarea</a> 
-                                </li> 
-                            </ul> 
-                        </div> 
-                    </li> 
-
-                    <li class="nav-item"> 
-                        <a class="nav-link" data-bs-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts"> 
-                            <i class="menu-icon mdi mdi-chart-line"></i> 
-                            <span class="menu-title">Graficado</span> 
-                            <i class="menu-arrow"></i> 
-                        </a> 
-
-                        <div class="collapse" id="charts"> 
-                            <ul class="nav flex-column sub-menu"> 
-                                <li class="nav-item"> 
-                                    <a class="nav-link" href="../revisarGraficosGerente">Revisar gráficos</a> 
-                                </li> 
-                            </ul> 
-                        </div> 
-                    </li> 
-
-                    <li class="nav-item"> 
-                        <a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables"> 
-                            <i class="menu-icon mdi mdi-magnify"></i> 
-                            <span class="menu-title">Revisar Proyectos</span> 
-                            <i class="menu-arrow"></i> 
-                        </a> 
-
-                        <div class="collapse" id="tables"> 
-                            <ul class="nav flex-column sub-menu"> 
-                                <li class="nav-item"> 
-                                    <a class="nav-link" href="../revisarProyectosGerente/">Revisar proyectos</a> 
-                                </li> 
-                                <li class="nav-item"> 
-                                    <a class="nav-link" href="../revisarObjetivosGerente/">Revisar objetivos</a> 
-                                </li> 
-                                <li class="nav-item"> 
-                                    <a class="nav-link" href="../revisarTareasGerente/">Revisar tareas</a> 
-                                </li> 
-                            </ul> 
-                        </div> 
-                    </li> 
-
-                    <li class="nav-item nav-category">Sesión</li> 
-                    <li class="nav-item"> 
-                        <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth"> 
-                            <i class="menu-icon mdi mdi-logout"></i> 
-                            <span class="menu-title">Terminar sesión</span> 
-                            <i class="menu-arrow"></i> 
-                        </a> 
-
-                        <div class="collapse" id="auth"> 
-                            <ul class="nav flex-column sub-menu"> 
-                                <li class="nav-item"> 
-                                    <a class="nav-link" href="../php/logout.php">Cerrar Sesión</a> 
-                                </li> 
-                            </ul> 
-                        </div> 
-                    </li> 
-                </ul> 
-            </nav> 
-            <!-- partial --> 
-            <div class="main-panel"> 
-                <div class="content-wrapper"> 
-                    <div class="col-12 grid-margin"> 
-                        <div class="card"> 
-                            <div class="card-body"> 
-                                <div id="alertContainer"> 
-                                    <h4 class="card-title">Asignación de tareas para proyectos</h4> 
-                                    <p class="card-description"> 
-                                        Asigne las tareas a desarrollar dentro del proyecto  
-                                        <small class="text-muted">(Solo proyectos de su departamento: <?php echo htmlspecialchars(
-                                          $user_departamento_nombre ??
-                                            "Sin departamento",
-                                        ); ?>)</small> 
-                                    </p> 
-                                </div> 
-                                <hr> 
-                                <div class="row"> 
-                                    <div class="col-bg-12"> 
-                                        <div class="form-group row"> 
-                                            <label class="col-sm-3 col-form-label">Seleccione el proyecto</label> 
-                                            <div class="col-sm-9"> 
-                                                <select class="form-control" id="id_proyecto" name="id_proyecto"> 
-                                                    <option value="">Seleccione un proyecto</option> 
-                                                </select> 
-                                                <small class="form-text text-muted" id="projectPermissionNote" style="display: none;"></small> 
-                                            </div> 
-                                            <hr> 
-                                        </div> 
-                                    </div> 
-                                </div> 
-                                <div class="row"> 
-                                    <div class="col-lg-12"> 
-                                        <div class="d-flex justify-content-between align-items-center"> 
-                                            <h4 class="card-title card-title-dash">Lista de tareas</h4> 
-                                            <div class="add-items d-flex mb-0"> 
-                                                <button class="add btn btn-icons btn-rounded btn-primary todo-list-add-btn text-white me-0 pl-12p"> 
-                                                    <i class="mdi mdi-plus"></i> 
-                                                </button> 
-                                            </div> 
-                                        </div> 
-
-                                        <!-- Loading spinner --> 
-                                        <div id="tasksLoading" class="text-center py-4" style="display: none;"> 
-                                            <div class="spinner-border" role="status"> 
-                                                <span class="sr-only">Cargando tareas...</span> 
-                                            </div> 
-                                        </div> 
-                                       
-                                        <!-- Tasks list --> 
-                                        <div class="list-wrapper"> 
-                                            <ul class="todo-list todo-list-rounded" id="tasksList"> 
-                                                <li class="d-block text-center py-4"> 
-                                                    <p class="text-muted">Seleccione un proyecto para ver sus tareas</p> 
-                                                </li> 
-                                            </ul> 
-                                        </div> 
-                                    </div> 
-                                </div> 
-                            </div> 
-                        </div> 
-                    </div> 
-                </div> 
-                <!-- content-wrapper ends --> 
-            </div> 
-            <!-- main-panel ends --> 
-        </div> 
-        <!-- page-body-wrapper ends --> 
-    </div> 
-    <!-- container-scroller --> 
-   
-    <!-- plugins:js --> 
-    <script src="../vendors/js/vendor.bundle.base.js"></script> 
-    <!-- inject:js --> 
-    <script src="../js/template.js"></script> 
-    <!-- Custom js for this page--> 
-    <script src="../js/file-upload.js"></script> 
-    <script src="../js/dashboard.js"></script> 
-    <script src="../js/hoverable-collapse.js"></script> 
-    <!-- IMPORTANTE: Variables de sesión para JavaScript --> 
-    <script> 
-        // Pasar datos de sesión a JavaScript para uso en manager_manage_tasks.js 
-        window.currentUserId = <?php echo json_encode((int) $user_id); ?>; 
-        window.currentDepartmentId = <?php echo json_encode(
-          $user_department ? (int) $user_department : null,
-        ); ?>; 
-        window.currentUserName = <?php echo json_encode($user_name); ?>; 
-        window.currentUserRole = <?php echo json_encode((int) $user_rol); ?>; 
-        window.currentUserRoleName = <?php echo json_encode(
-          $user_rol_nombre,
-        ); ?>; 
-        window.currentDepartmentName = <?php echo json_encode(
-          $user_departamento_nombre,
-        ); ?>; 
-        window.currentUserFotoPerfil = <?php echo json_encode(
-          $user_foto_perfil,
-        ); ?>; 
-    </script> 
-
-    <!-- Manager Task Management Script --> 
-    <script src="../js/manager_manage_tasks.js"></script> 
-    <script src="../js/notifications.js"></script> 
-</body> 
-</html> 
+  <!-- plugins:js -->
+  <script src="../vendors/js/vendor.bundle.base.js"></script>
+  <!-- endinject -->
+  <!-- inject:js -->
+  <script src="../js/template.js"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page-->
+  <script src="../js/file-upload.js"></script>
+  <script src="../js/dashboard.js"></script>
+  <script src="../js/hoverable-collapse.js"></script>
+  <!-- End custom js for this page-->
+  
+  <script>
+    // Pasar datos de sesión a JavaScript para uso en manager_manage_tasks.js
+    window.currentUserId = <?php echo json_encode((int)$user_id); ?>;
+    window.currentDepartmentId = <?php echo json_encode($user_department ? (int)$user_department : null); ?>;
+    window.currentUserName = <?php echo json_encode($user_name); ?>;
+    window.managedDepartments = <?php echo json_encode(array_column($managed_departments, 'id')); ?>;
+    window.isAdmin = <?php echo json_encode($is_admin); ?>;
+    window.isManager = <?php echo json_encode($is_manager); ?>;
+  </script>
+  
+  <!-- Manager Task Management Script -->
+  <script src="../js/manager_manage_tasks.js"></script>
+  <script src="../js/notifications.js"></script>
+</body>
+</html>

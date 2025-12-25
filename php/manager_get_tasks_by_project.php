@@ -1,5 +1,5 @@
 <?php
-/*manager_get_tasks_by_project.php para saber las tareas de un proyecto validando que pertenezca al departamento del gerente*/
+/*manager_get_tasks_by_project.php para saber las tareas de un proyecto validando permisos */
 
 session_start();
 header('Content-Type: application/json');
@@ -41,31 +41,37 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    // Obtener el departamento del usuario logueado
-    $id_departamento_usuario = null;
+    $role_query = "
+        SELECT 
+            ur.id_rol,
+            ur.id_departamento,
+            ur.es_principal
+        FROM tbl_usuario_roles ur
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC
+    ";
     
-    if (isset($_SESSION['id_departamento']) && $_SESSION['id_departamento'] > 0) {
-        $id_departamento_usuario = (int)$_SESSION['id_departamento'];
-    } else {
-        $user_query = "SELECT id_departamento FROM tbl_usuarios WHERE id_usuario = ?";
-        $user_stmt = $conn->prepare($user_query);
-        $user_stmt->bind_param("i", $id_usuario);
-        $user_stmt->execute();
-        $user_result = $user_stmt->get_result();
-        
-        if ($user_row = $user_result->fetch_assoc()) {
-            $id_departamento_usuario = (int)$user_row['id_departamento'];
-            $_SESSION['id_departamento'] = $id_departamento_usuario;
+    $role_stmt = $conn->prepare($role_query);
+    $role_stmt->bind_param('i', $id_usuario);
+    $role_stmt->execute();
+    $role_result = $role_stmt->get_result();
+    
+    $is_admin = false;
+    $departamentos_gerente = [];
+    
+    while ($row = $role_result->fetch_assoc()) {
+        if ($row['id_rol'] == 1) {
+            $is_admin = true;
         }
-        $user_stmt->close();
+        if ($row['id_rol'] == 2) {
+            $departamentos_gerente[] = (int)$row['id_departamento'];
+        }
     }
-    
-    if (!$id_departamento_usuario) {
-        throw new Exception('No se pudo determinar el departamento del usuario');
-    }
+    $role_stmt->close();
 
-    // Verificar que el proyecto pertenece al departamento del usuario
-    $check_query = "SELECT id_departamento FROM tbl_proyectos WHERE id_proyecto = ?";
+    // Obtener información del proyecto
+    $check_query = "SELECT id_departamento, id_creador, id_participante FROM tbl_proyectos WHERE id_proyecto = ?";
     $check_stmt = $conn->prepare($check_query);
     $check_stmt->bind_param("i", $id_proyecto);
     $check_stmt->execute();
@@ -76,9 +82,44 @@ try {
     }
     
     $proyecto_row = $check_result->fetch_assoc();
+    $id_departamento_proyecto = (int)$proyecto_row['id_departamento'];
+    $id_creador_proyecto = (int)$proyecto_row['id_creador'];
+    $id_participante_proyecto = $proyecto_row['id_participante'] ? (int)$proyecto_row['id_participante'] : null;
     $check_stmt->close();
     
-    if ((int)$proyecto_row['id_departamento'] !== $id_departamento_usuario) {
+    $has_access = false;
+    
+    // Admin tiene acceso a todo
+    if ($is_admin) {
+        $has_access = true;
+    }
+    // Gerente tiene acceso a proyectos de sus departamentos
+    elseif (in_array($id_departamento_proyecto, $departamentos_gerente)) {
+        $has_access = true;
+    }
+    // Usuario es creador del proyecto
+    elseif ($id_creador_proyecto == $id_usuario) {
+        $has_access = true;
+    }
+    // Usuario está asignado al proyecto (individual)
+    elseif ($id_participante_proyecto == $id_usuario) {
+        $has_access = true;
+    }
+    // Usuario está en el grupo del proyecto
+    else {
+        $group_check = $conn->prepare("
+            SELECT 1 FROM tbl_proyecto_usuarios 
+            WHERE id_proyecto = ? AND id_usuario = ?
+        ");
+        $group_check->bind_param('ii', $id_proyecto, $id_usuario);
+        $group_check->execute();
+        if ($group_check->get_result()->num_rows > 0) {
+            $has_access = true;
+        }
+        $group_check->close();
+    }
+    
+    if (!$has_access) {
         throw new Exception('No tiene permiso para acceder a las tareas de este proyecto');
     }
 
@@ -125,7 +166,6 @@ try {
     $tasks = [];
 
     while ($row = $result->fetch_assoc()) {
-        // Construir nombre completo del participante con numero de empleado
         $participante_display = null;
         if ($row['participante_nombre']) {
             $participante_display = $row['participante_nombre'] . ' ' . $row['participante_apellido'] . ' (#' . $row['participante_num_empleado'] . ')';
@@ -149,6 +189,7 @@ try {
     $response['success'] = true;
     $response['tasks'] = $tasks;
     $response['total'] = count($tasks);
+    $response['id_departamento'] = $id_departamento_proyecto;
     $result->free();
     $stmt->close();
 

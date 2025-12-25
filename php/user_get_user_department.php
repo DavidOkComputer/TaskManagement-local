@@ -1,6 +1,6 @@
 <?php
-/*get_user_department.php para saber el departamento del usuario*/ 
- 
+/*user_get_user_department.php para saber el departamento del usuario */ 
+
 if (session_status() === PHP_SESSION_NONE) { 
     session_start(); 
 } 
@@ -8,14 +8,17 @@ if (session_status() === PHP_SESSION_NONE) {
 header('Content-Type: application/json'); 
 require_once 'db_config.php'; 
 
-$response = ['success' => false, 'department' => null]; 
+$response = [
+    'success' => false, 
+    'department' => null,
+    'all_departments' => []
+]; 
 
 try { 
-
     error_log('SESSION DATA: ' . print_r($_SESSION, true)); 
     $id_usuario = null; 
 
-    // Intentar múltiples nombres de variables de sesión (el sistema usa diferentes nombres) 
+    // Intentar múltiples nombres de variables de sesión
     if (isset($_SESSION['id_usuario'])) { 
         $id_usuario = (int)$_SESSION['id_usuario']; 
     } elseif (isset($_SESSION['user_id'])) { 
@@ -24,7 +27,6 @@ try {
         $id_usuario = (int)$_REQUEST['id_usuario']; 
     } 
 
-    // Agregar información de debug a la respuesta 
     if (!$id_usuario) { 
         $response['message'] = 'ID de usuario no disponible en la sesión'; 
         $response['debug'] = [ 
@@ -40,55 +42,97 @@ try {
     $conn = getDBConnection(); 
     if (!$conn) { 
         throw new Exception('Error de conexión a la base de datos'); 
-    } 
+    }
 
-    // Obtener el departamento del usuario con mejor manejo de errores 
-    $query = "SELECT  
-                u.id_usuario,  
-                u.nombre,  
-                u.apellido,  
-                u.id_departamento,  
-                d.id_departamento as dept_id,  
-                d.nombre as departamento_nombre,  
-                d.descripcion as departamento_descripcion 
-              FROM tbl_usuarios u 
-              LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento 
-              WHERE u.id_usuario = ?"; 
+    $user_query = "
+        SELECT u.id_usuario, u.nombre, u.apellido
+        FROM tbl_usuarios u
+        WHERE u.id_usuario = ?
+    ";
+    
+    $user_stmt = $conn->prepare($user_query);
+    $user_stmt->bind_param('i', $id_usuario);
+    $user_stmt->execute();
+    $user_result = $user_stmt->get_result();
+    $user = $user_result->fetch_assoc();
+    $user_stmt->close();
+    
+    if (!$user) {
+        throw new Exception('Usuario no encontrado con ID: ' . $id_usuario);
+    }
 
-    $stmt = $conn->prepare($query); 
-    if (!$stmt) { 
+    $dept_query = "
+        SELECT 
+            ur.id_departamento,
+            ur.id_rol,
+            ur.es_principal,
+            d.nombre as departamento_nombre,
+            d.descripcion as departamento_descripcion,
+            r.nombre as rol_nombre
+        FROM tbl_usuario_roles ur
+        JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento
+        JOIN tbl_roles r ON ur.id_rol = r.id_rol
+        WHERE ur.id_usuario = ?
+            AND ur.activo = 1
+        ORDER BY ur.es_principal DESC, d.nombre ASC
+    ";
+
+    $dept_stmt = $conn->prepare($dept_query); 
+    if (!$dept_stmt) { 
         throw new Exception('Error al preparar la consulta: ' . $conn->error); 
     } 
 
-    $stmt->bind_param("i", $id_usuario);     
+    $dept_stmt->bind_param("i", $id_usuario);     
 
-    if (!$stmt->execute()) { 
-        throw new Exception('Error al ejecutar la consulta: ' . $stmt->error); 
+    if (!$dept_stmt->execute()) { 
+        throw new Exception('Error al ejecutar la consulta: ' . $dept_stmt->error); 
     } 
 
-    $result = $stmt->get_result(); 
-    $user = $result->fetch_assoc(); 
+    $dept_result = $dept_stmt->get_result();
+    
+    $primary_department = null;
+    $all_departments = [];
+    
+    while ($row = $dept_result->fetch_assoc()) {
+        $dept_info = [
+            'id_departamento' => (int)$row['id_departamento'],
+            'nombre' => $row['departamento_nombre'],
+            'descripcion' => $row['departamento_descripcion'],
+            'id_rol' => (int)$row['id_rol'],
+            'rol_nombre' => $row['rol_nombre'],
+            'es_principal' => (bool)$row['es_principal']
+        ];
+        
+        $all_departments[] = $dept_info;
+        
+        // Guardar el principal
+        if ($row['es_principal'] == 1 || $primary_department === null) {
+            $primary_department = $dept_info;
+        }
+    }
+    $dept_stmt->close();
 
-    if (!$user) { 
-        throw new Exception('Usuario no encontrado con ID: ' . $id_usuario); 
+    if (empty($all_departments)) { 
+        throw new Exception('Usuario no tiene departamentos asignados'); 
     } 
 
     error_log('USER DATA: ' . print_r($user, true)); 
-
-    // Verificar si el usuario tiene departamento asignado 
-    if (!$user['id_departamento'] || $user['id_departamento'] == 0) { 
-        throw new Exception('Usuario no tiene departamento asignado en la base de datos'); 
-    } 
+    error_log('DEPARTMENTS: ' . print_r($all_departments, true));
 
     $response['success'] = true; 
+    
+    // Departamento principal (compatibilidad)
     $response['department'] = [ 
-        'id_departamento' => (int)$user['id_departamento'], 
-        'nombre' => $user['departamento_nombre'], 
-        'descripcion' => $user['departamento_descripcion'], 
+        'id_departamento' => $primary_department['id_departamento'], 
+        'nombre' => $primary_department['nombre'], 
+        'descripcion' => $primary_department['descripcion'], 
         'usuario_nombre' => $user['nombre'] . ' ' . $user['apellido'] 
-    ]; 
+    ];
+    
+    $response['all_departments'] = $all_departments;
+    $response['has_multiple_departments'] = count($all_departments) > 1;
+    $response['total_departments'] = count($all_departments);
 
-    $stmt->close(); 
     $conn->close(); 
 
 } catch (Exception $e) { 
@@ -97,4 +141,4 @@ try {
 } 
 
 echo json_encode($response); 
-?> 
+?>
