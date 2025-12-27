@@ -1,9 +1,10 @@
-// manage_users.js para manejr los usuarios creados 
+// manage_users.js para manejar los usuarios creados 
 const Config = {
 	API_ENDPOINTS: {
 		DELETE: '../php/delete_users.php',
 		GET_DEPARTMENTS: '../php/get_departments.php',
 		GET_USERS: '../php/get_users.php',
+		GET_MANAGERS: '../php/get_managers.php',
 		UPDATE_USER: '../php/update_users.php'
 	},
 	DEFAULT_AVATAR: '../images/default-avatar.png',
@@ -22,6 +23,7 @@ const IMAGE_CONFIG = {
 let allUsuarios = [];
 let filteredUsuarios = [];
 let allDepartamentos = [];
+let allManagers = []; // Lista de gerentes para selección de superior
 let usersProgressCache = {};
 let currentSortColumn = null;
 let sortDirection = 'asc';
@@ -37,8 +39,10 @@ let editRemovePhoto = false;
 // Cache para evitar llamadas repetidas 
 let lastUsersLoad = 0;
 const MIN_LOAD_INTERVAL = 5000; // Mínimo 5 segundos entre cargas 
+
 document.addEventListener('DOMContentLoaded', function() {
 	loadDepartamentos();
+	loadManagers(); // Cargar lista de gerentes
 	loadUsuarios();
 	// Iniciar auto-refresh después de un delay 
 	setTimeout(() => {
@@ -326,6 +330,7 @@ function refreshUserData() {
 			console.error('Error al refrescar usuarios:', error);
 		});
 }
+
 // Actualizar progreso en segundo plano sin bloquear 
 async function updateProgressInBackground(usuarios) {
 	for (const usuario of usuarios) {
@@ -382,6 +387,34 @@ function loadDepartamentos() {
 		});
 }
 
+function loadManagers() {
+	fetch(Config.API_ENDPOINTS.GET_MANAGERS, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		})
+		.then(response => {
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			return response.json();
+		})
+		.then(data => {
+			if (data.success && data.managers) {
+				allManagers = data.managers;
+				console.log('Gerentes cargados:', allManagers.length);
+			} else {
+				console.warn('No se pudieron cargar los gerentes:', data.message);
+				allManagers = [];
+			}
+		})
+		.catch(error => {
+			console.error('Error de conexión en loadManagers:', error);
+			allManagers = [];
+		});
+}
+
 function populateDepartamentosDropdown() {
 	const dropdown = document.getElementById('editDepartamento');
 	if (!dropdown) return;
@@ -393,6 +426,25 @@ function populateDepartamentosDropdown() {
 		dropdown.appendChild(option);
 	});
 }
+
+function populateSuperiorDropdown(excludeUserId = null) {
+	const dropdown = document.getElementById('editSuperior');
+	if (!dropdown) return;
+	
+	dropdown.innerHTML = '<option value="0">-- Sin superior asignado --</option>';
+	
+	allManagers.forEach(manager => {
+		// Excluir al usuario que se está editando
+		if (excludeUserId && manager.id_usuario == excludeUserId) {
+			return;
+		}
+		const option = document.createElement('option');
+		option.value = manager.id_usuario;
+		option.textContent = `${manager.nombre_completo} - ${manager.nombre_departamento}`;
+		dropdown.appendChild(option);
+	});
+}
+
 async function loadUsuarios() {
 	const tableBody = document.getElementById('usuariosTableBody');
 	try {
@@ -432,6 +484,7 @@ async function loadUsuarios() {
 		tableBody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error de conexión</td></tr>';
 	}
 }
+
 async function loadProgressAsync() {
 	for (const usuario of allUsuarios) {
 		try {
@@ -612,9 +665,7 @@ function updatePaginationControls() {
 	const startItem = filteredUsuarios.length > 0 ? ((currentPage - 1) * rowsPerPage) + 1 : 0;
 	const endItem = Math.min(currentPage * rowsPerPage, filteredUsuarios.length);
 	infoText.innerHTML = ` 
-
         <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredUsuarios.length}</strong> empleados</p> 
-
     `;
 	paginationContainer.appendChild(infoText);
 	if (totalPages <= 1) return;
@@ -678,6 +729,7 @@ function updatePaginationControls() {
 	buttonContainer.appendChild(nextBtn);
 	paginationContainer.appendChild(buttonContainer);
 }
+
 async function fetchUserProjects(userId) {
 	try {
 		const response = await fetch(`../php/get_user_projects.php?id_usuario=${userId}`);
@@ -692,6 +744,7 @@ async function fetchUserProjects(userId) {
 		return [];
 	}
 }
+
 async function calculateUserProgress(userId) {
 	const projects = await fetchUserProjects(userId);
 	if (!projects || projects.length === 0) {
@@ -717,6 +770,7 @@ async function calculateUserProgress(userId) {
 		completedTasks: completedTasks
 	};
 }
+
 async function showUserProjects(userId, userName, userEmail) {
 	const modal = new bootstrap.Modal(document.getElementById('viewProjectsModal'));
 	document.getElementById('employeeName').textContent = userName;
@@ -814,6 +868,7 @@ function formatDate(dateString) {
 		day: 'numeric'
 	});
 }
+
 async function displayUsuarios(usuarios) {
 	const tableBody = document.getElementById('usuariosTableBody');
 	if (!tableBody) return;
@@ -912,6 +967,7 @@ function createUsuarioRow(usuario) {
                         data-usuario="${escapeHtml(usuario.usuario || '')}" 
                         data-email="${escapeHtml(usuario.e_mail || '')}" 
                         data-depart="${usuario.id_departamento}" 
+                        data-superior="${usuario.id_superior || 0}" 
                         data-foto="${usuario.foto_perfil || ''}" 
                         data-foto-url="${usuario.foto_url || ''}" 
                         title="Editar usuario"> 
@@ -969,6 +1025,12 @@ function getDepartamentoName(deptId) {
 
 function getSuperiorName(superiorId) {
 	if (!superiorId || superiorId === 0) return 'N/A';
+	// Primero buscar en la lista de gerentes
+	const manager = allManagers.find(m => m.id_usuario == superiorId);
+	if (manager) {
+		return manager.nombre_completo;
+	}
+	// Fallback: buscar en la lista de todos los usuarios
 	const superior = allUsuarios.find(u => u.id_usuario == superiorId);
 	return superior ? `${superior.nombre} ${superior.apellido}` : 'N/A';
 }
@@ -1014,9 +1076,10 @@ function attachButtonListeners() {
 			const usuario = this.getAttribute('data-usuario');
 			const email = this.getAttribute('data-email');
 			const depart = this.getAttribute('data-depart');
+			const superior = this.getAttribute('data-superior');
 			const foto = this.getAttribute('data-foto');
 			const fotoUrl = this.getAttribute('data-foto-url');
-			openEditModal(userId, nombre, apellido, usuario, email, depart, foto, fotoUrl);
+			openEditModal(userId, nombre, apellido, usuario, email, depart, superior, foto, fotoUrl);
 		});
 	});
 	// Botones de eliminar 
@@ -1062,16 +1125,25 @@ function toggleSelectAll(event) {
 	});
 }
 
-function openEditModal(userId, nombre, apellido, usuario, email, departId, foto, fotoUrl) {
+function openEditModal(userId, nombre, apellido, usuario, email, departId, superiorId, foto, fotoUrl) {
 	document.getElementById('editUserId').value = userId;
 	document.getElementById('editNombre').value = nombre || '';
 	document.getElementById('editApellido').value = apellido || '';
 	document.getElementById('editUsuario').value = usuario || '';
 	document.getElementById('editEmail').value = email || '';
+	
 	const departmentDropdown = document.getElementById('editDepartamento');
 	if (departmentDropdown) {
 		departmentDropdown.value = departId || '';
 	}
+	
+	// Poblar y seleccionar el superior
+	populateSuperiorDropdown(userId); // Excluir al usuario actual
+	const superiorDropdown = document.getElementById('editSuperior');
+	if (superiorDropdown) {
+		superiorDropdown.value = superiorId || '0';
+	}
+	
 	// Configurar foto actual 
 	const hasPhoto = foto && foto.length > 0;
 	let photoUrl = Config.DEFAULT_AVATAR;
@@ -1106,6 +1178,7 @@ function handleSaveUserChanges(event) {
 	const usuario = document.getElementById('editUsuario').value.trim();
 	const email = document.getElementById('editEmail').value.trim();
 	const id_departamento = parseInt(document.getElementById('editDepartamento').value) || 0;
+	const id_superior = parseInt(document.getElementById('editSuperior').value) || 0;
 	const formData = new FormData();
 	formData.append('id_usuario', userId);
 	formData.append('nombre', nombre);
@@ -1113,6 +1186,8 @@ function handleSaveUserChanges(event) {
 	formData.append('usuario', usuario);
 	formData.append('e_mail', email);
 	formData.append('id_departamento', id_departamento);
+	formData.append('id_superior', id_superior);
+	
 	if (editSelectedImage) {
 		formData.append('foto_perfil', editSelectedImage);
 	}
@@ -1134,6 +1209,7 @@ function handleSaveUserChanges(event) {
 				const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
 				modal.hide();
 				loadUsuarios();
+				loadManagers(); // Recargar lista de gerentes en caso de cambios
 				showSuccess('Usuario actualizado exitosamente');
 			} else {
 				const errorMsg = responseData.message || responseData.error || 'Error desconocido';
@@ -1181,6 +1257,7 @@ function deleteUser(id) {
 					currentPage = totalPages;
 				}
 				displayUsuarios(filteredUsuarios);
+				loadManagers(); // Recargar lista de gerentes
 			} else {
 				showError(data.message || 'Error al eliminar el usuario');
 			}
@@ -1385,12 +1462,14 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 	const confirmModal = new bootstrap.Modal(modal);
 	confirmModal.show();
 }
+
 // Exponer funciones necesarias globalmente 
 window.confirmDelete = confirmDelete;
 window.changePage = changePage;
 window.stopAutoRefresh = stopAutoRefresh;
 window.startAutoRefresh = startAutoRefresh;
 window.handleImageError = handleImageError;
+
 // Agregar estilos para la animación 
 const style = document.createElement('style');
 style.textContent = ` 

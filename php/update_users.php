@@ -1,5 +1,5 @@
 <?php
-// update_users.php para actualizar usuarios
+// update_users.php para actualizar usuarios 
 
 header('Content-Type: application/json');
 error_reporting(E_ALL);
@@ -52,6 +52,7 @@ try {
     $e_mail = trim($data['e_mail']);
     $id_departamento = isset($data['id_departamento']) ? intval($data['id_departamento']) : null;
     $id_rol = isset($data['id_rol']) ? intval($data['id_rol']) : null;
+    $id_superior = isset($data['id_superior']) ? intval($data['id_superior']) : 0;
     $remove_photo = isset($data['remove_photo']) && $data['remove_photo'] === 'true';
     
     // Validar formato email
@@ -132,6 +133,31 @@ try {
         $check_rol->close();
     }
     
+    // Validar el superior si se ingresa (debe ser un usuario con rol de gerente)
+    if ($id_superior > 0) {
+        // Verificar que el superior existe y tiene rol de gerente (id_rol = 2)
+        $check_superior = $conn->prepare("
+            SELECT u.id_usuario 
+            FROM tbl_usuarios u
+            INNER JOIN tbl_usuario_roles ur ON u.id_usuario = ur.id_usuario 
+                AND ur.activo = 1 
+                AND ur.id_rol = 2
+            WHERE u.id_usuario = ?
+        ");
+        $check_superior->bind_param("i", $id_superior);
+        $check_superior->execute();
+        $superior_result = $check_superior->get_result();
+        if ($superior_result->num_rows === 0) {
+            throw new Exception('El superior seleccionado no es válido. Debe ser un usuario con rol de gerente.');
+        }
+        $check_superior->close();
+        
+        // Verificar que no se está asignando a sí mismo como superior
+        if ($id_superior === $id_usuario) {
+            throw new Exception('Un usuario no puede ser su propio superior');
+        }
+    }
+    
     // Obtener la foto actual del usuario
     $getCurrentPhoto = $conn->prepare("SELECT foto_perfil FROM tbl_usuarios WHERE id_usuario = ?");
     $getCurrentPhoto->bind_param("i", $id_usuario);
@@ -172,16 +198,16 @@ try {
     $conn->begin_transaction();
     
     try {
-        // Actualizar datos básicos del usuario en tbl_usuarios
+        // Actualizar datos básicos del usuario en tbl_usuarios (incluyendo id_superior)
         $update_stmt = $conn->prepare("
             UPDATE tbl_usuarios 
-            SET nombre = ?, apellido = ?, usuario = ?, e_mail = ?, foto_perfil = ? 
+            SET nombre = ?, apellido = ?, usuario = ?, e_mail = ?, foto_perfil = ?, id_superior = ?
             WHERE id_usuario = ?
         ");
         if (!$update_stmt) {
             throw new Exception("Prepare failed: " . $conn->error);
         }
-        $update_stmt->bind_param("sssssi", $nombre, $apellido, $usuario, $e_mail, $newPhotoFilename, $id_usuario);
+        $update_stmt->bind_param("sssssii", $nombre, $apellido, $usuario, $e_mail, $newPhotoFilename, $id_superior, $id_usuario);
         
         if (!$update_stmt->execute()) {
             throw new Exception("Error al actualizar usuario: " . $update_stmt->error);
@@ -259,7 +285,7 @@ try {
                 $insert_role->close();
             }
             
-            // COMPATIBILIDAD: También actualizar campos legacy en tbl_usuarios
+            //También actualizar campos legacy en tbl_usuarios
             $update_legacy = $conn->prepare("
                 UPDATE tbl_usuarios 
                 SET id_departamento = ?, id_rol = ? 
@@ -282,15 +308,18 @@ try {
                 u.usuario,
                 u.e_mail,
                 u.foto_perfil,
+                u.id_superior,
                 ur.id_departamento,
                 ur.id_rol,
                 d.nombre as nombre_departamento,
-                r.nombre as nombre_rol
+                r.nombre as nombre_rol,
+                CONCAT(sup.nombre, ' ', sup.apellido) as nombre_superior
             FROM tbl_usuarios u
             LEFT JOIN tbl_usuario_roles ur ON u.id_usuario = ur.id_usuario 
                 AND ur.es_principal = 1 AND ur.activo = 1
             LEFT JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento
             LEFT JOIN tbl_roles r ON ur.id_rol = r.id_rol
+            LEFT JOIN tbl_usuarios sup ON u.id_superior = sup.id_usuario
             WHERE u.id_usuario = ?
         ");
         $get_updated->bind_param("i", $id_usuario);
@@ -310,6 +339,8 @@ try {
             'nombre_departamento' => $updated_user['nombre_departamento'],
             'id_rol' => $updated_user['id_rol'] ? (int)$updated_user['id_rol'] : null,
             'nombre_rol' => $updated_user['nombre_rol'],
+            'id_superior' => $id_superior,
+            'nombre_superior' => $updated_user['nombre_superior'],
             'foto_perfil' => $newPhotoFilename,
             'foto_url' => $newPhotoFilename ? 'uploads/profile_pictures/' . $newPhotoFilename : null,
             'foto_thumbnail' => $newPhotoFilename ? 'uploads/profile_pictures/thumbnails/thumb_' . $newPhotoFilename : null

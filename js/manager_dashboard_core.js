@@ -1,8 +1,10 @@
-/*manager_dashboard_core.js controlador de todos los graficaos*/
+/*manager_dashboard_core.js controlador de todos los graficos con soporte para múltiples departamentos*/
 
 let managerDashboard = {
     charts: {},
     department: null,
+    allDepartments: [],
+    hasMultipleDepartments: false,
     refreshInterval: null,
     refreshRate: 60000, // 60 segundos o un minuto
     isRefreshing: false,
@@ -38,8 +40,7 @@ let managerDashboard = {
 };
 
 function initializeManagerDashboard() {
-    
-    //cargar el departamento del gerente luego los graficso
+    //cargar el departamento del gerente luego los graficos
     loadManagerDepartment()
         .then(() => {
             initializeAllCharts();
@@ -64,31 +65,65 @@ function loadManagerDepartment() {
                 throw new Error(data.message || 'Error al obtener departamento');
             }
             
+            // Guardar departamento principal
             managerDashboard.department = {
                 id: data.department.id_departamento,
                 nombre: data.department.nombre,
                 descripcion: data.department.descripcion
             };
             
-            //actualizar titulo de pagina con nombre de departamento
+            // Guardar información de múltiples departamentos
+            managerDashboard.allDepartments = data.managed_departments || data.all_departments || [];
+            managerDashboard.hasMultipleDepartments = data.has_multiple_departments || false;
+            
+            // Actualizar titulo de pagina con nombre de departamento
             updateDepartmentDisplay(managerDashboard.department.nombre);
+            
+            // Si hay múltiples departamentos, actualizar el texto del dropdown
+            if (managerDashboard.hasMultipleDepartments) {
+                updateDropdownWithCurrentDepartment(managerDashboard.department.nombre);
+            }
             
             return managerDashboard.department;
         });
 }
 
 function updateDepartmentDisplay(deptName) {
-    //cargar todos los elementos que muestren el nombre del departamento
+    // Cargar todos los elementos que muestren el nombre del departamento
     const deptDisplayElements = document.querySelectorAll('.manager-department-name');
     deptDisplayElements.forEach(el => {
         el.textContent = deptName;
     });
     
-    //actualizar subtitulo si es que existe
+    // Actualizar subtitulo si es que existe
     const welcomeSubtext = document.querySelector('.welcome-sub-text');
     if (welcomeSubtext) {
-        welcomeSubtext.textContent = `Departamento: ${deptName}`;
+        const hasMutliple = managerDashboard.hasMultipleDepartments;
+        if (hasMutliple) {
+            welcomeSubtext.innerHTML = `Departamento: <strong>${deptName}</strong> <span class="multi-dept-badge"><i class="mdi mdi-swap-horizontal"></i> Cambiar</span>`;
+        } else {
+            welcomeSubtext.textContent = `Departamento: ${deptName}`;
+        }
     }
+}
+
+function updateDropdownWithCurrentDepartment(deptName) {
+    const dropdownButton = document.getElementById('departmentDropdown');
+    if (dropdownButton) {
+        dropdownButton.innerHTML = `${escapeHtmlCore(deptName)} <i class="mdi mdi-chevron-down"></i>`;
+    }
+}
+
+function escapeHtmlCore(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
 }
 
 function initializeAllCharts() {
@@ -124,7 +159,7 @@ function refreshAllCharts() {
     const deptId = managerDashboard.department.id;
     const deptName = managerDashboard.department.nombre;
     
-    Promise.all([//refrescar
+    Promise.all([
         refreshManagerDoughnutChart(deptId, deptName),
         refreshManagerBarChart(deptId, deptName),
         refreshManagerLineChart(deptId, deptName),
@@ -164,6 +199,72 @@ function setRefreshRate(milliseconds) {
     startAutoRefresh();
 }
 
+function switchDepartment(deptId, deptName) {
+    // Actualizar el estado global
+    managerDashboard.department = {
+        id: deptId,
+        nombre: deptName,
+        descripcion: ''
+    };
+    
+    // Actualizar la UI
+    updateDepartmentDisplay(deptName);
+    updateDropdownWithCurrentDepartment(deptName);
+    
+    // Refrescar todas las gráficas
+    refreshAllChartsForNewDepartment(deptId, deptName);
+}
+
+function refreshAllChartsForNewDepartment(deptId, deptName) {
+    // Mostrar indicador de actualización
+    const indicator = document.getElementById('refreshIndicator');
+    if (indicator) {
+        indicator.classList.add('active');
+    }
+    
+    // Refrescar secuencialmente para evitar sobrecarga
+    refreshManagerDoughnutChart(deptId, deptName)
+        .then(() => {
+            return new Promise(resolve => setTimeout(resolve, 100));
+        })
+        .then(() => {
+            return refreshManagerBarChart(deptId, deptName);
+        })
+        .then(() => {
+            return new Promise(resolve => setTimeout(resolve, 100));
+        })
+        .then(() => {
+            return refreshManagerLineChart(deptId, deptName);
+        })
+        .then(() => {
+            return new Promise(resolve => setTimeout(resolve, 100));
+        })
+        .then(() => {
+            return refreshManagerAreaChart(deptId, deptName);
+        })
+        .then(() => {
+            return new Promise(resolve => setTimeout(resolve, 100));
+        })
+        .then(() => {
+            return refreshManagerScatterChart(deptId, deptName);
+        })
+        .then(() => {
+            return new Promise(resolve => setTimeout(resolve, 100));
+        })
+        .then(() => {
+            return refreshManagerWorkloadChart(deptId, deptName);
+        })
+        .catch(error => {
+            console.error('Error actualizando gráficas:', error);
+        })
+        .finally(() => {
+            // Ocultar indicador
+            if (indicator) {
+                indicator.classList.remove('active');
+            }
+        });
+}
+
 function shortenTitle(title, maxLength = 15) {
     if (!title) return '';
     if (title.length <= maxLength) return title;
@@ -177,7 +278,8 @@ function showNoDataMessage(canvasId, title, message) {
         return;
     }
     
-    if (managerDashboard.charts[canvasId]) {//destruir graficas existentes
+    // Destruir graficas existentes
+    if (managerDashboard.charts[canvasId]) {
         managerDashboard.charts[canvasId].destroy();
         managerDashboard.charts[canvasId] = null;
     }
@@ -188,16 +290,19 @@ function showNoDataMessage(canvasId, title, message) {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    ctx.fillStyle = '#666666';
+    // Icono
+    ctx.fillStyle = '#e0e0e0';
     ctx.font = '48px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('', canvas.width / 2, canvas.height / 2 - 30);
-    //titulo
+    
+    // Titulo
     ctx.fillStyle = '#495057';
     ctx.font = 'bold 16px Arial';
     ctx.fillText(title, canvas.width / 2, canvas.height / 2 + 20);
-    //mensaje
+    
+    // Mensaje
     ctx.fillStyle = '#6c757d';
     ctx.font = '14px Arial';
     ctx.fillText(message, canvas.width / 2, canvas.height / 2 + 45);
@@ -232,6 +337,24 @@ function getProgressColor(progress) {
     if (progress >= 50) return managerDashboard.colors.gray;
     return managerDashboard.colors.light;
 }
+
+function getCurrentDepartment() {
+    return managerDashboard.department;
+}
+
+function managerHasMultipleDepartments() {
+    return managerDashboard.hasMultipleDepartments;
+}
+
+function getManagerDepartments() {
+    return managerDashboard.allDepartments;
+}
+
+// Exportar funciones para uso externo
+window.switchDepartment = switchDepartment;
+window.getCurrentDepartment = getCurrentDepartment;
+window.managerHasMultipleDepartments = managerHasMultipleDepartments;
+window.getManagerDepartments = getManagerDepartments;
 
 window.addEventListener('beforeunload', function() {
     stopAutoRefresh();

@@ -370,7 +370,7 @@ $user_id = $_SESSION['user_id'];
       </div>
     </div> 
 
-<!-- Edit User Modal -->
+<!-- Edit User Modal - Updated with Superior Selection -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -495,6 +495,21 @@ $user_id = $_SESSION['user_id'];
                                 <select class="form-control" id="editDepartamento" required>
                                     <option value="">-- Seleccionar departamento --</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editSuperior" class="form-label">
+                                    <i class="mdi mdi-account-supervisor me-1"></i>Superior (Gerente)
+                                </label>
+                                <select class="form-control" id="editSuperior">
+                                    <option value="0">-- Sin superior asignado --</option>
+                                    <!-- Se llena dinámicamente con gerentes -->
+                                </select>
+                                <small class="form-text text-muted">
+                                    <i class="mdi mdi-information-outline"></i> 
+                                    Solo se muestran usuarios con rol de Gerente
+                                </small>
                             </div>
                         </div>
                     </div>

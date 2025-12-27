@@ -266,7 +266,7 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
                     title: function(context) {
                         if (context.length > 0) {
                             const label = context[0].raw.label || 'Elemento';
-                            const icon = mode === 'person' ? '👤' : '🏢';
+                            const icon = mode === 'person' ? '' : '';
                             return icon + ' ' + label;
                         }
                         return '';
@@ -277,7 +277,7 @@ function updateScatterChart(data, mode = 'department', deptName = null) {
                         
                         return [
                             '━━━━━━━━━━━━━━━━━━',
-                            '📊 ' + workloadLabel + ': ' + point.x + ' tarea' + (point.x !== 1 ? 's' : ''),
+                            '' + workloadLabel + ': ' + point.x + ' tarea' + (point.x !== 1 ? 's' : ''),
                             '⚡ Eficiencia: ' + point.y + '%',
                             '━━━━━━━━━━━━━━━━━━'
                         ];

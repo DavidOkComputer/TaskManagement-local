@@ -1,5 +1,5 @@
 <?php
-/* Manager Dashboard para mostrar los datos de dashboard de gerente*/
+/* Manager Dashboard para mostrar los datos de dashboard de gerente con soporte para múltiples departamentos*/
 require_once('../php/check_auth.php');
 
 $user_id = isset($_SESSION['id_usuario']) ? $_SESSION['id_usuario'] : (isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 0);
@@ -74,6 +74,74 @@ if ($user_rol !== 2 && $user_rol !== 1) {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
         }
+        
+        /* Estilos para el dropdown de departamentos del gerente */
+        .department-dropdown-toggle {
+            background: linear-gradient(135deg, rgba(34, 139, 89, 0.1) 0%, rgba(80, 154, 108, 0.05) 100%);
+            border: 1px solid rgba(34, 139, 89, 0.3);
+            border-radius: 6px;
+            padding: 8px 15px;
+            color: rgba(34, 139, 89, 1);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .department-dropdown-toggle:hover {
+            background: linear-gradient(135deg, rgba(34, 139, 89, 0.2) 0%, rgba(80, 154, 108, 0.1) 100%);
+            border-color: rgba(34, 139, 89, 0.5);
+            color: rgba(24, 97, 62, 1);
+        }
+        .department-dropdown-toggle i {
+            margin-left: 5px;
+            transition: transform 0.3s ease;
+        }
+        .department-dropdown-toggle[aria-expanded="true"] i {
+            transform: rotate(180deg);
+        }
+        
+        /* Estilos para el menú dropdown */
+        .department-dropdown-menu {
+            min-width: 280px;
+            border: 1px solid rgba(34, 139, 89, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 0;
+            overflow: hidden;
+        }
+        .department-dropdown-menu .dropdown-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(200, 205, 210, 0.3);
+            transition: background-color 0.2s ease;
+        }
+        .department-dropdown-menu .dropdown-item:hover {
+            background-color: rgba(34, 139, 89, 0.05);
+        }
+        .department-dropdown-menu .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        .department-dropdown-menu .preview-subject {
+            font-size: 14px;
+        }
+        .department-dropdown-menu .small-text {
+            font-size: 11px;
+        }
+        
+        /* Indicador de departamento activo */
+        .department-item.active,
+        .department-item:has(.mdi-check-circle) {
+            background-color: rgba(34, 139, 89, 0.08);
+        }
+        
+        /* Badge para múltiples departamentos */
+        .multi-dept-badge {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(34, 139, 89, 0.1);
+            color: rgba(34, 139, 89, 1);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 8px;
+        }
     </style>
 </head>
 
@@ -108,6 +176,34 @@ if ($user_rol !== 2 && $user_rol !== 1) {
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
+                    <!-- Dropdown de Departamentos (solo visible si hay múltiples) -->
+                    <li class="nav-item dropdown d-lg-block" id="departmentDropdownContainer" style="display: none;">
+                        <a class="nav-link dropdown-bordered dropdown-toggle dropdown-toggle-split department-dropdown-toggle" 
+                           id="departmentDropdown" 
+                           href="#" 
+                           data-bs-toggle="dropdown" 
+                           aria-expanded="false">
+                            Seleccionar departamento <i class="mdi mdi-chevron-down"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0 department-dropdown-menu" 
+                             aria-labelledby="departmentDropdown">
+                            <a class="dropdown-item py-3">
+                                <p class="mb-0 font-weight-medium float-left">
+                                    <i class="mdi mdi-office-building-outline me-2"></i>
+                                    Mis Departamentos
+                                </p>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <!-- Los departamentos se cargarán dinámicamente aquí -->
+                            <div class="dropdown-item text-center py-3">
+                                <div class="spinner-border spinner-border-sm text-success" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <span class="ms-2 text-muted">Cargando departamentos...</span>
+                            </div>
+                        </div>
+                    </li>
+                    
                     <!-- Notifications -->
                     <li class="nav-item dropdown"> 
                         <a class="nav-link count-indicator" id="countDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
@@ -329,6 +425,7 @@ if ($user_rol !== 2 && $user_rol !== 1) {
     <script src="../js/manager_charts_area.js"></script>
     <script src="../js/manager_charts_scatter.js"></script>
     <script src="../js/manager_charts_workload.js"></script>
+    <script src="../js/manager_load_departments_dropdown.js"></script>
     <script src="../js/notifications.js"></script>
 </body>
 </html>

@@ -18,11 +18,6 @@ try {
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
-
-    // Verificar autenticación
-    if (!isset($_SESSION['user_id']) && !isset($_SESSION['id_usuario'])) {
-        throw new Exception('Usuario no autenticado');
-    }
     
     $user_id = (int)($_SESSION['user_id'] ?? $_SESSION['id_usuario']);
 
@@ -96,17 +91,21 @@ try {
 
     // Construir query base
     $baseFields = "
-        u.id_usuario,
+        DISTINCT u.id_usuario,
         u.nombre,
         u.apellido,
         u.usuario,
         u.num_empleado,
         u.acceso,
-        u.id_departamento,
-        u.id_rol,
+        u.id_departamento as id_departamento_principal,
+        u.id_rol as id_rol_principal,
         u.id_superior,
         u.e_mail,
-        d.nombre as area
+        ur.id_departamento as id_departamento_asignado,
+        ur.id_rol as id_rol_asignado,
+        ur.es_principal,
+        d.nombre as area,
+        r.nombre as nombre_rol
         {$fotoField}
     ";
 
@@ -115,8 +114,10 @@ try {
         if ($filter_rol !== null && $filter_rol > 0) {
             $query = "SELECT {$baseFields}
                       FROM tbl_usuarios u
-                      LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento
-                      WHERE u.id_rol = ?
+                      LEFT JOIN tbl_usuario_roles ur ON u.id_usuario = ur.id_usuario AND ur.activo = 1
+                      LEFT JOIN tbl_departamentos d ON COALESCE(ur.id_departamento, u.id_departamento) = d.id_departamento
+                      LEFT JOIN tbl_roles r ON COALESCE(ur.id_rol, u.id_rol) = r.id_rol
+                      WHERE COALESCE(ur.id_rol, u.id_rol) = ?
                       ORDER BY u.apellido ASC, u.nombre ASC";
             
             $stmt = $conn->prepare($query);
@@ -124,19 +125,26 @@ try {
         } else {
             $query = "SELECT {$baseFields}
                       FROM tbl_usuarios u
-                      LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento
+                      LEFT JOIN tbl_usuario_roles ur ON u.id_usuario = ur.id_usuario AND ur.activo = 1
+                      LEFT JOIN tbl_departamentos d ON COALESCE(ur.id_departamento, u.id_departamento) = d.id_departamento
+                      LEFT JOIN tbl_roles r ON COALESCE(ur.id_rol, u.id_rol) = r.id_rol
                       ORDER BY u.apellido ASC, u.nombre ASC";
             
             $stmt = $conn->prepare($query);
         }
     } else {
-        // Filtrar por departamento
+        // Filtrar por departamento usando tbl_usuario_roles
+        // Esto obtiene usuarios que tienen CUALQUIER rol en el departamento
         if ($filter_rol !== null && $filter_rol > 0) {
             $query = "SELECT {$baseFields}
                       FROM tbl_usuarios u
-                      LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento
-                      WHERE u.id_departamento = ? AND u.id_rol = ?
-                      ORDER BY u.apellido ASC, u.nombre ASC";
+                      INNER JOIN tbl_usuario_roles ur ON u.id_usuario = ur.id_usuario 
+                          AND ur.activo = 1 
+                          AND ur.id_departamento = ?
+                      LEFT JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento
+                      LEFT JOIN tbl_roles r ON ur.id_rol = r.id_rol
+                      WHERE ur.id_rol = ?
+                      ORDER BY ur.es_principal DESC, u.apellido ASC, u.nombre ASC";
             
             $stmt = $conn->prepare($query);
             if (!$stmt) {
@@ -145,11 +153,16 @@ try {
             
             $stmt->bind_param("ii", $id_departamento, $filter_rol);
         } else {
+            // Obtener TODOS los usuarios que tienen algún rol en este departamento
+            // Incluye tanto roles principales como secundarios
             $query = "SELECT {$baseFields}
                       FROM tbl_usuarios u
-                      LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento
-                      WHERE u.id_departamento = ?
-                      ORDER BY u.apellido ASC, u.nombre ASC";
+                      INNER JOIN tbl_usuario_roles ur ON u.id_usuario = ur.id_usuario 
+                          AND ur.activo = 1 
+                          AND ur.id_departamento = ?
+                      LEFT JOIN tbl_departamentos d ON ur.id_departamento = d.id_departamento
+                      LEFT JOIN tbl_roles r ON ur.id_rol = r.id_rol
+                      ORDER BY ur.es_principal DESC, u.apellido ASC, u.nombre ASC";
             
             $stmt = $conn->prepare($query);
             if (!$stmt) {
@@ -168,9 +181,22 @@ try {
     }
 
     $usuarios = [];
+    $usuarios_vistos = []; // Para evitar duplicados
+    
     while ($row = $result->fetch_assoc()) {
+        $userId = (int)$row['id_usuario'];
+        
+        // Evitar duplicados si un usuario aparece múltiples veces
+        if (in_array($userId, $usuarios_vistos)) {
+            continue;
+        }
+        $usuarios_vistos[] = $userId;
+        
+        // Determinar si es rol principal o secundario en este departamento
+        $es_rol_secundario = isset($row['es_principal']) && $row['es_principal'] == 0;
+        
         $usuario = [
-            'id_usuario' => (int)$row['id_usuario'],
+            'id_usuario' => $userId,
             'nombre' => $row['nombre'],
             'apellido' => $row['apellido'],
             'usuario' => $row['usuario'],
@@ -178,12 +204,22 @@ try {
             'nombre_completo' => $row['nombre'] . ' ' . $row['apellido'],
             'nombre_empleado' => $row['nombre'] . ' ' . $row['apellido'] . ' (#' . $row['num_empleado'] . ')',
             'acceso' => $row['acceso'],
-            'id_departamento' => (int)$row['id_departamento'],
+            'id_departamento' => (int)($row['id_departamento_asignado'] ?? $row['id_departamento_principal']),
+            'id_departamento_principal' => (int)$row['id_departamento_principal'],
             'id_superior' => (int)$row['id_superior'],
-            'id_rol' => (int)$row['id_rol'],
+            'id_rol' => (int)($row['id_rol_asignado'] ?? $row['id_rol_principal']),
+            'id_rol_principal' => (int)$row['id_rol_principal'],
+            'nombre_rol' => $row['nombre_rol'] ?? 'N/A',
             'e_mail' => $row['e_mail'],
-            'area' => $row['area']
+            'area' => $row['area'],
+            'es_principal' => isset($row['es_principal']) ? (int)$row['es_principal'] : 1,
+            'es_rol_secundario' => $es_rol_secundario
         ];
+        
+        // Agregar indicador visual si es rol secundario
+        if ($es_rol_secundario) {
+            $usuario['nombre_empleado'] .= ' [Secundario]';
+        }
         
         // Agregar campos de foto de perfil
         if ($hasFotoColumn && isset($row['foto_perfil'])) {
@@ -206,6 +242,77 @@ try {
         $usuarios[] = $usuario;
     }
 
+    // Si no se encontraron usuarios en tbl_usuario_roles, hacer fallback a tbl_usuarios (legacy)
+    if (empty($usuarios) && $id_departamento) {
+        $legacy_query = "SELECT 
+                u.id_usuario,
+                u.nombre,
+                u.apellido,
+                u.usuario,
+                u.num_empleado,
+                u.acceso,
+                u.id_departamento,
+                u.id_rol,
+                u.id_superior,
+                u.e_mail,
+                d.nombre as area,
+                r.nombre as nombre_rol
+                {$fotoField}
+            FROM tbl_usuarios u
+            LEFT JOIN tbl_departamentos d ON u.id_departamento = d.id_departamento
+            LEFT JOIN tbl_roles r ON u.id_rol = r.id_rol
+            WHERE u.id_departamento = ?
+            ORDER BY u.apellido ASC, u.nombre ASC";
+        
+        $legacy_stmt = $conn->prepare($legacy_query);
+        $legacy_stmt->bind_param("i", $id_departamento);
+        $legacy_stmt->execute();
+        $legacy_result = $legacy_stmt->get_result();
+        
+        while ($row = $legacy_result->fetch_assoc()) {
+            $usuario = [
+                'id_usuario' => (int)$row['id_usuario'],
+                'nombre' => $row['nombre'],
+                'apellido' => $row['apellido'],
+                'usuario' => $row['usuario'],
+                'num_empleado' => (int)$row['num_empleado'],
+                'nombre_completo' => $row['nombre'] . ' ' . $row['apellido'],
+                'nombre_empleado' => $row['nombre'] . ' ' . $row['apellido'] . ' (#' . $row['num_empleado'] . ')',
+                'acceso' => $row['acceso'],
+                'id_departamento' => (int)$row['id_departamento'],
+                'id_departamento_principal' => (int)$row['id_departamento'],
+                'id_superior' => (int)$row['id_superior'],
+                'id_rol' => (int)$row['id_rol'],
+                'id_rol_principal' => (int)$row['id_rol'],
+                'nombre_rol' => $row['nombre_rol'] ?? 'N/A',
+                'e_mail' => $row['e_mail'],
+                'area' => $row['area'],
+                'es_principal' => 1,
+                'es_rol_secundario' => false
+            ];
+            
+            if ($hasFotoColumn && isset($row['foto_perfil'])) {
+                $fotoPerfil = $row['foto_perfil'];
+                $usuario['foto_perfil'] = $fotoPerfil;
+                
+                if (!empty($fotoPerfil)) {
+                    $usuario['foto_url'] = 'uploads/profile_pictures/' . $fotoPerfil;
+                    $usuario['foto_thumbnail'] = 'uploads/profile_pictures/thumbnails/thumb_' . $fotoPerfil;
+                } else {
+                    $usuario['foto_url'] = null;
+                    $usuario['foto_thumbnail'] = null;
+                }
+            } else {
+                $usuario['foto_perfil'] = null;
+                $usuario['foto_url'] = null;
+                $usuario['foto_thumbnail'] = null;
+            }
+            
+            $usuarios[] = $usuario;
+        }
+        $legacy_stmt->close();
+    }
+
     echo json_encode([
         'success' => true,
         'usuarios' => $usuarios,
@@ -213,7 +320,8 @@ try {
             'id_departamento_filtro' => $id_departamento,
             'departamentos_permitidos' => $departamentos_permitidos,
             'is_admin' => $is_admin,
-            'total_usuarios' => count($usuarios)
+            'total_usuarios' => count($usuarios),
+            'usando_junction_table' => true
         ]
     ]);
 

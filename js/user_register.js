@@ -1,4 +1,4 @@
-// user_register.js para registrar usuarios CON SOPORTE DE FOTO DE PERFIL
+// user_register.js para registrar usuarios
 (function() {
     'use strict';
 
@@ -7,6 +7,7 @@
         usuarios: [],
         departamentos: [],
         roles: [],
+        superiores: [],
         selectedImage: null
     };
 
@@ -24,7 +25,7 @@
     function initializeApp() {
         loadDepartamentos();
         loadRoles();
-        clearSuperioresSelect();
+        loadSuperiores(); 
         setupEventHandlers();
         setupProfilePictureHandlers();
     }
@@ -43,14 +44,13 @@
                 setTimeout(function() {
                     loadDepartamentos();
                     loadRoles();
-                    clearSuperioresSelect();
+                    // No recargar superiores, solo restaurar la selección a default
+                    const superiorSelect = document.getElementById('id_superior');
+                    if (superiorSelect) {
+                        superiorSelect.value = "0";
+                    }
                 }, 100);
             });
-        }
-
-        const departamentoSelect = document.getElementById('id_departamento');
-        if (departamentoSelect) {
-            departamentoSelect.addEventListener('change', handleDepartamentoChange);
         }
 
         const togglePassword = document.getElementById('togglePassword');
@@ -60,8 +60,6 @@
 
         setupRealtimeValidation();
     }
-
-    // ========== FUNCIONES DE FOTO DE PERFIL ==========
     
     function setupProfilePictureHandlers() {
         const fileInput = document.getElementById('foto_perfil');
@@ -198,23 +196,6 @@
         }
     }
 
-    // ========== FUNCIONES EXISTENTES (sin cambios) ==========
-
-    function handleDepartamentoChange(e) {
-        const departamentoId = parseInt(e.target.value);
-        clearSuperioresSelect();
-        if (departamentoId > 0) {
-            loadUsuariosByDepartamento(departamentoId);
-        }
-    }
-
-    function clearSuperioresSelect() {
-        const select = document.getElementById('id_superior');
-        if (!select) return;
-        select.innerHTML = '<option value="0">Sin superior asignado</option>';
-        select.value = "0";
-    }
-
     function setupRealtimeValidation() {
         const usuarioInput = document.getElementById('usuario');
         if (usuarioInput) {
@@ -273,22 +254,30 @@
             });
     }
 
-    function loadUsuariosByDepartamento(departamentoId) {
-        fetch(`../php/get_users.php?id_rol=2&id_departamento=${departamentoId}`)
+    function loadSuperiores() {
+        // Solo cargar usuarios con rol 2 
+        fetch('../php/get_users.php?id_rol=2')
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.usuarios) {
-                    app.usuarios = data.usuarios;
+                    app.superiores = data.usuarios;
                     populateSuperioresSelect(data.usuarios);
                 } else {
-                    console.error('Error al cargar usuarios:', data.message);
+                    console.error('Error al cargar superiores:', data.message);
                     clearSuperioresSelect();
                 }
             })
             .catch(error => {
-                console.error('Error en fetch de usuarios:', error);
+                console.error('Error en fetch de superiores:', error);
                 clearSuperioresSelect();
             });
+    }
+
+    function clearSuperioresSelect() {
+        const select = document.getElementById('id_superior');
+        if (!select) return;
+        select.innerHTML = '<option value="0">Sin superior asignado</option>';
+        select.value = "0";
     }
 
     function populateDepartamentosSelect(departamentos) {
@@ -318,11 +307,20 @@
     function populateSuperioresSelect(usuarios) {
         const select = document.getElementById('id_superior');
         if (!select) return;
+        
         select.innerHTML = '<option value="0">Sin superior asignado</option>';
+        
         usuarios.forEach(usuario => {
             const option = document.createElement('option');
             option.value = usuario.id_usuario;
-            option.textContent = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
+            
+            // Mostrar nombre completo, número de empleado y departamento
+            let displayText = usuario.nombre_completo + ' (ID: ' + usuario.num_empleado + ')';
+            if (usuario.area) {
+                displayText += ' - ' + usuario.area;
+            }
+            option.textContent = displayText;
+            
             select.appendChild(option);
         });
     }
@@ -376,7 +374,11 @@
                 }
                 showAlert('success', message);
                 form.reset();
-                clearSuperioresSelect();
+                // Restaurar superior a valor por defecto sin limpiar opciones
+                const superiorSelect = document.getElementById('id_superior');
+                if (superiorSelect) {
+                    superiorSelect.value = "0";
+                }
                 clearImagePreview();
                 scrollToAlert();
                 setTimeout(() => {
