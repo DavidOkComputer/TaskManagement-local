@@ -1,7 +1,5 @@
 <?php
-/*user_get_my_departments.php - Obtener todos los departamentos a los que pertenece el usuario actual
-  Incluye departamentos donde tiene rol principal Y secundario
-  Funciona para cualquier tipo de usuario (admin, gerente, usuario)
+/*user_get_my_departments.php para saber todos los departamentos a los que pertenece el usuario 
 */
 
 session_start();
@@ -17,9 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 try {
-    if (!isset($_SESSION['user_id']) && !isset($_SESSION['id_usuario'])) {
-        throw new Exception('Usuario no autenticado');
-    }
 
     $conn = getDBConnection();
     if (!$conn) {
