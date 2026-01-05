@@ -1,122 +1,104 @@
 <?php
-/*process_email_queue.php script de cron para procesar la cola de emails*/
+/*process_email_queue.php - Procesa la cola de emails pendientes*/
 
-// Permitir ejecución solo desde CLI
-if (php_sapi_name() !== 'cli') {
-    die('Este script solo puede ejecutarse desde la línea de comandos');
+// Configuración de errores
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+// Configurar zona horaria
+date_default_timezone_set('America/Mexico_City');
+
+// Directorio base
+define('BASE_PATH', dirname(__DIR__));
+define('LOG_PATH', __DIR__ . '/logs');
+
+// Crear directorio de logs si no existe
+if (!is_dir(LOG_PATH)) {
+    mkdir(LOG_PATH, 0755, true);
 }
 
-// Configuración de tiempo y memoria
-set_time_limit(300); // 5 minutos máximo
-ini_set('memory_limit', '256M');
+// Archivo de log
+$logFile = LOG_PATH . '/email_queue_' . date('Y-m-d') . '.log';
 
-// Cargar configuración de base de datos
-$config_path = __DIR__ . '/../php/db_config.php';
-if (!file_exists($config_path)) {
-    // Intentar ruta alternativa
-    $config_path = __DIR__ . '/../config/database.php';
-}
-
-if (file_exists($config_path)) {
-    require_once $config_path;
-} else {
-    // Configuración manual si no existe el archivo
-    define('DB_HOST', 'localhost');
-    define('DB_USER', 'root');
-    define('DB_PASS', '');
-    define('DB_NAME', 'task_management_db');
-}
-
-require_once __DIR__ . '/../includes/email/EmailService.php';
-
-// Configuración de logging
-$log_dir = __DIR__ . '/logs';
-if (!is_dir($log_dir)) {
-    mkdir($log_dir, 0755, true);
-}
-$log_file = $log_dir . '/email_queue_' . date('Y-m-d') . '.log';
-
-function logMessage($message, $level = 'INFO') {
-    global $log_file;
+function writeLog($message, $logFile) {
     $timestamp = date('Y-m-d H:i:s');
-    $formatted = "[$timestamp] [$level] $message\n";
-    file_put_contents($log_file, $formatted, FILE_APPEND);
-    
-    // También mostrar en consola
-    echo $formatted;
+    file_put_contents($logFile, "[$timestamp] $message\n", FILE_APPEND);
 }
 
-// Inicio del proceso
-$start_time = microtime(true);
-logMessage("=== Iniciando procesamiento de cola de emails ===");
+function exitWithLog($message, $logFile, $code = 0) {
+    writeLog($message, $logFile);
+    exit($code);
+}
+
+writeLog("=== Iniciando procesamiento de cola de emails ===", $logFile);
+
+// Verificar lock para evitar ejecuciones simultáneas
+$lockFile = LOG_PATH . '/queue_processor.lock';
+if (file_exists($lockFile)) {
+    $lockTime = filemtime($lockFile);
+    // Si el lock tiene más de 10 minutos, eliminarlo (proceso anterior probablemente falló)
+    if (time() - $lockTime > 600) {
+        unlink($lockFile);
+        writeLog("Lock antiguo eliminado", $logFile);
+    } else {
+        exitWithLog("Proceso ya en ejecución. Saliendo.", $logFile);
+    }
+}
+
+// Crear lock
+file_put_contents($lockFile, getmypid());
 
 try {
-    // Conectar a la base de datos
-    if (function_exists('getDBConnection')) {
-        $conn = getDBConnection();
-    } else {
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    // Cargar configuración de base de datos
+    require_once BASE_PATH . '/php/db_config.php';
+    require_once BASE_PATH . '/email/EmailService.php';
+    
+    $conn = getDBConnection();
+    
+    if (!$conn || $conn->connect_error) {
+        throw new Exception("Error de conexión a base de datos: " . ($conn ? $conn->connect_error : 'No connection'));
     }
     
-    if ($conn->connect_error) {
-        throw new Exception("Error de conexión a base de datos: " . $conn->connect_error);
-    }
+    writeLog("Conexión a base de datos establecida", $logFile);
     
-    $conn->set_charset('utf8mb4');
-    logMessage("Conexión a base de datos establecida");
-    
-    // Crear servicio de email
+    // Inicializar servicio de email
     $emailService = new EmailService($conn);
     
-    // Verificar si el servicio está habilitado
-    $config = $emailService->getConfig();
-    if (!$config->isEnabled()) {
-        logMessage("El servicio de email está deshabilitado. Saliendo.", 'WARNING');
-        exit(0);
+    // Verificar si el sistema está habilitado
+    if (!$emailService->isEnabled()) {
+        exitWithLog("Sistema de email deshabilitado. Saliendo.", $logFile);
     }
     
-    // Obtener estadísticas antes de procesar
-    $stats_before = $emailService->getQueueStats();
-    logMessage("Emails pendientes antes de procesar: " . $stats_before['pendientes']);
+    // Verificar modo de prueba
+    if ($emailService->isTestMode()) {
+        writeLog("MODO PRUEBA ACTIVO - Los emails se enviarán a la dirección de prueba", $logFile);
+    }
     
     // Procesar cola
-    $results = $emailService->processQueue();
+    $result = $emailService->processQueue();
     
-    // Calcular tiempo transcurrido
-    $elapsed = round(microtime(true) - $start_time, 2);
-    
-    // Registrar resultados
-    logMessage("Procesamiento completado en {$elapsed} segundos");
-    logMessage("Procesados: {$results['processed']}, Enviados: {$results['sent']}, Fallidos: {$results['failed']}");
-    
-    // Registrar errores si los hay
-    if (!empty($results['errors'])) {
-        foreach ($results['errors'] as $error) {
-            logMessage("ERROR [ID:{$error['id']}] [{$error['email']}]: {$error['error']}", 'ERROR');
-        }
-    }
-    
-    // Limpiar emails antiguos emails enviados hace más de 30 días
-    $cleanup_result = $conn->query(
-        "DELETE FROM tbl_email_queue 
-         WHERE estado = 'enviado' 
-         AND enviado_at < DATE_SUB(NOW(), INTERVAL 30 DAY)"
+    $message = sprintf(
+        "Procesamiento completado - Total: %d, Exitosos: %d, Fallidos: %d",
+        $result['processed'],
+        $result['success'],
+        $result['failed']
     );
     
-    if ($cleanup_result && $conn->affected_rows > 0) {
-        logMessage("Limpieza: {$conn->affected_rows} emails antiguos eliminados");
-    }
+    writeLog($message, $logFile);
     
-    // Estadísticas finales
-    $stats_after = $emailService->getQueueStats();
-    logMessage("Emails pendientes después de procesar: " . $stats_after['pendientes']);
+    // Obtener estado de la cola
+    $queueCount = $emailService->getQueueCount();
+    writeLog("Estado de cola: " . json_encode($queueCount), $logFile);
     
     $conn->close();
-    logMessage("=== Proceso completado exitosamente ===\n");
     
 } catch (Exception $e) {
-    logMessage("ERROR CRÍTICO: " . $e->getMessage(), 'CRITICAL');
-    exit(1);
+    writeLog("ERROR: " . $e->getMessage(), $logFile);
+} finally {
+    // Eliminar lock
+    if (file_exists($lockFile)) {
+        unlink($lockFile);
+    }
+    writeLog("=== Procesamiento finalizado ===\n", $logFile);
 }
-
-exit(0);

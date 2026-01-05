@@ -1,0 +1,278 @@
+[2026-01-05 10:58:25] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 10:58:26] Conexión a base de datos establecida
+[2026-01-05 10:58:26] === Procesamiento finalizado ===
+
+[2026-01-05 10:59:10] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 10:59:10] Conexión a base de datos establecida
+[2026-01-05 10:59:10] === Procesamiento finalizado ===
+
+[2026-01-05 10:59:24] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 10:59:24] Conexión a base de datos establecida
+[2026-01-05 10:59:24] === Procesamiento finalizado ===
+
+[2026-01-05 10:59:28] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 10:59:28] Conexión a base de datos establecida
+[2026-01-05 10:59:28] === Procesamiento finalizado ===
+
+[2026-01-05 10:59:45] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 10:59:45] Conexión a base de datos establecida
+[2026-01-05 10:59:45] === Procesamiento finalizado ===
+
+[2026-01-05 11:00:10] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:00:10] Conexión a base de datos establecida
+[2026-01-05 11:00:10] === Procesamiento finalizado ===
+
+[2026-01-05 11:04:41] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:04:41] === Procesamiento finalizado ===
+
+[2026-01-05 11:04:43] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:04:43] === Procesamiento finalizado ===
+
+[2026-01-05 11:05:34] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:05:34] Conexión a base de datos establecida
+[2026-01-05 11:05:34] === Procesamiento finalizado ===
+
+[2026-01-05 11:08:25] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:08:25] Conexión a base de datos establecida
+[2026-01-05 11:08:25] === Procesamiento finalizado ===
+
+[2026-01-05 11:09:40] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:09:40] Conexión a base de datos establecida
+[2026-01-05 11:09:40] ERROR: Unknown column 'fecha_programada' in 'where clause'
+[2026-01-05 11:09:40] === Procesamiento finalizado ===
+
+[2026-01-05 11:22:31] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:22:31] Conexión a base de datos establecida
+[2026-01-05 11:22:31] ERROR: Unknown column 'fecha_procesado' in 'field list'
+[2026-01-05 11:22:31] === Procesamiento finalizado ===
+
+[2026-01-05 11:23:33] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:23:33] Conexión a base de datos establecida
+[2026-01-05 11:23:33] ERROR: Unknown column 'to_email' in 'field list'
+[2026-01-05 11:23:33] === Procesamiento finalizado ===
+
+[2026-01-05 11:32:03] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:32:03] Conexión a base de datos establecida
+[2026-01-05 11:32:03] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 11:32:03] Estado de cola: {"pendiente":"2"}
+[2026-01-05 11:32:03] === Procesamiento finalizado ===
+
+[2026-01-05 11:32:43] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:32:43] Conexión a base de datos establecida
+[2026-01-05 11:32:43] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 11:32:43] Estado de cola: {"pendiente":"2"}
+[2026-01-05 11:32:43] === Procesamiento finalizado ===
+
+[2026-01-05 11:33:50] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:33:50] Conexión a base de datos establecida
+[2026-01-05 11:33:50] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 11:33:50] Estado de cola: {"pendiente":"2"}
+[2026-01-05 11:33:50] === Procesamiento finalizado ===
+
+[2026-01-05 11:36:28] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:36:28] === Procesamiento finalizado ===
+
+[2026-01-05 11:36:54] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:36:54] Conexión a base de datos establecida
+[2026-01-05 11:36:54] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 11:36:54] Estado de cola: {"pendiente":"2"}
+[2026-01-05 11:36:54] === Procesamiento finalizado ===
+
+[2026-01-05 11:37:09] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:37:09] Conexión a base de datos establecida
+[2026-01-05 11:37:09] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 11:37:09] Estado de cola: {"pendiente":"2"}
+[2026-01-05 11:37:09] === Procesamiento finalizado ===
+
+[2026-01-05 11:40:56] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:40:56] Conexión a base de datos establecida
+[2026-01-05 11:40:56] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 11:40:56] Estado de cola: {"pendiente":"2"}
+[2026-01-05 11:40:56] === Procesamiento finalizado ===
+
+[2026-01-05 11:55:16] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 11:55:16] Conexión a base de datos establecida
+[2026-01-05 11:55:16] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 11:55:16] Estado de cola: {"pendiente":"2"}
+[2026-01-05 11:55:16] === Procesamiento finalizado ===
+
+[2026-01-05 12:09:22] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 12:09:22] Conexión a base de datos establecida
+[2026-01-05 12:09:22] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 12:09:22] Estado de cola: {"pendiente":"2"}
+[2026-01-05 12:09:22] === Procesamiento finalizado ===
+
+[2026-01-05 12:10:11] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 12:10:11] Conexión a base de datos establecida
+[2026-01-05 12:10:11] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 12:10:11] Estado de cola: {"pendiente":"1","fallido":"1"}
+[2026-01-05 12:10:11] === Procesamiento finalizado ===
+
+[2026-01-05 12:15:42] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 12:15:42] Conexión a base de datos establecida
+[2026-01-05 12:15:42] Procesamiento completado - Total: 1, Exitosos: 0, Fallidos: 1
+[2026-01-05 12:15:42] Estado de cola: {"fallido":"2"}
+[2026-01-05 12:15:42] === Procesamiento finalizado ===
+
+[2026-01-05 12:17:58] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 12:17:58] Conexión a base de datos establecida
+[2026-01-05 12:17:59] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 12:17:59] Estado de cola: {"pendiente":"2"}
+[2026-01-05 12:17:59] === Procesamiento finalizado ===
+
+[2026-01-05 12:24:45] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 12:24:46] Conexión a base de datos establecida
+[2026-01-05 12:24:46] Sistema de email deshabilitado. Saliendo.
+[2026-01-05 12:37:29] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 12:37:29] Lock antiguo eliminado
+[2026-01-05 12:37:29] Conexión a base de datos establecida
+[2026-01-05 12:37:29] === Procesamiento finalizado ===
+
+[2026-01-05 12:37:45] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 12:37:45] Conexión a base de datos establecida
+[2026-01-05 12:37:45] === Procesamiento finalizado ===
+
+[2026-01-05 12:52:34] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 12:52:34] Conexión a base de datos establecida
+[2026-01-05 12:52:35] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 12:52:35] Estado de cola: {"pendiente":"2"}
+[2026-01-05 12:52:35] === Procesamiento finalizado ===
+
+[2026-01-05 12:59:54] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 12:59:54] Conexión a base de datos establecida
+[2026-01-05 12:59:55] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 12:59:55] Estado de cola: {"fallido":"2"}
+[2026-01-05 12:59:55] === Procesamiento finalizado ===
+
+[2026-01-05 13:08:22] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 13:08:22] Conexión a base de datos establecida
+[2026-01-05 13:08:24] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 13:08:24] Estado de cola: {"pendiente":"2"}
+[2026-01-05 13:08:24] === Procesamiento finalizado ===
+
+[2026-01-05 13:14:30] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 13:14:30] Conexión a base de datos establecida
+[2026-01-05 13:14:31] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 13:14:31] Estado de cola: {"pendiente":"2"}
+[2026-01-05 13:14:31] === Procesamiento finalizado ===
+
+[2026-01-05 13:18:26] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 13:18:26] Conexión a base de datos establecida
+[2026-01-05 13:18:28] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 13:18:28] Estado de cola: {"fallido":"2"}
+[2026-01-05 13:18:28] === Procesamiento finalizado ===
+
+[2026-01-05 13:23:52] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 13:23:52] Conexión a base de datos establecida
+[2026-01-05 13:23:54] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 13:23:54] Estado de cola: {"pendiente":"2"}
+[2026-01-05 13:23:54] === Procesamiento finalizado ===
+
+[2026-01-05 13:24:19] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 13:24:19] Conexión a base de datos establecida
+[2026-01-05 13:24:21] Procesamiento completado - Total: 2, Exitosos: 0, Fallidos: 2
+[2026-01-05 13:24:21] Estado de cola: {"pendiente":"2"}
+[2026-01-05 13:24:21] === Procesamiento finalizado ===
+
+[2026-01-05 13:25:38] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 13:25:38] Conexión a base de datos establecida
+[2026-01-05 13:25:42] Procesamiento completado - Total: 2, Exitosos: 2, Fallidos: 0
+[2026-01-05 13:25:42] Estado de cola: {"enviado":"2"}
+[2026-01-05 13:25:42] === Procesamiento finalizado ===
+
+[2026-01-05 14:07:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:07:02] Conexión a base de datos establecida
+[2026-01-05 14:07:05] Procesamiento completado - Total: 2, Exitosos: 2, Fallidos: 0
+[2026-01-05 14:07:05] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:07:05] === Procesamiento finalizado ===
+
+[2026-01-05 14:12:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:12:02] Conexión a base de datos establecida
+[2026-01-05 14:12:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:12:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:12:02] === Procesamiento finalizado ===
+
+[2026-01-05 14:17:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:17:02] Conexión a base de datos establecida
+[2026-01-05 14:17:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:17:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:17:02] === Procesamiento finalizado ===
+
+[2026-01-05 14:22:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:22:02] Conexión a base de datos establecida
+[2026-01-05 14:22:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:22:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:22:02] === Procesamiento finalizado ===
+
+[2026-01-05 14:27:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:27:02] Conexión a base de datos establecida
+[2026-01-05 14:27:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:27:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:27:02] === Procesamiento finalizado ===
+
+[2026-01-05 14:32:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:32:02] Conexión a base de datos establecida
+[2026-01-05 14:32:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:32:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:32:02] === Procesamiento finalizado ===
+
+[2026-01-05 14:37:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:37:02] Conexión a base de datos establecida
+[2026-01-05 14:37:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:37:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:37:02] === Procesamiento finalizado ===
+
+[2026-01-05 14:42:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:42:02] Conexión a base de datos establecida
+[2026-01-05 14:42:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:42:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:42:02] === Procesamiento finalizado ===
+
+[2026-01-05 14:47:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:47:02] Conexión a base de datos establecida
+[2026-01-05 14:47:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:47:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:47:02] === Procesamiento finalizado ===
+
+[2026-01-05 14:52:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:52:02] Conexión a base de datos establecida
+[2026-01-05 14:52:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:52:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:52:02] === Procesamiento finalizado ===
+
+[2026-01-05 14:57:02] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 14:57:02] Conexión a base de datos establecida
+[2026-01-05 14:57:02] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 14:57:02] Estado de cola: {"enviado":"4"}
+[2026-01-05 14:57:02] === Procesamiento finalizado ===
+
+[2026-01-05 15:01:41] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 15:01:41] Conexión a base de datos establecida
+[2026-01-05 15:01:41] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 15:01:41] Estado de cola: {"enviado":"4"}
+[2026-01-05 15:01:41] === Procesamiento finalizado ===
+
+[2026-01-05 15:02:01] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 15:02:01] Conexión a base de datos establecida
+[2026-01-05 15:02:01] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 15:02:01] Estado de cola: {"enviado":"4"}
+[2026-01-05 15:02:01] === Procesamiento finalizado ===
+
+[2026-01-05 15:07:01] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 15:07:01] Conexión a base de datos establecida
+[2026-01-05 15:07:03] Procesamiento completado - Total: 1, Exitosos: 1, Fallidos: 0
+[2026-01-05 15:07:03] Estado de cola: {"enviado":"5"}
+[2026-01-05 15:07:03] === Procesamiento finalizado ===
+
+[2026-01-05 15:12:01] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 15:12:01] Conexión a base de datos establecida
+[2026-01-05 15:12:01] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 15:12:01] Estado de cola: {"enviado":"5"}
+[2026-01-05 15:12:01] === Procesamiento finalizado ===
+
+[2026-01-05 15:17:01] === Iniciando procesamiento de cola de emails ===
+[2026-01-05 15:17:01] Conexión a base de datos establecida
+[2026-01-05 15:17:01] Procesamiento completado - Total: 0, Exitosos: 0, Fallidos: 0
+[2026-01-05 15:17:01] Estado de cola: {"enviado":"5"}
+[2026-01-05 15:17:01] === Procesamiento finalizado ===
+

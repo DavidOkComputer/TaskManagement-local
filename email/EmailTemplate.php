@@ -386,7 +386,7 @@ class EmailTemplates {
         
         // Valores por defecto
         $defaults = [
-            'URL_SISTEMA' => 'http://localhost/task_management',
+            'URL_SISTEMA' => 'http://10.109.17.87/projectManagement',
             'HEADER_SUBTITLE' => $this->getSubtitleForType($template_name),
             'SUBJECT' => $variables['SUBJECT'] ?? 'Notificación'
         ];

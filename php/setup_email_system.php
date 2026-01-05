@@ -133,9 +133,7 @@ function configureGmail($conn) {
     }
     
     echo "Ingrese la contraseña de aplicación (16 caracteres, sin espacios): ";
-    system('stty -echo'); // Ocultar entrada
     $password = trim(fgets(STDIN));
-    system('stty echo');
     echo "\n";
     
     $password = str_replace(' ', '', $password); // Quitar espacios
@@ -204,7 +202,7 @@ function configureGmail($conn) {
 function testConnection($conn) {
     echo COLOR_YELLOW . "Probando conexión SMTP...\n" . COLOR_RESET;
     
-    require_once __DIR__ . '/includes/email/EmailService.php';
+    require_once '../email/EmailService.php';
     
     $emailService = new EmailService($conn);
     $result = $emailService->testConnection();
@@ -347,7 +345,7 @@ function getTableDefinitions() {
     ('test_mode', '1', 0, 'Modo de prueba'),
     ('system_url', 'http://localhost/task_management', 0, 'URL del sistema'),
     ('dias_recordatorio_antes', '3', 0, 'Días antes del vencimiento'),
-    ('max_reintentos', '3', 0, 'Máximo de reintentos'),
+    ('max_intentos', '3', 0, 'Máximo de reintentos'),
     ('emails_por_lote', '20', 0, 'Emails por ejecución');
     
     CREATE TABLE IF NOT EXISTS tbl_email_queue (

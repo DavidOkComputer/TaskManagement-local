@@ -15,9 +15,7 @@ class NotificationHelpers
     $this->conn = $conn;
     $this->emailService = new EmailService($conn);
     $this->templates = new EmailTemplates();
-    $this->systemUrl = $this->emailService
-      ->getConfig()
-      ->get("system_url", "http://localhost/task_management");
+    $this->systemUrl = $this->emailService->getConfig("system_url", "http://10.109.17.87/projectManagement");
   }
 
   public function notifyTaskAssigned($tarea_id, $asignado_por_id)
