@@ -70,7 +70,7 @@ try {
     exit(0);
   }
 
-  $system_url = $config->get("system_url", "http://localhost/taskManagement");
+  $system_url = $config->get("system_url", "http://10.109.17.87/taskManagement");
   $queued_count = 0;
 
   // Usa el rol/departamento principal (es_principal = 1)
