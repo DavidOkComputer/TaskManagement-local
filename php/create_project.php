@@ -159,7 +159,7 @@ try {
         error_log("Notificación enviada: Nuevo proyecto {$id_proyecto} asignado a usuario {$id_participante}");
         
         // Email de notificación de asignación de proyecto
-        $notifier = new NotificationHelpers($conn);
+        $notifier = new NotificationHelper($conn);
         $notifier->notifyProjectAssigned($id_proyecto, $id_participante, $id_creador);
     }
  
@@ -186,7 +186,7 @@ try {
                 error_log("Notificación enviada: Proyecto grupal {$id_proyecto} - usuario {$id_usuario} agregado");
                 
                 // Email de notificación
-                $notifier = new NotificationHelpers($conn);
+                $notifier = new NotificationHelper($conn);
                 $notifier->notifyProjectAssigned($id_proyecto, $id_usuario, $id_creador);
             }
         }

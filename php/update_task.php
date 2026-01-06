@@ -255,7 +255,7 @@ try {
 
     // Enviar correo de asignación de tarea
     try {
-      $notifier = new NotificationHelpers($conn);
+      $notifier = new NotificationHelper($conn);
 
       $notifier->notifyTaskAssigned($id_tarea, $id_creador);
     } catch (Exception $email_error) {

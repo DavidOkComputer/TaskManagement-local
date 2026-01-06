@@ -122,7 +122,7 @@ try {
         }
 
         //para correo de notificacion de asignacion de tarea
-        $notifier = new NotificationHelpers($conn);
+        $notifier = new NotificationHelper($conn);
         $notifier->notifyTaskAssigned($tarea_id, $usuario_asignador_id);
 
         // Recalcular progreso del proyecto

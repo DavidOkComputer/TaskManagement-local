@@ -3,7 +3,7 @@
 
 require_once(__DIR__ . '/db_config.php');
 
-class NotificationHelper {
+class Notification_Helper {
     
     private $conn;
     

@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 session_start();
 
 require_once(__DIR__ . '/db_config.php');
-require_once(__DIR__ . '/notification_helper.php');
+require_once('../email/NotificationHelper.php');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
@@ -30,8 +30,8 @@ try {
     }
     
     $id_notificacion = (int)$input['id_notificacion'];
-    
-    $notificationHelper = new NotificationHelper();
+    $conn = getDBConnection();
+    $notificationHelper = new NotificationHelper($conn);
     $result = $notificationHelper->eliminarNotificacion($id_notificacion, $id_usuario);
     
     if ($result) {

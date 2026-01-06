@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 session_start();
 
 require_once(__DIR__ . '/db_config.php');
-require_once(__DIR__ . '/notification_helper.php');
+require_once('../email/NotificationHelper.php');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode([
@@ -20,8 +20,8 @@ try {
     
     // Obtener datos del request
     $input = json_decode(file_get_contents('php://input'), true);
-    
-    $notificationHelper = new NotificationHelper();
+    $conn = getDBConnection();
+    $notificationHelper = new NotificationHelper($conn);
     
     // Si se envía 'todas' => true, marcar todas como leídas
     if (isset($input['todas']) && $input['todas'] === true) {

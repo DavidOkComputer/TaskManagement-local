@@ -8,7 +8,7 @@ session_start();
 date_default_timezone_set('America/Mexico_City');
 
 require_once(__DIR__ . '/db_config.php');
-require_once(__DIR__ . '/notification_helper.php');
+require_once('../email/NotificationHelper.php');
 
 try {
     if (!isset($_SESSION['user_id'])) {
@@ -20,8 +20,8 @@ try {
     // Parámetros opcionales
     $solo_no_leidas = isset($_GET['no_leidas']) && $_GET['no_leidas'] === '1';
     $limite = isset($_GET['limite']) ? min((int)$_GET['limite'], 50) : 20;
-    
-    $notificationHelper = new NotificationHelper();
+    $conn = getDBConnection();
+    $notificationHelper = new NotificationHelper($conn);
     $notificaciones = $notificationHelper->obtenerNotificaciones($id_usuario, $solo_no_leidas, $limite);
     $total_no_leidas = $notificationHelper->contarNoLeidas($id_usuario);
     

@@ -197,7 +197,7 @@ try {
         // Enviar email de notificación si NotificationHelper existe 
         if ($notification_helper_exists) { 
             try { 
-                $notifier = new NotificationHelpers($conn); 
+                $notifier = new NotificationHelper($conn); 
                 $notifier->notifyTaskAssigned($task_id, $id_creador); 
             } catch (Exception $e) { 
                 error_log("Error sending email notification: " . $e->getMessage()); 

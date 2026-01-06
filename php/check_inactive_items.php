@@ -1,7 +1,5 @@
 <?php
-/**
-* check_inactive_items.php
-* Script para verificar proyectos y tareas inactivos, las que son pendientes sin cambios*/
+/*check_inactive_items.php Script para verificar proyectos y tareas inactivos, las que son pendientes sin cambios*/
  
 // Para ejecución desde línea de comandos, establecer directorio de trabajo
 if (php_sapi_name() === 'cli') {
@@ -9,7 +7,7 @@ if (php_sapi_name() === 'cli') {
 }
  
 require_once(__DIR__ . '/db_config.php');
-require_once(__DIR__ . '/notification_helper.php');
+require_once('../email/NotificationHelper.php');
  
 // Configuración
 $DIAS_INACTIVIDAD = 7; // Días sin actividad para generar notificación

@@ -7,7 +7,7 @@ if (php_sapi_name() === 'cli') {
 }
  
 require_once(__DIR__ . '/db_config.php');
-require_once(__DIR__ . '/notification_helper.php');
+require_once('../email/NotificationHelper.php');
  
 // Log de inicio
 error_log("=== Iniciando verificación de proyectos vencidos: " . date('Y-m-d H:i:s') . " ===");
@@ -159,9 +159,7 @@ try {
             }
         }
     }
-    
     $conn->close();
-    
     error_log("=== Verificación completada: {$proyectos_procesados} proyectos procesados, {$notificaciones_creadas} notificaciones creadas ===");
     
     // Si se ejecuta desde CLI, mostrar resultado

@@ -8,7 +8,7 @@ session_start();
 date_default_timezone_set('America/Mexico_City');
 
 require_once(__DIR__ . '/db_config.php');
-require_once(__DIR__ . '/notification_helper.php');
+require_once('../email/NotificationHelper.php');
 
 try {
     if (!isset($_SESSION['user_id'])) {
@@ -16,8 +16,8 @@ try {
     }
     
     $id_usuario = (int)$_SESSION['user_id'];
-    
-    $notificationHelper = new NotificationHelper();
+    $conn = getDBConnection();
+    $notificationHelper = new NotificationHelper($conn);
     $count = $notificationHelper->contarNoLeidas($id_usuario);
     
     echo json_encode([

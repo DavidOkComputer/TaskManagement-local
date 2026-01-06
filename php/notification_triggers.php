@@ -1,7 +1,7 @@
 <?php
 /*notification_triggers.php para crear notificationes automaticamente*/
 
-require_once(__DIR__ . '/notification_helper.php');
+require_once('../email/NotificationHelper.php');
 
 function triggerNotificacionTareaAsignada($conn, $id_tarea, $id_usuario_asignado, $id_usuario_anterior = null) {
     // Si es el mismo usuario, no notificar
