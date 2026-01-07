@@ -67,10 +67,12 @@ try {
     $emailService = new EmailService($conn);
     $templates = new EmailTemplates();
     $notificationHelper = new NotificationHelper($conn);
-    $config = $emailService->getConfig();
+    $config = $emailService->getConfig(
+        "system_url",
+      "http://10.109.17.87/projectManagement",);
 
     // Obtener configuración
-    $system_url = "http://10.109.17.87/taskManagement";
+    $system_url = "http://10.109.17.87/projectManagement";
     $dias_recordatorio = 3; // Días antes de vencimiento para recordatorio
 
     $queued = [

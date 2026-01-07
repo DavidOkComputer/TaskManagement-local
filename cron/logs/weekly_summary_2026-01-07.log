@@ -1,0 +1,346 @@
+[2026-01-07 13:56:54] [INFO] === Iniciando envío de resumen semanal ===
+[2026-01-07 13:56:54] [INFO] Usuarios para enviar resumen: 12
+[2026-01-07 13:56:54] [INFO] Procesando usuario: David Barreto (francisco.barreto@nidec.com)
+[2026-01-07 13:56:54] [INFO] Email encolado correctamente para francisco.barreto@nidec.com
+[2026-01-07 13:56:54] [INFO] Procesando usuario: Francisco Valdez (francisco.valdez@nidec.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para francisco.valdez@nidec.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Jhon Doe (jhon.doe@nidec.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para jhon.doe@nidec.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Juan Dou (juan.dou@nidec-motor.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para juan.dou@nidec-motor.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Frenkie DeJong (frenkie.dejong@nidec-motor.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para frenkie.dejong@nidec-motor.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Luis Ortiz (luis.ortiz@nidec-motor.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para luis.ortiz@nidec-motor.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Margarita Barbosa (margarita.barbosa@nidec-motor.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para margarita.barbosa@nidec-motor.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Jesus Dominguez (jesus.dominguez@nidec-motor.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para jesus.dominguez@nidec-motor.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Jose Miguel Escamilla (jose.miguel@nidec-ga.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para jose.miguel@nidec-ga.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Humberto Araguz Cruz (humberto.araguz@nidec-motor.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para humberto.araguz@nidec-motor.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Yaneth Zaleta (yaneth.d.zaleta@nidec-motor.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para yaneth.d.zaleta@nidec-motor.com
+[2026-01-07 13:56:55] [INFO] Procesando usuario: Felipe Mireles (felipe.mireles@nidec-ga.com)
+[2026-01-07 13:56:55] [INFO] Email encolado correctamente para felipe.mireles@nidec-ga.com
+[2026-01-07 13:56:55] [INFO] === Resumen semanal completado ===
+[2026-01-07 13:56:55] [INFO] Total de emails en cola: 12
+[07:33:47] ========================================== 
+[07:33:47] Iniciando envio de resumen semanal 
+[07:33:47] ========================================== 
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] === Iniciando envío de resumen semanal ===
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Usuarios para enviar resumen: 12
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: David Barreto (francisco.barreto@nidec.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para francisco.barreto@nidec.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Francisco Valdez (francisco.valdez@nidec.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para francisco.valdez@nidec.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Jhon Doe (jhon.doe@nidec.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para jhon.doe@nidec.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Juan Dou (juan.dou@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para juan.dou@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Frenkie DeJong (frenkie.dejong@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para frenkie.dejong@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Luis Ortiz (luis.ortiz@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para luis.ortiz@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Margarita Barbosa (margarita.barbosa@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para margarita.barbosa@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Jesus Dominguez (jesus.dominguez@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para jesus.dominguez@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Jose Miguel Escamilla (jose.miguel@nidec-ga.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para jose.miguel@nidec-ga.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Humberto Araguz Cruz (humberto.araguz@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para humberto.araguz@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Yaneth Zaleta (yaneth.d.zaleta@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para yaneth.d.zaleta@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Procesando usuario: Felipe Mireles (felipe.mireles@nidec-ga.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Email encolado correctamente para felipe.mireles@nidec-ga.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] === Resumen semanal completado ===
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:33:47] [INFO] Total de emails en cola: 12
+[07:33:47] Proceso completado 
+ 
+[07:40:20] ========================================== 
+[07:40:20] Iniciando envio de resumen semanal 
+[07:40:20] ========================================== 
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] === Iniciando envío de resumen semanal ===
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Usuarios para enviar resumen: 12
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Procesando usuario: David Barreto (francisco.barreto@nidec.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Email encolado correctamente para francisco.barreto@nidec.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Procesando usuario: Francisco Valdez (francisco.valdez@nidec.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Email encolado correctamente para francisco.valdez@nidec.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Procesando usuario: Jhon Doe (jhon.doe@nidec.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Email encolado correctamente para jhon.doe@nidec.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Procesando usuario: Juan Dou (juan.dou@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Email encolado correctamente para juan.dou@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Procesando usuario: Frenkie DeJong (frenkie.dejong@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Email encolado correctamente para frenkie.dejong@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:20] [INFO] Procesando usuario: Luis Ortiz (luis.ortiz@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Email encolado correctamente para luis.ortiz@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Procesando usuario: Margarita Barbosa (margarita.barbosa@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Email encolado correctamente para margarita.barbosa@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Procesando usuario: Jesus Dominguez (jesus.dominguez@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Email encolado correctamente para jesus.dominguez@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Procesando usuario: Jose Miguel Escamilla (jose.miguel@nidec-ga.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Email encolado correctamente para jose.miguel@nidec-ga.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Procesando usuario: Humberto Araguz Cruz (humberto.araguz@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Email encolado correctamente para humberto.araguz@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Procesando usuario: Yaneth Zaleta (yaneth.d.zaleta@nidec-motor.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Email encolado correctamente para yaneth.d.zaleta@nidec-motor.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Procesando usuario: Felipe Mireles (felipe.mireles@nidec-ga.com)
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Email encolado correctamente para felipe.mireles@nidec-ga.com
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] === Resumen semanal completado ===
+PHP Warning:  file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+
+Warning: file_put_contents(C:\xampp\htdocs\taskManagement\cron/logs/weekly_summary_2026-01-07.log): Failed to open stream: Resource temporarily unavailable in C:\xampp\htdocs\taskManagement\cron\send_weekly_summary.php on line 45
+[2026-01-07 14:40:21] [INFO] Total de emails en cola: 12
+[07:40:20] Proceso completado 
+ 
+[2026-01-07 14:48:19] [INFO] === Iniciando envío de resumen semanal ===
+[2026-01-07 14:48:19] [INFO] Usuarios para enviar resumen: 12
+[2026-01-07 14:48:19] [INFO] Procesando usuario: David Barreto (francisco.barreto@nidec.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para francisco.barreto@nidec.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Francisco Valdez (francisco.valdez@nidec.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para francisco.valdez@nidec.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Jhon Doe (jhon.doe@nidec.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para jhon.doe@nidec.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Juan Dou (juan.dou@nidec-motor.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para juan.dou@nidec-motor.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Frenkie DeJong (frenkie.dejong@nidec-motor.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para frenkie.dejong@nidec-motor.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Luis Ortiz (luis.ortiz@nidec-motor.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para luis.ortiz@nidec-motor.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Margarita Barbosa (margarita.barbosa@nidec-motor.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para margarita.barbosa@nidec-motor.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Jesus Dominguez (jesus.dominguez@nidec-motor.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para jesus.dominguez@nidec-motor.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Jose Miguel Escamilla (jose.miguel@nidec-ga.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para jose.miguel@nidec-ga.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Humberto Araguz Cruz (humberto.araguz@nidec-motor.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para humberto.araguz@nidec-motor.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Yaneth Zaleta (yaneth.d.zaleta@nidec-motor.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para yaneth.d.zaleta@nidec-motor.com
+[2026-01-07 14:48:19] [INFO] Procesando usuario: Felipe Mireles (felipe.mireles@nidec-ga.com)
+[2026-01-07 14:48:19] [INFO] Email encolado correctamente para felipe.mireles@nidec-ga.com
+[2026-01-07 14:48:19] [INFO] === Resumen semanal completado ===
+[2026-01-07 14:48:19] [INFO] Total de emails en cola: 12
+[2026-01-07 16:29:22] [INFO] === Iniciando envío de resumen semanal ===
+[2026-01-07 16:29:22] [INFO] Usuarios para enviar resumen: 12
+[2026-01-07 16:29:22] [INFO] Procesando usuario: David Barreto (francisco.barreto@nidec.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para francisco.barreto@nidec.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Francisco Valdez (francisco.valdez@nidec.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para francisco.valdez@nidec.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Jhon Doe (jhon.doe@nidec.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para jhon.doe@nidec.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Juan Dou (juan.dou@nidec-motor.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para juan.dou@nidec-motor.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Frenkie DeJong (frenkie.dejong@nidec-motor.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para frenkie.dejong@nidec-motor.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Luis Ortiz (luis.ortiz@nidec-motor.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para luis.ortiz@nidec-motor.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Margarita Barbosa (margarita.barbosa@nidec-motor.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para margarita.barbosa@nidec-motor.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Jesus Dominguez (jesus.dominguez@nidec-motor.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para jesus.dominguez@nidec-motor.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Jose Miguel Escamilla (jose.miguel@nidec-ga.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para jose.miguel@nidec-ga.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Humberto Araguz Cruz (humberto.araguz@nidec-motor.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para humberto.araguz@nidec-motor.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Yaneth Zaleta (yaneth.d.zaleta@nidec-ga.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para yaneth.d.zaleta@nidec-ga.com
+[2026-01-07 16:29:22] [INFO] Procesando usuario: Felipe Mireles (felipe.mireles@nidec-ga.com)
+[2026-01-07 16:29:22] [INFO] Email encolado correctamente para felipe.mireles@nidec-ga.com
+[2026-01-07 16:29:22] [INFO] === Resumen semanal completado ===
+[2026-01-07 16:29:22] [INFO] Total de emails en cola: 12
+[2026-01-07 16:29:47] [INFO] === Iniciando envío de resumen semanal ===
+[2026-01-07 16:29:47] [INFO] Usuarios para enviar resumen: 12
+[2026-01-07 16:29:47] [INFO] Procesando usuario: David Barreto (francisco.barreto@nidec.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para francisco.barreto@nidec.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Francisco Valdez (francisco.valdez@nidec.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para francisco.valdez@nidec.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Jhon Doe (jhon.doe@nidec.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para jhon.doe@nidec.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Juan Dou (juan.dou@nidec-motor.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para juan.dou@nidec-motor.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Frenkie DeJong (frenkie.dejong@nidec-motor.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para frenkie.dejong@nidec-motor.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Luis Ortiz (luis.ortiz@nidec-motor.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para luis.ortiz@nidec-motor.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Margarita Barbosa (margarita.barbosa@nidec-motor.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para margarita.barbosa@nidec-motor.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Jesus Dominguez (jesus.dominguez@nidec-motor.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para jesus.dominguez@nidec-motor.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Jose Miguel Escamilla (jose.miguel@nidec-ga.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para jose.miguel@nidec-ga.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Humberto Araguz Cruz (humberto.araguz@nidec-motor.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para humberto.araguz@nidec-motor.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Yaneth Zaleta (yaneth.d.zaleta@nidec-ga.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para yaneth.d.zaleta@nidec-ga.com
+[2026-01-07 16:29:47] [INFO] Procesando usuario: Felipe Mireles (felipe.mireles@nidec-ga.com)
+[2026-01-07 16:29:47] [INFO] Email encolado correctamente para felipe.mireles@nidec-ga.com
+[2026-01-07 16:29:47] [INFO] === Resumen semanal completado ===
+[2026-01-07 16:29:47] [INFO] Total de emails en cola: 12

@@ -131,7 +131,7 @@ try {
     $emailService = new EmailService($conn);
     $templates = new EmailTemplates();
 
-    $system_url = "http://10.109.17.87/taskManagement";
+    $system_url = "http://10.109.17.87/projectManagement";
     $queued_count = 0;
 
     // Obtener usuarios que tienen habilitado el resumen semanal
