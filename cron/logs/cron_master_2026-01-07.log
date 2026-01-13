@@ -190,3 +190,48 @@
 [2026-01-07 18:00:02] [INFO]  - Proyectos vencidos: 0
 [11:00:02] Tareas completadas 
  
+[12:00:02] ========================================== 
+[12:00:02] Iniciando ejecucion de check deadlines 
+[12:00:02] ========================================== 
+[12:00:02] Ejecutando check_deadlines.php... 
+[2026-01-07 19:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-07 19:00:02] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-07 19:00:02] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-07 19:00:02] [INFO] Buscando tareas que vencen mañana...
+[2026-01-07 19:00:02] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-07 19:00:02] [INFO] Buscando tareas vencidas...
+[2026-01-07 19:00:02] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-07 19:00:02] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-07 19:00:02] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-07 19:00:02] [INFO] Buscando proyectos vencidos...
+[2026-01-07 19:00:02] [INFO] Proyectos vencidos notificados: 0
+[2026-01-07 19:00:02] [INFO] === Verificación completada ===
+[2026-01-07 19:00:02] [INFO] Total de notificaciones procesadas: 0
+[2026-01-07 19:00:02] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-07 19:00:02] [INFO]  - Vencen mañana: 0
+[2026-01-07 19:00:02] [INFO]  - Vencidas (asignados): 0
+[2026-01-07 19:00:02] [INFO]  - Vencidas (creadores): 0
+[2026-01-07 19:00:02] [INFO]  - Proyectos vencidos: 0
+[12:00:02] Tareas completadas 
+ 
+[13:00:02] ========================================== 
+[13:00:02] Iniciando ejecucion de check deadlines 
+[13:00:02] ========================================== 
+[13:00:02] Ejecutando check_deadlines.php... 
+[2026-01-07 20:00:02] [INFO] === Iniciando verificación de vencimientos ===
+^C[14:00:02] ========================================== 
+[14:00:02] Iniciando ejecucion de check deadlines 
+[14:00:02] ========================================== 
+[14:00:02] Ejecutando check_deadlines.php... 
+[2026-01-07 21:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-07 21:00:06] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[14:00:02] Tareas completadas 
+ 
+[15:00:02] ========================================== 
+[15:00:02] Iniciando ejecucion de check deadlines 
+[15:00:02] ========================================== 
+[15:00:02] Ejecutando check_deadlines.php... 
+[2026-01-07 22:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-07 22:00:06] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[15:00:02] Tareas completadas 
+ 

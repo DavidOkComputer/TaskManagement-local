@@ -533,39 +533,61 @@ function displayProjects(proyectos) {
 }
 
 function createProjectRow(proyecto, index) {
-	const row = document.createElement('tr');
-	const statusColor = getStatusColor(proyecto.estado);
-	const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado || 'N/A'}</span>`;
-	const progressBar = createProgressBar(proyecto.progreso || 0);
-	const viewUsersButton = proyecto.id_tipo_proyecto === 1 //mostrar unicamente boton de grupo para los proyectos que sean grupales 
-		?
-		`<button class="btn btn-sm btn-info btn-action" onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados"> 
-                  <i class="mdi mdi-account-multiple"></i> 
-           </button>` :
-		'';
-	const actionsButtons = ` 
-        <div class="action-buttons"> 
-            <button class="btn btn-sm btn-success btn-action" onclick="editarProyecto(${proyecto.id_proyecto})" title="Editar"> 
-                <i class="mdi mdi-pencil"></i> 
-            </button> 
-            ${viewUsersButton} 
-        </div> 
+    const row = document.createElement('tr');
+    
+    // Agregar atributo data-id para identificar el proyecto
+    row.setAttribute('data-project-id', proyecto.id_proyecto);
+    
+    // Agregar clase para indicar que es clickeable
+    row.classList.add('project-row-clickable');
+    
+    const statusColor = getStatusColor(proyecto.estado);
+    const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado || 'N/A'}</span>`;
+    const progressBar = createProgressBar(proyecto.progreso || 0);
+ 
+    const viewUsersButton = proyecto.id_tipo_proyecto === 1
+        ? `<button class="btn btn-sm btn-info btn-action" onclick="event.stopPropagation(); viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados">
+            <i class="mdi mdi-account-multiple"></i>
+           </button>`
+        : '';
+ 
+    const actionsButtons = `
+        <div class="action-buttons">
+            <button class="btn btn-sm btn-success btn-action" onclick="event.stopPropagation(); editarProyecto(${proyecto.id_proyecto})" title="Editar">
+                <i class="mdi mdi-pencil"></i>
+            </button>
+            ${viewUsersButton}
+        </div>
     `;
-	row.innerHTML = ` 
-        <td> 
-            <strong>${truncateText(proyecto.nombre, 30)}</strong> 
-        </td> 
-        <td>${truncateText(proyecto.descripcion, 40)}</td> 
-        <td>${formatDate(proyecto.fecha_cumplimiento)}</td> 
-        <td> 
-            ${progressBar} 
-        </td> 
-        <td> 
-            ${statusBadge} 
-        </td> 
-        <td>${proyecto.participante || '-'}</td> 
+ 
+    row.innerHTML = `
+        <td>
+            <strong>${truncateText(proyecto.nombre, 30)}</strong>
+        </td>
+        <td>${truncateText(proyecto.descripcion, 40)}</td>
+        <td>${formatDate(proyecto.fecha_cumplimiento)}</td>
+        <td>
+            ${progressBar}
+        </td>
+        <td>
+            ${statusBadge}
+        </td>
+        <td>${proyecto.participante || '-'}</td>
     `;
-	return row;
+ 
+    // Agregar evento click a la fila para mostrar detalles
+    row.addEventListener('click', function(e) {
+        // No abrir modal si se hizo click en un botón
+        if (e.target.closest('button') || e.target.closest('.action-buttons')) {
+            return;
+        }
+        viewProjectDetails(proyecto.id_proyecto);
+    });
+ 
+    // Agregar cursor pointer para indicar que es clickeable
+    row.style.cursor = 'pointer';
+ 
+    return row;
 }
 
 function createProgressBar(progress) {
@@ -574,21 +596,13 @@ function createProgressBar(progress) {
 		progressValue >= 50 ? 'bg-info' :
 		progressValue >= 25 ? 'bg-warning' : 'bg-danger';
 	return ` 
-
     <div class="progress" style="height: 16px;"> 
-
       <div class="progress-bar ${progressClass}" role="progressbar" 
-
         style="width: ${progressValue}%; font-size: 0.7rem;" 
-
         aria-valuenow="${progressValue}" aria-valuemin="0" aria-valuemax="100"> 
-
         ${progressValue}% 
-
       </div> 
-
     </div> 
-
   `;
 }
 
@@ -922,27 +936,18 @@ function displayTopEmployeesProgress(empleados) {
 		const row = document.createElement('tr');
 		const progressBar = createCompactProgressBar(empleado.progreso, empleado.tareas_completadas, empleado.total_tareas);
 		row.innerHTML = ` 
-
       <td style="width: 15%; padding: 4px 8px;"> 
-
         <strong style="font-size: 0.85rem;">${index + 1}</strong> 
-
       </td> 
 
       <td style="width: 45%; padding: 4px 8px;"> 
-
         <div style="font-size: 0.8rem; font-weight: 500;">${escapeHtml(empleado.nombre_completo)}</div> 
-
         <small class="text-muted" style="font-size: 0.7rem;">#${empleado.num_empleado}</small> 
-
       </td> 
 
       <td style="width: 40%; padding: 4px 8px;"> 
-
         ${progressBar} 
-
       </td> 
-
     `;
 		tableBody.appendChild(row);
 	});
@@ -972,19 +977,12 @@ function displayEmptyEmployeesState() {
 	const tableBody = document.querySelector('#topEmployeesTableBody');
 	if (!tableBody) return;
 	tableBody.innerHTML = ` 
-
     <tr> 
-
       <td colspan="3" class="text-center text-muted py-2"> 
-
         <i class="mdi mdi-account-off" style="font-size: 24px; opacity: 0.5;"></i> 
-
         <p class="mt-1 mb-0" style="font-size: 0.75rem;">Sin empleados</p> 
-
       </td> 
-
     </tr> 
-
   `;
 }
 
@@ -1026,27 +1024,16 @@ function displayTopProjectsProgress(proyectos) {
 		const row = document.createElement('tr');
 		const progressBar = createCompactProgressBar(proyecto.progreso, proyecto.tareas_completadas, proyecto.total_tareas);
 		row.innerHTML = ` 
-
       <td style="width: 15%; padding: 4px 8px;"> 
-
         <strong style="font-size: 0.85rem;">${index + 1}</strong> 
-
       </td> 
-
       <td style="width: 45%; padding: 4px 8px;"> 
-
         <div style="font-size: 0.8rem; font-weight: 500;">${escapeHtml(proyecto.nombre)}</div> 
-
         <small class="text-muted" style="font-size: 0.7rem;">${proyecto.estado}</small> 
-
       </td> 
-
       <td style="width: 40%; padding: 4px 8px;"> 
-
         ${progressBar} 
-
       </td> 
-
     `;
 		tableBody.appendChild(row);
 	});
@@ -1060,25 +1047,16 @@ function createCompactProgressBar(progress, completed, total) {
 	return ` 
 
     <div class="progress" style="height: 16px; margin-bottom: 2px;"> 
-
       <div class="progress-bar ${progressClass}" role="progressbar" 
-
         style="width: ${progressValue}%; font-size: 0.7rem;" 
-
         aria-valuenow="${progressValue}" aria-valuemin="0" aria-valuemax="100"> 
-
         ${progressValue.toFixed(0)}% 
-
       </div> 
-
     </div> 
 
     <small class="text-muted" style="font-size: 0.65rem; line-height: 1;"> 
-
       ${completed}/${total} tareas 
-
     </small> 
-
   `;
 }
 

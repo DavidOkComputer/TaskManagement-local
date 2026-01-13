@@ -1,0 +1,134 @@
+[2026-01-13 14:00:05] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 14:00:09] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[2026-01-13 14:00:42] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 14:00:46] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[2026-01-13 15:00:03] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 15:00:07] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[2026-01-13 15:00:40] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 15:00:44] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[2026-01-13 16:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 16:00:03] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-13 16:00:03] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-13 16:00:03] [INFO] Buscando tareas que vencen mañana...
+[2026-01-13 16:00:03] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-13 16:00:03] [INFO] Buscando tareas vencidas...
+[2026-01-13 16:00:03] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-13 16:00:03] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-13 16:00:03] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-13 16:00:03] [INFO] Buscando proyectos vencidos...
+[2026-01-13 16:00:03] [INFO] Proyectos vencidos notificados: 2
+[2026-01-13 16:00:03] [INFO] === Verificación completada ===
+[2026-01-13 16:00:03] [INFO] Total de notificaciones procesadas: 2
+[2026-01-13 16:00:03] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-13 16:00:03] [INFO]  - Vencen mañana: 0
+[2026-01-13 16:00:03] [INFO]  - Vencidas (asignados): 0
+[2026-01-13 16:00:03] [INFO]  - Vencidas (creadores): 0
+[2026-01-13 16:00:03] [INFO]  - Proyectos vencidos: 2
+[2026-01-13 16:00:40] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 16:00:40] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-13 16:00:40] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-13 16:00:40] [INFO] Buscando tareas que vencen mañana...
+[2026-01-13 16:00:40] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-13 16:00:40] [INFO] Buscando tareas vencidas...
+[2026-01-13 16:00:40] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-13 16:00:40] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-13 16:00:40] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-13 16:00:40] [INFO] Buscando proyectos vencidos...
+[2026-01-13 16:00:40] [INFO] Proyectos vencidos notificados: 2
+[2026-01-13 16:00:40] [INFO] === Verificación completada ===
+[2026-01-13 16:00:40] [INFO] Total de notificaciones procesadas: 2
+[2026-01-13 16:00:40] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-13 16:00:40] [INFO]  - Vencen mañana: 0
+[2026-01-13 16:00:40] [INFO]  - Vencidas (asignados): 0
+[2026-01-13 16:00:40] [INFO]  - Vencidas (creadores): 0
+[2026-01-13 16:00:40] [INFO]  - Proyectos vencidos: 2
+[2026-01-13 17:00:03] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 17:00:03] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-13 17:00:03] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-13 17:00:03] [INFO] Buscando tareas que vencen mañana...
+[2026-01-13 17:00:03] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-13 17:00:03] [INFO] Buscando tareas vencidas...
+[2026-01-13 17:00:03] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-13 17:00:03] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-13 17:00:03] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-13 17:00:03] [INFO] Buscando proyectos vencidos...
+[2026-01-13 17:00:03] [INFO] Proyectos vencidos notificados: 2
+[2026-01-13 17:00:03] [INFO] === Verificación completada ===
+[2026-01-13 17:00:03] [INFO] Total de notificaciones procesadas: 2
+[2026-01-13 17:00:03] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-13 17:00:03] [INFO]  - Vencen mañana: 0
+[2026-01-13 17:00:03] [INFO]  - Vencidas (asignados): 0
+[2026-01-13 17:00:03] [INFO]  - Vencidas (creadores): 0
+[2026-01-13 17:00:03] [INFO]  - Proyectos vencidos: 2
+[2026-01-13 18:00:03] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 18:00:03] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-13 18:00:03] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-13 18:00:03] [INFO] Buscando tareas que vencen mañana...
+[2026-01-13 18:00:03] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-13 18:00:03] [INFO] Buscando tareas vencidas...
+[2026-01-13 18:00:03] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-13 18:00:03] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-13 18:00:03] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-13 18:00:03] [INFO] Buscando proyectos vencidos...
+[2026-01-13 18:00:03] [INFO] Proyectos vencidos notificados: 2
+[2026-01-13 18:00:03] [INFO] === Verificación completada ===
+[2026-01-13 18:00:03] [INFO] Total de notificaciones procesadas: 2
+[2026-01-13 18:00:03] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-13 18:00:03] [INFO]  - Vencen mañana: 0
+[2026-01-13 18:00:03] [INFO]  - Vencidas (asignados): 0
+[2026-01-13 18:00:03] [INFO]  - Vencidas (creadores): 0
+[2026-01-13 18:00:03] [INFO]  - Proyectos vencidos: 2
+[2026-01-13 19:00:03] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 19:00:03] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-13 19:00:03] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-13 19:00:03] [INFO] Buscando tareas que vencen mañana...
+[2026-01-13 19:00:03] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-13 19:00:03] [INFO] Buscando tareas vencidas...
+[2026-01-13 19:00:03] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-13 19:00:03] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-13 19:00:03] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-13 19:00:03] [INFO] Buscando proyectos vencidos...
+[2026-01-13 19:00:03] [INFO] Proyectos vencidos notificados: 2
+[2026-01-13 19:00:03] [INFO] === Verificación completada ===
+[2026-01-13 19:00:03] [INFO] Total de notificaciones procesadas: 2
+[2026-01-13 19:00:03] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-13 19:00:03] [INFO]  - Vencen mañana: 0
+[2026-01-13 19:00:03] [INFO]  - Vencidas (asignados): 0
+[2026-01-13 19:00:03] [INFO]  - Vencidas (creadores): 0
+[2026-01-13 19:00:03] [INFO]  - Proyectos vencidos: 2
+[2026-01-13 21:00:01] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 21:00:01] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-13 21:00:01] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-13 21:00:01] [INFO] Buscando tareas que vencen mañana...
+[2026-01-13 21:00:01] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-13 21:00:01] [INFO] Buscando tareas vencidas...
+[2026-01-13 21:00:01] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-13 21:00:01] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-13 21:00:01] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-13 21:00:01] [INFO] Buscando proyectos vencidos...
+[2026-01-13 21:00:01] [INFO] Proyectos vencidos notificados: 2
+[2026-01-13 21:00:01] [INFO] === Verificación completada ===
+[2026-01-13 21:00:01] [INFO] Total de notificaciones procesadas: 2
+[2026-01-13 21:00:01] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-13 21:00:01] [INFO]  - Vencen mañana: 0
+[2026-01-13 21:00:01] [INFO]  - Vencidas (asignados): 0
+[2026-01-13 21:00:01] [INFO]  - Vencidas (creadores): 0
+[2026-01-13 21:00:01] [INFO]  - Proyectos vencidos: 2
+[2026-01-13 22:00:01] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-13 22:00:01] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-13 22:00:01] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-13 22:00:01] [INFO] Buscando tareas que vencen mañana...
+[2026-01-13 22:00:01] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-13 22:00:01] [INFO] Buscando tareas vencidas...
+[2026-01-13 22:00:01] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-13 22:00:01] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-13 22:00:01] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-13 22:00:01] [INFO] Buscando proyectos vencidos...
+[2026-01-13 22:00:01] [INFO] Proyectos vencidos notificados: 2
+[2026-01-13 22:00:01] [INFO] === Verificación completada ===
+[2026-01-13 22:00:01] [INFO] Total de notificaciones procesadas: 2
+[2026-01-13 22:00:01] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-13 22:00:01] [INFO]  - Vencen mañana: 0
+[2026-01-13 22:00:01] [INFO]  - Vencidas (asignados): 0
+[2026-01-13 22:00:01] [INFO]  - Vencidas (creadores): 0
+[2026-01-13 22:00:01] [INFO]  - Proyectos vencidos: 2

@@ -1,0 +1,72 @@
+[07:00:02] ========================================== 
+[07:00:02] Iniciando ejecucion de check deadlines 
+[07:00:02] ========================================== 
+[07:00:02] Ejecutando check_deadlines.php... 
+[2026-01-10 14:00:03] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-10 14:00:07] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[07:00:02] Tareas completadas 
+ 
+[08:00:01] ========================================== 
+[08:00:01] Iniciando ejecucion de check deadlines 
+[08:00:01] ========================================== 
+[08:00:01] Ejecutando check_deadlines.php... 
+[2026-01-10 15:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-10 15:00:06] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[08:00:01] Tareas completadas 
+ 
+[09:00:02] ========================================== 
+[09:00:02] Iniciando ejecucion de check deadlines 
+[09:00:02] ========================================== 
+[09:00:02] Ejecutando check_deadlines.php... 
+[2026-01-10 16:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-10 16:00:06] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[09:00:02] Tareas completadas 
+ 
+[10:00:03] ========================================== 
+[10:00:03] Iniciando ejecucion de check deadlines 
+[10:00:03] ========================================== 
+[10:00:03] Ejecutando check_deadlines.php... 
+[2026-01-10 17:00:03] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-10 17:00:07] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[10:00:03] Tareas completadas 
+ 
+[11:00:02] ========================================== 
+[11:00:02] Iniciando ejecucion de check deadlines 
+[11:00:02] ========================================== 
+[11:00:02] Ejecutando check_deadlines.php... 
+[2026-01-10 18:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-10 18:00:06] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[11:00:02] Tareas completadas 
+ 
+[12:00:04] ========================================== 
+[12:00:04] Iniciando ejecucion de check deadlines 
+[12:00:04] ========================================== 
+[12:00:04] Ejecutando check_deadlines.php... 
+[2026-01-10 19:00:04] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-10 19:00:08] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[12:00:04] Tareas completadas 
+ 
+[13:00:02] ========================================== 
+[13:00:02] Iniciando ejecucion de check deadlines 
+[13:00:02] ========================================== 
+[13:00:02] Ejecutando check_deadlines.php... 
+[2026-01-10 20:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-10 20:00:06] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[13:00:02] Tareas completadas 
+ 
+[14:00:02] ========================================== 
+[14:00:02] Iniciando ejecucion de check deadlines 
+[14:00:02] ========================================== 
+[14:00:02] Ejecutando check_deadlines.php... 
+[2026-01-10 21:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-10 21:00:07] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[14:00:02] Tareas completadas 
+ 
+[15:00:03] ========================================== 
+[15:00:03] Iniciando ejecucion de check deadlines 
+[15:00:03] ========================================== 
+[15:00:03] Ejecutando check_deadlines.php... 
+[2026-01-10 22:00:04] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-10 22:00:08] [CRITICAL] ERROR CRÍTICO: No connection could be made because the target machine actively refused it
+[15:00:03] Tareas completadas 
+ 

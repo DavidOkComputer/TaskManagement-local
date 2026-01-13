@@ -52714,6 +52714,49 @@ code {
   border: 1px solid #000000;
 }
 
+/* Estilo base para tareas vencidas */ 
+.task-overdue { 
+    border-left: 3px solid #dc3545 !important; 
+    background-color: rgba(220, 53, 69, 0.05); 
+} 
+
+/* Animación sutil para el indicador de vencido */ 
+.task-overdue .text-danger.fw-bold { 
+    animation: pulse-overdue 2s ease-in-out infinite; 
+} 
+
+@keyframes pulse-overdue { 
+    0%, 100% { 
+        opacity: 1; 
+    } 
+    50% { 
+        opacity: 0.6; 
+    } 
+} 
+
+/* Estilo para el asterisco de vencido */ 
+li[data-task-id] .text-danger.fw-bold[title="Tarea vencida"] { 
+    font-size: 1.2em; 
+    vertical-align: super; 
+} 
+
+/* Hover effect para tareas vencidas */ 
+.task-overdue:hover { 
+    background-color: rgba(220, 53, 69, 0.1); 
+} 
+
+/* Estilo para la advertencia en el modal */ 
+#taskDateWarning { 
+    background-color: rgba(255, 193, 7, 0.1); 
+    border-left: 3px solid #ffc107; 
+    padding: 8px 12px; 
+    border-radius: 4px; 
+    margin-top: 8px; 
+} 
+
+#taskDateWarning .mdi-alert { 
+    color: #ffc107; 
+} 
 /* Asegurar que el modal de roles tenga z-index correcto */
 #rolesManagerModal {
 	z-index: 1060!important;
