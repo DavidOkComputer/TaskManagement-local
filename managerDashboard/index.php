@@ -22,10 +22,28 @@ require_once('../php/check_auth.php');
     <!-- endinject -->
     <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
     <style>
+      .objetivo-item {
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        border-left: 3px solid #dee2e6;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+      }
+      .objetivo-item.completado {
+        border-left-color: #28a745;
+      }
+      .objetivo-item.pendiente {
+        border-left-color: #ffc107;
+      }
+      .objetivo-item.en-proceso {
+        border-left-color: #17a2b8;
+      }
+      .objetivo-item.vencido {
+        border-left-color: #dc3545;
+      }
     </style>
   </head>
-  <body data-user-id="
-											<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '0'; ?>">
+  <body data-user-id="<?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : '0'; ?>">
     <div class="container-scroller">
       <!-- partial -->
       <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
@@ -454,7 +472,223 @@ require_once('../php/check_auth.php');
       <!-- page-body-wrapper ends -->
     </div>
     <!-- container-scroller -->
-    <!-- Modal para ver usuarios del proyecto -->
+    
+    <!-- Modal para detalles del proyecto -->
+    <div class="modal fade" id="projectDetailsModal" tabindex="-1" aria-labelledby="projectDetailsLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="projectDetailsLabel">
+              <i class="mdi mdi-folder-open me-2"></i>
+              <span id="projectDetailTitle">Detalles del Proyecto</span>
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="projectDetailsBody">
+            <!-- Contenido dinámico -->
+            <div class="text-center py-5" id="projectDetailsLoading">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+              <p class="mt-3">Cargando información del proyecto...</p>
+            </div>
+            
+            <div id="projectDetailsContent" style="display: none;">
+              <!-- Header con información principal -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <div class="d-flex justify-content-between align-items-start flex-wrap">
+                    <div>
+                      <h4 id="detailProjectName" class="mb-1"></h4>
+                      <p id="detailProjectDescription" class="text-muted mb-2"></p>
+                    </div>
+                    <div class="text-end">
+                      <span id="detailProjectStatus" class="badge fs-6"></span>
+                      <span id="detailProjectType" class="badge bg-secondary fs-6 ms-2"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Barra de progreso principal -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <label class="form-label fw-bold">Progreso General</label>
+                  <div class="progress" style="height: 25px;">
+                    <div id="detailProgressBar" class="progress-bar" role="progressbar" style="width: 0%;">
+                      0%
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tarjetas de estadísticas -->
+              <div class="row mb-4" id="detailStatsRow">
+                <div class="col-md-3 col-6 mb-3">
+                  <div class="card bg-light h-100">
+                    <div class="card-body text-center py-3">
+                      <i class="mdi mdi-clipboard-list-outline text-primary" style="font-size: 2rem;"></i>
+                      <h3 id="statTotalTareas" class="mb-0 mt-2">0</h3>
+                      <small class="text-muted">Total Tareas</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                  <div class="card bg-light h-100">
+                    <div class="card-body text-center py-3">
+                      <i class="mdi mdi-check-circle-outline text-success" style="font-size: 2rem;"></i>
+                      <h3 id="statTareasCompletadas" class="mb-0 mt-2">0</h3>
+                      <small class="text-muted">Completadas</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                  <div class="card bg-light h-100">
+                    <div class="card-body text-center py-3">
+                      <i class="mdi mdi-progress-clock text-info" style="font-size: 2rem;"></i>
+                      <h3 id="statTareasEnProceso" class="mb-0 mt-2">0</h3>
+                      <small class="text-muted">En Proceso</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                  <div class="card bg-light h-100">
+                    <div class="card-body text-center py-3">
+                      <i class="mdi mdi-alert-circle-outline text-danger" style="font-size: 2rem;"></i>
+                      <h3 id="statTareasVencidas" class="mb-0 mt-2">0</h3>
+                      <small class="text-muted">Vencidas</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Información detallada en columnas -->
+              <div class="row mb-4">
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header bg-light">
+                      <h6 class="mb-0"><i class="mdi mdi-information-outline me-2"></i>Información General</h6>
+                    </div>
+                    <div class="card-body">
+                      <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                          <td class="text-muted" style="width: 40%;">Departamento:</td>
+                          <td id="detailDepartamento" class="fw-semibold">-</td>
+                        </tr>
+                        <tr>
+                          <td class="text-muted">Creado por:</td>
+                          <td id="detailCreador" class="fw-semibold">-</td>
+                        </tr>
+                        <tr>
+                          <td class="text-muted">Fecha de creación:</td>
+                          <td id="detailFechaCreacion" class="fw-semibold">-</td>
+                        </tr>
+                        <tr>
+                          <td class="text-muted">Fecha límite:</td>
+                          <td id="detailFechaLimite" class="fw-semibold">-</td>
+                        </tr>
+                        <tr id="detailParticipanteRow">
+                          <td class="text-muted">Responsable:</td>
+                          <td id="detailParticipante" class="fw-semibold">-</td>
+                        </tr>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="card h-100">
+                    <div class="card-header bg-light">
+                      <h6 class="mb-0"><i class="mdi mdi-target me-2"></i>Objetivos (<span id="detailObjetivosCount">0</span>)</h6>
+                    </div>
+                    <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                      <div id="detailObjetivosList">
+                        <p class="text-muted text-center mb-0">Sin objetivos registrados</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sección de usuarios asignados (solo para proyectos grupales) -->
+              <div class="row mb-4" id="detailUsuariosSection" style="display: none;">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                      <h6 class="mb-0"><i class="mdi mdi-account-group me-2"></i>Usuarios Asignados (<span id="detailUsuariosCount">0</span>)</h6>
+                    </div>
+                    <div class="card-body">
+                      <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0">
+                          <thead class="table-light" style="position: sticky; top: 0;">
+                            <tr>
+                              <th>Nombre</th>
+                              <th>No. Empleado</th>
+                              <th>Email</th>
+                              <th>Tareas</th>
+                              <th>Progreso</th>
+                            </tr>
+                          </thead>
+                          <tbody id="detailUsuariosTableBody">
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sección de tareas -->
+              <div class="row">
+                <div class="col-12">
+                  <div class="card">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                      <h6 class="mb-0"><i class="mdi mdi-clipboard-check-outline me-2"></i>Tareas del Proyecto</h6>
+                      <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary active" data-filter="all" onclick="filterProjectTasks('all')">Todas</button>
+                        <button type="button" class="btn btn-outline-warning" data-filter="pendiente" onclick="filterProjectTasks('pendiente')">Pendientes</button>
+                        <button type="button" class="btn btn-outline-info" data-filter="en proceso" onclick="filterProjectTasks('en proceso')">En Proceso</button>
+                        <button type="button" class="btn btn-outline-success" data-filter="completado" onclick="filterProjectTasks('completado')">Completadas</button>
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0">
+                          <thead class="table-light" style="position: sticky; top: 0;">
+                            <tr>
+                              <th>Tarea</th>
+                              <th>Asignado a</th>
+                              <th>Fecha Límite</th>
+                              <th>Prioridad</th>
+                              <th>Estado</th>
+                            </tr>
+                          </thead>
+                          <tbody id="detailTareasTableBody">
+                          </tbody>
+                        </table>
+                      </div>
+                      <div id="detailNoTareas" class="text-center py-4" style="display: none;">
+                        <i class="mdi mdi-clipboard-off-outline text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No hay tareas registradas en este proyecto</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="mdi mdi-close me-1"></i>Cerrar
+            </button>
+            <button type="button" class="btn btn-success" id="btnEditProject" onclick="editarProyectoFromModal()">
+              <i class="mdi mdi-pencil me-1"></i>Editar Proyecto
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Modal para ver usuarios del proyecto (mantener por compatibilidad) -->
     <div class="modal fade" id="projectUsersModal" tabindex="-1" aria-labelledby="projectUsersModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -473,6 +707,7 @@ require_once('../php/check_auth.php');
         </div>
       </div>
     </div>
+    
     <!-- plugins:js -->
     <script src="../vendors/js/vendor.bundle.base.js"></script>
     <!-- endinject -->
@@ -495,6 +730,7 @@ require_once('../php/check_auth.php');
     <script src="../js/notifications.js"></script>
     <script src="../js/datetime_widget.js"></script>
     <script src="../js/widget_empleados.js"></script>
+    <script src="../js/project_details.js"></script>
     <!-- End custom js for this page-->
   </body>
 </html>

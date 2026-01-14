@@ -22454,6 +22454,495 @@ code {
   background: transparent;
 }
 
+#projectDetailsModal .modal-xl {
+    max-width: 1100px;
+}
+
+#projectDetailsModal .card {
+    border: 1px solid #e0e0e0;
+    box-shadow: none;
+}
+
+#projectDetailsModal .card-header {
+    border-bottom: 1px solid #e0e0e0;
+    padding: 0.75rem 1rem;
+}
+
+#projectDetailsModal .progress {
+    border-radius: 0.5rem;
+    background-color: #e9ecef;
+}
+
+#projectDetailsModal .progress-bar {
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: width 0.6s ease;
+}
+
+#projectDetailsModal .table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+#projectDetailsModal .table td {
+    font-size: 0.85rem;
+    vertical-align: middle;
+}
+
+#projectDetailsModal .badge {
+    font-weight: 500;
+}
+
+#projectDetailsModal .stat-card {
+    transition: transform 0.2s;
+}
+
+#projectDetailsModal .stat-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Estilos para filas clickeables en la tabla principal */
+#proyectosTableBody tr {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#proyectosTableBody tr:hover {
+    background-color: rgba(0, 155, 74, 0.08);
+}
+
+/* Badge de prioridad */
+.badge-prioridad-alta {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-prioridad-media {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.badge-prioridad-baja {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Objetivo item */
+.objetivo-item {
+    padding: 8px 12px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    margin-bottom: 8px;
+    border-left: 3px solid #6c757d;
+}
+
+.objetivo-item.completado {
+    border-left-color: #28a745;
+}
+
+.objetivo-item.en-proceso {
+    border-left-color: #007bff;
+}
+
+.objetivo-item.pendiente {
+    border-left-color: #ffc107;
+}
+
+.objetivo-item.vencido {
+    border-left-color: #dc3545;
+}
+.objetivo-item {
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      border-left: 3px solid #dee2e6;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    .objetivo-item.completado {
+      border-left-color: #28a745;
+    }
+    .objetivo-item.pendiente {
+      border-left-color: #ffc107;
+    }
+    .objetivo-item.en-proceso {
+      border-left-color: #17a2b8;
+    }
+    .objetivo-item.vencido {
+      border-left-color: #dc3545;
+    }
+
+/* status_filter.css - Styles for status filter functionality */
+
+/* Filter control styling */
+.rows-per-page-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Status filter select styling */
+#statusFilterSelect {
+    min-width: 150px;
+    border-radius: 4px;
+    border-color: #ced4da;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#statusFilterSelect:focus {
+    border-color: #009b4a;
+    box-shadow: 0 0 0 0.2rem rgba(0, 155, 74, 0.25);
+}
+
+/* Clear filter button */
+#clearFilterBtn {
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+#clearFilterBtn:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+/* Active filter indicator badge */
+.pagination-info .badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    vertical-align: middle;
+}
+
+/* Toast notification for filter redirect */
+#filterRedirectToast .toast {
+    min-width: 280px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#filterRedirectToast .toast-header {
+    border-radius: 8px 8px 0 0;
+}
+
+#filterRedirectToast .toast-body {
+    padding: 1rem;
+}
+
+/* Doughnut chart hover effect */
+#doughnutChart {
+    cursor: pointer !important;
+    transition: transform 0.2s ease;
+}
+
+#doughnutChart:hover {
+    transform: scale(1.02);
+}
+
+/* Chart tooltip styling for clickable indication */
+.chart-click-hint {
+    font-size: 0.7rem;
+    color: #6c757d;
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* Filter indicator animation */
+@keyframes filterPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.filter-active {
+    animation: filterPulse 2s ease-in-out infinite;
+}
+
+/* Loading spinner in toast */
+.mdi-spin {
+    animation: mdi-spin 1s infinite linear;
+}
+
+@keyframes mdi-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .rows-per-page-control {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .rows-per-page-control > div {
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+    }
+    
+    #statusFilterSelect {
+        width: 100%;
+    }
+}
+
+/* Empty state with filter styling */
+.empty-state .btn-outline-primary {
+    transition: all 0.2s ease;
+}
+
+.empty-state .btn-outline-primary:hover {
+    background-color: #009b4a;
+    border-color: #009b4a;
+    color: #fff;
+}
+/* status_filter.css - Styles for status filter functionality */
+
+/* Filter control styling */
+.rows-per-page-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Status filter select styling */
+#statusFilterSelect {
+    min-width: 150px;
+    border-radius: 4px;
+    border-color: #ced4da;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#statusFilterSelect:focus {
+    border-color: #009b4a;
+    box-shadow: 0 0 0 0.2rem rgba(0, 155, 74, 0.25);
+}
+
+/* Clear filter button */
+#clearFilterBtn {
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+#clearFilterBtn:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+/* Active filter indicator badge */
+.pagination-info .badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    vertical-align: middle;
+}
+
+/* Toast notification for filter redirect */
+#filterRedirectToast .toast {
+    min-width: 280px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#filterRedirectToast .toast-header {
+    border-radius: 8px 8px 0 0;
+}
+
+#filterRedirectToast .toast-body {
+    padding: 1rem;
+}
+
+/* Doughnut chart hover effect */
+#doughnutChart {
+    cursor: pointer !important;
+    transition: transform 0.2s ease;
+}
+
+#doughnutChart:hover {
+    transform: scale(1.02);
+}
+
+/* Chart tooltip styling for clickable indication */
+.chart-click-hint {
+    font-size: 0.7rem;
+    color: #6c757d;
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* Filter indicator animation */
+@keyframes filterPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.filter-active {
+    animation: filterPulse 2s ease-in-out infinite;
+}
+
+/* Loading spinner in toast */
+.mdi-spin {
+    animation: mdi-spin 1s infinite linear;
+}
+
+@keyframes mdi-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .rows-per-page-control {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .rows-per-page-control > div {
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+    }
+    
+    #statusFilterSelect {
+        width: 100%;
+    }
+}
+/* status_filter.css - Styles for status filter functionality */
+
+/* Filter control styling */
+.rows-per-page-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Status filter select styling */
+#statusFilterSelect {
+    min-width: 150px;
+    border-radius: 4px;
+    border-color: #ced4da;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#statusFilterSelect:focus {
+    border-color: #009b4a;
+    box-shadow: 0 0 0 0.2rem rgba(0, 155, 74, 0.25);
+}
+
+/* Clear filter button */
+#clearFilterBtn {
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+#clearFilterBtn:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: #fff;
+}
+
+/* Active filter indicator badge */
+.pagination-info .badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    vertical-align: middle;
+}
+
+/* Toast notification for filter redirect */
+#filterRedirectToast .toast {
+    min-width: 280px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+#filterRedirectToast .toast-header {
+    border-radius: 8px 8px 0 0;
+}
+
+#filterRedirectToast .toast-body {
+    padding: 1rem;
+}
+
+/* Doughnut chart hover effect */
+#doughnutChart {
+    cursor: pointer !important;
+    transition: transform 0.2s ease;
+}
+
+#doughnutChart:hover {
+    transform: scale(1.02);
+}
+
+/* Chart tooltip styling for clickable indication */
+.chart-click-hint {
+    font-size: 0.7rem;
+    color: #6c757d;
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* Filter indicator animation */
+@keyframes filterPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.filter-active {
+    animation: filterPulse 2s ease-in-out infinite;
+}
+
+/* Loading spinner in toast */
+.mdi-spin {
+    animation: mdi-spin 1s infinite linear;
+}
+
+@keyframes mdi-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .rows-per-page-control {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .rows-per-page-control > div {
+        margin-left: 0 !important;
+        margin-top: 0.5rem;
+    }
+    
+    #statusFilterSelect {
+        width: 100%;
+    }
+}
+
+/* Empty state with filter styling */
+.empty-state .btn-outline-primary {
+    transition: all 0.2s ease;
+}
+
+.empty-state .btn-outline-primary:hover {
+    background-color: #009b4a;
+    border-color: #009b4a;
+    color: #fff;
+}
+/* Empty state with filter styling */
+.empty-state .btn-outline-primary {
+    transition: all 0.2s ease;
+}
+
+.empty-state .btn-outline-primary:hover {
+    background-color: #009b4a;
+    border-color: #009b4a;
+    color: #fff;
+}
 /* Cards */
 .card {
   box-shadow: 0 0 0 0 rgba(90, 113, 208, 0.11), 0 4px 16px 0 rgba(167, 175, 183, 0.33);

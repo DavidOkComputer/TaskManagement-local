@@ -1,3 +1,5 @@
+/*manager_manage_projects.js - Gestión de proyectos para gerentes con filtrado por URL*/
+
 const Config = {
 	API_ENDPOINTS: {
 		DELETE: '../php/delete_project.php',
@@ -5,110 +7,261 @@ const Config = {
 		UPDATE_STATUS: '../php/update_project_status.php'
 	}
 };
+
 let allProjects = [];
 let currentSortColumn = null;
 let sortDirection = 'asc';
 let filteredProjects = [];
-//variables de paginacion 
+
+// Variables de paginación 
 let currentPage = 1;
 let rowsPerPage = 10;
 let totalPages = 0;
+
 // Variables para modal de usuarios 
 let projectUsersData = [];
 let currentUsersPage = 1;
 let usersRowsPerPage = 10;
 let totalUsersPages = 0;
+
 // Variable para el auto-refresh 
 let autoRefreshInterval = null;
-let currentProjectIdForUsers = null; // Para refrescar modal de usuarios 
+let currentProjectIdForUsers = null;
+
 // Variable para filtro de empleado desde URL 
 let employeeFilterFromUrl = null;
+
+// Variable para filtro de estado desde URL
+let activeStatusFilter = null;
+
 document.addEventListener('DOMContentLoaded', function() {
 	initializeCustomDialogs();
-	// Verificar si hay un filtro de empleado en la URL 
 	checkUrlParameters();
 	setupSearch();
 	setupSorting();
 	setupPagination();
+	setupStatusFilter();
 	createProjectUsersModal();
 	cargarProyectos();
-	startAutoRefresh(); // iniciar refresco cada minuto o 60000ms 
+	startAutoRefresh();
 });
 
 function checkUrlParameters() {
 	const urlParams = new URLSearchParams(window.location.search);
+	
+	// Verificar filtro de empleado
 	const filterEmployee = urlParams.get('filterEmployee');
 	if (filterEmployee) {
 		employeeFilterFromUrl = decodeURIComponent(filterEmployee);
-		// Establecer el valor en el campo de búsqueda 
 		const searchInput = document.getElementById('searchInput');
 		if (searchInput) {
 			searchInput.value = employeeFilterFromUrl;
 		}
-		// Mostrar indicador de filtro activo 
 		showFilterIndicator(employeeFilterFromUrl);
+	}
+	
+	// Verificar filtro de estado
+	const estadoParam = urlParams.get('estado');
+	if (estadoParam) {
+		activeStatusFilter = estadoParam.toLowerCase();
+		showActiveStatusFilterIndicator(activeStatusFilter);
 	}
 }
 
+/**
+ * Configura el selector de filtro por estado
+ */
+function setupStatusFilter() {
+	const rowsPerPageControl = document.querySelector('.rows-per-page-control');
+	if (rowsPerPageControl && !document.getElementById('statusFilterSelect')) {
+		const filterContainer = document.createElement('div');
+		filterContainer.className = 'd-flex align-items-center gap-2 ms-4';
+		filterContainer.innerHTML = `
+			<label for="statusFilterSelect" class="form-label mb-0">Filtrar por estado:</label>
+			<select id="statusFilterSelect" class="form-select form-select-sm" style="width: auto;">
+				<option value="">Todos los estados</option>
+				<option value="pendiente">Pendiente</option>
+				<option value="en proceso">En Proceso</option>
+				<option value="completado">Completado</option>
+				<option value="vencido">Vencido</option>
+			</select>
+			<button id="clearStatusFilterBtn" class="btn btn-sm btn-outline-secondary" style="display: none;" title="Limpiar filtro de estado">
+				<i class="mdi mdi-close"></i> Limpiar
+			</button>
+		`;
+		rowsPerPageControl.appendChild(filterContainer);
+		
+		// Event listener para el selector
+		const filterSelect = document.getElementById('statusFilterSelect');
+		filterSelect.addEventListener('change', function() {
+			activeStatusFilter = this.value || null;
+			applyAllFilters();
+			updateURL();
+		});
+		
+		// Event listener para el botón de limpiar
+		const clearBtn = document.getElementById('clearStatusFilterBtn');
+		clearBtn.addEventListener('click', function() {
+			clearStatusFilter();
+		});
+		
+		// Si hay un filtro activo desde URL, seleccionarlo
+		if (activeStatusFilter) {
+			filterSelect.value = activeStatusFilter;
+		}
+	}
+}
+
+/**
+ * Muestra indicador de filtro de estado activo
+ */
+function showActiveStatusFilterIndicator(estado) {
+	const clearBtn = document.getElementById('clearStatusFilterBtn');
+	if (clearBtn) {
+		clearBtn.style.display = estado ? 'inline-block' : 'none';
+	}
+	
+	const filterSelect = document.getElementById('statusFilterSelect');
+	if (filterSelect && estado) {
+		filterSelect.value = estado;
+	}
+}
+
+/**
+ * Aplica todos los filtros activos (estado + búsqueda/empleado)
+ */
+function applyAllFilters() {
+	let result = [...allProjects];
+	
+	// Aplicar filtro de estado
+	if (activeStatusFilter) {
+		result = result.filter(project => 
+			project.estado && project.estado.toLowerCase() === activeStatusFilter
+		);
+	}
+	
+	// Aplicar filtro de búsqueda/empleado
+	const searchInput = document.getElementById('searchInput');
+	const searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : '';
+	
+	if (searchQuery) {
+		result = result.filter(project => 
+			project.nombre.toLowerCase().includes(searchQuery) ||
+			(project.descripcion && project.descripcion.toLowerCase().includes(searchQuery)) ||
+			(project.area && project.area.toLowerCase().includes(searchQuery)) ||
+			(project.participante && project.participante.toLowerCase().includes(searchQuery))
+		);
+	}
+	
+	filteredProjects = result;
+	
+	// Aplicar ordenamiento si existe
+	if (currentSortColumn) {
+		filteredProjects = sortProjects(filteredProjects, currentSortColumn, sortDirection);
+	}
+	
+	currentPage = 1;
+	displayProjects(filteredProjects);
+	showActiveStatusFilterIndicator(activeStatusFilter);
+}
+
+/**
+ * Limpia el filtro de estado
+ */
+function clearStatusFilter() {
+	activeStatusFilter = null;
+	const filterSelect = document.getElementById('statusFilterSelect');
+	if (filterSelect) {
+		filterSelect.value = '';
+	}
+	
+	// Actualizar URL
+	const url = new URL(window.location);
+	url.searchParams.delete('estado');
+	window.history.replaceState({}, '', url);
+	
+	applyAllFilters();
+}
+
+/**
+ * Actualiza la URL con los filtros actuales
+ */
+function updateURL() {
+	const url = new URL(window.location);
+	
+	if (activeStatusFilter) {
+		url.searchParams.set('estado', activeStatusFilter);
+	} else {
+		url.searchParams.delete('estado');
+	}
+	
+	window.history.replaceState({}, '', url);
+}
+
+/**
+ * Función para filtrar por estado desde la URL (llamada desde el dashboard)
+ */
+function filterByStatus(estado) {
+	activeStatusFilter = estado ? estado.toLowerCase() : null;
+	
+	const filterSelect = document.getElementById('statusFilterSelect');
+	if (filterSelect) {
+		filterSelect.value = activeStatusFilter || '';
+	}
+	
+	applyAllFilters();
+	updateURL();
+}
+
 function showFilterIndicator(employeeName) {
-	// Crear o actualizar el indicador de filtro 
 	let filterIndicator = document.getElementById('activeFilterIndicator');
 	if (!filterIndicator) {
 		filterIndicator = document.createElement('div');
 		filterIndicator.id = 'activeFilterIndicator';
 		filterIndicator.className = 'alert alert-info alert-dismissible fade show d-flex align-items-center';
 		filterIndicator.style.cssText = 'margin-bottom: 15px;';
-		// Insertar antes de la tabla 
 		const tableContainer = document.querySelector('.table-responsive');
 		if (tableContainer) {
 			tableContainer.parentNode.insertBefore(filterIndicator, tableContainer);
 		}
 	}
 	filterIndicator.innerHTML = ` 
-        <i class="mdi mdi-filter me-2"></i> 
-        <span>Mostrando proyectos de: <strong>${escapeHtml(employeeName)}</strong></span> 
-        <button type="button" class="btn btn-sm btn-primary ms-3" onclick="clearEmployeeFilter()"> 
-            <i class="mdi mdi-close me-1"></i>Mostrar todos 
-        </button> 
-        <button type="button" class="btn-close ms-auto" onclick="clearEmployeeFilter()" aria-label="Close"></button> 
-    `;
+		<i class="mdi mdi-filter me-2"></i> 
+		<span>Mostrando proyectos de: <strong>${escapeHtml(employeeName)}</strong></span> 
+		<button type="button" class="btn btn-sm btn-primary ms-3" onclick="clearEmployeeFilter()"> 
+			<i class="mdi mdi-close me-1"></i>Mostrar todos 
+		</button> 
+		<button type="button" class="btn-close ms-auto" onclick="clearEmployeeFilter()" aria-label="Close"></button> 
+	`;
 }
 
 function clearEmployeeFilter() {
 	employeeFilterFromUrl = null;
-	// Limpiar el campo de búsqueda 
 	const searchInput = document.getElementById('searchInput');
 	if (searchInput) {
 		searchInput.value = '';
 	}
-	// Remover el indicador de filtro 
 	const filterIndicator = document.getElementById('activeFilterIndicator');
 	if (filterIndicator) {
 		filterIndicator.remove();
 	}
-	// Limpiar parámetros de URL sin recargar la página 
 	const url = new URL(window.location);
 	url.searchParams.delete('filterEmployee');
 	window.history.replaceState({}, '', url);
-	// Resetear la vista 
-	filteredProjects = [...allProjects];
-	currentPage = 1;
-	const sorted = currentSortColumn ?
-		sortProjects(filteredProjects, currentSortColumn, sortDirection) :
-		filteredProjects;
-	displayProjects(sorted);
+	
+	applyAllFilters();
 }
 
 function startAutoRefresh() {
-	if (autoRefreshInterval) { //limpiar interval 
+	if (autoRefreshInterval) {
 		clearInterval(autoRefreshInterval);
 	}
-	autoRefreshInterval = setInterval(() => { //configurar el interval para refrescar cada minuto 
+	autoRefreshInterval = setInterval(() => {
 		refreshProjectsData();
-		if (currentProjectIdForUsers) { //si el modal de usuarios esta abirto refrescar 
+		if (currentProjectIdForUsers) {
 			refreshProjectUsersData();
 		}
-	}, 60000); // 60000 ms = 1 minuto 
+	}, 60000);
 }
 
 function stopAutoRefresh() {
@@ -128,28 +281,12 @@ function refreshProjectsData() {
 		})
 		.then(data => {
 			if (data.success && data.proyectos) {
-				// Guardar el estado actual de búsqueda 
-				const searchInput = document.getElementById('searchInput');
-				const currentSearchQuery = searchInput ? searchInput.value : '';
-				allProjects = data.proyectos; //actualizar los datos 
-				if (currentSearchQuery.trim() !== '') { //reaplicar los filtros de busqueda si existen 
-					performSearch(currentSearchQuery);
-				} else {
-					filteredProjects = [...allProjects];
-				}
-				if (currentSortColumn) { //reaplicar ordenamiento si existe 
-					filteredProjects = sortProjects(filteredProjects, currentSortColumn, sortDirection);
-				}
-				const newTotalPages = calculatePages(filteredProjects); //actualizar la vista manteniendo la pagina actual si es posible 
-				if (currentPage > newTotalPages && newTotalPages > 0) {
-					currentPage = newTotalPages;
-				}
-				displayProjects(filteredProjects);
+				allProjects = data.proyectos;
+				applyAllFilters();
 			}
 		})
 		.catch(error => {
 			console.error('Error al refrescar proyectos:', error);
-			// No mostrar alert para no interrumpir al usuario 
 		});
 }
 
@@ -157,6 +294,7 @@ function refreshProjectUsersData() {
 	if (!currentProjectIdForUsers) return;
 	const tableBody = document.getElementById('projectUsersTableBody');
 	if (!tableBody) return;
+	
 	fetch(`${Config.API_ENDPOINTS.GET_PROJECT_USERS}?id=${currentProjectIdForUsers}`)
 		.then(response => {
 			if (!response.ok) {
@@ -166,11 +304,10 @@ function refreshProjectUsersData() {
 		})
 		.then(data => {
 			if (data.success && data.usuarios) {
-				// Guardar el estado actual de búsqueda en el modal 
 				const searchInput = document.getElementById('projectUsersSearch');
 				const currentSearchQuery = searchInput ? searchInput.value : '';
 				projectUsersData = data.usuarios;
-				if (currentSearchQuery.trim() !== '') { //reaplicar filtro de busqueda si existe 
+				if (currentSearchQuery.trim() !== '') {
 					const filtered = projectUsersData.filter(user => {
 						return user.nombre_completo.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
 							user.e_mail.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
@@ -194,15 +331,15 @@ function cargarProyectos() {
 		return;
 	}
 	tableBody.innerHTML = ` 
-        <tr> 
-            <td colspan="9" class="text-center"> 
-                <div class="spinner-border text-primary" role="status"> 
-                    <span class="visually-hidden">Cargando...</span> 
-                </div> 
-                <p class="mt-2">Cargando proyectos...</p> 
-            </td> 
-        </tr> 
-    `;
+		<tr> 
+			<td colspan="9" class="text-center"> 
+				<div class="spinner-border text-primary" role="status"> 
+					<span class="visually-hidden">Cargando...</span> 
+				</div> 
+				<p class="mt-2">Cargando proyectos...</p> 
+			</td> 
+		</tr> 
+	`;
 	fetch('../php/manager_get_projects.php')
 		.then(response => {
 			if (!response.ok) {
@@ -213,33 +350,29 @@ function cargarProyectos() {
 		.then(data => {
 			if (data.success && data.proyectos) {
 				allProjects = data.proyectos;
-				filteredProjects = [...allProjects];
-				currentPage = 1; // Reiniciar a la primera pagina al cargar 
-				// Si hay un filtro de empleado desde la URL, aplicarlo automáticamente 
-				if (employeeFilterFromUrl) {
-					performSearch(employeeFilterFromUrl);
-				} else {
-					displayProjects(data.proyectos);
-				}
+				currentPage = 1;
+				
+				// Aplicar todos los filtros activos
+				applyAllFilters();
 			} else {
 				tableBody.innerHTML = ` 
-                    <tr> 
-                        <td colspan="9" class="text-center text-danger"> 
-                            <p class="mt-3">Error al cargar proyectos: ${data.message || 'Error desconocido'}</p> 
-                        </td> 
-                    </tr> 
-                `;
+					<tr> 
+						<td colspan="9" class="text-center text-danger"> 
+							<p class="mt-3">Error al cargar proyectos: ${data.message || 'Error desconocido'}</p> 
+						</td> 
+					</tr> 
+				`;
 			}
 		})
 		.catch(error => {
 			console.error('Error cargando proyectos:', error);
 			tableBody.innerHTML = ` 
-                <tr> 
-                    <td colspan="9" class="text-center text-danger"> 
-                        <p class="mt-3">Error al cargar los proyectos: ${error.message}</p> 
-                    </td> 
-                </tr> 
-            `;
+				<tr> 
+					<td colspan="9" class="text-center text-danger"> 
+						<p class="mt-3">Error al cargar los proyectos: ${error.message}</p> 
+					</td> 
+				</tr> 
+			`;
 		});
 }
 
@@ -255,7 +388,7 @@ function setupSorting() {
 				sortDirection = 'asc';
 			}
 			updateSortIndicators();
-			currentPage = 1; //reiniciar a la primera pagina al hacer sort 
+			currentPage = 1;
 			const sorted = sortProjects(filteredProjects, column, sortDirection);
 			displayProjects(sorted);
 		});
@@ -309,7 +442,7 @@ function setupPagination() {
 	if (rowsPerPageSelect) {
 		rowsPerPageSelect.addEventListener('change', function() {
 			rowsPerPage = parseInt(this.value);
-			currentPage = 1; //reiniciar a primera pagina cuano cambien registros por pagina 
+			currentPage = 1;
 			displayProjects(filteredProjects);
 		});
 	}
@@ -335,35 +468,51 @@ function changePage(pageNumber) {
 function updatePaginationControls() {
 	const paginationContainer = document.querySelector('.pagination-container');
 	if (!paginationContainer) return;
-	paginationContainer.innerHTML = ''; //limpiar la paginacion existente 
-	//crear texto de info de paginacion 
+	paginationContainer.innerHTML = '';
+	
 	const infoText = document.createElement('div');
 	infoText.className = 'pagination-info';
 	const startItem = ((currentPage - 1) * rowsPerPage) + 1;
 	const endItem = Math.min(currentPage * rowsPerPage, filteredProjects.length);
+	
+	// Mostrar información del filtro activo
+	let filterInfo = '';
+	if (activeStatusFilter) {
+		const statusLabels = {
+			'pendiente': 'Pendientes',
+			'en proceso': 'En Proceso',
+			'completado': 'Completados',
+			'vencido': 'Vencidos'
+		};
+		filterInfo = ` <span class="badge bg-info ms-2">Filtro: ${statusLabels[activeStatusFilter] || activeStatusFilter}</span>`;
+	}
+	
 	infoText.innerHTML = ` 
-        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredProjects.length}</strong> proyectos</p> 
-    `;
+		<p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredProjects.length}</strong> proyectos${filterInfo}</p> 
+	`;
 	paginationContainer.appendChild(infoText);
-	const buttonContainer = document.createElement('div'); //contenedor de etiquetas de botones de paginacion 
+	
+	const buttonContainer = document.createElement('div');
 	buttonContainer.className = 'pagination-buttons';
-	const prevBtn = document.createElement('button'); //boton anterior 
+	const prevBtn = document.createElement('button');
 	prevBtn.className = 'btn btn-sm btn-outline-primary';
 	prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
 	prevBtn.disabled = currentPage === 1;
 	prevBtn.addEventListener('click', () => changePage(currentPage - 1));
 	buttonContainer.appendChild(prevBtn);
-	const pageButtonsContainer = document.createElement('div'); //numero de paginas 
+	
+	const pageButtonsContainer = document.createElement('div');
 	pageButtonsContainer.className = 'page-buttons';
-	let startPage = Math.max(1, currentPage - 2); //calculo de paginas para mostrar 
+	let startPage = Math.max(1, currentPage - 2);
 	let endPage = Math.min(totalPages, currentPage + 2);
-	if (currentPage <= 3) { //ajustar dependiendo de si esta en el principio o el fin 
+	
+	if (currentPage <= 3) {
 		endPage = Math.min(totalPages, 5);
 	}
 	if (currentPage > totalPages - 3) {
 		startPage = Math.max(1, totalPages - 4);
 	}
-	if (startPage > 1) { //boton de primera pagina 
+	if (startPage > 1) {
 		const firstBtn = document.createElement('button');
 		firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn';
 		firstBtn.textContent = '1';
@@ -376,14 +525,14 @@ function updatePaginationControls() {
 			pageButtonsContainer.appendChild(ellipsis);
 		}
 	}
-	for (let i = startPage; i <= endPage; i++) { //numero de paginas 
+	for (let i = startPage; i <= endPage; i++) {
 		const pageBtn = document.createElement('button');
 		pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`;
 		pageBtn.textContent = i;
 		pageBtn.addEventListener('click', () => changePage(i));
 		pageButtonsContainer.appendChild(pageBtn);
 	}
-	if (endPage < totalPages) { //boton de ultima pagina 
+	if (endPage < totalPages) {
 		if (endPage < totalPages - 1) {
 			const ellipsis = document.createElement('span');
 			ellipsis.className = 'pagination-ellipsis';
@@ -397,7 +546,8 @@ function updatePaginationControls() {
 		pageButtonsContainer.appendChild(lastBtn);
 	}
 	buttonContainer.appendChild(pageButtonsContainer);
-	const nextBtn = document.createElement('button'); //boton siguiente 
+	
+	const nextBtn = document.createElement('button');
 	nextBtn.className = 'btn btn-sm btn-outline-primary';
 	nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
 	nextBtn.disabled = currentPage === totalPages;
@@ -409,11 +559,11 @@ function updatePaginationControls() {
 function displayProjects(proyectos) {
 	const tableBody = document.querySelector('#proyectosTableBody');
 	if (!tableBody) return;
-	totalPages = calculatePages(proyectos); //calcular paginacion 
+	totalPages = calculatePages(proyectos);
 	if (currentPage > totalPages && totalPages > 0) {
 		currentPage = totalPages;
 	}
-	const paginatedProjects = getPaginatedProjects(proyectos); //obtener los proyectos paginados 
+	const paginatedProjects = getPaginatedProjects(proyectos);
 	tableBody.innerHTML = '';
 	if (!proyectos || proyectos.length === 0) {
 		displayEmptyState();
@@ -422,13 +572,13 @@ function displayProjects(proyectos) {
 	}
 	if (paginatedProjects.length === 0) {
 		tableBody.innerHTML = ` 
-            <tr> 
-                <td colspan="9" class="text-center empty-state"> 
-                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
-                    <h5 class="mt-3">No se encontraron resultados en esta página</h5> 
-                </td> 
-            </tr> 
-        `;
+			<tr> 
+				<td colspan="9" class="text-center empty-state"> 
+					<i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+					<h5 class="mt-3">No se encontraron resultados en esta página</h5> 
+				</td> 
+			</tr> 
+		`;
 		updatePaginationControls();
 		return;
 	}
@@ -437,7 +587,6 @@ function displayProjects(proyectos) {
 		const row = createProjectRow(project, actualIndex);
 		tableBody.appendChild(row);
 	});
-	//actualizar controles de paginacion 
 	updatePaginationControls();
 }
 
@@ -446,7 +595,7 @@ function createProjectRow(proyecto, index) {
 	const statusColor = getStatusColor(proyecto.estado);
 	const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado || 'N/A'}</span>`;
 	const progressBar = createProgressBar(proyecto.progreso || 0);
-	// Botón de marcar como completado solo si NO tiene tareas 
+	
 	let toggleCompletionButton = '';
 	const tieneTareas = proyecto.total_tareas && proyecto.total_tareas > 0;
 	if (!tieneTareas) {
@@ -456,53 +605,53 @@ function createProjectRow(proyecto, index) {
 		const toggleButtonIcon = isCompleted ? 'mdi-undo-variant' : 'mdi-check-circle-outline';
 		const toggleButtonTitle = isCompleted ? 'Marcar como pendiente' : 'Marcar como completado';
 		toggleCompletionButton = `<button class="btn btn-sm ${toggleButtonClass} btn-action"  
-            onclick="toggleProjectCompletion(${proyecto.id_proyecto}, '${nextState}')"  
-            title="${toggleButtonTitle}"> 
-            <i class="mdi ${toggleButtonIcon}"></i> 
-        </button>`;
+			onclick="toggleProjectCompletion(${proyecto.id_proyecto}, '${nextState}')"  
+			title="${toggleButtonTitle}"> 
+			<i class="mdi ${toggleButtonIcon}"></i> 
+		</button>`;
 	}
 	const viewUsersButton = proyecto.id_tipo_proyecto === 1 ?
 		`<button class="btn btn-sm btn-primary btn-action"  
-            onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
-            title="Ver usuarios asignados"> 
-            <i class="mdi mdi-account-multiple"></i> 
-           </button>` :
+			onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
+			title="Ver usuarios asignados"> 
+			<i class="mdi mdi-account-multiple"></i> 
+		   </button>` :
 		'';
 	const actionsButtons = ` 
-        <div class="action-buttons"> 
-            <button class="btn btn-sm btn-success btn-action"  
-                onclick="editarProyecto(${proyecto.id_proyecto})"  
-                title="Editar"> 
-                <i class="mdi mdi-pencil"></i> 
-            </button> 
-            <button class="btn btn-sm btn-danger btn-action"  
-                onclick="confirmDelete(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
-                title="Eliminar"> 
-                <i class="mdi mdi-delete"></i> 
-            </button> 
-            ${viewUsersButton} 
-            ${toggleCompletionButton} 
-        </div> 
-    `;
+		<div class="action-buttons"> 
+			<button class="btn btn-sm btn-success btn-action"  
+				onclick="editarProyecto(${proyecto.id_proyecto})"  
+				title="Editar"> 
+				<i class="mdi mdi-pencil"></i> 
+			</button> 
+			<button class="btn btn-sm btn-danger btn-action"  
+				onclick="confirmDelete(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
+				title="Eliminar"> 
+				<i class="mdi mdi-delete"></i> 
+			</button> 
+			${viewUsersButton} 
+			${toggleCompletionButton} 
+		</div> 
+	`;
 	row.innerHTML = ` 
-        <td>${index}</td> 
-        <td> 
-            <strong>${truncateText(proyecto.nombre, 30)}</strong> 
-        </td> 
-        <td>${truncateText(proyecto.descripcion, 40)}</td> 
-        <td>${proyecto.area || '-'}</td> 
-        <td>${formatDate(proyecto.fecha_cumplimiento)}</td> 
-        <td> 
-            ${progressBar} 
-        </td> 
-        <td> 
-            ${statusBadge} 
-        </td> 
-        <td>${proyecto.participante || '-'}</td> 
-        <td> 
-            ${actionsButtons} 
-        </td> 
-    `;
+		<td>${index}</td> 
+		<td> 
+			<strong>${truncateText(proyecto.nombre, 30)}</strong> 
+		</td> 
+		<td>${truncateText(proyecto.descripcion, 40)}</td> 
+		<td>${proyecto.area || '-'}</td> 
+		<td>${formatDate(proyecto.fecha_cumplimiento)}</td> 
+		<td> 
+			${progressBar} 
+		</td> 
+		<td> 
+			${statusBadge} 
+		</td> 
+		<td>${proyecto.participante || '-'}</td> 
+		<td> 
+			${actionsButtons} 
+		</td> 
+	`;
 	return row;
 }
 
@@ -512,14 +661,14 @@ function createProgressBar(progress) {
 		progressValue >= 50 ? 'bg-info' :
 		progressValue >= 25 ? 'bg-warning' : 'bg-danger';
 	return ` 
-        <div class="progress" style="height: 20px;"> 
-            <div class="progress-bar ${progressClass}" role="progressbar"  
-                 style="width: ${progressValue}%;"  
-                 aria-valuenow="${progressValue}" aria-valuemin="0" aria-valuemax="100"> 
-                ${progressValue}% 
-            </div> 
-        </div> 
-    `;
+		<div class="progress" style="height: 20px;"> 
+			<div class="progress-bar ${progressClass}" role="progressbar"  
+				 style="width: ${progressValue}%;"  
+				 aria-valuenow="${progressValue}" aria-valuemin="0" aria-valuemax="100"> 
+				${progressValue}% 
+			</div> 
+		</div> 
+	`;
 }
 
 function getStatusColor(estado) {
@@ -534,33 +683,53 @@ function getStatusColor(estado) {
 
 function displayEmptyState() {
 	const tableBody = document.querySelector('#proyectosTableBody');
-	// Verificar si hay un filtro activo 
-	if (employeeFilterFromUrl) {
+	
+	// Verificar si hay un filtro de estado activo
+	if (activeStatusFilter) {
+		const statusLabels = {
+			'pendiente': 'pendientes',
+			'en proceso': 'en proceso',
+			'completado': 'completados',
+			'vencido': 'vencidos'
+		};
 		tableBody.innerHTML = ` 
-            <tr> 
-                <td colspan="9" class="text-center empty-state"> 
-                    <i class="mdi mdi-folder-search-outline" style="font-size: 48px; color: #e9e9e9;"></i> 
-                    <h5 class="mt-3">No hay proyectos asignados a este empleado</h5> 
-                    <p>El empleado "${escapeHtml(employeeFilterFromUrl)}" no tiene proyectos asignados</p> 
-                    <button class="btn btn-primary mt-3" onclick="clearEmployeeFilter()"> 
-                        <i class="mdi mdi-view-list"></i> Ver todos los proyectos 
-                    </button> 
-                </td> 
-            </tr> 
-        `;
+			<tr> 
+				<td colspan="9" class="text-center empty-state"> 
+					<i class="mdi mdi-filter-off" style="font-size: 48px; color: #e9e9e9;"></i> 
+					<h5 class="mt-3">No hay proyectos ${statusLabels[activeStatusFilter] || activeStatusFilter}</h5> 
+					<p>No se encontraron proyectos con el estado seleccionado</p> 
+					<button class="btn btn-outline-primary mt-3" onclick="clearStatusFilter()"> 
+						<i class="mdi mdi-filter-remove"></i> Mostrar todos los proyectos 
+					</button> 
+				</td> 
+			</tr> 
+		`;
+	} else if (employeeFilterFromUrl) {
+		tableBody.innerHTML = ` 
+			<tr> 
+				<td colspan="9" class="text-center empty-state"> 
+					<i class="mdi mdi-folder-search-outline" style="font-size: 48px; color: #e9e9e9;"></i> 
+					<h5 class="mt-3">No hay proyectos asignados a este empleado</h5> 
+					<p>El empleado "${escapeHtml(employeeFilterFromUrl)}" no tiene proyectos asignados</p> 
+					<button class="btn btn-primary mt-3" onclick="clearEmployeeFilter()"> 
+						<i class="mdi mdi-view-list"></i> Ver todos los proyectos 
+					</button> 
+				</td> 
+			</tr> 
+		`;
 	} else {
 		tableBody.innerHTML = ` 
-            <tr> 
-                <td colspan="9" class="text-center empty-state"> 
-                    <i class="mdi mdi-folder-open" style="font-size: 48px; color: #e9e9e9;"></i> 
-                    <h5 class="mt-3">No hay proyectos registrados</h5> 
-                    <p>Comienza creando un nuevo proyecto</p> 
-                    <a href="../nuevoProyectoGerente/" class="btn btn-success mt-3"> 
-                        <i class="mdi mdi-plus-circle-outline"></i> Crear proyecto 
-                    </a> 
-                </td> 
-            </tr> 
-        `;
+			<tr> 
+				<td colspan="9" class="text-center empty-state"> 
+					<i class="mdi mdi-folder-open" style="font-size: 48px; color: #e9e9e9;"></i> 
+					<h5 class="mt-3">No hay proyectos registrados</h5> 
+					<p>Comienza creando un nuevo proyecto</p> 
+					<a href="../nuevoProyectoGerente/" class="btn btn-success mt-3"> 
+						<i class="mdi mdi-plus-circle-outline"></i> Crear proyecto 
+					</a> 
+				</td> 
+			</tr> 
+		`;
 	}
 }
 
@@ -581,11 +750,10 @@ function setupSearch() {
 		clearTimeout(searchTimeout);
 		searchTimeout = setTimeout(() => {
 			const query = this.value;
-			// Si el usuario está borrando manualmente, limpiar también el filtro URL 
 			if (query.trim() === '' && employeeFilterFromUrl) {
 				clearEmployeeFilter();
 			} else {
-				performSearch(query);
+				applyAllFilters();
 			}
 		}, 300);
 	});
@@ -593,53 +761,58 @@ function setupSearch() {
 
 function performSearch(query) {
 	const normalizedQuery = query.toLowerCase().trim();
+	
+	// Empezar con todos los proyectos o filtrados por estado
+	let baseProjects = activeStatusFilter
+		? allProjects.filter(p => p.estado && p.estado.toLowerCase() === activeStatusFilter)
+		: [...allProjects];
+	
 	if (normalizedQuery === '') {
-		filteredProjects = [...allProjects];
-		currentPage = 1; //reiniciar a la primer pagina cuando se limpie la busqueda 
+		filteredProjects = baseProjects;
+		currentPage = 1;
 		const sorted = currentSortColumn ?
 			sortProjects(filteredProjects, currentSortColumn, sortDirection) :
 			filteredProjects;
 		displayProjects(sorted);
 		return;
 	}
-	const filtered = allProjects.filter(project => {
+	const filtered = baseProjects.filter(project => {
 		return project.nombre.toLowerCase().includes(normalizedQuery) ||
 			(project.descripcion && project.descripcion.toLowerCase().includes(normalizedQuery)) ||
 			(project.area && project.area.toLowerCase().includes(normalizedQuery)) ||
 			(project.participante && project.participante.toLowerCase().includes(normalizedQuery));
 	});
 	filteredProjects = filtered;
-	currentPage = 1; //reiniciar a primer pagina cuando se busca 
+	currentPage = 1;
 	const sorted = currentSortColumn ?
 		sortProjects(filteredProjects, currentSortColumn, sortDirection) :
 		filteredProjects;
 	displayProjects(sorted);
 	if (sorted.length === 0) {
 		const tableBody = document.querySelector('#proyectosTableBody');
-		// Mensaje personalizado si es un filtro de empleado 
 		if (employeeFilterFromUrl && query === employeeFilterFromUrl) {
 			tableBody.innerHTML = ` 
-                <tr> 
-                    <td colspan="9" class="text-center empty-state"> 
-                        <i class="mdi mdi-account-search" style="font-size: 48px; color: #ccc;"></i> 
-                        <h5 class="mt-3">Sin proyectos asignados</h5> 
-                        <p>"${escapeHtml(query)}" no tiene proyectos asignados actualmente</p> 
-                        <button class="btn btn-outline-primary mt-2" onclick="clearEmployeeFilter()"> 
-                            <i class="mdi mdi-view-list me-1"></i>Ver todos los proyectos 
-                        </button> 
-                    </td> 
-                </tr> 
-            `;
+				<tr> 
+					<td colspan="9" class="text-center empty-state"> 
+						<i class="mdi mdi-account-search" style="font-size: 48px; color: #ccc;"></i> 
+						<h5 class="mt-3">Sin proyectos asignados</h5> 
+						<p>"${escapeHtml(query)}" no tiene proyectos asignados actualmente</p> 
+						<button class="btn btn-outline-primary mt-2" onclick="clearEmployeeFilter()"> 
+							<i class="mdi mdi-view-list me-1"></i>Ver todos los proyectos 
+						</button> 
+					</td> 
+				</tr> 
+			`;
 		} else {
 			tableBody.innerHTML = ` 
-                <tr> 
-                    <td colspan="9" class="text-center empty-state"> 
-                        <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
-                        <h5 class="mt-3">No se encontraron resultados</h5> 
-                        <p>No hay proyectos que coincidan con "${escapeHtml(query)}"</p> 
-                    </td> 
-                </tr> 
-            `;
+				<tr> 
+					<td colspan="9" class="text-center empty-state"> 
+						<i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+						<h5 class="mt-3">No se encontraron resultados</h5> 
+						<p>No hay proyectos que coincidan con "${escapeHtml(query)}"</p> 
+					</td> 
+				</tr> 
+			`;
 		}
 	}
 }
@@ -673,7 +846,6 @@ function toggleProjectCompletion(idProyecto, nuevoEstado) {
 		confirmMessage = `¿Marcar el proyecto "${escapeHtml(proyecto.nombre)}" como completado?\n\nEl progreso se establecerá en 100%.`;
 		titleText = 'Cambiar estado a completado';
 	} else {
-		// Verificar si el proyecto está vencido 
 		const fechaCumplimiento = new Date(proyecto.fecha_cumplimiento + 'T00:00:00');
 		const hoy = new Date();
 		hoy.setHours(0, 0, 0, 0);
@@ -713,18 +885,11 @@ function updateProjectStatus(idProyecto, nuevoEstado) {
 		.then(response => response.json())
 		.then(data => {
 			if (data.success) {
-				// Actualizar datos locales con el estado real devuelto por el servidor 
 				const project = allProjects.find(proj => proj.id_proyecto === idProyecto);
 				if (project) {
 					project.estado = data.nuevo_estado;
 					project.progreso = data.nuevo_progreso;
 				}
-				const filteredProject = filteredProjects.find(proj => proj.id_proyecto === idProyecto);
-				if (filteredProject) {
-					filteredProject.estado = data.nuevo_estado;
-					filteredProject.progreso = data.nuevo_progreso;
-				}
-				// Mostrar mensaje de éxito con el estado real 
 				let statusText;
 				switch (data.nuevo_estado) {
 					case 'completado':
@@ -740,11 +905,7 @@ function updateProjectStatus(idProyecto, nuevoEstado) {
 						statusText = data.nuevo_estado;
 				}
 				showSuccessAlert(`Proyecto marcado como ${statusText}`);
-				// Actualizar la tabla 
-				const sorted = currentSortColumn ?
-					sortProjects(filteredProjects, currentSortColumn, sortDirection) :
-					filteredProjects;
-				displayProjects(sorted);
+				applyAllFilters();
 			} else {
 				showErrorAlert(data.message || 'Error al actualizar el estado del proyecto');
 			}
@@ -784,15 +945,7 @@ function deleteProject(id) {
 			if (data.success) {
 				showSuccessAlert(data.message || 'Proyecto eliminado exitosamente');
 				allProjects = allProjects.filter(u => u.id_proyecto != id);
-				filteredProjects = filteredProjects.filter(u => u.id_proyecto != id);
-				totalPages = calculatePages(filteredProjects); //recalcular paginas despues de liminar 
-				if (currentPage > totalPages && totalPages > 0) {
-					currentPage = totalPages;
-				}
-				const sorted = currentSortColumn ?
-					sortProjects(filteredProjects, currentSortColumn, sortDirection) :
-					filteredProjects;
-				displayProjects(sorted);
+				applyAllFilters();
 			} else {
 				showErrorAlert(data.message || 'Error al eliminar el proyecto');
 			}
@@ -805,54 +958,53 @@ function deleteProject(id) {
 
 function createProjectUsersModal() {
 	const modalHTML = ` 
-        <div class="modal fade" id="projectUsersModal" tabindex="-1" role="dialog" aria-labelledby="projectUsersModalLabel" aria-hidden="true"> 
-            <div class="modal-dialog modal-xl" role="document"> 
-                <div class="modal-content"> 
-                    <div class="modal-header"> 
-                        <h5 class="modal-title" id="projectUsersModalLabel"> 
-                            <i class="mdi mdi-account-multiple me-2"></i> 
-                            Usuarios asignados al proyecto 
-                        </h5> 
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> 
-                    </div> 
-                    <div class="modal-body"> 
-                        <div class="mb-3"> 
-                            <input type="text" class="form-control" id="projectUsersSearch"  
-                                   placeholder="Buscar usuario por nombre, email o empleado..."> 
-                        </div> 
-                        <div class="table-responsive"> 
-                            <table class="table table-hover"> 
-                                <thead> 
-                                    <tr> 
-                                        <th>#</th> 
-                                        <th>Nombre Completo</th> 
-                                        <th>Email</th> 
-                                        <th>Número de Empleado</th> 
-                                        <th>Progreso en Proyecto</th> 
-                                    </tr> 
-                                </thead> 
-                                <tbody id="projectUsersTableBody"> 
-                                    <tr> 
-                                        <td colspan="5" class="text-center"> 
-                                            <div class="spinner-border text-primary" role="status"> 
-                                                <span class="visually-hidden">Cargando...</span> 
-                                            </div> 
-                                        </td> 
-                                    </tr> 
-                                </tbody> 
-                            </table> 
-                        </div> 
-                        <div class="pagination-container mt-3"></div> 
-                    </div> 
-                    <div class="modal-footer"> 
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button> 
-                    </div> 
-                </div> 
-            </div> 
-        </div> 
-    `;
+		<div class="modal fade" id="projectUsersModal" tabindex="-1" role="dialog" aria-labelledby="projectUsersModalLabel" aria-hidden="true"> 
+			<div class="modal-dialog modal-xl" role="document"> 
+				<div class="modal-content"> 
+					<div class="modal-header"> 
+						<h5 class="modal-title" id="projectUsersModalLabel"> 
+							<i class="mdi mdi-account-multiple me-2"></i> 
+							Usuarios asignados al proyecto 
+						</h5> 
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> 
+					</div> 
+					<div class="modal-body"> 
+						<div class="mb-3"> 
+							<input type="text" class="form-control" id="projectUsersSearch"  
+								   placeholder="Buscar usuario por nombre, email o empleado..."> 
+						</div> 
+						<div class="table-responsive"> 
+							<table class="table table-hover"> 
+								<thead> 
+									<tr> 
+										<th>#</th> 
+										<th>Nombre Completo</th> 
+										<th>Email</th> 
+										<th>Número de Empleado</th> 
+										<th>Progreso en Proyecto</th> 
+									</tr> 
+								</thead> 
+								<tbody id="projectUsersTableBody"> 
+									<tr> 
+										<td colspan="5" class="text-center"> 
+											<div class="spinner-border text-primary" role="status"> 
+												<span class="visually-hidden">Cargando...</span> 
+											</div> 
+										</td> 
+									</tr> 
+								</tbody> 
+							</table> 
+						</div> 
+						<div class="pagination-container mt-3"></div> 
+					</div> 
+					<div class="modal-footer"> 
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button> 
+					</div> 
+				</div> 
+			</div> 
+		</div> 
+	`;
 	document.body.insertAdjacentHTML('beforeend', modalHTML);
-	// Agregar event listener para limpiar el ID cuando se cierre el modal 
 	const modalElement = document.getElementById('projectUsersModal');
 	if (modalElement) {
 		modalElement.addEventListener('hidden.bs.modal', function() {
@@ -867,26 +1019,25 @@ function createUserProgressBar(progress) {
 		progressValue >= 50 ? 'bg-info' :
 		progressValue >= 25 ? 'bg-warning' : 'bg-danger';
 	return ` 
-        <div class="d-flex align-items-center gap-2"> 
-            <div class="progress flex-grow-1" style="height: 20px; min-width: 100px;"> 
-                <div class="progress-bar ${progressClass}" role="progressbar"  
-                     style="width: ${progressValue}%;"  
-                     aria-valuenow="${progressValue}" aria-valuemin="0" aria-valuemax="100"> 
-                    ${progressValue.toFixed(1)}% 
-                </div> 
-            </div> 
-        </div> 
-    `;
+		<div class="d-flex align-items-center gap-2"> 
+			<div class="progress flex-grow-1" style="height: 20px; min-width: 100px;"> 
+				<div class="progress-bar ${progressClass}" role="progressbar"  
+					 style="width: ${progressValue}%;"  
+					 aria-valuenow="${progressValue}" aria-valuemin="0" aria-valuemax="100"> 
+					${progressValue.toFixed(1)}% 
+				</div> 
+			</div> 
+		</div> 
+	`;
 }
 
 function viewProjectUsers(projectId, projectName) {
-	// Guardar el ID del proyecto actual para el auto-refresh 
 	currentProjectIdForUsers = projectId;
 	const modal = new bootstrap.Modal(document.getElementById('projectUsersModal'));
 	document.getElementById('projectUsersModalLabel').textContent = `Usuarios asignados a: ${projectName}`;
-	projectUsersData = []; //reiniciar variables 
+	projectUsersData = [];
 	currentUsersPage = 1;
-	document.getElementById('projectUsersSearch').value = ''; //limpiar busqueda 
+	document.getElementById('projectUsersSearch').value = '';
 	loadProjectUsers(projectId);
 	modal.show();
 }
@@ -904,31 +1055,31 @@ function loadProjectUsers(projectId) {
 			if (data.success && data.usuarios) {
 				projectUsersData = data.usuarios;
 				displayProjectUsers(projectUsersData);
-				const searchInput = document.getElementById('projectUsersSearch'); //setup de busqueda de usuarios 
+				const searchInput = document.getElementById('projectUsersSearch');
 				if (searchInput) {
 					searchInput.removeEventListener('input', handleProjectUsersSearch);
 					searchInput.addEventListener('input', handleProjectUsersSearch);
 				}
 			} else {
 				tableBody.innerHTML = ` 
-                    <tr> 
-                        <td colspan="5" class="text-center text-muted"> 
-                            <i class="mdi mdi-account-off" style="font-size: 48px; color: #E9E9E9;"></i> 
-                            <h5 class="mt-3">No hay usuarios asignados a este proyecto</h5> 
-                        </td> 
-                    </tr> 
-                `;
+					<tr> 
+						<td colspan="5" class="text-center text-muted"> 
+							<i class="mdi mdi-account-off" style="font-size: 48px; color: #E9E9E9;"></i> 
+							<h5 class="mt-3">No hay usuarios asignados a este proyecto</h5> 
+						</td> 
+					</tr> 
+				`;
 			}
 		})
 		.catch(error => {
 			console.error('Error cargando usuarios del proyecto:', error);
 			tableBody.innerHTML = ` 
-                <tr> 
-                    <td colspan="5" class="text-center text-danger"> 
-                        Error al cargar usuarios: ${error.message} 
-                    </td> 
-                </tr> 
-            `;
+				<tr> 
+					<td colspan="5" class="text-center text-danger"> 
+						Error al cargar usuarios: ${error.message} 
+					</td> 
+				</tr> 
+			`;
 		});
 }
 
@@ -950,16 +1101,15 @@ function displayProjectUsers(users) {
 	const tableBody = document.getElementById('projectUsersTableBody');
 	if (!users || users.length === 0) {
 		tableBody.innerHTML = ` 
-            <tr> 
-                <td colspan="5" class="text-center text-muted"> 
-                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
-                    <h5 class="mt-3">No se encontraron usuarios</h5> 
-                </td> 
-            </tr> 
-        `;
+			<tr> 
+				<td colspan="5" class="text-center text-muted"> 
+					<i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i> 
+					<h5 class="mt-3">No se encontraron usuarios</h5> 
+				</td> 
+			</tr> 
+		`;
 		return;
 	}
-	//calcular paginacion para usuarios 
 	totalUsersPages = Math.ceil(users.length / usersRowsPerPage);
 	if (currentUsersPage > totalUsersPages && totalUsersPages > 0) {
 		currentUsersPage = totalUsersPages;
@@ -973,23 +1123,23 @@ function displayProjectUsers(users) {
 		const row = document.createElement('tr');
 		const progressBar = createUserProgressBar(user.progreso_porcentaje || 0);
 		row.innerHTML = ` 
-            <td>${rowNumber}</td> 
-            <td> 
-                <div class="d-flex align-items-center"> 
-                    <div class="avatar avatar-sm me-2"> 
-                        <img src="../images/faces/face1.jpg" alt="avatar" class="rounded-circle"> 
-                    </div> 
-                    <div> 
-                        <strong>${escapeHtml(user.nombre_completo)}</strong> 
-                    </div> 
-                </div> 
-            </td> 
-            <td>${escapeHtml(user.e_mail)}</td> 
-            <td>${user.num_empleado}</td> 
-            <td> 
-                ${progressBar} 
-            </td> 
-        `;
+			<td>${rowNumber}</td> 
+			<td> 
+				<div class="d-flex align-items-center"> 
+					<div class="avatar avatar-sm me-2"> 
+						<img src="../images/faces/face1.jpg" alt="avatar" class="rounded-circle"> 
+					</div> 
+					<div> 
+						<strong>${escapeHtml(user.nombre_completo)}</strong> 
+					</div> 
+				</div> 
+			</td> 
+			<td>${escapeHtml(user.e_mail)}</td> 
+			<td>${user.num_empleado}</td> 
+			<td> 
+				${progressBar} 
+			</td> 
+		`;
 		tableBody.appendChild(row);
 	});
 	updateProjectUsersPagination(users.length);
@@ -999,20 +1149,20 @@ function updateProjectUsersPagination(totalUsers) {
 	const paginationContainer = document.querySelector('#projectUsersModal .pagination-container');
 	if (!paginationContainer) return;
 	paginationContainer.innerHTML = '';
-	const infoText = document.createElement('div'); //texto de informacion 
+	const infoText = document.createElement('div');
 	infoText.className = 'pagination-info text-center mb-3';
 	const startItem = ((currentUsersPage - 1) * usersRowsPerPage) + 1;
 	const endItem = Math.min(currentUsersPage * usersRowsPerPage, totalUsers);
 	infoText.innerHTML = ` 
-        <p class="mb-0">Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${totalUsers}</strong> usuarios</p> 
-    `;
+		<p class="mb-0">Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${totalUsers}</strong> usuarios</p> 
+	`;
 	paginationContainer.appendChild(infoText);
-	if (totalUsersPages <= 1) { //solo mostrar botones cuando hay varias paginas 
+	if (totalUsersPages <= 1) {
 		return;
 	}
 	const buttonContainer = document.createElement('div');
 	buttonContainer.className = 'pagination-buttons d-flex justify-content-center gap-2';
-	const prevBtn = document.createElement('button'); //boton previo 
+	const prevBtn = document.createElement('button');
 	prevBtn.className = 'btn btn-sm btn-outline-primary';
 	prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior';
 	prevBtn.disabled = currentUsersPage === 1;
@@ -1033,7 +1183,7 @@ function updateProjectUsersPagination(totalUsers) {
 		}
 	});
 	buttonContainer.appendChild(prevBtn);
-	const nextBtn = document.createElement('button'); //boton siguiente 
+	const nextBtn = document.createElement('button');
 	nextBtn.className = 'btn btn-sm btn-outline-primary';
 	nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>';
 	nextBtn.disabled = currentUsersPage === totalUsersPages;
@@ -1075,10 +1225,10 @@ function showAlert(message, type) {
 	const icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle';
 	alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
 	alertDiv.innerHTML = ` 
-        <i class="mdi ${icon} me-2"></i> 
-        ${message} 
-        <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button> 
-    `;
+		<i class="mdi ${icon} me-2"></i> 
+		${message} 
+		<button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button> 
+	`;
 	alertDiv.style.display = 'block';
 	alertDiv.scrollIntoView({
 		behavior: 'smooth',
@@ -1115,7 +1265,7 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 	const headerElement = modal.querySelector('.modal-header');
 	const confirmBtn = modal.querySelector('#confirmOkBtn');
 	const cancelBtn = modal.querySelector('#confirmCancelBtn');
-	if (!titleElement || !messageElement || !headerElement || !confirmBtn) { //validar todos los elementos 
+	if (!titleElement || !messageElement || !headerElement || !confirmBtn) {
 		console.error('Critical modal elements not found');
 		return;
 	}
@@ -1126,12 +1276,12 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 		...options
 	};
 	titleElement.textContent = title;
-	messageElement.innerHTML = message.replace(/\n/g, '<br>'); //actualizar contenido de texto 
+	messageElement.innerHTML = message.replace(/\n/g, '<br>');
 	confirmBtn.textContent = config.confirmText;
 	if (cancelBtn) {
 		cancelBtn.textContent = config.cancelText;
 	}
-	headerElement.className = 'modal-header'; //reiniciar manejo de clase 
+	headerElement.className = 'modal-header';
 	const iconMap = {
 		'info': {
 			icon: 'mdi-information-outline',
@@ -1155,13 +1305,13 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 		}
 	};
 	const typeConfig = iconMap[config.type] || iconMap['warning'];
-	let iconElement = modal.querySelector('.modal-title i'); //actualizar icono 
+	let iconElement = modal.querySelector('.modal-title i');
 	if (!iconElement) {
-		iconElement = document.createElement('i'); //si no existe, crear el icono 
+		iconElement = document.createElement('i');
 		titleElement.insertBefore(iconElement, titleElement.firstChild);
 	}
 	iconElement.className = `mdi ${typeConfig.icon} me-2`;
-	headerElement.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success', 'text-white'); //actualizar estilos 
+	headerElement.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success', 'text-white');
 	headerElement.classList.add(...typeConfig.class.split(' '));
 	confirmBtn.className = `btn ${typeConfig.btnClass}`;
 	const newConfirmBtn = confirmBtn.cloneNode(true);
@@ -1182,8 +1332,8 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 		}
 	}, {
 		once: true
-	}); //opcion de una vez para remover despues 
-	let modalInstance = bootstrap.Modal.getInstance(modal); //obtener o crear la instancia del modal 
+	});
+	let modalInstance = bootstrap.Modal.getInstance(modal);
 	if (modalInstance) {
 		modalInstance.dispose();
 	}
@@ -1197,7 +1347,8 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 		console.error('Error showing modal:', err);
 	}
 }
-//hacer funciones globalmente disponibles 
+
+// Hacer funciones globalmente disponibles
 window.confirmDelete = confirmDelete;
 window.editarProyecto = editarProyecto;
 window.changePage = changePage;
@@ -1208,3 +1359,5 @@ window.startAutoRefresh = startAutoRefresh;
 window.toggleProjectCompletion = toggleProjectCompletion;
 window.updateProjectStatus = updateProjectStatus;
 window.clearEmployeeFilter = clearEmployeeFilter;
+window.filterByStatus = filterByStatus;
+window.clearStatusFilter = clearStatusFilter;

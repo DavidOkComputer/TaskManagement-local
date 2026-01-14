@@ -2,7 +2,7 @@ const Config = {
     API_ENDPOINTS: { 
         DELETE: '../php/delete_project.php', 
         GET_PROJECT_USERS: '../php/get_project_user.php', 
-         UPDATE_STATUS: '../php/update_project_status.php'
+        UPDATE_STATUS: '../php/update_project_status.php'
     } 
 }; 
 
@@ -11,7 +11,7 @@ let currentSortColumn = null;
 let sortDirection = 'asc'; 
 let filteredProjects = []; 
 
-//variables de paginacion 
+// Variables de paginación 
 let currentPage = 1; 
 let rowsPerPage = 10; 
 let totalPages = 0;
@@ -24,28 +24,192 @@ let totalUsersPages = 0;
 
 // Variable para el auto-refresh 
 let autoRefreshInterval = null; 
-let currentProjectIdForUsers = null; // Para refrescar modal de usuarios 
+let currentProjectIdForUsers = null;
+
+// Variable para filtro de estado desde URL
+let activeStatusFilter = null;
 
 document.addEventListener('DOMContentLoaded', function() { 
     initializeCustomDialogs(); 
     setupSearch(); 
     setupSorting(); 
     setupPagination(); 
+    setupStatusFilter(); // Nueva función para el filtro de estado
     createProjectUsersModal(); 
+    checkURLFilters(); // Verificar filtros en URL antes de cargar
     cargarProyectos(); 
-    startAutoRefresh();// iniciar refresco cada minuto o 60000ms 
+    startAutoRefresh();
 }); 
 
+/**
+ * Verifica si hay filtros en la URL y los aplica
+ */
+function checkURLFilters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const estadoParam = urlParams.get('estado');
+    
+    if (estadoParam) {
+        activeStatusFilter = estadoParam.toLowerCase();
+        
+        // Actualizar el selector de filtro si existe
+        const filterSelect = document.getElementById('statusFilterSelect');
+        if (filterSelect) {
+            filterSelect.value = activeStatusFilter;
+        }
+        
+        // Mostrar indicador de filtro activo
+        showActiveFilterIndicator(activeStatusFilter);
+    }
+}
+
+/**
+ * Configura el selector de filtro por estado
+ */
+function setupStatusFilter() {
+    // Crear el selector de filtro si no existe
+    const rowsPerPageControl = document.querySelector('.rows-per-page-control');
+    if (rowsPerPageControl && !document.getElementById('statusFilterSelect')) {
+        const filterContainer = document.createElement('div');
+        filterContainer.className = 'd-flex align-items-center gap-2 ms-4';
+        filterContainer.innerHTML = `
+            <label for="statusFilterSelect" class="form-label mb-0">Filtrar por estado:</label>
+            <select id="statusFilterSelect" class="form-select form-select-sm" style="width: auto;">
+                <option value="">Todos los estados</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="en proceso">En Proceso</option>
+                <option value="completado">Completado</option>
+                <option value="vencido">Vencido</option>
+            </select>
+            <button id="clearFilterBtn" class="btn btn-sm btn-outline-secondary" style="display: none;" title="Limpiar filtro">
+                <i class="mdi mdi-close"></i> Limpiar
+            </button>
+        `;
+        rowsPerPageControl.appendChild(filterContainer);
+        
+        // Event listener para el selector
+        const filterSelect = document.getElementById('statusFilterSelect');
+        filterSelect.addEventListener('change', function() {
+            activeStatusFilter = this.value || null;
+            applyStatusFilter();
+            updateURL();
+        });
+        
+        // Event listener para el botón de limpiar
+        const clearBtn = document.getElementById('clearFilterBtn');
+        clearBtn.addEventListener('click', function() {
+            clearStatusFilter();
+        });
+    }
+}
+
+/**
+ * Muestra indicador de filtro activo
+ */
+function showActiveFilterIndicator(estado) {
+    const clearBtn = document.getElementById('clearFilterBtn');
+    if (clearBtn) {
+        clearBtn.style.display = estado ? 'inline-block' : 'none';
+    }
+    
+    // Actualizar el selector
+    const filterSelect = document.getElementById('statusFilterSelect');
+    if (filterSelect && estado) {
+        filterSelect.value = estado;
+    }
+}
+
+/**
+ * Aplica el filtro de estado a los proyectos
+ */
+function applyStatusFilter() {
+    if (!activeStatusFilter) {
+        filteredProjects = [...allProjects];
+    } else {
+        filteredProjects = allProjects.filter(project => 
+            project.estado && project.estado.toLowerCase() === activeStatusFilter
+        );
+    }
+    
+    // Aplicar también el filtro de búsqueda si existe
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput && searchInput.value.trim()) {
+        const query = searchInput.value.toLowerCase().trim();
+        filteredProjects = filteredProjects.filter(project => 
+            project.nombre.toLowerCase().includes(query) ||
+            (project.descripcion && project.descripcion.toLowerCase().includes(query)) ||
+            (project.area && project.area.toLowerCase().includes(query)) ||
+            (project.participante && project.participante.toLowerCase().includes(query))
+        );
+    }
+    
+    // Aplicar ordenamiento si existe
+    if (currentSortColumn) {
+        filteredProjects = sortProjects(filteredProjects, currentSortColumn, sortDirection);
+    }
+    
+    currentPage = 1;
+    displayProjects(filteredProjects);
+    showActiveFilterIndicator(activeStatusFilter);
+}
+
+/**
+ * Limpia el filtro de estado
+ */
+function clearStatusFilter() {
+    activeStatusFilter = null;
+    const filterSelect = document.getElementById('statusFilterSelect');
+    if (filterSelect) {
+        filterSelect.value = '';
+    }
+    
+    // Limpiar URL
+    const url = new URL(window.location);
+    url.searchParams.delete('estado');
+    window.history.replaceState({}, '', url);
+    
+    applyStatusFilter();
+}
+
+/**
+ * Actualiza la URL con el filtro actual
+ */
+function updateURL() {
+    const url = new URL(window.location);
+    
+    if (activeStatusFilter) {
+        url.searchParams.set('estado', activeStatusFilter);
+    } else {
+        url.searchParams.delete('estado');
+    }
+    
+    window.history.replaceState({}, '', url);
+}
+
+/**
+ * Función para filtrar por estado desde la URL (llamada desde el dashboard)
+ */
+function filterByStatus(estado) {
+    activeStatusFilter = estado ? estado.toLowerCase() : null;
+    
+    const filterSelect = document.getElementById('statusFilterSelect');
+    if (filterSelect) {
+        filterSelect.value = activeStatusFilter || '';
+    }
+    
+    applyStatusFilter();
+    updateURL();
+}
+
 function startAutoRefresh() { 
-    if (autoRefreshInterval) { //limpiar interval
+    if (autoRefreshInterval) {
         clearInterval(autoRefreshInterval); 
     } 
-    autoRefreshInterval = setInterval(() => { //configurar el interval para refrescar cada minuto
+    autoRefreshInterval = setInterval(() => { 
         refreshProjectsData(); 
-        if (currentProjectIdForUsers) { //si el modal de usuarios esta abirto refrescar
+        if (currentProjectIdForUsers) {
             refreshProjectUsersData(); 
         } 
-    }, 60000); // 60000 ms = 1 minuto 
+    }, 60000);
 } 
 
 function stopAutoRefresh() { 
@@ -65,28 +229,16 @@ function refreshProjectsData() {
         }) 
         .then(data => { 
             if (data.success && data.proyectos) { 
-                // Guardar el estado actual de búsqueda 
                 const searchInput = document.getElementById('searchInput'); 
                 const currentSearchQuery = searchInput ? searchInput.value : '';
-                allProjects = data.proyectos;//actualizar los datos 
-                if (currentSearchQuery.trim() !== '') { //reaplicar los filtros de busqueda si existen 
-                    performSearch(currentSearchQuery); 
-                } else { 
-                    filteredProjects = [...allProjects]; 
-                } 
-                if (currentSortColumn) { //reaplicar ordenamiento si existe
-                    filteredProjects = sortProjects(filteredProjects, currentSortColumn, sortDirection); 
-                } 
-                const newTotalPages = calculatePages(filteredProjects);//actualizar la vista manteniendo la pagina actual si es posible 
-                if (currentPage > newTotalPages && newTotalPages > 0) { 
-                    currentPage = newTotalPages; 
-                } 
-                displayProjects(filteredProjects); 
+                allProjects = data.proyectos;
+                
+                // Aplicar filtro de estado si está activo
+                applyStatusFilter();
             } 
         }) 
         .catch(error => { 
             console.error('Error al refrescar proyectos:', error); 
-            // No mostrar alert para no interrumpir al usuario 
         }); 
 } 
 
@@ -103,11 +255,10 @@ function refreshProjectUsersData() {
         }) 
         .then(data => {
             if (data.success && data.usuarios) { 
-                // Guardar el estado actual de búsqueda en el modal 
                 const searchInput = document.getElementById('projectUsersSearch'); 
                 const currentSearchQuery = searchInput ? searchInput.value : ''; 
                 projectUsersData = data.usuarios; 
-                if (currentSearchQuery.trim() !== '') { //reaplicar filtro de busqueda si existe
+                if (currentSearchQuery.trim() !== '') {
                     const filtered = projectUsersData.filter(user => { 
                         return user.nombre_completo.toLowerCase().includes(currentSearchQuery.toLowerCase()) || 
                                user.e_mail.toLowerCase().includes(currentSearchQuery.toLowerCase()) || 
@@ -150,9 +301,9 @@ function cargarProyectos() {
         .then(data => { 
             if (data.success && data.proyectos) { 
                 allProjects = data.proyectos; 
-                filteredProjects = [...allProjects]; 
-                currentPage = 1; // Reiniciar a la primera pagina al cargar 
-                displayProjects(data.proyectos); 
+                
+                // Aplicar filtro de estado si viene de URL
+                applyStatusFilter();
             } else { 
                 tableBody.innerHTML = ` 
                     <tr> 
@@ -187,7 +338,7 @@ function setupSorting() {
                 sortDirection = 'asc'; 
             }
             updateSortIndicators(); 
-            currentPage = 1; //reiniciar a la primera pagina al hacer sort 
+            currentPage = 1;
             const sorted = sortProjects(filteredProjects, column, sortDirection); 
             displayProjects(sorted); 
         }); 
@@ -239,7 +390,7 @@ function setupPagination() {
     if (rowsPerPageSelect) { 
         rowsPerPageSelect.addEventListener('change', function() { 
             rowsPerPage = parseInt(this.value); 
-            currentPage = 1; //reiniciar a primera pagina cuano cambien registros por pagina 
+            currentPage = 1;
             displayProjects(filteredProjects); 
         }); 
     } 
@@ -265,35 +416,54 @@ function changePage(pageNumber) {
 function updatePaginationControls() { 
     const paginationContainer = document.querySelector('.pagination-container'); 
     if (!paginationContainer) return; 
-    paginationContainer.innerHTML = '';//limpiar la paginacion existente 
-    //crear texto de info de paginacion 
+    paginationContainer.innerHTML = '';
+    
     const infoText = document.createElement('div'); 
     infoText.className = 'pagination-info'; 
     const startItem = ((currentPage - 1) * rowsPerPage) + 1; 
     const endItem = Math.min(currentPage * rowsPerPage, filteredProjects.length); 
+    
+    // Mostrar información del filtro activo
+    let filterInfo = '';
+    if (activeStatusFilter) {
+        const statusLabels = {
+            'pendiente': 'Pendientes',
+            'en proceso': 'En Proceso',
+            'completado': 'Completados',
+            'vencido': 'Vencidos'
+        };
+        filterInfo = ` <span class="badge bg-info ms-2">Filtro: ${statusLabels[activeStatusFilter] || activeStatusFilter}</span>`;
+    }
+    
     infoText.innerHTML = ` 
-        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredProjects.length}</strong> proyectos</p> 
+        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredProjects.length}</strong> proyectos${filterInfo}</p> 
     `; 
     paginationContainer.appendChild(infoText); 
-    const buttonContainer = document.createElement('div');//contenedor de etiquetas de botones de paginacion 
+    
+    const buttonContainer = document.createElement('div');
     buttonContainer.className = 'pagination-buttons'; 
-    const prevBtn = document.createElement('button'); //boton anterior
+    
+    const prevBtn = document.createElement('button');
     prevBtn.className = 'btn btn-sm btn-outline-primary'; 
     prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior'; 
     prevBtn.disabled = currentPage === 1; 
     prevBtn.addEventListener('click', () => changePage(currentPage - 1)); 
     buttonContainer.appendChild(prevBtn); 
-    const pageButtonsContainer = document.createElement('div'); //numero de paginas
+    
+    const pageButtonsContainer = document.createElement('div');
     pageButtonsContainer.className = 'page-buttons'; 
-    let startPage = Math.max(1, currentPage - 2); //calculo de paginas para mostrar
+    
+    let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, currentPage + 2); 
-    if (currentPage <= 3) { //ajustar dependiendo de si esta en el principio o el fin
+    
+    if (currentPage <= 3) {
         endPage = Math.min(totalPages, 5); 
     } 
     if (currentPage > totalPages - 3) { 
         startPage = Math.max(1, totalPages - 4); 
     } 
-    if (startPage > 1) {//boton de primera pagina 
+    
+    if (startPage > 1) {
         const firstBtn = document.createElement('button'); 
         firstBtn.className = 'btn btn-sm btn-outline-secondary page-btn'; 
         firstBtn.textContent = '1'; 
@@ -306,7 +476,8 @@ function updatePaginationControls() {
             pageButtonsContainer.appendChild(ellipsis); 
         } 
     }
-    for (let i = startPage; i <= endPage; i++) { //numero de paginas
+    
+    for (let i = startPage; i <= endPage; i++) {
         const pageBtn = document.createElement('button'); 
         pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? 'btn-primary' : 'btn-outline-secondary'}`; 
         pageBtn.textContent = i; 
@@ -314,7 +485,7 @@ function updatePaginationControls() {
         pageButtonsContainer.appendChild(pageBtn); 
     } 
 
-    if (endPage < totalPages) {//boton de ultima pagina 
+    if (endPage < totalPages) {
         if (endPage < totalPages - 1) { 
             const ellipsis = document.createElement('span'); 
             ellipsis.className = 'pagination-ellipsis'; 
@@ -329,7 +500,8 @@ function updatePaginationControls() {
     } 
 
     buttonContainer.appendChild(pageButtonsContainer); 
-    const nextBtn = document.createElement('button'); //boton siguiente
+    
+    const nextBtn = document.createElement('button');
     nextBtn.className = 'btn btn-sm btn-outline-primary'; 
     nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>'; 
     nextBtn.disabled = currentPage === totalPages; 
@@ -341,17 +513,21 @@ function updatePaginationControls() {
 function displayProjects(proyectos) { 
     const tableBody = document.querySelector('#proyectosTableBody'); 
     if(!tableBody) return; 
-    totalPages = calculatePages(proyectos);//calcular paginacion 
+    
+    totalPages = calculatePages(proyectos);
     if (currentPage > totalPages && totalPages > 0) { 
         currentPage = totalPages; 
     } 
-    const paginatedProjects = getPaginatedProjects(proyectos); //obtener los proyectos paginados
+    
+    const paginatedProjects = getPaginatedProjects(proyectos);
     tableBody.innerHTML = ''; 
+    
     if(!proyectos || proyectos.length === 0) { 
         displayEmptyState(); 
         updatePaginationControls(); 
         return; 
     } 
+    
     if (paginatedProjects.length === 0) { 
         tableBody.innerHTML = ` 
             <tr> 
@@ -364,12 +540,13 @@ function displayProjects(proyectos) {
         updatePaginationControls(); 
         return; 
     } 
+    
     paginatedProjects.forEach((project, index) => { 
         const actualIndex = ((currentPage - 1) * rowsPerPage) + index + 1; 
         const row = createProjectRow(project, actualIndex); 
         tableBody.appendChild(row); 
     }); 
-    //actualizar controles de paginacion 
+    
     updatePaginationControls(); 
 } 
 
@@ -379,7 +556,6 @@ function createProjectRow(proyecto, index) {
     const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado || 'N/A'}</span>`; 
     const progressBar = createProgressBar(proyecto.progreso || 0);
     
-    // Botón de marcar como completado solo si NO tiene tareas
     let toggleCompletionButton = '';
     const tieneTareas = proyecto.total_tareas && proyecto.total_tareas > 0;
     
@@ -468,18 +644,41 @@ function getStatusColor(estado) {
 
 function displayEmptyState() { 
     const tableBody = document.querySelector('#proyectosTableBody'); 
-    tableBody.innerHTML = ` 
-        <tr> 
-            <td colspan="9" class="text-center empty-state"> 
-                <i class="mdi mdi-folder-open" style="font-size: 48px; color: #e9e9e9;"></i> 
-                <h5 class="mt-3">No hay proyectos registrados</h5> 
-                <p>Comienza creando un nuevo proyecto</p> 
-                <a href="../nuevoProyecto/" class="btn btn-success mt-3"> 
-                    <i class="mdi mdi-plus-circle-outline"></i> Crear proyecto 
-                </a> 
-            </td> 
-        </tr> 
-    `; 
+    
+    // Mensaje diferente si hay filtro activo
+    if (activeStatusFilter) {
+        const statusLabels = {
+            'pendiente': 'pendientes',
+            'en proceso': 'en proceso',
+            'completado': 'completados',
+            'vencido': 'vencidos'
+        };
+        tableBody.innerHTML = ` 
+            <tr> 
+                <td colspan="9" class="text-center empty-state"> 
+                    <i class="mdi mdi-filter-off" style="font-size: 48px; color: #e9e9e9;"></i> 
+                    <h5 class="mt-3">No hay proyectos ${statusLabels[activeStatusFilter] || activeStatusFilter}</h5> 
+                    <p>No se encontraron proyectos con el estado seleccionado</p> 
+                    <button class="btn btn-outline-primary mt-3" onclick="clearStatusFilter()"> 
+                        <i class="mdi mdi-filter-remove"></i> Mostrar todos los proyectos 
+                    </button> 
+                </td> 
+            </tr> 
+        `;
+    } else {
+        tableBody.innerHTML = ` 
+            <tr> 
+                <td colspan="9" class="text-center empty-state"> 
+                    <i class="mdi mdi-folder-open" style="font-size: 48px; color: #e9e9e9;"></i> 
+                    <h5 class="mt-3">No hay proyectos registrados</h5> 
+                    <p>Comienza creando un nuevo proyecto</p> 
+                    <a href="../nuevoProyecto/" class="btn btn-success mt-3"> 
+                        <i class="mdi mdi-plus-circle-outline"></i> Crear proyecto 
+                    </a> 
+                </td> 
+            </tr> 
+        `;
+    }
 } 
 
 function setupSearch() { 
@@ -505,9 +704,15 @@ function setupSearch() {
 
 function performSearch(query) { 
     const normalizedQuery = query.toLowerCase().trim(); 
+    
+    // Empezar con todos los proyectos o filtrados por estado
+    let baseProjects = activeStatusFilter 
+        ? allProjects.filter(p => p.estado && p.estado.toLowerCase() === activeStatusFilter)
+        : [...allProjects];
+    
     if (normalizedQuery === '') { 
-        filteredProjects = [...allProjects]; 
-        currentPage = 1; //reiniciar a la primer pagina cuando se limpie la busqueda 
+        filteredProjects = baseProjects;
+        currentPage = 1;
         const sorted = currentSortColumn  
             ? sortProjects(filteredProjects, currentSortColumn, sortDirection)  
             : filteredProjects; 
@@ -515,7 +720,7 @@ function performSearch(query) {
         return;
     } 
 
-    const filtered = allProjects.filter(project => { 
+    const filtered = baseProjects.filter(project => { 
         return project.nombre.toLowerCase().includes(normalizedQuery) || 
                (project.descripcion && project.descripcion.toLowerCase().includes(normalizedQuery)) || 
                (project.area && project.area.toLowerCase().includes(normalizedQuery)) || 
@@ -523,7 +728,7 @@ function performSearch(query) {
     }); 
 
     filteredProjects = filtered; 
-    currentPage = 1; //reiniciar a primer pagina cuando se busca 
+    currentPage = 1;
     const sorted = currentSortColumn  
         ? sortProjects(filteredProjects, currentSortColumn, sortDirection)  
         : filteredProjects; 
@@ -587,15 +792,7 @@ function deleteProject(id) {
         if (data.success) { 
             showSuccessAlert(data.message || 'Proyecto eliminado exitosamente'); 
             allProjects = allProjects.filter(u => u.id_proyecto != id); 
-            filteredProjects = filteredProjects.filter(u => u.id_proyecto != id); 
-            totalPages = calculatePages(filteredProjects); //recalcular paginas despues de liminar
-            if (currentPage > totalPages && totalPages > 0) { 
-                currentPage = totalPages; 
-            } 
-            const sorted = currentSortColumn  
-                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)  
-                : filteredProjects; 
-            displayProjects(sorted); 
+            applyStatusFilter(); // Re-aplicar filtros
         } else { 
             showErrorAlert(data.message || 'Error al eliminar el proyecto'); 
         } 
@@ -655,7 +852,7 @@ function createProjectUsersModal() {
         </div> 
     `; 
     document.body.insertAdjacentHTML('beforeend', modalHTML); 
-    // Agregar event listener para limpiar el ID cuando se cierre el modal 
+    
     const modalElement = document.getElementById('projectUsersModal'); 
     if (modalElement) { 
         modalElement.addEventListener('hidden.bs.modal', function () { 
@@ -685,13 +882,12 @@ function createUserProgressBar(progress) {
 } 
 
 function viewProjectUsers(projectId, projectName) { 
-    // Guardar el ID del proyecto actual para el auto-refresh 
     currentProjectIdForUsers = projectId; 
     const modal = new bootstrap.Modal(document.getElementById('projectUsersModal')); 
     document.getElementById('projectUsersModalLabel').textContent = `Usuarios asignados a: ${projectName}`; 
-    projectUsersData = [];//reiniciar variables 
+    projectUsersData = [];
     currentUsersPage = 1; 
-    document.getElementById('projectUsersSearch').value = '';//limpiar busqueda 
+    document.getElementById('projectUsersSearch').value = '';
     loadProjectUsers(projectId); 
     modal.show(); 
 } 
@@ -709,7 +905,7 @@ function loadProjectUsers(projectId) {
             if (data.success && data.usuarios) { 
                 projectUsersData = data.usuarios; 
                 displayProjectUsers(projectUsersData); 
-                const searchInput = document.getElementById('projectUsersSearch');//setup de busqueda de usuarios 
+                const searchInput = document.getElementById('projectUsersSearch');
                 if (searchInput) { 
                     searchInput.removeEventListener('input', handleProjectUsersSearch); 
                     searchInput.addEventListener('input', handleProjectUsersSearch); 
@@ -765,7 +961,6 @@ function displayProjectUsers(users) {
         return; 
     } 
 
-    // Calculate pagination for users 
     totalUsersPages = Math.ceil(users.length / usersRowsPerPage); 
     if (currentUsersPage > totalUsersPages && totalUsersPages > 0) { 
         currentUsersPage = totalUsersPages; 
@@ -806,7 +1001,8 @@ function updateProjectUsersPagination(totalUsers) {
     const paginationContainer = document.querySelector('#projectUsersModal .pagination-container'); 
     if (!paginationContainer) return; 
     paginationContainer.innerHTML = ''; 
-    const infoText = document.createElement('div');//texto de informacion 
+    
+    const infoText = document.createElement('div');
     infoText.className = 'pagination-info text-center mb-3'; 
     const startItem = ((currentUsersPage - 1) * usersRowsPerPage) + 1; 
     const endItem = Math.min(currentUsersPage * usersRowsPerPage, totalUsers); 
@@ -815,13 +1011,14 @@ function updateProjectUsersPagination(totalUsers) {
     `; 
     paginationContainer.appendChild(infoText); 
 
-    if (totalUsersPages <= 1) {//solo mostrar botones cuando hay varias paginas 
+    if (totalUsersPages <= 1) {
         return; 
     } 
 
     const buttonContainer = document.createElement('div'); 
     buttonContainer.className = 'pagination-buttons d-flex justify-content-center gap-2'; 
-    const prevBtn = document.createElement('button');//boton previo 
+    
+    const prevBtn = document.createElement('button');
     prevBtn.className = 'btn btn-sm btn-outline-primary'; 
     prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior'; 
     prevBtn.disabled = currentUsersPage === 1; 
@@ -842,7 +1039,8 @@ function updateProjectUsersPagination(totalUsers) {
         } 
     }); 
     buttonContainer.appendChild(prevBtn); 
-    const nextBtn = document.createElement('button');//boton siguiente 
+    
+    const nextBtn = document.createElement('button');
     nextBtn.className = 'btn btn-sm btn-outline-primary'; 
     nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>'; 
     nextBtn.disabled = currentUsersPage === totalUsersPages; 
@@ -920,23 +1118,27 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     const headerElement = modal.querySelector('.modal-header'); 
     const confirmBtn = modal.querySelector('#confirmOkBtn'); 
     const cancelBtn = modal.querySelector('#confirmCancelBtn'); 
-    if (!titleElement || !messageElement || !headerElement || !confirmBtn) {//validar todos los elementos 
+    
+    if (!titleElement || !messageElement || !headerElement || !confirmBtn) {
         console.error('Critical modal elements not found'); 
         return; 
     } 
+    
     const config = { 
         confirmText: 'Aceptar', 
         cancelText: 'Cancelar', 
         type: 'warning', 
         ...options 
     }; 
+    
     titleElement.textContent = title; 
-    messageElement.innerHTML = message.replace(/\n/g, '<br>'); //actualizar contenido de texto
+    messageElement.innerHTML = message.replace(/\n/g, '<br>');
     confirmBtn.textContent = config.confirmText; 
     if (cancelBtn) { 
         cancelBtn.textContent = config.cancelText; 
     } 
-    headerElement.className = 'modal-header';//reiniciar manejo de clase 
+    
+    headerElement.className = 'modal-header';
     const iconMap = { 
         'info': { icon: 'mdi-information-outline', class: 'bg-info text-white', btnClass: 'btn-info' }, 
         'warning': { icon: 'mdi-alert-outline', class: 'bg-warning text-white', btnClass: 'btn-warning' }, 
@@ -944,15 +1146,18 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         'success': { icon: 'mdi-check-circle-outline', class: 'bg-success text-white', btnClass: 'btn-success' } 
     }; 
     const typeConfig = iconMap[config.type] || iconMap['warning']; 
-    let iconElement = modal.querySelector('.modal-title i');//actualizar icono 
+    
+    let iconElement = modal.querySelector('.modal-title i');
     if (!iconElement) { 
-        iconElement = document.createElement('i');//si no existe, crear el icono 
+        iconElement = document.createElement('i');
         titleElement.insertBefore(iconElement, titleElement.firstChild); 
     } 
     iconElement.className = `mdi ${typeConfig.icon} me-2`; 
-    headerElement.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success', 'text-white');//actualizar estilos 
+    
+    headerElement.classList.remove('bg-info', 'bg-warning', 'bg-danger', 'bg-success', 'text-white');
     headerElement.classList.add(...typeConfig.class.split(' ')); 
     confirmBtn.className = `btn ${typeConfig.btnClass}`; 
+    
     const newConfirmBtn = confirmBtn.cloneNode(true); 
     confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn); 
     newConfirmBtn.addEventListener('click', function(e) { 
@@ -969,8 +1174,9 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         if (onConfirm && typeof onConfirm === 'function') { 
             onConfirm(); 
         } 
-    }, { once: true }); //opcion de una vez para remover despues 
-    let modalInstance = bootstrap.Modal.getInstance(modal);//obtener o crear la instancia del modal 
+    }, { once: true });
+    
+    let modalInstance = bootstrap.Modal.getInstance(modal);
     if (modalInstance) { 
         modalInstance.dispose(); 
     } 
@@ -985,9 +1191,6 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
     } 
 } 
 
-/**
- * Alternar el estado de completado del proyecto
- */
 function toggleProjectCompletion(idProyecto, nuevoEstado) {
     const proyecto = allProjects.find(proj => proj.id_proyecto === idProyecto);
     if (!proyecto) return;
@@ -999,7 +1202,6 @@ function toggleProjectCompletion(idProyecto, nuevoEstado) {
         confirmMessage = `¿Marcar el proyecto "${escapeHtml(proyecto.nombre)}" como completado?\n\nEl progreso se establecerá en 100%.`;
         titleText = 'Cambiar estado a completado';
     } else {
-        // Verificar si el proyecto está vencido
         const fechaCumplimiento = new Date(proyecto.fecha_cumplimiento + 'T00:00:00');
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
@@ -1043,20 +1245,12 @@ function updateProjectStatus(idProyecto, nuevoEstado) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Actualizar datos locales con el estado real devuelto por el servidor
             const project = allProjects.find(proj => proj.id_proyecto === idProyecto);
             if (project) {
                 project.estado = data.nuevo_estado;
                 project.progreso = data.nuevo_progreso;
             }
             
-            const filteredProject = filteredProjects.find(proj => proj.id_proyecto === idProyecto);
-            if (filteredProject) {
-                filteredProject.estado = data.nuevo_estado;
-                filteredProject.progreso = data.nuevo_progreso;
-            }
-
-            // Mostrar mensaje de éxito con el estado real
             let statusText;
             switch(data.nuevo_estado) {
                 case 'completado':
@@ -1073,57 +1267,8 @@ function updateProjectStatus(idProyecto, nuevoEstado) {
             }
             showSuccessAlert(`Proyecto marcado como ${statusText}`);
             
-            // Actualizar la tabla
-            const sorted = currentSortColumn
-                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
-                : filteredProjects;
-            displayProjects(sorted);
-        } else {
-            showErrorAlert(data.message || 'Error al actualizar el estado del proyecto');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showErrorAlert('Error al conectar con el servidor');
-    });
-}
-
-function updateProjectStatus(idProyecto, nuevoEstado) {
-    fetch(Config.API_ENDPOINTS.UPDATE_STATUS, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            id_proyecto: idProyecto,
-            estado: nuevoEstado
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Actualizar datos locales
-            const project = allProjects.find(proj => proj.id_proyecto === idProyecto);
-            if (project) {
-                project.estado = data.nuevo_estado;
-                project.progreso = data.nuevo_progreso;
-            }
-            
-            const filteredProject = filteredProjects.find(proj => proj.id_proyecto === idProyecto);
-            if (filteredProject) {
-                filteredProject.estado = data.nuevo_estado;
-                filteredProject.progreso = data.nuevo_progreso;
-            }
-
-            // Mostrar mensaje de éxito
-            const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';
-            showSuccessAlert(`Proyecto marcado como ${statusText}`);
-            
-            // Actualizar la tabla
-            const sorted = currentSortColumn
-                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
-                : filteredProjects;
-            displayProjects(sorted);
+            // Re-aplicar filtros
+            applyStatusFilter();
         } else {
             showErrorAlert(data.message || 'Error al actualizar el estado del proyecto');
         }
@@ -1143,4 +1288,6 @@ window.viewProjectUsers = viewProjectUsers;
 window.stopAutoRefresh = stopAutoRefresh;
 window.startAutoRefresh = startAutoRefresh;
 window.toggleProjectCompletion = toggleProjectCompletion; 
-window.updateProjectStatus = updateProjectStatus; 
+window.updateProjectStatus = updateProjectStatus;
+window.filterByStatus = filterByStatus;
+window.clearStatusFilter = clearStatusFilter;

@@ -1,4 +1,4 @@
-/*user_manage_projects.js para manejar proyectos para usuarios normales*/ 
+/*user_manage_projects.js para manejar proyectos para usuarios normales con filtrado por URL*/ 
 
 const Config = { 
     API_ENDPOINTS: { 
@@ -29,22 +29,184 @@ let totalUsersPages = 0;
 let autoRefreshInterval = null; 
 let currentProjectIdForUsers = null; 
 
+// Variable para filtro de estado desde URL
+let activeStatusFilter = null;
+
 document.addEventListener('DOMContentLoaded', function() { 
     initializeCustomDialogs(); 
     setupSearch(); 
     setupSorting(); 
     setupPagination(); 
+    setupStatusFilter(); // Nueva función para el filtro de estado
     createProjectUsersModal(); 
+    checkURLFilters(); // Verificar filtros en URL antes de cargar
     cargarProyectos(); 
-    startAutoRefresh(); // Iniciar refresco cada minuto 
+    startAutoRefresh();
 }); 
+
+/**
+ * Verifica si hay filtros en la URL y los aplica
+ */
+function checkURLFilters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const estadoParam = urlParams.get('estado');
+    
+    if (estadoParam) {
+        activeStatusFilter = estadoParam.toLowerCase();
+        
+        // Actualizar el selector de filtro si existe
+        const filterSelect = document.getElementById('statusFilterSelect');
+        if (filterSelect) {
+            filterSelect.value = activeStatusFilter;
+        }
+        
+        // Mostrar indicador de filtro activo
+        showActiveFilterIndicator(activeStatusFilter);
+    }
+}
+
+/**
+ * Configura el selector de filtro por estado
+ */
+function setupStatusFilter() {
+    // Crear el selector de filtro si no existe
+    const rowsPerPageControl = document.querySelector('.rows-per-page-control');
+    if (rowsPerPageControl && !document.getElementById('statusFilterSelect')) {
+        const filterContainer = document.createElement('div');
+        filterContainer.className = 'd-flex align-items-center gap-2 ms-4';
+        filterContainer.innerHTML = `
+            <label for="statusFilterSelect" class="form-label mb-0">Filtrar por estado:</label>
+            <select id="statusFilterSelect" class="form-select form-select-sm" style="width: auto;">
+                <option value="">Todos los estados</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="en proceso">En Proceso</option>
+                <option value="completado">Completado</option>
+                <option value="vencido">Vencido</option>
+            </select>
+            <button id="clearFilterBtn" class="btn btn-sm btn-outline-secondary" style="display: none;" title="Limpiar filtro">
+                <i class="mdi mdi-close"></i> Limpiar
+            </button>
+        `;
+        rowsPerPageControl.appendChild(filterContainer);
+        
+        // Event listener para el selector
+        const filterSelect = document.getElementById('statusFilterSelect');
+        filterSelect.addEventListener('change', function() {
+            activeStatusFilter = this.value || null;
+            applyStatusFilter();
+            updateURL();
+        });
+        
+        // Event listener para el botón de limpiar
+        const clearBtn = document.getElementById('clearFilterBtn');
+        clearBtn.addEventListener('click', function() {
+            clearStatusFilter();
+        });
+    }
+}
+
+/**
+ * Muestra indicador de filtro activo
+ */
+function showActiveFilterIndicator(estado) {
+    const clearBtn = document.getElementById('clearFilterBtn');
+    if (clearBtn) {
+        clearBtn.style.display = estado ? 'inline-block' : 'none';
+    }
+    
+    // Actualizar el selector
+    const filterSelect = document.getElementById('statusFilterSelect');
+    if (filterSelect && estado) {
+        filterSelect.value = estado;
+    }
+}
+
+/**
+ * Aplica el filtro de estado a los proyectos
+ */
+function applyStatusFilter() {
+    if (!activeStatusFilter) {
+        filteredProjects = [...allProjects];
+    } else {
+        filteredProjects = allProjects.filter(project => 
+            project.estado && project.estado.toLowerCase() === activeStatusFilter
+        );
+    }
+    
+    // Aplicar también el filtro de búsqueda si existe
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput && searchInput.value.trim()) {
+        const query = searchInput.value.toLowerCase().trim();
+        filteredProjects = filteredProjects.filter(project => 
+            project.nombre.toLowerCase().includes(query) ||
+            (project.descripcion && project.descripcion.toLowerCase().includes(query)) ||
+            (project.area && project.area.toLowerCase().includes(query)) ||
+            (project.participante && project.participante.toLowerCase().includes(query))
+        );
+    }
+    
+    // Aplicar ordenamiento si existe
+    if (currentSortColumn) {
+        filteredProjects = sortProjects(filteredProjects, currentSortColumn, sortDirection);
+    }
+    
+    currentPage = 1;
+    displayProjects(filteredProjects);
+    showActiveFilterIndicator(activeStatusFilter);
+}
+
+/**
+ * Limpia el filtro de estado
+ */
+function clearStatusFilter() {
+    activeStatusFilter = null;
+    const filterSelect = document.getElementById('statusFilterSelect');
+    if (filterSelect) {
+        filterSelect.value = '';
+    }
+    
+    // Limpiar URL
+    const url = new URL(window.location);
+    url.searchParams.delete('estado');
+    window.history.replaceState({}, '', url);
+    
+    applyStatusFilter();
+}
+
+/**
+ * Actualiza la URL con el filtro actual
+ */
+function updateURL() {
+    const url = new URL(window.location);
+    
+    if (activeStatusFilter) {
+        url.searchParams.set('estado', activeStatusFilter);
+    } else {
+        url.searchParams.delete('estado');
+    }
+    
+    window.history.replaceState({}, '', url);
+}
+
+/**
+ * Función para filtrar por estado desde la URL (llamada desde el dashboard)
+ */
+function filterByStatus(estado) {
+    activeStatusFilter = estado ? estado.toLowerCase() : null;
+    
+    const filterSelect = document.getElementById('statusFilterSelect');
+    if (filterSelect) {
+        filterSelect.value = activeStatusFilter || '';
+    }
+    
+    applyStatusFilter();
+    updateURL();
+}
 
 function startAutoRefresh() { 
     if (autoRefreshInterval) { 
         clearInterval(autoRefreshInterval); 
     } 
-
-     
 
     autoRefreshInterval = setInterval(() => { 
         refreshProjectsData(); 
@@ -70,32 +232,16 @@ function refreshProjectsData() {
             } 
             return response.json(); 
         }) 
-
         .then(data => { 
             if (data.success && data.proyectos) { 
                 const searchInput = document.getElementById('searchInput'); 
                 const currentSearchQuery = searchInput ? searchInput.value : ''; 
                 allProjects = data.proyectos; 
 
-                if (currentSearchQuery.trim() !== '') { 
-                    performSearch(currentSearchQuery); 
-                } else { 
-                    filteredProjects = [...allProjects]; 
-                } 
-
-                if (currentSortColumn) { 
-                    filteredProjects = sortProjects(filteredProjects, currentSortColumn, sortDirection); 
-                } 
-
-                const newTotalPages = calculatePages(filteredProjects); 
-                if (currentPage > newTotalPages && newTotalPages > 0) { 
-                    currentPage = newTotalPages; 
-                } 
-
-                displayProjects(filteredProjects); 
+                // Aplicar filtro de estado si está activo
+                applyStatusFilter();
             } 
         }) 
-
         .catch(error => { 
             console.error('Error al refrescar proyectos:', error); 
         }); 
@@ -113,7 +259,6 @@ function refreshProjectUsersData() {
             } 
             return response.json(); 
         }) 
-
         .then(data => { 
             if (data.success && data.usuarios) { 
                 const searchInput = document.getElementById('projectUsersSearch'); 
@@ -132,7 +277,6 @@ function refreshProjectUsersData() {
                 } 
             } 
         }) 
-
         .catch(error => { 
             console.error('Error al refrescar usuarios del proyecto:', error); 
         }); 
@@ -164,11 +308,9 @@ function cargarProyectos() {
             } 
             return response.json(); 
         }) 
-
         .then(data => { 
             if (data.success && data.proyectos) { 
                 allProjects = data.proyectos; 
-                filteredProjects = [...allProjects]; 
                 currentPage = 1; 
 
                 // Guardar el ID del usuario para verificaciones de permisos 
@@ -176,11 +318,8 @@ function cargarProyectos() {
                     currentUserId = data.id_usuario; 
                 } 
 
-                if (allProjects.length === 0) { 
-                    displayEmptyState(); 
-                } else { 
-                    displayProjects(allProjects); 
-                } 
+                // Aplicar filtro de estado si viene de URL
+                applyStatusFilter();
             } else { 
                 tableBody.innerHTML = ` 
                     <tr> 
@@ -191,7 +330,6 @@ function cargarProyectos() {
                 `; 
             } 
         }) 
-
         .catch(error => { 
             console.error('Error cargando proyectos:', error); 
             tableBody.innerHTML = ` 
@@ -309,10 +447,23 @@ function updatePaginationControls() {
     const startItem = ((currentPage - 1) * rowsPerPage) + 1; 
     const endItem = Math.min(currentPage * rowsPerPage, filteredProjects.length); 
 
+    // Mostrar información del filtro activo
+    let filterInfo = '';
+    if (activeStatusFilter) {
+        const statusLabels = {
+            'pendiente': 'Pendientes',
+            'en proceso': 'En Proceso',
+            'completado': 'Completados',
+            'vencido': 'Vencidos'
+        };
+        filterInfo = ` <span class="badge bg-info ms-2">Filtro: ${statusLabels[activeStatusFilter] || activeStatusFilter}</span>`;
+    }
+
     infoText.innerHTML = ` 
-        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredProjects.length}</strong> proyectos</p> 
+        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredProjects.length}</strong> proyectos${filterInfo}</p> 
     `; 
     paginationContainer.appendChild(infoText); 
+    
     const buttonContainer = document.createElement('div'); 
     buttonContainer.className = 'pagination-buttons'; 
     const prevBtn = document.createElement('button'); 
@@ -321,6 +472,7 @@ function updatePaginationControls() {
     prevBtn.disabled = currentPage === 1; 
     prevBtn.addEventListener('click', () => changePage(currentPage - 1)); 
     buttonContainer.appendChild(prevBtn); 
+    
     const pageButtonsContainer = document.createElement('div'); 
     pageButtonsContainer.className = 'page-buttons'; 
     let startPage = Math.max(1, currentPage - 2); 
@@ -421,6 +573,7 @@ function displayProjects(proyectos) {
 
     updatePaginationControls(); 
 } 
+
 function createProjectRow(proyecto, index) { 
     const row = document.createElement('tr'); 
     const statusColor = getStatusColor(proyecto.estado); 
@@ -477,7 +630,6 @@ function createProjectRow(proyecto, index) {
         : `<div class="action-buttons"> 
                ${viewUsersButton}
                <small class="text-muted d-block mt-1">Solo lectura</small> 
-               ${viewUsersButton}
            </div>`; 
 
     row.innerHTML = ` 
@@ -530,18 +682,41 @@ function getStatusColor(estado) {
 
 function displayEmptyState() { 
     const tableBody = document.querySelector('#proyectosTableBody'); 
-    tableBody.innerHTML = ` 
-        <tr> 
-            <td colspan="9" class="text-center empty-state"> 
-                <i class="mdi mdi-folder-open" style="font-size: 48px; color: #e9e9e9;"></i> 
-                <h5 class="mt-3">No tienes proyectos asignados</h5> 
-                <p>Los proyectos que crees o en los que participes aparecerán aquí</p> 
-                <a href="../nuevoProyectoUser/" class="btn btn-success mt-3"> 
-                    <i class="mdi mdi-plus-circle-outline"></i> Crear proyecto 
-                </a> 
-            </td> 
-        </tr> 
-    `; 
+    
+    // Mensaje diferente si hay filtro activo
+    if (activeStatusFilter) {
+        const statusLabels = {
+            'pendiente': 'pendientes',
+            'en proceso': 'en proceso',
+            'completado': 'completados',
+            'vencido': 'vencidos'
+        };
+        tableBody.innerHTML = ` 
+            <tr> 
+                <td colspan="9" class="text-center empty-state"> 
+                    <i class="mdi mdi-filter-off" style="font-size: 48px; color: #e9e9e9;"></i> 
+                    <h5 class="mt-3">No tienes proyectos ${statusLabels[activeStatusFilter] || activeStatusFilter}</h5> 
+                    <p>No se encontraron proyectos con el estado seleccionado</p> 
+                    <button class="btn btn-outline-primary mt-3" onclick="clearStatusFilter()"> 
+                        <i class="mdi mdi-filter-remove"></i> Mostrar todos mis proyectos 
+                    </button> 
+                </td> 
+            </tr> 
+        `;
+    } else {
+        tableBody.innerHTML = ` 
+            <tr> 
+                <td colspan="9" class="text-center empty-state"> 
+                    <i class="mdi mdi-folder-open" style="font-size: 48px; color: #e9e9e9;"></i> 
+                    <h5 class="mt-3">No tienes proyectos asignados</h5> 
+                    <p>Los proyectos que crees o en los que participes aparecerán aquí</p> 
+                    <a href="../nuevoProyectoUser/" class="btn btn-success mt-3"> 
+                        <i class="mdi mdi-plus-circle-outline"></i> Crear proyecto 
+                    </a> 
+                </td> 
+            </tr> 
+        `;
+    }
 } 
 
 function setupSearch() { 
@@ -571,17 +746,22 @@ function setupSearch() {
 function performSearch(query) { 
     const normalizedQuery = query.toLowerCase().trim(); 
     
+    // Empezar con todos los proyectos o filtrados por estado
+    let baseProjects = activeStatusFilter 
+        ? allProjects.filter(p => p.estado && p.estado.toLowerCase() === activeStatusFilter)
+        : [...allProjects];
+    
     if (normalizedQuery === '') { 
-        filteredProjects = [...allProjects]; 
-        currentPage = 1; 
-        const sorted = currentSortColumn 
-            ? sortProjects(filteredProjects, currentSortColumn, sortDirection) 
+        filteredProjects = baseProjects;
+        currentPage = 1;
+        const sorted = currentSortColumn  
+            ? sortProjects(filteredProjects, currentSortColumn, sortDirection)  
             : filteredProjects; 
         displayProjects(sorted); 
-        return; 
+        return;
     } 
 
-    const filtered = allProjects.filter(project => { 
+    const filtered = baseProjects.filter(project => { 
         return project.nombre.toLowerCase().includes(normalizedQuery) || 
                (project.descripcion && project.descripcion.toLowerCase().includes(normalizedQuery)) || 
                (project.area && project.area.toLowerCase().includes(normalizedQuery)) || 
@@ -628,9 +808,9 @@ function editarProyecto(idProyecto) {
 } 
 
 function verDetallesProyecto(idProyecto) { 
-    // Redirigir a una página de detalles (solo lectura) 
     showAlert('Esta funcionalidad estará disponible próximamente', 'info'); 
 } 
+
 /**
  * Alternar el estado de completado del proyecto
  * Solo disponible para el creador del proyecto
@@ -703,12 +883,6 @@ function updateProjectStatus(idProyecto, nuevoEstado) {
                 project.estado = data.nuevo_estado;
                 project.progreso = data.nuevo_progreso;
             }
-            
-            const filteredProject = filteredProjects.find(proj => proj.id_proyecto === idProyecto);
-            if (filteredProject) {
-                filteredProject.estado = data.nuevo_estado;
-                filteredProject.progreso = data.nuevo_progreso;
-            }
 
             // Mostrar mensaje de éxito con el estado real
             let statusText;
@@ -727,57 +901,8 @@ function updateProjectStatus(idProyecto, nuevoEstado) {
             }
             showSuccessAlert(`Proyecto marcado como ${statusText}`);
             
-            // Actualizar la tabla
-            const sorted = currentSortColumn
-                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
-                : filteredProjects;
-            displayProjects(sorted);
-        } else {
-            showErrorAlert(data.message || 'Error al actualizar el estado del proyecto');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showErrorAlert('Error al conectar con el servidor');
-    });
-}
-
-function updateProjectStatus(idProyecto, nuevoEstado) {
-    fetch(Config.API_ENDPOINTS.UPDATE_STATUS, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            id_proyecto: idProyecto,
-            estado: nuevoEstado
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Actualizar datos locales
-            const project = allProjects.find(proj => proj.id_proyecto === idProyecto);
-            if (project) {
-                project.estado = data.nuevo_estado;
-                project.progreso = data.nuevo_progreso;
-            }
-            
-            const filteredProject = filteredProjects.find(proj => proj.id_proyecto === idProyecto);
-            if (filteredProject) {
-                filteredProject.estado = data.nuevo_estado;
-                filteredProject.progreso = data.nuevo_progreso;
-            }
-
-            // Mostrar mensaje de éxito
-            const statusText = nuevoEstado === 'completado' ? 'completado' : 'pendiente';
-            showSuccessAlert(`Proyecto marcado como ${statusText}`);
-            
-            // Actualizar la tabla
-            const sorted = currentSortColumn
-                ? sortProjects(filteredProjects, currentSortColumn, sortDirection)
-                : filteredProjects;
-            displayProjects(sorted);
+            // Re-aplicar filtros
+            applyStatusFilter();
         } else {
             showErrorAlert(data.message || 'Error al actualizar el estado del proyecto');
         }
@@ -816,22 +941,12 @@ function deleteProject(id) {
         if (data.success) { 
             showSuccessAlert(data.message || 'Proyecto eliminado exitosamente'); 
             allProjects = allProjects.filter(u => u.id_proyecto != id); 
-            filteredProjects = filteredProjects.filter(u => u.id_proyecto != id); 
-            totalPages = calculatePages(filteredProjects); 
-
-            if (currentPage > totalPages && totalPages > 0) { 
-                currentPage = totalPages; 
-            } 
-
-            const sorted = currentSortColumn 
-                ? sortProjects(filteredProjects, currentSortColumn, sortDirection) 
-                : filteredProjects; 
-            displayProjects(sorted); 
+            // Re-aplicar filtros
+            applyStatusFilter();
         } else { 
             showErrorAlert(data.message || 'Error al eliminar el proyecto'); 
         } 
     }) 
-
     .catch(error => { 
         console.error('Error:', error); 
         showErrorAlert('Error al conectar con el servidor'); 
@@ -942,7 +1057,6 @@ function loadProjectUsers(projectId) {
             } 
             return response.json(); 
         }) 
-
         .then(data => { 
             if (data.success && data.usuarios) { 
                 projectUsersData = data.usuarios; 
@@ -963,7 +1077,6 @@ function loadProjectUsers(projectId) {
                 `; 
             } 
         }) 
-
         .catch(error => { 
             console.error('Error cargando usuarios del proyecto:', error); 
             tableBody.innerHTML = ` 
@@ -1071,7 +1184,6 @@ function updateProjectUsersPagination(totalUsers) {
     prevBtn.innerHTML = '<i class="mdi mdi-chevron-left"></i> Anterior'; 
     prevBtn.disabled = currentUsersPage === 1; 
     prevBtn.addEventListener('click', () => { 
-
         if (currentUsersPage > 1) { 
             currentUsersPage--;
             const filtered = document.getElementById('projectUsersSearch').value.toLowerCase().trim(); 
@@ -1095,7 +1207,6 @@ function updateProjectUsersPagination(totalUsers) {
     nextBtn.innerHTML = 'Siguiente <i class="mdi mdi-chevron-right"></i>'; 
     nextBtn.disabled = currentUsersPage === totalUsersPages; 
     nextBtn.addEventListener('click', () => { 
-
         if (currentUsersPage < totalUsersPages) { 
             currentUsersPage++; 
             const filtered = document.getElementById('projectUsersSearch').value.toLowerCase().trim(); 
@@ -1230,7 +1341,6 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
             if (modalInstance) { 
                 modalInstance.hide(); 
             } 
-
         } catch (err) { 
             console.error('Error hiding modal:', err); 
         } 
@@ -1238,7 +1348,6 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
         if (onConfirm && typeof onConfirm === 'function') { 
             onConfirm(); 
         } 
-
     }, { once: true }); 
 
     let modalInstance = bootstrap.Modal.getInstance(modal); 
@@ -1269,3 +1378,5 @@ window.stopAutoRefresh = stopAutoRefresh;
 window.startAutoRefresh = startAutoRefresh;
 window.toggleProjectCompletion = toggleProjectCompletion;
 window.updateProjectStatus = updateProjectStatus;
+window.filterByStatus = filterByStatus;
+window.clearStatusFilter = clearStatusFilter;
