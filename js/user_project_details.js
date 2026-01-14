@@ -4,17 +4,6 @@
 let currentProjectDetails = null;
 let currentProjectTasks = [];
 let projectDetailsModalInstance = null;
-document.addEventListener('DOMContentLoaded', function() {
-    const btnEditProject = document.getElementById('btnEditProject');
-    if (btnEditProject) {
-        btnEditProject.addEventListener('click', function() {
-            const projectId = this.getAttribute('data-project-id');
-            if (projectId) {
-                editarProyecto(projectId);
-            }
-        });
-    }
-});
 function viewProjectDetails(projectId) {
     const modal = document.getElementById('projectDetailsModal');
     if (!modal) {
@@ -125,9 +114,6 @@ function displayProjectDetails(proyecto) {
     }
  
     displayProjectTasks(proyecto.tareas);
- 
-    document.getElementById('btnEditProject').setAttribute('data-project-id', proyecto.id_proyecto);
-    
 }
 
 function getProgressColor(progreso) {
@@ -256,9 +242,8 @@ function displayProjectTasks(tareas, filter = 'all') {
     tbody.innerHTML = html;
 }
  
-
 function editarProyecto(idProyecto) { 
-    window.location.href = `../nuevoProyecto/?edit=${idProyecto}`; 
+    window.location.href = `../nuevoProyectoUser/?edit=${idProyecto}`; 
 } 
 
 function filterProjectTasks(filter) {

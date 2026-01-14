@@ -258,7 +258,7 @@ function displayProjectTasks(tareas, filter = 'all') {
  
 
 function editarProyecto(idProyecto) { 
-    window.location.href = `../nuevoProyecto/?edit=${idProyecto}`; 
+    window.location.href = `../nuevoProyectoGerente/?edit=${idProyecto}`; 
 } 
 
 function filterProjectTasks(filter) {

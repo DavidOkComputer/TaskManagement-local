@@ -465,7 +465,7 @@ require_once('../php/check_auth.php');
               <div class="col-md-3 col-6 mb-3">
                 <div class="card bg-light h-100">
                   <div class="card-body text-center py-3">
-                    <i class="mdi mdi-clipboard-list-outline text-primary" style="font-size: 2rem;"></i>
+                    <i class="mdi mdi-clipboard-text text-primary" style="font-size: 2rem;"></i>
                     <h3 id="statTotalTareas" class="mb-0 mt-2">0</h3>
                     <small class="text-muted">Total Tareas</small>
                   </div>
@@ -502,7 +502,7 @@ require_once('../php/check_auth.php');
 
             <!-- Información detallada en columnas -->
             <div class="row mb-4">
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <div class="card h-100">
                   <div class="card-header bg-light">
                     <h6 class="mb-0"><i class="mdi mdi-information-outline me-2"></i>Información General</h6>
@@ -530,18 +530,6 @@ require_once('../php/check_auth.php');
                         <td id="detailParticipante" class="fw-semibold">-</td>
                       </tr>
                     </table>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="card h-100">
-                  <div class="card-header bg-light">
-                    <h6 class="mb-0"><i class="mdi mdi-target me-2"></i>Objetivos (<span id="detailObjetivosCount">0</span>)</h6>
-                  </div>
-                  <div class="card-body" style="max-height: 200px; overflow-y: auto;">
-                    <div id="detailObjetivosList">
-                      <p class="text-muted text-center mb-0">Sin objetivos registrados</p>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -582,10 +570,6 @@ require_once('../php/check_auth.php');
                   <div class="card-header bg-light d-flex justify-content-between align-items-center">
                     <h6 class="mb-0"><i class="mdi mdi-clipboard-check-outline me-2"></i>Tareas del Proyecto</h6>
                     <div class="btn-group btn-group-sm" role="group">
-                      <button type="button" class="btn btn-outline-secondary active" data-filter="all" onclick="filterProjectTasks('all')">Todas</button>
-                      <button type="button" class="btn btn-outline-warning" data-filter="pendiente" onclick="filterProjectTasks('pendiente')">Pendientes</button>
-                      <button type="button" class="btn btn-outline-info" data-filter="en proceso" onclick="filterProjectTasks('en proceso')">En Proceso</button>
-                      <button type="button" class="btn btn-outline-success" data-filter="completado" onclick="filterProjectTasks('completado')">Completadas</button>
                     </div>
                   </div>
                   <div class="card-body">
@@ -596,7 +580,6 @@ require_once('../php/check_auth.php');
                             <th>Tarea</th>
                             <th>Asignado a</th>
                             <th>Fecha Límite</th>
-                            <th>Prioridad</th>
                             <th>Estado</th>
                           </tr>
                         </thead>
@@ -643,7 +626,7 @@ require_once('../php/check_auth.php');
   <script src="../js/user_list_projects.js"></script>
   <script src="../js/custom_dialogs.js"></script>
   <script src="../js/notifications.js"></script>
-  <script src="../js/project_details.js"></script>
+  <script src="../js/user_project_details.js"></script>
   <!-- End custom js for this page-->
 </body>
 </html>

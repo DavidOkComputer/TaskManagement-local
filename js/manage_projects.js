@@ -41,9 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
     startAutoRefresh();
 }); 
 
-/**
- * Verifica si hay filtros en la URL y los aplica
- */
 function checkURLFilters() {
     const urlParams = new URLSearchParams(window.location.search);
     const estadoParam = urlParams.get('estado');
@@ -62,9 +59,6 @@ function checkURLFilters() {
     }
 }
 
-/**
- * Configura el selector de filtro por estado
- */
 function setupStatusFilter() {
     // Crear el selector de filtro si no existe
     const rowsPerPageControl = document.querySelector('.rows-per-page-control');
@@ -102,9 +96,6 @@ function setupStatusFilter() {
     }
 }
 
-/**
- * Muestra indicador de filtro activo
- */
 function showActiveFilterIndicator(estado) {
     const clearBtn = document.getElementById('clearFilterBtn');
     if (clearBtn) {
@@ -118,9 +109,6 @@ function showActiveFilterIndicator(estado) {
     }
 }
 
-/**
- * Aplica el filtro de estado a los proyectos
- */
 function applyStatusFilter() {
     if (!activeStatusFilter) {
         filteredProjects = [...allProjects];
@@ -152,9 +140,6 @@ function applyStatusFilter() {
     showActiveFilterIndicator(activeStatusFilter);
 }
 
-/**
- * Limpia el filtro de estado
- */
 function clearStatusFilter() {
     activeStatusFilter = null;
     const filterSelect = document.getElementById('statusFilterSelect');
@@ -170,9 +155,6 @@ function clearStatusFilter() {
     applyStatusFilter();
 }
 
-/**
- * Actualiza la URL con el filtro actual
- */
 function updateURL() {
     const url = new URL(window.location);
     
@@ -185,9 +167,6 @@ function updateURL() {
     window.history.replaceState({}, '', url);
 }
 
-/**
- * Función para filtrar por estado desde la URL (llamada desde el dashboard)
- */
 function filterByStatus(estado) {
     activeStatusFilter = estado ? estado.toLowerCase() : null;
     

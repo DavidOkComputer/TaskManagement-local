@@ -79,10 +79,9 @@ try {
             nombre,
             descripcion,
             fecha_cumplimiento,
-            estado,
-            progreso
+            estado
         FROM tbl_objetivos
-        WHERE id_proyecto = ?
+        WHERE id_objetivo = ?
         ORDER BY fecha_cumplimiento ASC
     ";
  
@@ -115,19 +114,12 @@ try {
             t.descripcion,
             t.fecha_cumplimiento,
             t.estado,
-            t.prioridad,
             CONCAT(u.nombre, ' ', u.apellido) as asignado_a,
             u.num_empleado
         FROM tbl_tareas t
         LEFT JOIN tbl_usuarios u ON t.id_participante = u.id_usuario
         WHERE t.id_proyecto = ?
         ORDER BY
-            CASE t.prioridad
-                WHEN 'alta' THEN 1
-                WHEN 'media' THEN 2
-                WHEN 'baja' THEN 3
-                ELSE 4
-            END,
             t.fecha_cumplimiento ASC
     ";
  

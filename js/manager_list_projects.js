@@ -588,46 +588,57 @@ function displayProjects(proyectos) {
     updatePaginationControls(); 
 } 
 
-function createProjectRow(proyecto, index) { 
-    const row = document.createElement('tr'); 
-    const statusBadge = getStatusBadge(proyecto.estado); 
-    const progressBar = createProgressBar(proyecto.progreso || 0); 
-
-    // Botón para ver usuarios (solo para proyectos grupales) 
-    const viewUsersButton = proyecto.id_tipo_proyecto === 1 ?  
-        `<button class="btn btn-sm btn-info btn-action" onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados"> 
-            <i class="mdi mdi-account-multiple"></i> 
-        </button>` : ''; 
-
-    const actionsButtons = ` 
-        <div class="action-buttons d-flex gap-1"> 
-            <button class="btn btn-sm btn-success btn-action" onclick="editarProyecto(${proyecto.id_proyecto})" title="Editar"> 
-                <i class="mdi mdi-pencil"></i> 
-            </button> 
-            ${viewUsersButton} 
-            <button class="btn btn-sm btn-primary btn-action" onclick="verTareas(${proyecto.id_proyecto})" title="Ver tareas"> 
-                <i class="mdi mdi-clipboard-list"></i> 
-            </button> 
-        </div> 
-    `; 
-
-    row.innerHTML = ` 
-        <td>${index}</td> 
-        <td> 
-            <strong>${truncateText(proyecto.nombre, 25)}</strong> 
-        </td> 
-        <td>${truncateText(proyecto.descripcion, 35)}</td> 
-        <td>${formatDate(proyecto.fecha_cumplimiento)}</td> 
-        <td> 
-            ${progressBar} 
-        </td> 
-        <td> 
-            ${statusBadge} 
-        </td> 
-        <td>${proyecto.participante || '-'}</td> 
-    `; 
-    return row; 
-} 
+function createProjectRow(proyecto, index) {
+    const row = document.createElement('tr');
+    row.style.cursor = 'pointer';  
+    
+    row.addEventListener('click', function(e) {
+        if (e.target.closest('button') || e.target.closest('.action-buttons')) {
+            return;
+        }
+        viewProjectDetails(proyecto.id_proyecto);
+    });
+    
+    const statusBadge = getStatusBadge(proyecto.estado);
+    const progressBar = createProgressBar(proyecto.progreso || 0);
+ 
+    // Botón para ver usuarios (solo para proyectos grupales)
+    const viewUsersButton = proyecto.id_tipo_proyecto === 1
+        ? `<button class="btn btn-sm btn-info btn-action" onclick="viewProjectUsers(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')" title="Ver usuarios asignados">
+               <i class="mdi mdi-account-multiple"></i>
+           </button>`
+        : '';
+ 
+    const actionsButtons = `
+        <div class="action-buttons d-flex gap-1">
+            <button class="btn btn-sm btn-success btn-action" onclick="editarProyecto(${proyecto.id_proyecto})" title="Editar">
+                <i class="mdi mdi-pencil"></i>
+            </button>
+            ${viewUsersButton}
+            <button class="btn btn-sm btn-primary btn-action" onclick="verTareas(${proyecto.id_proyecto})" title="Ver tareas">
+                <i class="mdi mdi-clipboard-list"></i>
+            </button>
+        </div>
+    `;
+ 
+    row.innerHTML = `
+        <td>${index}</td>
+        <td>
+            <strong>${truncateText(proyecto.nombre, 25)}</strong>
+        </td>
+        <td>${truncateText(proyecto.descripcion, 35)}</td>
+        <td>${formatDate(proyecto.fecha_cumplimiento)}</td>
+        <td>
+            ${progressBar}
+        </td>
+        <td>
+            ${statusBadge}
+        </td>
+        <td>${proyecto.participante || '-'}</td>
+    `;
+ 
+    return row;
+}
 
 function displayEmptyState() { 
     const tableBody = document.querySelector('#proyectosTableBody'); 

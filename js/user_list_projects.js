@@ -719,6 +719,15 @@ function displayProjects(proyectos) {
 function createProjectRow(proyecto, index) { 
     const row = document.createElement('tr'); 
     
+    row.style.cursor = 'pointer';  
+    
+    row.addEventListener('click', function(e) {
+        if (e.target.closest('button') || e.target.closest('.action-buttons')) {
+            return;
+        }
+        viewProjectDetails(proyecto.id_proyecto);
+    });
+
     // Resaltar si es un proyecto donde participo
     if (proyecto.es_mi_proyecto) {
         row.classList.add('table-info');

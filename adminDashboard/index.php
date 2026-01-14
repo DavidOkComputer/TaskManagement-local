@@ -426,8 +426,8 @@
             <!-- fin del panel principal --> 
          </div>
          <!-- body-wrapper de la pagina termina --> 
-            </div>
-            <div class="modal fade" id="projectDetailsModal" tabindex="-1" aria-labelledby="projectDetailsLabel" aria-hidden="true">
+      </div>
+      <div class="modal fade" id="projectDetailsModal" tabindex="-1" aria-labelledby="projectDetailsLabel" aria-hidden="true">
          <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                   <div class="modal-header bg-primary text-white">
@@ -517,7 +517,7 @@
 
                         <!-- Información detallada en columnas -->
                         <div class="row mb-4">
-                              <div class="col-md-6">
+                              <div class="col-md-12">
                                  <div class="card h-100">
                                     <div class="card-header bg-light">
                                           <h6 class="mb-0"><i class="mdi mdi-information-outline me-2"></i>Información General</h6>
@@ -545,18 +545,6 @@
                                                 <td id="detailParticipante" class="fw-semibold">-</td>
                                              </tr>
                                           </table>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="col-md-6">
-                                 <div class="card h-100">
-                                    <div class="card-header bg-light">
-                                          <h6 class="mb-0"><i class="mdi mdi-target me-2"></i>Objetivos (<span id="detailObjetivosCount">0</span>)</h6>
-                                    </div>
-                                    <div class="card-body" style="max-height: 200px; overflow-y: auto;">
-                                          <div id="detailObjetivosList">
-                                             <p class="text-muted text-center mb-0">Sin objetivos registrados</p>
-                                          </div>
                                     </div>
                                  </div>
                               </div>
@@ -597,10 +585,6 @@
                                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                           <h6 class="mb-0"><i class="mdi mdi-clipboard-check-outline me-2"></i>Tareas del Proyecto</h6>
                                           <div class="btn-group btn-group-sm" role="group">
-                                             <button type="button" class="btn btn-outline-secondary active" data-filter="all" onclick="filterProjectTasks('all')">Todas</button>
-                                             <button type="button" class="btn btn-outline-warning" data-filter="pendiente" onclick="filterProjectTasks('pendiente')">Pendientes</button>
-                                             <button type="button" class="btn btn-outline-info" data-filter="en proceso" onclick="filterProjectTasks('en proceso')">En Proceso</button>
-                                             <button type="button" class="btn btn-outline-success" data-filter="completado" onclick="filterProjectTasks('completado')">Completadas</button>
                                           </div>
                                     </div>
                                     <div class="card-body">
@@ -611,7 +595,6 @@
                                                          <th>Tarea</th>
                                                          <th>Asignado a</th>
                                                          <th>Fecha Límite</th>
-                                                         <th>Prioridad</th>
                                                          <th>Estado</th>
                                                       </tr>
                                                 </thead>
@@ -633,7 +616,7 @@
                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="mdi mdi-close me-1"></i>Cerrar
                      </button>
-                     <button type="button" class="btn btn-success" id="btnEditProject" onclick="editarProyectoFromModal()">
+                     <button type="button" class="btn btn-success" id="btnEditProject">
                         <i class="mdi mdi-pencil me-1"></i>Editar Proyecto
                      </button>
                   </div>
@@ -661,7 +644,8 @@
       <script src="../js/custom_dialogs.js"></script> 
       <script src="../js/notifications.js"></script> 
       <script src="../js/datetime_widget.js"></script>
+      <script src="../js/ppe_chart_click.js"></script>
+      <script src="../js/project_details.js"></script>
       <!-- End custom js for this page--> 
-       <script src="../js/project_details.js"></script>
    </body>
 </html>
