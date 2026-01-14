@@ -1,9 +1,8 @@
 /*ppe_chart_click.js para redirigir a lista filtrada desde grafica de dona*/
-
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initPPEChartClickHandler, 1000);
 });
-
+ 
 function initPPEChartClickHandler() {
     const chartCanvas = document.getElementById('doughnutChart');
     
@@ -12,7 +11,7 @@ function initPPEChartClickHandler() {
         return;
     }
     
-    const chartInstance = Chart.getChart(chartCanvas);
+    const chartInstance = window.doughnutChart;
     
     if (!chartInstance) {
         console.warn('PPE Chart instance not found, retrying...');
@@ -25,25 +24,18 @@ function initPPEChartClickHandler() {
     });
     
     chartCanvas.style.cursor = 'pointer';
-    
     console.log('PPE Chart click handler initialized');
 }
-
+ 
 function handleChartClick(event, chart) {
-    const activePoints = chart.getElementsAtEventForMode(
-        event,
-        'nearest',
-        { intersect: true },
-        false
-    );
+    const activePoints = chart.getElementsAtEvent(event);
     
     if (activePoints.length === 0) {
-        return; 
+        return;
     }
     
     const clickedElement = activePoints[0];
-    const datasetIndex = clickedElement.datasetIndex;
-    const index = clickedElement.index;
+    const index = clickedElement._index;
     const label = chart.data.labels[index];
     
     if (!label) {
@@ -71,19 +63,19 @@ function handleChartClick(event, chart) {
     
     redirectToProjectsWithFilter(statusFilter);
 }
-
+ 
 function redirectToProjectsWithFilter(status) {
     const encodedStatus = encodeURIComponent(status);
-    
     const baseUrl = '../revisarProyectos/';
     const filterUrl = `${baseUrl}?estado=${encodedStatus}`;
     
     showFilterRedirectToast(status);
+    
     setTimeout(() => {
         window.location.href = filterUrl;
     }, 300);
 }
-
+ 
 function showFilterRedirectToast(status) {
     const statusLabels = {
         'pendiente': 'Pendientes',
@@ -95,14 +87,13 @@ function showFilterRedirectToast(status) {
     const label = statusLabels[status] || status;
     
     let toast = document.getElementById('filterRedirectToast');
-    
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'filterRedirectToast';
         toast.className = 'position-fixed bottom-0 end-0 p-3';
         toast.style.zIndex = '9999';
         toast.innerHTML = `
-            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast show" role="alert">
                 <div class="toast-header bg-primary text-white">
                     <i class="mdi mdi-filter me-2"></i>
                     <strong class="me-auto">Filtrando proyectos</strong>
@@ -122,23 +113,7 @@ function showFilterRedirectToast(status) {
             Mostrando proyectos <strong>${label}</strong>...
         `;
     }
-    
     toast.style.display = 'block';
-}
-
-function addClickHandlerToChart(chartInstance) {
-    if (!chartInstance) {
-        console.error('Chart instance is required');
-        return;
-    }
-    
-    const canvas = chartInstance.canvas;
-    
-    canvas.addEventListener('click', function(event) {
-        handleChartClick(event, chartInstance);
-    });
-    
-    canvas.style.cursor = 'pointer';
 }
 
 window.initPPEChartClickHandler = initPPEChartClickHandler;

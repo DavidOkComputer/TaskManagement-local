@@ -190,6 +190,10 @@ function updateUserTasksChart(pendientes, completadas, vencidas) {
         data: chartData,
         options: options
     });
+    window.userTasksChart = userTasksChart;
+    if (typeof window.reinitUserChartClickHandler === 'function') {
+    window.reinitUserChartClickHandler();
+}
 }
 
 function loadMyTasks() {

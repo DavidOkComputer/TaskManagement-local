@@ -480,7 +480,7 @@
                               <div class="col-md-3 col-6 mb-3">
                                  <div class="card bg-light h-100">
                                     <div class="card-body text-center py-3">
-                                          <i class="mdi mdi-clipboard-list-outline text-primary" style="font-size: 2rem;"></i>
+                                          <i class="mdi mdi-clipboard-text text-primary" style="font-size: 2rem;"></i>
                                           <h3 id="statTotalTareas" class="mb-0 mt-2">0</h3>
                                           <small class="text-muted">Total Tareas</small>
                                     </div>

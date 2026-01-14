@@ -525,7 +525,7 @@ require_once('../php/check_auth.php');
                 <div class="col-md-3 col-6 mb-3">
                   <div class="card bg-light h-100">
                     <div class="card-body text-center py-3">
-                      <i class="mdi mdi-clipboard-list-outline text-primary" style="font-size: 2rem;"></i>
+                      <i class="mdi mdi-clipboard-text text-primary" style="font-size: 2rem;"></i>
                       <h3 id="statTotalTareas" class="mb-0 mt-2">0</h3>
                       <small class="text-muted">Total Tareas</small>
                     </div>
@@ -712,6 +712,7 @@ require_once('../php/check_auth.php');
     <script src="../js/datetime_widget.js"></script>
     <script src="../js/widget_empleados.js"></script>
     <script src="../js/manager_project_details.js"></script>
+    <script src="../js/ppe_chart_click_manager.js"></script>
     <!-- End custom js for this page-->
   </body>
 </html>

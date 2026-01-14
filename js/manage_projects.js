@@ -68,13 +68,12 @@ function setupStatusFilter() {
         filterContainer.innerHTML = `
             <label for="statusFilterSelect" class="form-label mb-0">Filtrar por estado:</label>
             <select id="statusFilterSelect" class="form-select form-select-sm" style="width: auto;">
-                <option value="">Todos los estados</option>
+                <option value="">Estados</option>
                 <option value="pendiente">Pendiente</option>
-                <option value="en proceso">En Proceso</option>
                 <option value="completado">Completado</option>
                 <option value="vencido">Vencido</option>
             </select>
-            <button id="clearFilterBtn" class="btn btn-sm btn-outline-secondary" style="display: none;" title="Limpiar filtro">
+            <button id="clearFilterBtn" class="btn btn-sm btn-secondary" style="display: none;" title="Limpiar filtro">
                 <i class="mdi mdi-close"></i> Limpiar
             </button>
         `;
