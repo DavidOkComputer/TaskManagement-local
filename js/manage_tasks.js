@@ -32,135 +32,70 @@ document.addEventListener('DOMContentLoaded', function() {
 	loadUsers(); //cargar usuarios para dropdown 
 	function createTaskModal() {
 		const modalHTML = ` 
-
             <div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true"> 
-
                 <div class="modal-dialog modal-dialog-centered" role="document"> 
-
                     <div class="modal-content"> 
-
                         <div class="modal-header"> 
-
                             <h5 class="modal-title" id="addTaskModalLabel">Agregar Nueva Tarea</h5> 
-
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> 
-
                         </div> 
-
                         <div class="modal-body"> 
-
                             <form id="addTaskForm"> 
-
                                 <div class="mb-3"> 
-
                                     <label for="taskName" class="form-label">Nombre de la Tarea</label> 
-
                                     <input type="text" class="form-control" id="taskName" maxlength="100"  
-
                                            placeholder="Ingrese el nombre de la tarea" required> 
-
                                 </div> 
-
                                 <div class="mb-3"> 
-
                                     <label for="taskDescription" class="form-label">Descripción</label> 
-
                                     <textarea class="form-control" id="taskDescription" rows="3" maxlength="250"  
-
                                               placeholder="Ingrese la descripción de la tarea" required></textarea> 
-
                                 </div> 
-
                                 <div class="mb-3"> 
-
                                     <label for="taskProject" class="form-label">Proyecto <span class="text-danger">*</span></label> 
-
                                     <select class="form-control" id="taskProject" required> 
-
                                         <option value="">Seleccione un proyecto</option> 
-
                                     </select> 
-
                                     <small class="form-text text-muted">Seleccionar un proyecto para ver usuarios disponibles</small> 
-
                                 </div> 
-
                                 <div class="mb-3"> 
-
                                     <label for="taskDate" class="form-label">Fecha de Vencimiento</label> 
-
                                     <input type="date" class="form-control" id="taskDate"> 
-
                                     <small class="form-text text-muted" id="taskDateNote" style="display: none;"></small> 
-
                                     <small class="form-text text-warning" id="taskDateWarning" style="display: none;"> 
-
                                         <i class="mdi mdi-alert"></i> La fecha es anterior al inicio del proyecto. La tarea se marcará como vencida. 
-
                                     </small> 
-
                                 </div> 
-
                                 <div class="mb-3"> 
-
                                     <label for="taskStatus" class="form-label">Estado</label> 
-
                                     <select class="form-control" id="taskStatus" required> 
-
                                         <option value="pendiente">Pendiente</option> 
-
                                         <option value="en proceso">En Progreso</option> 
-
                                         <option value="completado">Completado</option> 
-
                                     </select> 
-
                                 </div> 
-
                                 <div class="mb-3"> 
-
                                     <label for="taskAssignee" class="form-label"> 
-
                                         <i class="mdi mdi-account-check"></i> Asignar a 
-
                                     </label> 
-
                                     <select class="form-control" id="taskAssignee" disabled required> 
-
                                         <option value="">Seleccione un proyecto primero</option> 
-
                                     </select> 
-
                                     <small class="form-text text-muted" id="taskAssigneeNote" style="display: none; margin-top: 5px;"></small> 
-
                                 </div> 
-
                             </form> 
-
                             <div id="taskMessage" class="alert" style="display: none;"></div> 
-
                         </div> 
-
                         <div class="modal-footer"> 
-
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button> 
-
                             <button type="button" class="btn btn-primary" id="saveTaskBtn"> 
-
                                 <span class="btn-text">Guardar Tarea</span> 
-
                                 <span class="spinner-border spinner-border-sm" style="display: none;" role="status" aria-hidden="true"></span> 
-
                             </button> 
-
                         </div> 
-
                     </div> 
-
                 </div> 
-
             </div> 
-
         `;
 		document.body.insertAdjacentHTML('beforeend', modalHTML);
 		initializeModalEventListeners();
@@ -168,91 +103,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function createCustomDialogSystem() {
 		const dialogHTML = ` 
-
             <!-- Custom Alert Dialog --> 
-
             <div class="modal fade" id="customAlertModal" tabindex="-1" role="dialog" aria-labelledby="customAlertLabel" aria-hidden="true"> 
-
                 <div class="modal-dialog modal-dialog-centered" role="document"> 
-
                     <div class="modal-content"> 
-
                         <div class="modal-header"> 
-
                             <h5 class="modal-title" id="customAlertLabel"> 
-
                                 <i class="mdi mdi-information-outline me-2"></i> 
-
                                 <span id="alertTitle">Información</span> 
-
                             </h5> 
-
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> 
-
                         </div> 
-
                         <div class="modal-body"> 
-
                             <p id="alertMessage" class="mb-0"></p> 
-
                         </div> 
-
                         <div class="modal-footer"> 
-
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button> 
-
                         </div> 
-
                     </div> 
-
                 </div> 
-
             </div> 
-
-             
 
             <!-- Custom Confirm Dialog --> 
-
             <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog" aria-labelledby="customConfirmLabel" aria-hidden="true"> 
-
                 <div class="modal-dialog modal-dialog-centered" role="document"> 
-
                     <div class="modal-content"> 
-
                         <div class="modal-header"> 
-
                             <h5 class="modal-title" id="customConfirmLabel"> 
-
                                 <i class="mdi mdi-help-circle-outline me-2"></i> 
-
                                 <span id="confirmTitle">Confirmar acción</span> 
-
                             </h5> 
-
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> 
-
                         </div> 
-
                         <div class="modal-body"> 
-
                             <p id="confirmMessage" class="mb-0"></p> 
-
                         </div> 
-
                         <div class="modal-footer"> 
-
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="confirmCancelBtn">Cancelar</button> 
-
                             <button type="button" class="btn btn-primary" id="confirmOkBtn">Aceptar</button> 
-
                         </div> 
-
                     </div> 
-
                 </div> 
-
             </div> 
-
         `;
 		document.body.insertAdjacentHTML('beforeend', dialogHTML);
 	}
@@ -264,11 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		alertDiv.classList.add('alert', `alert-${type}`, 'alert-dismissible', 'fade', 'show');
 		alertDiv.setAttribute('role', 'alert');
 		alertDiv.innerHTML = ` 
-
             ${message} 
-
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> 
-
         `;
 		alertContainer.innerHTML = '';
 		alertContainer.appendChild(alertDiv);
@@ -539,11 +428,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (!canAssignTasks) {
 			// Usuario no puede asignar tareas a este proyecto 
 			projectPermissionNote.innerHTML = ` 
-
                 <i class="mdi mdi-lock text-warning"></i> 
-
                 <strong>Nota:</strong> Solo el creador del proyecto puede asignar tareas 
-
             `;
 			projectPermissionNote.style.display = 'block';
 		} else {
@@ -579,11 +465,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			assigneeField.disabled = true;
 			assigneeField.value = '';
 			assigneeNote.innerHTML = ` 
-
                 <i class="mdi mdi-lock"></i> 
-
                 Solo el creador del proyecto puede asignar tareas 
-
             `;
 			assigneeNote.style.display = 'block';
 		} else {
@@ -664,71 +547,38 @@ document.addEventListener('DOMContentLoaded', function() {
 		//mostrar el participante asignado si existe - ESCAPAR EL HTML para prevenir rotura de estructura 
 		const assigneeDisplay = task.participante ? ` <small class="text-muted">(Asignado a: ${escapeHtml(task.participante)})</small>` : '';
 		return ` 
-
             <li class="d-block ${borderClass} ${overdueClass}" data-task-id="${task.id_tarea}"> 
-
                 <div class="d-flex align-items-start w-100 gap-2"> 
-
                     <i class="mdi mdi-24px ${checkboxIcon} ${checkboxColor} task-checkbox-icon flex-shrink-0"  
-
                        data-task-id="${task.id_tarea}"  
-
                        style="cursor: pointer; margin-top: 2px; transition: color 0.2s ease;" 
-
                        title="Click para marcar como completado"></i> 
-
                     <div class="flex-grow-1"> 
-
                         <div> 
-
                             <label style="cursor: pointer; ${isCompleted ? 'text-decoration: line-through; color: #6c757d;' : ''}"> 
-
                                 ${escapeHtml(task.nombre)}${overdueIndicator}${assigneeDisplay} 
-
                             </label> 
-
                         </div> 
-
                         <div class="d-flex mt-2 align-items-center flex-wrap"> 
-
                             <div class="text-small me-3 ${overdue ? 'text-danger fw-bold' : ''}">${formattedDate}${overdue ? ' (Vencida)' : ''}</div> 
-
                             <div class="badge ${badgeInfo.class} me-3 task-badge">${badgeInfo.text}</div> 
-
                             <i class="mdi mdi-flag ms-2 flag-color"></i> 
-
                             <button class="btn btn-sm btn-link text-primary ms-auto task-edit-btn"  
-
                                     data-task-id="${task.id_tarea}" 
-
                                     data-task-name="${escapeHtml(task.nombre)}" 
-
                                     data-task-description="${escapeHtml(task.descripcion)}" 
-
                                     data-task-date="${task.fecha_cumplimiento}" 
-
                                     data-task-status="${task.estado}" 
-
                                     data-task-project="${task.id_proyecto}" 
-
                                     data-task-assignee="${task.id_participante || ''}" 
-
                                     title="Editar tarea"> 
-
                                 <i class="mdi mdi-pencil"></i> 
-
                             </button> 
-
                         </div> 
-
                         <div class="text-muted small mt-1">${escapeHtml(task.descripcion)}</div> 
-
                     </div> 
-
                 </div> 
-
             </li> 
-
         `;
 	}
 	//obtener la clase y texto de la insigniaa basado en el estado de la tarea 
@@ -961,11 +811,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						if (!canAssign) {
 							assigneeSelect.disabled = true;
 							assigneeNote.innerHTML = ` 
-
                                 <i class="mdi mdi-lock text-danger"></i> 
-
                                 Solo el creador del proyecto puede asignar tareas 
-
                             `;
 							assigneeNote.style.display = 'block';
 						} else {
@@ -1125,8 +972,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		const taskDate = document.getElementById('taskDate').value;
 		const taskStatus = document.getElementById('taskStatus').value;
 		const taskAssignee = document.getElementById('taskAssignee').value;
-		// Ya no validamos que la fecha no sea anterior a la fecha de inicio del proyecto 
-		// Las tareas con fechas anteriores simplemente se marcarán como vencidas 
 		//revisar si esta en modo de edicion 
 		const mode = form.getAttribute('data-mode');
 		const taskId = form.getAttribute('data-task-id');
@@ -1228,71 +1073,38 @@ document.addEventListener('DOMContentLoaded', function() {
 		const dateClass = overdue ? 'text-danger fw-bold' : '';
 		const dateText = overdue ? `${formattedDate} (Vencida)` : formattedDate;
 		const newTaskHTML = ` 
-
             <li class="d-block ${overdueClass}" data-task-id="${taskId}"> 
-
                 <div class="d-flex align-items-start w-100 gap-2"> 
-
                     <i class="mdi mdi-24px ${checkboxIcon} ${checkboxColor} task-checkbox-icon flex-shrink-0"  
-
                        data-task-id="${taskId}"  
-
                        style="cursor: pointer; margin-top: 2px; transition: color 0.2s ease;" 
-
                        title="Click para marcar como completado"></i> 
-
                     <div class="flex-grow-1"> 
-
                         <div> 
-
                             <label style="cursor: pointer; ${isCompleted ? 'text-decoration: line-through; color: #6c757d;' : ''}"> 
-
                                 ${escapeHtml(taskName)}${overdueIndicator} 
-
                             </label> 
-
                         </div> 
-
                         <div class="d-flex mt-2 align-items-center flex-wrap"> 
-
                             <div class="text-small me-3 ${dateClass}">${dateText}</div> 
-
                             <div class="badge ${badgeInfo.class} me-3 task-badge">${badgeInfo.text}</div> 
-
                             <i class="mdi mdi-flag ms-2 flag-color"></i> 
-
                             <button class="btn btn-sm btn-link text-primary ms-auto task-edit-btn"  
-
                                     data-task-id="${taskId}" 
-
                                     data-task-name="${escapeHtml(taskName)}" 
-
                                     data-task-description="${escapeHtml(taskDescription)}" 
-
                                     data-task-date="${taskDate}" 
-
                                     data-task-status="${taskStatus}" 
-
                                     data-task-project="${taskProject}" 
-
                                     data-task-assignee="${taskAssignee || ''}" 
-
                                     title="Editar tarea"> 
-
                                 <i class="mdi mdi-pencil"></i> 
-
                             </button> 
-
                         </div> 
-
                         <div class="text-muted small mt-1">${escapeHtml(taskDescription)}</div> 
-
                     </div> 
-
                 </div> 
-
             </li> 
-
         `;
 		tasksList.insertAdjacentHTML('beforeend', newTaskHTML);
 		//agregar event listener a nueva tarea 
@@ -1313,9 +1125,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const taskLi = tasksList.querySelector(`li[data-task-id="${taskId}"]`);
 		if (!taskLi) return;
 		const formattedDate = formatDateForDisplay(taskDate);
-		//info de la insignia 
 		const badgeInfo = getTaskBadgeInfo(taskStatus);
-		// Verificar si está vencida 
 		const overdue = isTaskOverdue(taskDate, taskStatus);
 		// Actualizar clase de vencido en el li 
 		if (overdue) {
@@ -1431,37 +1241,25 @@ document.addEventListener('DOMContentLoaded', function() {
 	//mostrar mensaje default cuando no hay ningun proyecto seleccionado 
 	function showDefaultMessage() {
 		tasksList.innerHTML = ` 
-
             <li class="d-block text-center py-4"> 
-
                 <p class="text-muted">Seleccione un proyecto para ver sus tareas</p> 
-
             </li> 
-
         `;
 	}
 	//mostrar mensaje cuando el proyecto no tiene tareas 
 	function showNoTasksMessage() {
 		tasksList.innerHTML = ` 
-
             <li class="d-block text-center py-4"> 
-
                 <p class="text-muted">No hay tareas para este proyecto</p> 
-
             </li> 
-
         `;
 	}
 
 	function showErrorMessage() {
 		tasksList.innerHTML = ` 
-
             <li class="d-block text-center py-4"> 
-
                 <p class="text-danger">Error al cargar las tareas</p> 
-
             </li> 
-
         `;
 	}
 

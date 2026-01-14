@@ -55028,7 +55028,460 @@ li[data-task-id] .text-danger.fw-bold[title="Tarea vencida"] {
 .bg-inverse-dark.breadcrumb-custom .breadcrumb-item:last-child {
   background: transparent;
 }
+/* Wrapper del Gantt */ 
+.gantt-wrapper { 
+    overflow-x: auto; 
+    overflow-y: auto; 
+    max-height: 600px; 
+    position: relative; 
+    background: #fff; 
+} 
 
+/* Contenedor principal del Gantt */ 
+.gantt-container { 
+    display: flex; 
+    flex-direction: column; 
+    min-width: 100%; 
+    position: relative; 
+} 
+
+/* Header del Gantt (fechas) */ 
+.gantt-header { 
+    display: flex; 
+    position: sticky; 
+    top: 0; 
+    z-index: 10; 
+    background: #f8f9fa; 
+    border-bottom: 2px solid #dee2e6; 
+} 
+
+.gantt-header-labels { 
+    min-width: 250px; 
+    max-width: 250px; 
+    padding: 10px 15px; 
+    background: #f8f9fa; 
+    border-right: 2px solid #dee2e6; 
+    font-weight: 600; 
+    color: #495057; 
+    position: sticky; 
+    left: 0; 
+    z-index: 11; 
+} 
+
+.gantt-header-timeline { 
+    display: flex; 
+    flex: 1; 
+} 
+
+.gantt-header-cell { 
+    flex: 1; 
+    min-width: 40px; 
+    padding: 8px 4px; 
+    text-align: center; 
+    font-size: 11px; 
+    color: #495057; 
+    border-right: 1px solid #e9ecef; 
+    background: #f8f9fa; 
+} 
+
+.gantt-header-cell.weekend { 
+    background: #fff3cd; 
+} 
+
+.gantt-header-cell.today { 
+    background: #cfe2ff; 
+    font-weight: 700; 
+    color: #0d6efd; 
+} 
+
+.gantt-header-cell .day-name { 
+    display: block; 
+    font-size: 10px; 
+    color: #6c757d; 
+    text-transform: uppercase; 
+} 
+
+.gantt-header-cell .day-number { 
+    display: block; 
+    font-size: 12px; 
+    font-weight: 600; 
+} 
+
+.gantt-header-cell .month-name { 
+    display: block; 
+    font-size: 10px; 
+    color: #0d6efd; 
+    font-weight: 600; 
+} 
+
+/* Cuerpo del Gantt */ 
+.gantt-body { 
+    display: flex; 
+    flex-direction: column; 
+} 
+
+/* Grupo de filas (por usuario o estado) */ 
+.gantt-group { 
+    border-bottom: 1px solid #dee2e6; 
+} 
+ 
+.gantt-group-header { 
+    display: flex; 
+    background: #e9ecef; 
+    font-weight: 600; 
+    font-size: 13px; 
+} 
+
+.gantt-group-header .gantt-row-label { 
+    background: #e9ecef; 
+    color: #495057; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+} 
+
+.gantt-group-header .gantt-row-label i { 
+    font-size: 16px; 
+} 
+
+.gantt-group-header .gantt-row-timeline { 
+    background: #e9ecef; 
+} 
+
+/* Fila individual */ 
+.gantt-row { 
+    display: flex; 
+    min-height: 50px; 
+    border-bottom: 1px solid #f1f1f1; 
+    transition: background-color 0.15s ease; 
+} 
+
+.gantt-row:hover { 
+    background-color: #f8f9fa; 
+} 
+
+.gantt-row:last-child { 
+    border-bottom: none; 
+} 
+
+/* Label de la fila (nombre de tarea/usuario) */ 
+.gantt-row-label { 
+    min-width: 250px; 
+    max-width: 250px; 
+    padding: 10px 15px; 
+    background: #fff; 
+    border-right: 2px solid #dee2e6; 
+    display: flex; 
+    align-items: center; 
+    position: sticky; 
+    left: 0; 
+    z-index: 5; 
+} 
+
+.gantt-row:hover .gantt-row-label { 
+    background-color: #f8f9fa; 
+} 
+
+.gantt-row-label-content { 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+    flex: 1; 
+} 
+
+.gantt-row-label-name { 
+    font-size: 13px; 
+    font-weight: 500; 
+    color: #212529; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+} 
+
+.gantt-row-label-assignee { 
+    font-size: 11px; 
+    color: #6c757d; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+} 
+
+.gantt-row-label-assignee i { 
+    font-size: 12px; 
+} 
+
+/* Timeline de la fila */ 
+.gantt-row-timeline { 
+    display: flex; 
+    flex: 1; 
+    position: relative; 
+    align-items: center; 
+} 
+
+/* Celdas de la grilla */ 
+.gantt-cell { 
+    flex: 1; 
+    min-width: 40px; 
+    height: 100%; 
+    border-right: 1px solid #f1f1f1; 
+    position: relative; 
+} 
+
+.gantt-cell.weekend { 
+    background: rgba(255, 243, 205, 0.3); 
+} 
+
+.gantt-cell.today { 
+    background: rgba(207, 226, 255, 0.3); 
+} 
+
+/* Línea de hoy */ 
+.gantt-today-line { 
+    position: absolute; 
+    top: 0; 
+    bottom: 0; 
+    width: 2px; 
+    background: #dc3545; 
+    z-index: 8; 
+    pointer-events: none; 
+} 
+
+.gantt-today-line::before { 
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: -4px; 
+    width: 10px; 
+    height: 10px; 
+    background: #dc3545; 
+    border-radius: 50%; 
+} 
+
+/* Barra de tarea */ 
+.gantt-bar { 
+    position: absolute; 
+    height: 28px; 
+    border-radius: 4px; 
+    display: flex; 
+    align-items: center; 
+    padding: 0 8px; 
+    font-size: 11px; 
+    color: #fff; 
+    cursor: pointer; 
+    z-index: 6; 
+    transition: transform 0.15s ease, box-shadow 0.15s ease; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15); 
+    top: 50%; 
+    transform: translateY(-50%); 
+} 
+
+.gantt-bar:hover { 
+    transform: translateY(-50%) scale(1.02); 
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25); 
+    z-index: 7; 
+} 
+
+.gantt-bar-text { 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+    font-weight: 500; 
+} 
+
+/* Estados de las barras */ 
+.gantt-bar.status-pendiente { 
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); 
+    color: #212529; 
+} 
+
+.gantt-bar.status-en-proceso, 
+.gantt-bar.status-en-progreso { 
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); 
+} 
+
+.gantt-bar.status-completado { 
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); 
+} 
+
+.gantt-bar.status-vencido { 
+    background: linear-gradient(135deg, #dc3545 0%, #bd2130 100%); 
+} 
+
+/* Barra sin fecha */ 
+.gantt-bar.no-date { 
+    background: linear-gradient(135deg, #6c757d 0%, #545b62 100%); 
+} 
+
+.gantt-bar-progress { 
+    position: absolute; 
+    left: 0; 
+    top: 0; 
+    bottom: 0; 
+    background: rgba(255,255,255,0.25); 
+    border-radius: 4px 0 0 4px; 
+} 
+
+.gantt-tooltip { 
+    position: fixed; 
+    background: #212529; 
+    color: #fff; 
+    padding: 10px 14px; 
+    border-radius: 6px; 
+    font-size: 12px; 
+    z-index: 1000; 
+    pointer-events: none; 
+    max-width: 300px; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
+} 
+
+.gantt-tooltip::before { 
+    content: ''; 
+    position: absolute; 
+    top: 100%; 
+    left: 20px; 
+    border: 6px solid transparent; 
+    border-top-color: #212529; 
+} 
+
+.gantt-tooltip-title { 
+    font-weight: 600; 
+    margin-bottom: 6px; 
+    font-size: 13px; 
+} 
+
+.gantt-tooltip-row { 
+    display: flex; 
+    gap: 8px; 
+    margin-bottom: 3px; 
+} 
+
+.gantt-tooltip-label { 
+    color: #adb5bd; 
+} 
+
+.gantt-tooltip-value { 
+    font-weight: 500; 
+} 
+
+.gantt-legend { 
+    padding: 8px 0; 
+} 
+
+.legend-item { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 6px; 
+    font-size: 12px; 
+    color: #495057; 
+} 
+
+.legend-color { 
+    width: 16px; 
+    height: 16px; 
+    border-radius: 3px; 
+    display: inline-block; 
+} 
+
+.legend-color.today-marker { 
+    width: 3px; 
+    height: 16px; 
+    background: #dc3545; 
+    border-radius: 0; 
+} 
+
+.gantt-container.view-month .gantt-header-cell { 
+    min-width: 80px; 
+} 
+
+.gantt-container.view-month .gantt-cell { 
+    min-width: 80px; 
+} 
+ 
+.gantt-container.view-day .gantt-header-cell { 
+    min-width: 60px; 
+} 
+
+.gantt-container.view-day .gantt-cell { 
+    min-width: 60px; 
+} 
+
+.gantt-wrapper::-webkit-scrollbar { 
+    width: 10px; 
+    height: 10px; 
+} 
+
+.gantt-wrapper::-webkit-scrollbar-track { 
+    background: #f1f1f1; 
+    border-radius: 5px; 
+} 
+
+.gantt-wrapper::-webkit-scrollbar-thumb { 
+    background: #c1c1c1; 
+    border-radius: 5px; 
+} 
+
+.gantt-wrapper::-webkit-scrollbar-thumb:hover { 
+    background: #a1a1a1; 
+} 
+
+/* Responsividad */ 
+@media (max-width: 768px) { 
+    .gantt-row-label, 
+    .gantt-header-labels { 
+        min-width: 150px; 
+        max-width: 150px; 
+    } 
+
+    .gantt-row-label-name { 
+        font-size: 11px; 
+    } 
+
+    .gantt-row-label-assignee { 
+        font-size: 10px; 
+    } 
+
+    .gantt-bar { 
+        font-size: 10px; 
+        height: 24px; 
+        padding: 0 6px; 
+    } 
+
+} 
+/* Animación de entrada */ 
+@keyframes fadeInBar { 
+    from { 
+        opacity: 0; 
+        transform: translateY(-50%) scaleX(0.8); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(-50%) scaleX(1); 
+    } 
+} 
+
+.gantt-bar { 
+    animation: fadeInBar 0.3s ease forwards; 
+} 
+
+.gantt-row.empty-row { 
+    background: #fafafa; 
+} 
+
+.gantt-row.empty-row .gantt-row-label { 
+    color: #adb5bd; 
+    font-style: italic; 
+} 
+
+#taskDetailModal .form-label { 
+    margin-bottom: 2px; 
+} 
+
+#taskDetailModal p { 
+    font-size: 14px; 
+} 
 /* estilos para el index hecho por mi */ 
          .content-wrapper { 
          padding-bottom: 0 !important; 
