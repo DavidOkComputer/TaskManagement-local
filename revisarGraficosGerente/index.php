@@ -299,6 +299,7 @@ if ($user_rol !== 2 && $user_rol !== 1) {
                         <div class="collapse" id="charts">
                             <ul class="nav flex-column sub-menu">
                                 <li class="nav-item"><a class="nav-link" href="../revisarGraficosGerente">Revisar gráficos</a></li>
+                                 <li class="nav-item"> <a class="nav-link" href="../graficaGanttGerente">Gráfica de Gantt</a></li>
                             </ul>
                         </div>
                     </li>

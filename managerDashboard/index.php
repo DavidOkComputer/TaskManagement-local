@@ -214,6 +214,9 @@ require_once('../php/check_auth.php');
                   <li class="nav-item">
                     <a class="nav-link" href="../revisarGraficosGerente">Revisar graficos</a>
                   </li>
+                  <li class="nav-item"> 
+                    <a class="nav-link" href="../graficaGanttGerente">Gráfica de Gantt</a>
+                  </li>
                 </ul>
               </div>
             </li>

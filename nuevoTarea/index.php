@@ -240,6 +240,11 @@ $user_id = $_SESSION[ 'user_id'];
 												Revisar graficos
 											</a>
 										</li>
+										<li class="nav-item"> 
+											<a class="nav-link" href="../graficaGantt">
+												Gráfica de Gantt
+											</a>
+										</li>
 									</ul>
 								</div>
 							</li>

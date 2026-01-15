@@ -526,8 +526,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		bar.dataset.taskId = task.id_tarea;
 		bar.innerHTML = `<span class="gantt-bar-text">${escapeHtml(task.nombre)}</span>`;
 		// Event listeners para tooltip y click 
-		bar.addEventListener('mouseenter', (e) => showTooltip(e, task));
-		bar.addEventListener('mousemove', (e) => moveTooltip(e));
+		//bar.addEventListener('mouseenter', (e) => showTooltip(e, task));
+		//bar.addEventListener('mousemove', (e) => moveTooltip(e));
 		bar.addEventListener('mouseleave', hideTooltip);
 		bar.addEventListener('click', () => showTaskDetail(task));
 		return bar;

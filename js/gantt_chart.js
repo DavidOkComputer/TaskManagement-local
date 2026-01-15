@@ -452,8 +452,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		bar.dataset.taskId = task.id_tarea;
 		bar.innerHTML = `<span class="gantt-bar-text">${escapeHtml(task.nombre)}</span>`;
 		// Event listeners para tooltip y click 
-		bar.addEventListener('mouseenter', (e) => showTooltip(e, task));
-		bar.addEventListener('mousemove', (e) => moveTooltip(e));
+		//bar.addEventListener('mouseenter', (e) => showTooltip(e, task));
+		//bar.addEventListener('mousemove', (e) => moveTooltip(e));
 		bar.addEventListener('mouseleave', hideTooltip);
 		bar.addEventListener('click', () => showTaskDetail(task));
 		return bar;
@@ -552,8 +552,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		const statusBadge = document.getElementById('modalTaskStatus');
 		statusBadge.textContent = statusInfo.text;
 		statusBadge.className = `badge ${statusInfo.badgeClass}`;
-		// Link para editar 
-		document.getElementById('modalEditTaskBtn').href = `../revisarTareas/?task_id=${task.id_tarea}`;
 		// Mostrar modal 
 		const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
 		modal.show();

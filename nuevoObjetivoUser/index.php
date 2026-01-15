@@ -130,6 +130,7 @@ $user_id = $_SESSION['user_id'];
             <div class="collapse" id="charts">
               <ul class="nav flex-column sub-menu">
                 <li class="nav-item"> <a class="nav-link" href="../revisarGraficosUser">Revisar graficos</a></li>
+                 <li class="nav-item"> <a class="nav-link" href="../graficaGanttUser">Gráfica de Gantt</a></li>
               </ul>
             </div>
           </li>
