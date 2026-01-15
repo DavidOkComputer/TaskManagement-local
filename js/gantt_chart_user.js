@@ -1,4 +1,4 @@
-/*gantt_chart.js diagrama de Gantt para visualización de tareas */
+/*gantt_chart_user.js  Diagrama de Gantt para visualización de tareas para usuarios*/
 document.addEventListener('DOMContentLoaded', function() {
 	// Elementos del DOM 
 	const projectSelect = document.getElementById('id_proyecto');
@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	const ganttLoading = document.getElementById('ganttLoading');
 	const ganttDefaultMessage = document.getElementById('ganttDefaultMessage');
 	const ganttNoTasks = document.getElementById('ganttNoTasks');
+	const ganttNoProjects = document.getElementById('ganttNoProjects');
 	const viewModeSelect = document.getElementById('ganttViewMode');
 	const groupBySelect = document.getElementById('ganttGroupBy');
 	const btnToday = document.getElementById('btnTodayGantt');
@@ -16,13 +17,16 @@ document.addEventListener('DOMContentLoaded', function() {
 	const summaryDateRange = document.getElementById('summaryDateRange');
 	const summaryTaskCount = document.getElementById('summaryTaskCount');
 	const summaryProgress = document.getElementById('summaryProgress');
+	const userTasksInfo = document.getElementById('userTasksInfo');
 	// Estado de la aplicación 
 	let currentProjectId = null;
 	let currentProjectData = null;
 	let currentTasks = [];
 	let currentViewMode = 'week';
-	let currentGroupBy = 'user';
+	let currentGroupBy = 'none';
 	let tooltipElement = null;
+	let allProjects = [];
+	let currentUserId = window.APP_CONFIG ? window.APP_CONFIG.userId : null;
 	// Configuración 
 	const CONFIG = {
 		cellWidths: {
@@ -47,34 +51,68 @@ document.addEventListener('DOMContentLoaded', function() {
 		attachEventListeners();
 		createTooltipElement();
 	}
-
+    
 	function loadProjects() {
-		fetch('../php/get_projects.php')
+		fetch('../php/user_get_projects.php')
 			.then(response => response.json())
 			.then(data => {
 				if (data.success && data.proyectos) {
-					populateProjectSelect(data.proyectos);
+					allProjects = data.proyectos;
+					if (data.proyectos.length > 0) {
+						populateProjectSelect(data.proyectos);
+					} else {
+						showNoProjectsState();
+					}
 				} else {
-					showAlert('Error al cargar proyectos', 'warning');
+					showAlert(data.message || 'Error al cargar proyectos', 'warning');
+					showNoProjectsState();
 				}
 			})
 			.catch(error => {
 				console.error('Error loading projects:', error);
-				showAlert('Error al cargar proyectos', 'danger');
+				showAlert('Error al cargar tus proyectos', 'danger');
+				showNoProjectsState();
 			});
 	}
     
 	function populateProjectSelect(projects) {
 		projectSelect.innerHTML = '<option value="">Seleccione un proyecto</option>';
 		projects.forEach(project => {
-			const option = document.createElement('option');
-			option.value = project.id_proyecto;
-			option.textContent = project.nombre;
-			option.dataset.progress = project.progreso;
+			const option = createProjectOption(project);
 			projectSelect.appendChild(option);
 		});
 	}
     
+	function createProjectOption(project) {
+		const option = document.createElement('option');
+		option.value = project.id_proyecto;
+		// Mostrar nombre con indicador de estado y rol 
+		let statusIndicator = '';
+		switch (project.estado) {
+			case 'vencido':
+				statusIndicator = '';
+				break;
+			case 'completado':
+				statusIndicator = '✓ ';
+				break;
+			case 'en proceso':
+				statusIndicator = '▶ ';
+				break;
+		}
+		// Indicar si el usuario es creador 
+		let roleIndicator = '';
+		if (project.es_creador) {
+			roleIndicator = ' (Creador)';
+		}
+		option.textContent = `${statusIndicator}${project.nombre}${roleIndicator}`;
+		option.dataset.progress = project.progreso;
+		option.dataset.status = project.estado;
+		option.dataset.totalTareas = project.total_tareas || 0;
+		option.dataset.esCreador = project.es_creador ? 'true' : 'false';
+		option.dataset.esMiProyecto = project.es_mi_proyecto ? 'true' : 'false';
+		return option;
+	}
+
 	function attachEventListeners() {
 		// Cambio de proyecto 
 		projectSelect.addEventListener('change', function() {
@@ -93,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				renderGanttChart(currentTasks);
 			}
 		});
-		// Cambio de agrupación 
+		// Cambio de agrupación (solo por estado disponible para usuario) 
 		groupBySelect.addEventListener('change', function() {
 			currentGroupBy = this.value;
 			if (currentTasks.length > 0) {
@@ -112,8 +150,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			.then(data => {
 				if (data.success && data.proyecto) {
 					currentProjectData = data.proyecto;
-					// Cargar tareas del proyecto 
-					return fetch(`../php/get_tasks_by_project.php?id_proyecto=${projectId}`);
+					// Obtener información adicional del proyecto desde allProjects 
+					const projectInfo = allProjects.find(p => p.id_proyecto == projectId);
+					if (projectInfo) {
+						currentProjectData.area = projectInfo.area;
+						currentProjectData.es_creador = projectInfo.es_creador;
+						currentProjectData.es_mi_proyecto = projectInfo.es_mi_proyecto;
+						currentProjectData.puede_crear_tareas = projectInfo.puede_crear_tareas;
+					}
+					// Cargar tareas del usuario en este proyecto 
+					// Usa endpoint específico que filtra por usuario actual 
+					return fetch(`../php/user_get_tasks_by_project.php?id_proyecto=${projectId}`);
 				} else {
 					throw new Error('Error al cargar proyecto');
 				}
@@ -126,6 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (currentTasks.length > 0) {
 						updateProjectSummary();
 						renderGanttChart(currentTasks);
+						showUserTasksInfo();
 					} else {
 						showNoTasksState();
 					}
@@ -136,10 +184,22 @@ document.addEventListener('DOMContentLoaded', function() {
 			.catch(error => {
 				hideLoading();
 				console.error('Error:', error);
-				showAlert('Error al cargar datos del proyecto', 'danger');
+				showAlert('Error al cargar tus tareas del proyecto', 'danger');
 			});
 	}
-    
+
+	function showUserTasksInfo() {
+		if (userTasksInfo) {
+			userTasksInfo.style.display = 'block';
+		}
+	}
+
+	function hideUserTasksInfo() {
+		if (userTasksInfo) {
+			userTasksInfo.style.display = 'none';
+		}
+	}
+
 	function updateProjectSummary() {
 		if (!currentProjectData) return;
 		summaryProjectName.textContent = currentProjectData.nombre;
@@ -149,16 +209,16 @@ document.addEventListener('DOMContentLoaded', function() {
 		const endDate = currentProjectData.fecha_cumplimiento ?
 			formatDateDisplay(currentProjectData.fecha_cumplimiento) : 'Sin definir';
 		summaryDateRange.textContent = `${startDate} - ${endDate}`;
-		// Conteo de tareas 
+		// Conteo de tareas del usuario 
 		summaryTaskCount.textContent = currentTasks.length;
-		// Progreso 
+		// Progreso del usuario (solo sus tareas) 
 		const completedTasks = currentTasks.filter(t => t.estado === 'completado').length;
 		const progress = currentTasks.length > 0 ?
 			Math.round((completedTasks / currentTasks.length) * 100) : 0;
 		summaryProgress.textContent = progress;
 		projectInfoSummary.style.display = 'block';
 	}
-    
+
 	function renderGanttChart(tasks) {
 		// Calcular rango de fechas 
 		const dateRange = calculateDateRange(tasks);
@@ -215,7 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			end: maxDate
 		};
 	}
-    
+
 	function generateDateArray(startDate, endDate) {
 		const dates = [];
 		const current = new Date(startDate);
@@ -225,19 +285,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		return dates;
 	}
-    
+
 	function createGanttHeader(dates) {
 		const header = document.createElement('div');
 		header.className = 'gantt-header';
-		//columna de etiqueta 
+		// Columna de etiqueta 
 		const labelCol = document.createElement('div');
 		labelCol.className = 'gantt-header-labels';
-		labelCol.textContent = 'Tarea / Usuario';
+		labelCol.textContent = 'Mis Tareas';
 		header.appendChild(labelCol);
-		//columna de linea de tiempo
+		// Columna de línea de tiempo 
 		const timeline = document.createElement('div');
 		timeline.className = 'gantt-header-timeline';
-		dates.forEach(date => {
+		dates.forEach((date, index) => {
 			const cell = document.createElement('div');
 			cell.className = 'gantt-header-cell';
 			cell.style.minWidth = `${CONFIG.cellWidths[currentViewMode]}px`;
@@ -256,17 +316,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="day-number">${date.getDate()}</span> 
                 `;
 			} else if (currentViewMode === 'week') {
-				// Mostrar mes solo en el primer día o cambio de mes 
-				const prevDate = new Date(date);
-				prevDate.setDate(prevDate.getDate() - 1);
-				const showMonth = date.getDate() === 1 || dates.indexOf(date) === 0;
+				const showMonth = date.getDate() === 1 || index === 0;
 				cell.innerHTML = ` 
                     <span class="day-name">${getDayNameShort(date)}</span> 
                     <span class="day-number">${date.getDate()}</span> 
                     ${showMonth ? `<span class="month-name">${getMonthNameShort(date)}</span>` : ''} 
                 `;
 			} else if (currentViewMode === 'month') {
-				// Mostrar solo días significativos 
 				if (date.getDate() === 1 || date.getDate() === 15) {
 					cell.innerHTML = ` 
                         <span class="day-number">${date.getDate()}</span> 
@@ -286,17 +342,10 @@ document.addEventListener('DOMContentLoaded', function() {
 		const body = document.createElement('div');
 		body.className = 'gantt-body';
 		if (currentGroupBy === 'none') {
-			// Sin agrupación - mostrar todas las tareas 
+			// Sin agrupación - mostrar todas las tareas del usuario 
 			tasks.forEach(task => {
 				const row = createTaskRow(task, dates);
 				body.appendChild(row);
-			});
-		} else if (currentGroupBy === 'user') {
-			// Agrupar por usuario 
-			const grouped = groupTasksByUser(tasks);
-			Object.keys(grouped).forEach(userName => {
-				const group = createTaskGroup(userName, grouped[userName], dates, 'user');
-				body.appendChild(group);
 			});
 		} else if (currentGroupBy === 'status') {
 			// Agrupar por estado 
@@ -312,18 +361,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		return body;
 	}
 
-	function groupTasksByUser(tasks) {
-		const grouped = {};
-		tasks.forEach(task => {
-			const userName = task.participante || 'Sin asignar';
-			if (!grouped[userName]) {
-				grouped[userName] = [];
-			}
-			grouped[userName].push(task);
-		});
-		return grouped;
-	}
-    
 	function groupTasksByStatus(tasks) {
 		const grouped = {};
 		tasks.forEach(task => {
@@ -335,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 		return grouped;
 	}
-    
+
 	function createTaskGroup(groupName, tasks, dates, groupType) {
 		const group = document.createElement('div');
 		group.className = 'gantt-group';
@@ -344,18 +381,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		groupHeader.className = 'gantt-row gantt-group-header';
 		const labelDiv = document.createElement('div');
 		labelDiv.className = 'gantt-row-label';
-		if (groupType === 'user') {
-			labelDiv.innerHTML = ` 
-                <i class="mdi mdi-account"></i> 
-                <span>${escapeHtml(groupName)} (${tasks.length})</span> 
-            `;
-		} else if (groupType === 'status') {
-			const statusInfo = getStatusInfo(groupName);
-			labelDiv.innerHTML = ` 
-                <i class="mdi ${statusInfo.icon}"></i> 
-                <span>${statusInfo.text} (${tasks.length})</span> 
-            `;
-		}
+		const statusInfo = getStatusInfo(groupName);
+		labelDiv.innerHTML = ` 
+            <i class="mdi ${statusInfo.icon}"></i> 
+            <span>${statusInfo.text} (${tasks.length})</span> 
+        `;
 		groupHeader.appendChild(labelDiv);
 		// Timeline vacío para el header 
 		const timelineDiv = document.createElement('div');
@@ -375,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 		return group;
 	}
-    
+
 	function createTaskRow(task, dates) {
 		const row = document.createElement('div');
 		row.className = 'gantt-row';
@@ -388,9 +418,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="gantt-row-label-name" title="${escapeHtml(task.nombre)}"> 
                     ${escapeHtml(task.nombre)} 
                 </div> 
-                ${currentGroupBy !== 'user' && task.participante ? ` 
+                ${task.creador ? ` 
                     <div class="gantt-row-label-assignee"> 
-                        <i class="mdi mdi-account-outline"></i> ${escapeHtml(task.participante)} 
+                        <i class="mdi mdi-account-arrow-left-outline"></i> 
+                        Asignado por: ${escapeHtml(task.creador)} 
                     </div> 
                 ` : ''} 
             </div> 
@@ -424,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		row.appendChild(timelineDiv);
 		return row;
 	}
-    
+
 	function createTaskBar(task, dates) {
 		const taskDate = parseDateString(task.fecha_cumplimiento);
 		if (!taskDate) return null;
@@ -435,7 +466,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Verificar que está dentro del rango visible 
 		if (daysDiff < 0 || daysDiff >= dates.length) return null;
 		// Calcular posición left 
-		const left = daysDiff * cellWidth + (cellWidth / 2) - 50; // Centrar la barra en el día 
+		const left = daysDiff * cellWidth + (cellWidth / 2) - 50;
 		// Determinar estado y si está vencido 
 		let status = task.estado || 'pendiente';
 		const today = new Date();
@@ -448,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const bar = document.createElement('div');
 		bar.className = `gantt-bar status-${status.replace(' ', '-')}`;
 		bar.style.left = `${Math.max(0, left)}px`;
-		bar.style.width = '100px'; // Ancho fijo para la barra 
+		bar.style.width = '100px';
 		bar.dataset.taskId = task.id_tarea;
 		bar.innerHTML = `<span class="gantt-bar-text">${escapeHtml(task.nombre)}</span>`;
 		// Event listeners para tooltip y click 
@@ -458,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		bar.addEventListener('click', () => showTaskDetail(task));
 		return bar;
 	}
-    
+
 	function addTodayLine(dates) {
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -473,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		todayLine.id = 'ganttTodayLine';
 		ganttChart.appendChild(todayLine);
 	}
-    
+
 	function scrollToToday() {
 		const todayLine = document.getElementById('ganttTodayLine');
 		if (todayLine && ganttWrapper) {
@@ -486,19 +517,18 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		}
 	}
-    
+
 	function createTooltipElement() {
 		tooltipElement = document.createElement('div');
 		tooltipElement.className = 'gantt-tooltip';
 		tooltipElement.style.display = 'none';
 		document.body.appendChild(tooltipElement);
 	}
-    
+
 	function showTooltip(event, task) {
 		const statusInfo = getStatusInfo(task.estado);
 		const dateDisplay = task.fecha_cumplimiento ?
 			formatDateDisplay(task.fecha_cumplimiento) : 'Sin fecha';
-		const assignee = task.participante || 'Sin asignar';
 		// Verificar si está vencido 
 		let statusText = statusInfo.text;
 		if (task.fecha_cumplimiento && task.estado !== 'completado') {
@@ -507,6 +537,30 @@ document.addEventListener('DOMContentLoaded', function() {
 			today.setHours(0, 0, 0, 0);
 			if (taskDate < today) {
 				statusText = 'Vencido';
+			}
+		}
+		// Calcular días restantes o vencidos 
+		let daysInfo = '';
+		if (task.fecha_cumplimiento && task.estado !== 'completado') {
+			const taskDate = parseDateString(task.fecha_cumplimiento);
+			const today = new Date();
+			today.setHours(0, 0, 0, 0);
+			const diffDays = Math.ceil((taskDate - today) / (1000 * 60 * 60 * 24));
+			if (diffDays > 0) {
+				daysInfo = `<div class="gantt-tooltip-row"> 
+                    <span class="gantt-tooltip-label">Faltan:</span> 
+                    <span class="gantt-tooltip-value">${diffDays} día${diffDays !== 1 ? 's' : ''}</span> 
+                </div>`;
+			} else if (diffDays < 0) {
+				daysInfo = `<div class="gantt-tooltip-row"> 
+                    <span class="gantt-tooltip-label">Vencido hace:</span> 
+                    <span class="gantt-tooltip-value text-danger">${Math.abs(diffDays)} día${Math.abs(diffDays) !== 1 ? 's' : ''}</span> 
+                </div>`;
+			} else {
+				daysInfo = `<div class="gantt-tooltip-row"> 
+                    <span class="gantt-tooltip-label">Vence:</span> 
+                    <span class="gantt-tooltip-value text-warning">Hoy</span> 
+                </div>`;
 			}
 		}
 		tooltipElement.innerHTML = ` 
@@ -519,44 +573,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="gantt-tooltip-label">Estado:</span> 
                 <span class="gantt-tooltip-value">${statusText}</span> 
             </div> 
+            ${daysInfo} 
+            ${task.creador ? ` 
             <div class="gantt-tooltip-row"> 
-                <span class="gantt-tooltip-label">Asignado:</span> 
-                <span class="gantt-tooltip-value">${escapeHtml(assignee)}</span> 
+                <span class="gantt-tooltip-label">Asignado por:</span> 
+                <span class="gantt-tooltip-value">${escapeHtml(task.creador)}</span> 
             </div> 
+            ` : ''} 
         `;
 		tooltipElement.style.display = 'block';
 		moveTooltip(event);
 	}
-    
+
 	function moveTooltip(event) {
 		const x = event.clientX + 10;
 		const y = event.clientY - tooltipElement.offsetHeight - 10;
 		tooltipElement.style.left = `${x}px`;
 		tooltipElement.style.top = `${Math.max(10, y)}px`;
 	}
-    
+
 	function hideTooltip() {
 		tooltipElement.style.display = 'none';
 	}
-    
+
 	function showTaskDetail(task) {
 		document.getElementById('modalTaskName').textContent = task.nombre;
-		document.getElementById('modalTaskDescription').textContent = task.descripcion || 'Sin descripción';
-		document.getElementById('modalTaskDate').textContent = task.fecha_cumplimiento ?
-			formatDateDisplay(task.fecha_cumplimiento) : 'Sin fecha';
-		document.getElementById('modalTaskAssignee').textContent = task.participante || 'Sin asignar';
-		document.getElementById('modalTaskProject').textContent = currentProjectData ?
-			currentProjectData.nombre : '-';
+		document.getElementById('modalTaskDescription').textContent =
+			task.descripcion || 'Sin descripción';
+		document.getElementById('modalTaskDate').textContent =
+			task.fecha_cumplimiento ? formatDateDisplay(task.fecha_cumplimiento) : 'Sin fecha';
+		document.getElementById('modalTaskCreator').textContent =
+			task.creador || 'No especificado';
+		document.getElementById('modalTaskProject').textContent =
+			currentProjectData ? currentProjectData.nombre : '-';
 		// Estado con badge 
 		const statusInfo = getStatusInfo(task.estado);
 		const statusBadge = document.getElementById('modalTaskStatus');
 		statusBadge.textContent = statusInfo.text;
 		statusBadge.className = `badge ${statusInfo.badgeClass}`;
+		// Link para ver/actualizar tarea - versión de usuario 
+		document.getElementById('modalEditTaskBtn').href =
+			`../revisarTareas_user/?task_id=${task.id_tarea}`;
 		// Mostrar modal 
 		const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
 		modal.show();
 	}
-    
+
 	function getStatusInfo(status) {
 		const statusMap = {
 			'pendiente': {
@@ -587,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 		return statusMap[status] || statusMap['pendiente'];
 	}
-    
+
 	function parseDateString(dateString) {
 		if (!dateString) return null;
 		const parts = dateString.split('-');
@@ -597,7 +659,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const day = parseInt(parts[2], 10);
 		return new Date(year, month, day);
 	}
-    
+
 	function formatDateDisplay(dateString) {
 		const date = parseDateString(dateString);
 		if (!date) return 'Sin fecha';
@@ -607,24 +669,24 @@ document.addEventListener('DOMContentLoaded', function() {
 			year: 'numeric'
 		});
 	}
-    
+
 	function getDayName(date) {
 		return date.toLocaleDateString('es-MX', {
 			weekday: 'short'
 		});
 	}
-    
+
 	function getDayNameShort(date) {
 		const days = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
 		return days[date.getDay()];
 	}
-    
+
 	function getMonthNameShort(date) {
 		return date.toLocaleDateString('es-MX', {
 			month: 'short'
 		});
 	}
-    
+
 	function escapeHtml(text) {
 		if (!text) return '';
 		const map = {
@@ -636,44 +698,67 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 		return String(text).replace(/[&<>"']/g, m => map[m]);
 	}
-    
-	function showLoading() {
+
+    function showLoading() {
 		ganttDefaultMessage.style.display = 'none';
 		ganttNoTasks.style.display = 'none';
+		if (ganttNoProjects) ganttNoProjects.style.display = 'none';
 		ganttWrapper.style.display = 'none';
 		ganttLoading.style.display = 'block';
 		projectInfoSummary.style.display = 'none';
+		hideUserTasksInfo();
 	}
-    
+
 	function hideLoading() {
 		ganttLoading.style.display = 'none';
 	}
-    
+
 	function showDefaultState() {
 		ganttLoading.style.display = 'none';
 		ganttNoTasks.style.display = 'none';
+		if (ganttNoProjects) ganttNoProjects.style.display = 'none';
 		ganttWrapper.style.display = 'none';
 		ganttDefaultMessage.style.display = 'block';
 		projectInfoSummary.style.display = 'none';
+		hideUserTasksInfo();
 		currentTasks = [];
 	}
-    
+
 	function showNoTasksState() {
 		ganttLoading.style.display = 'none';
 		ganttDefaultMessage.style.display = 'none';
+		if (ganttNoProjects) ganttNoProjects.style.display = 'none';
 		ganttWrapper.style.display = 'none';
 		ganttNoTasks.style.display = 'block';
 		projectInfoSummary.style.display = 'none';
+		hideUserTasksInfo();
 		currentTasks = [];
 	}
-    
+
+	function showNoProjectsState() {
+		ganttLoading.style.display = 'none';
+		ganttDefaultMessage.style.display = 'none';
+		ganttNoTasks.style.display = 'none';
+		ganttWrapper.style.display = 'none';
+		if (ganttNoProjects) {
+			ganttNoProjects.style.display = 'block';
+		}
+		projectInfoSummary.style.display = 'none';
+		hideUserTasksInfo();
+		currentTasks = [];
+		// Deshabilitar el select de proyectos 
+		projectSelect.innerHTML = '<option value="">No tienes proyectos asignados</option>';
+		projectSelect.disabled = true;
+	}
+
 	function showGanttChart() {
 		ganttLoading.style.display = 'none';
 		ganttDefaultMessage.style.display = 'none';
 		ganttNoTasks.style.display = 'none';
+		if (ganttNoProjects) ganttNoProjects.style.display = 'none';
 		ganttWrapper.style.display = 'block';
 	}
-    
+
 	function showAlert(message, type) {
 		const alertContainer = document.getElementById('alertContainer');
 		const alertDiv = document.createElement('div');

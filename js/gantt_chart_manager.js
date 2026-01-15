@@ -1,4 +1,4 @@
-/*gantt_chart.js diagrama de Gantt para visualización de tareas */
+/*gantt_chart_manager.js  Diagrama de Gantt para visualización de tareas */
 document.addEventListener('DOMContentLoaded', function() {
 	// Elementos del DOM 
 	const projectSelect = document.getElementById('id_proyecto');
@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	const ganttLoading = document.getElementById('ganttLoading');
 	const ganttDefaultMessage = document.getElementById('ganttDefaultMessage');
 	const ganttNoTasks = document.getElementById('ganttNoTasks');
+	const ganttNoProjects = document.getElementById('ganttNoProjects');
 	const viewModeSelect = document.getElementById('ganttViewMode');
 	const groupBySelect = document.getElementById('ganttGroupBy');
 	const btnToday = document.getElementById('btnTodayGantt');
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	const summaryDateRange = document.getElementById('summaryDateRange');
 	const summaryTaskCount = document.getElementById('summaryTaskCount');
 	const summaryProgress = document.getElementById('summaryProgress');
+	const summaryDeptName = document.getElementById('summaryDeptName');
 	// Estado de la aplicación 
 	let currentProjectId = null;
 	let currentProjectData = null;
@@ -23,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	let currentViewMode = 'week';
 	let currentGroupBy = 'user';
 	let tooltipElement = null;
+	let managedDepartments = [];
+	let allProjects = [];
 	// Configuración 
 	const CONFIG = {
 		cellWidths: {
@@ -47,34 +51,91 @@ document.addEventListener('DOMContentLoaded', function() {
 		attachEventListeners();
 		createTooltipElement();
 	}
-
+    
 	function loadProjects() {
-		fetch('../php/get_projects.php')
+		fetch('../php/manager_get_projects.php')
 			.then(response => response.json())
 			.then(data => {
 				if (data.success && data.proyectos) {
-					populateProjectSelect(data.proyectos);
+					allProjects = data.proyectos;
+					managedDepartments = data.managed_departments || [];
+					if (data.proyectos.length > 0) {
+						populateProjectSelect(data.proyectos);
+					} else {
+						showNoProjectsState();
+					}
 				} else {
-					showAlert('Error al cargar proyectos', 'warning');
+					showAlert(data.message || 'Error al cargar proyectos', 'warning');
+					showNoProjectsState();
 				}
 			})
 			.catch(error => {
 				console.error('Error loading projects:', error);
-				showAlert('Error al cargar proyectos', 'danger');
+				showAlert('Error al cargar proyectos del departamento', 'danger');
+				showNoProjectsState();
 			});
 	}
     
 	function populateProjectSelect(projects) {
 		projectSelect.innerHTML = '<option value="">Seleccione un proyecto</option>';
+		// Agrupar proyectos por departamento para mejor organización 
+		const projectsByDept = {};
 		projects.forEach(project => {
-			const option = document.createElement('option');
-			option.value = project.id_proyecto;
-			option.textContent = project.nombre;
-			option.dataset.progress = project.progreso;
-			projectSelect.appendChild(option);
+			const deptName = project.area || 'Sin departamento';
+			if (!projectsByDept[deptName]) {
+				projectsByDept[deptName] = [];
+			}
+			projectsByDept[deptName].push(project);
 		});
+		// Si hay múltiples departamentos, usar optgroups 
+		const deptNames = Object.keys(projectsByDept);
+		if (deptNames.length > 1) {
+			deptNames.forEach(deptName => {
+				const optgroup = document.createElement('optgroup');
+				optgroup.label = deptName;
+				projectsByDept[deptName].forEach(project => {
+					const option = createProjectOption(project);
+					optgroup.appendChild(option);
+				});
+				projectSelect.appendChild(optgroup);
+			});
+		} else {
+			// Si solo hay un departamento, no usar optgroups 
+			projects.forEach(project => {
+				const option = createProjectOption(project);
+				projectSelect.appendChild(option);
+			});
+		}
 	}
-    
+
+	function createProjectOption(project) {
+		const option = document.createElement('option');
+		option.value = project.id_proyecto;
+		// Mostrar nombre con indicador de estado 
+		let statusIndicator = '';
+		switch (project.estado) {
+			case 'vencido':
+				statusIndicator = '';
+				break;
+			case 'completado':
+				statusIndicator = '✓ ';
+				break;
+			case 'en proceso':
+				statusIndicator = '▶ ';
+				break;
+		}
+		option.textContent = `${statusIndicator}${project.nombre}`;
+		option.dataset.progress = project.progreso;
+		option.dataset.status = project.estado;
+		option.dataset.area = project.area || '';
+		option.dataset.totalTareas = project.total_tareas || 0;
+		// Marcar proyectos del departamento gestionado 
+		if (project.is_managed_department) {
+			option.dataset.managed = 'true';
+		}
+		return option;
+	}
+
 	function attachEventListeners() {
 		// Cambio de proyecto 
 		projectSelect.addEventListener('change', function() {
@@ -103,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Botón ir a hoy 
 		btnToday.addEventListener('click', scrollToToday);
 	}
-    
+
 	function loadProjectAndTasks(projectId) {
 		showLoading();
 		// Cargar detalles del proyecto 
@@ -112,6 +173,13 @@ document.addEventListener('DOMContentLoaded', function() {
 			.then(data => {
 				if (data.success && data.proyecto) {
 					currentProjectData = data.proyecto;
+					// Obtener información adicional del proyecto desde allProjects 
+					const projectInfo = allProjects.find(p => p.id_proyecto == projectId);
+					if (projectInfo) {
+						currentProjectData.area = projectInfo.area;
+						currentProjectData.is_managed_department = projectInfo.is_managed_department;
+						currentProjectData.puede_editar = projectInfo.puede_editar;
+					}
 					// Cargar tareas del proyecto 
 					return fetch(`../php/get_tasks_by_project.php?id_proyecto=${projectId}`);
 				} else {
@@ -139,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
 				showAlert('Error al cargar datos del proyecto', 'danger');
 			});
 	}
-    
+
 	function updateProjectSummary() {
 		if (!currentProjectData) return;
 		summaryProjectName.textContent = currentProjectData.nombre;
@@ -156,9 +224,16 @@ document.addEventListener('DOMContentLoaded', function() {
 		const progress = currentTasks.length > 0 ?
 			Math.round((completedTasks / currentTasks.length) * 100) : 0;
 		summaryProgress.textContent = progress;
+		// Departamento 
+		if (summaryDeptName && currentProjectData.area) {
+			summaryDeptName.textContent = currentProjectData.area;
+			document.getElementById('summaryDepartment').style.display = '';
+		} else if (summaryDeptName) {
+			document.getElementById('summaryDepartment').style.display = 'none';
+		}
 		projectInfoSummary.style.display = 'block';
 	}
-    
+
 	function renderGanttChart(tasks) {
 		// Calcular rango de fechas 
 		const dateRange = calculateDateRange(tasks);
@@ -215,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			end: maxDate
 		};
 	}
-    
+
 	function generateDateArray(startDate, endDate) {
 		const dates = [];
 		const current = new Date(startDate);
@@ -225,19 +300,19 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		return dates;
 	}
-    
+
 	function createGanttHeader(dates) {
 		const header = document.createElement('div');
 		header.className = 'gantt-header';
-		//columna de etiqueta 
+		// Columna de etiqueta 
 		const labelCol = document.createElement('div');
 		labelCol.className = 'gantt-header-labels';
 		labelCol.textContent = 'Tarea / Usuario';
 		header.appendChild(labelCol);
-		//columna de linea de tiempo
+		// Columna de línea de tiempo 
 		const timeline = document.createElement('div');
 		timeline.className = 'gantt-header-timeline';
-		dates.forEach(date => {
+		dates.forEach((date, index) => {
 			const cell = document.createElement('div');
 			cell.className = 'gantt-header-cell';
 			cell.style.minWidth = `${CONFIG.cellWidths[currentViewMode]}px`;
@@ -256,17 +331,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="day-number">${date.getDate()}</span> 
                 `;
 			} else if (currentViewMode === 'week') {
-				// Mostrar mes solo en el primer día o cambio de mes 
 				const prevDate = new Date(date);
 				prevDate.setDate(prevDate.getDate() - 1);
-				const showMonth = date.getDate() === 1 || dates.indexOf(date) === 0;
+				const showMonth = date.getDate() === 1 || index === 0;
 				cell.innerHTML = ` 
                     <span class="day-name">${getDayNameShort(date)}</span> 
                     <span class="day-number">${date.getDate()}</span> 
                     ${showMonth ? `<span class="month-name">${getMonthNameShort(date)}</span>` : ''} 
                 `;
 			} else if (currentViewMode === 'month') {
-				// Mostrar solo días significativos 
 				if (date.getDate() === 1 || date.getDate() === 15) {
 					cell.innerHTML = ` 
                         <span class="day-number">${date.getDate()}</span> 
@@ -323,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 		return grouped;
 	}
-    
+
 	function groupTasksByStatus(tasks) {
 		const grouped = {};
 		tasks.forEach(task => {
@@ -335,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 		return grouped;
 	}
-    
+
 	function createTaskGroup(groupName, tasks, dates, groupType) {
 		const group = document.createElement('div');
 		group.className = 'gantt-group';
@@ -375,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 		return group;
 	}
-    
+
 	function createTaskRow(task, dates) {
 		const row = document.createElement('div');
 		row.className = 'gantt-row';
@@ -390,7 +463,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div> 
                 ${currentGroupBy !== 'user' && task.participante ? ` 
                     <div class="gantt-row-label-assignee"> 
-                        <i class="mdi mdi-account-outline"></i> ${escapeHtml(task.participante)} 
+                        <i class="mdi mdi-account-outline"></i> 
+                        ${escapeHtml(task.participante)} 
                     </div> 
                 ` : ''} 
             </div> 
@@ -424,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		row.appendChild(timelineDiv);
 		return row;
 	}
-    
+
 	function createTaskBar(task, dates) {
 		const taskDate = parseDateString(task.fecha_cumplimiento);
 		if (!taskDate) return null;
@@ -435,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		// Verificar que está dentro del rango visible 
 		if (daysDiff < 0 || daysDiff >= dates.length) return null;
 		// Calcular posición left 
-		const left = daysDiff * cellWidth + (cellWidth / 2) - 50; // Centrar la barra en el día 
+		const left = daysDiff * cellWidth + (cellWidth / 2) - 50;
 		// Determinar estado y si está vencido 
 		let status = task.estado || 'pendiente';
 		const today = new Date();
@@ -448,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const bar = document.createElement('div');
 		bar.className = `gantt-bar status-${status.replace(' ', '-')}`;
 		bar.style.left = `${Math.max(0, left)}px`;
-		bar.style.width = '100px'; // Ancho fijo para la barra 
+		bar.style.width = '100px';
 		bar.dataset.taskId = task.id_tarea;
 		bar.innerHTML = `<span class="gantt-bar-text">${escapeHtml(task.nombre)}</span>`;
 		// Event listeners para tooltip y click 
@@ -458,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		bar.addEventListener('click', () => showTaskDetail(task));
 		return bar;
 	}
-    
+
 	function addTodayLine(dates) {
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
@@ -473,7 +547,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		todayLine.id = 'ganttTodayLine';
 		ganttChart.appendChild(todayLine);
 	}
-    
+
 	function scrollToToday() {
 		const todayLine = document.getElementById('ganttTodayLine');
 		if (todayLine && ganttWrapper) {
@@ -486,14 +560,14 @@ document.addEventListener('DOMContentLoaded', function() {
 			});
 		}
 	}
-    
+
 	function createTooltipElement() {
 		tooltipElement = document.createElement('div');
 		tooltipElement.className = 'gantt-tooltip';
 		tooltipElement.style.display = 'none';
 		document.body.appendChild(tooltipElement);
 	}
-    
+
 	function showTooltip(event, task) {
 		const statusInfo = getStatusInfo(task.estado);
 		const dateDisplay = task.fecha_cumplimiento ?
@@ -527,36 +601,41 @@ document.addEventListener('DOMContentLoaded', function() {
 		tooltipElement.style.display = 'block';
 		moveTooltip(event);
 	}
-    
+
 	function moveTooltip(event) {
 		const x = event.clientX + 10;
 		const y = event.clientY - tooltipElement.offsetHeight - 10;
 		tooltipElement.style.left = `${x}px`;
 		tooltipElement.style.top = `${Math.max(10, y)}px`;
 	}
-    
+
 	function hideTooltip() {
 		tooltipElement.style.display = 'none';
 	}
-    
+
 	function showTaskDetail(task) {
 		document.getElementById('modalTaskName').textContent = task.nombre;
-		document.getElementById('modalTaskDescription').textContent = task.descripcion || 'Sin descripción';
-		document.getElementById('modalTaskDate').textContent = task.fecha_cumplimiento ?
-			formatDateDisplay(task.fecha_cumplimiento) : 'Sin fecha';
-		document.getElementById('modalTaskAssignee').textContent = task.participante || 'Sin asignar';
-		document.getElementById('modalTaskProject').textContent = currentProjectData ?
-			currentProjectData.nombre : '-';
+		document.getElementById('modalTaskDescription').textContent =
+			task.descripcion || 'Sin descripción';
+		document.getElementById('modalTaskDate').textContent =
+			task.fecha_cumplimiento ? formatDateDisplay(task.fecha_cumplimiento) : 'Sin fecha';
+		document.getElementById('modalTaskAssignee').textContent =
+			task.participante || 'Sin asignar';
+		document.getElementById('modalTaskProject').textContent =
+			currentProjectData ? currentProjectData.nombre : '-';
 		// Estado con badge 
 		const statusInfo = getStatusInfo(task.estado);
 		const statusBadge = document.getElementById('modalTaskStatus');
 		statusBadge.textContent = statusInfo.text;
 		statusBadge.className = `badge ${statusInfo.badgeClass}`;
+		// Link para editar - usar la versión de gerente 
+		document.getElementById('modalEditTaskBtn').href =
+			`../revisarTareas_manager/?task_id=${task.id_tarea}`;
 		// Mostrar modal 
 		const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
 		modal.show();
 	}
-    
+
 	function getStatusInfo(status) {
 		const statusMap = {
 			'pendiente': {
@@ -587,7 +666,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 		return statusMap[status] || statusMap['pendiente'];
 	}
-    
+
 	function parseDateString(dateString) {
 		if (!dateString) return null;
 		const parts = dateString.split('-');
@@ -597,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		const day = parseInt(parts[2], 10);
 		return new Date(year, month, day);
 	}
-    
+
 	function formatDateDisplay(dateString) {
 		const date = parseDateString(dateString);
 		if (!date) return 'Sin fecha';
@@ -607,24 +686,24 @@ document.addEventListener('DOMContentLoaded', function() {
 			year: 'numeric'
 		});
 	}
-    
+
 	function getDayName(date) {
 		return date.toLocaleDateString('es-MX', {
 			weekday: 'short'
 		});
 	}
-    
+
 	function getDayNameShort(date) {
 		const days = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
 		return days[date.getDay()];
 	}
-    
+
 	function getMonthNameShort(date) {
 		return date.toLocaleDateString('es-MX', {
 			month: 'short'
 		});
 	}
-    
+
 	function escapeHtml(text) {
 		if (!text) return '';
 		const map = {
@@ -636,52 +715,74 @@ document.addEventListener('DOMContentLoaded', function() {
 		};
 		return String(text).replace(/[&<>"']/g, m => map[m]);
 	}
-    
+	// ==================== Estados de la UI ==================== 
 	function showLoading() {
 		ganttDefaultMessage.style.display = 'none';
 		ganttNoTasks.style.display = 'none';
+		if (ganttNoProjects) ganttNoProjects.style.display = 'none';
 		ganttWrapper.style.display = 'none';
 		ganttLoading.style.display = 'block';
 		projectInfoSummary.style.display = 'none';
 	}
-    
+
 	function hideLoading() {
 		ganttLoading.style.display = 'none';
 	}
-    
+
 	function showDefaultState() {
 		ganttLoading.style.display = 'none';
 		ganttNoTasks.style.display = 'none';
+		if (ganttNoProjects) ganttNoProjects.style.display = 'none';
 		ganttWrapper.style.display = 'none';
 		ganttDefaultMessage.style.display = 'block';
 		projectInfoSummary.style.display = 'none';
 		currentTasks = [];
 	}
-    
+
 	function showNoTasksState() {
 		ganttLoading.style.display = 'none';
 		ganttDefaultMessage.style.display = 'none';
+		if (ganttNoProjects) ganttNoProjects.style.display = 'none';
 		ganttWrapper.style.display = 'none';
 		ganttNoTasks.style.display = 'block';
 		projectInfoSummary.style.display = 'none';
 		currentTasks = [];
 	}
-    
+
+	function showNoProjectsState() {
+		ganttLoading.style.display = 'none';
+		ganttDefaultMessage.style.display = 'none';
+		ganttNoTasks.style.display = 'none';
+		ganttWrapper.style.display = 'none';
+		if (ganttNoProjects) {
+			ganttNoProjects.style.display = 'block';
+		}
+		projectInfoSummary.style.display = 'none';
+		currentTasks = [];
+		// Deshabilitar el select de proyectos 
+		projectSelect.innerHTML = '<option value="">No hay proyectos disponibles</option>';
+		projectSelect.disabled = true;
+	}
+
 	function showGanttChart() {
 		ganttLoading.style.display = 'none';
 		ganttDefaultMessage.style.display = 'none';
 		ganttNoTasks.style.display = 'none';
+		if (ganttNoProjects) ganttNoProjects.style.display = 'none';
 		ganttWrapper.style.display = 'block';
 	}
-    
+
 	function showAlert(message, type) {
 		const alertContainer = document.getElementById('alertContainer');
 		const alertDiv = document.createElement('div');
 		alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
 		alertDiv.setAttribute('role', 'alert');
 		alertDiv.innerHTML = ` 
+
             ${message} 
+
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> 
+
         `;
 		alertContainer.innerHTML = '';
 		alertContainer.appendChild(alertDiv);
