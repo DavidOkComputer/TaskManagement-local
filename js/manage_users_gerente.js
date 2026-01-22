@@ -2,7 +2,7 @@
  const Config = {
  	API_ENDPOINTS: {
  		GET_DEPARTMENTS: '../php/get_departments.php',
- 		GET_USERS: '../php/manager_get_users.php'
+ 		GET_USERS: '../php/manager_get_users_2.php'
  	}
  };
  const AUTO_REFRESH_CONFIG = {
@@ -95,7 +95,7 @@
  }
 
  function refreshUserData() {
- 	fetch('../php/manager_get_users.php')
+ 	fetch('../php/manager_get_users_2.php')
  		.then(response => {
  			if (!response.ok) {
  				throw new Error('La respuesta de red no fue ok');
@@ -268,7 +268,7 @@
 
  function loadUsuarios() {
  	const tableBody = document.getElementById('usuariosTableBody');
- 	fetch('../php/manager_get_users.php', {
+ 	fetch('../php/manager_get_users_2.php', {
  			method: 'GET',
  			headers: {
  				'Content-Type': 'application/json'

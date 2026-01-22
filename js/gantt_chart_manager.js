@@ -628,9 +628,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		const statusBadge = document.getElementById('modalTaskStatus');
 		statusBadge.textContent = statusInfo.text;
 		statusBadge.className = `badge ${statusInfo.badgeClass}`;
-		// Link para editar - usar la versión de gerente 
-		document.getElementById('modalEditTaskBtn').href =
-			`../revisarTareas_manager/?task_id=${task.id_tarea}`;
+		// Link para editar versión de gerente 
+		//document.getElementById('modalEditTaskBtn').href =
+		//	`../revisarTareas_manager/?task_id=${task.id_tarea}`;
 		// Mostrar modal 
 		const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
 		modal.show();

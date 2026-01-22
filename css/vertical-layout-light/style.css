@@ -22574,7 +22574,6 @@ code {
 
 /*estilos para filtrar proyectos por estado*/
 
-/* Filter control styling */
 .rows-per-page-control {
     display: flex;
     flex-wrap: wrap;
@@ -55565,7 +55564,7 @@ li[data-task-id] .text-danger.fw-bold[title="Tarea vencida"] {
 #taskDetailModal p { 
     font-size: 14px; 
 } 
-/* estilos para el index hecho por mi */ 
+/* estilos para el index  */ 
          .content-wrapper { 
          padding-bottom: 0 !important; 
          } 

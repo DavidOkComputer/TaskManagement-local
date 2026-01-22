@@ -213,6 +213,11 @@ $user_id = $_SESSION['user_id'];
                       <h4 class="card-title card-title-dash">Gestion de empleados</h4>
                       <p class="card-subtitle card-subtitle-dash">Revisa y gestiona los empleados</p>
                     </div>
+                    <div>
+                      <a href="../nuevoProyectoGerente/">
+                        <button class="btn btn-success btn-lg text-white mb-0 me-0" type="button"><i class="mdi mdi-plus-circle-outline"></i> Asignar nuevos proyectos</button>
+                      </a>
+                    </div>
                   </div>
                   <!-- Rows Per Page Selector-->
                   <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">

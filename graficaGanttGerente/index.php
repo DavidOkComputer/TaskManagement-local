@@ -22,8 +22,6 @@ $user_id = $_SESSION['user_id'];
 		<!-- inject:css -->
 		<link rel="stylesheet" href="../css/vertical-layout-light/style.css">
 		<link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
-		<!-- Custom Gantt CSS -->
-		<link rel="stylesheet" href="../css/gantt_chart.css">
 	</head>
 	<body>
 		<div class="container-scroller">
@@ -326,8 +324,6 @@ $user_id = $_SESSION['user_id'];
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-						<a href="#" class="btn btn-primary" id="modalEditTaskBtn">
-							<i class="mdi mdi-pencil me-1"></i>Editar Tarea </a>
 					</div>
 				</div>
 			</div>
