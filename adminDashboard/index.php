@@ -52,12 +52,12 @@ require_once('../php/check_auth.php');
                         </div>
                      </div>
                      <div class="db-header-filters">
-                        <div class="db-filter-group">
+                        <span class="db-filter-group">
                            <label class="db-filter-label">Proyecto</label> 
                            <select class="db-filter-select" id="filterObjective">
                               <option value="all">Todos</option>
                            </select>
-                        </div>
+						</span>
                         <div class="db-filter-group">
                            <label class="db-filter-label">Estado</label> 
                            <select class="db-filter-select" id="filterStatus">
@@ -199,20 +199,40 @@ require_once('../php/check_auth.php');
 						<div class="db-stats-row">
 							<div class="db-stats-left">
 								<div class="db-stat-item"> 
-									<span class="db-stat-label">Proyectos Totales</span> 
-									<span class="db-stat-value" id="statTotalObjectives">0</span> 
+									<span class="db-stat-label">Total Proyectos</span> 
+									<span class="db-stat-value" id="statTotalProyectos">0</span> 
 								</div>
 								<div class="db-stat-item"> 
-									<span class="db-stat-label">Progreso en Proyectos</span> 
-									<span class="db-stat-value db-stat-highlight" id="statGlobalPct">-</span> 
+									<span class="db-stat-label">% Proyectos Vencidos</span> 
+									<span class="db-stat-value db-stat-danger" id="statPctVencidos">0%</span> 
 								</div>
 								<div class="db-stat-item"> 
-									<span class="db-stat-label">Regional Objectives</span> 
-									<span class="db-stat-value db-stat-highlight" id="statRegionalPct">-</span> 
+									<span class="db-stat-label">Total Objetivos</span> 
+									<span class="db-stat-value" id="statTotalObjetivos">0</span> 
 								</div>
 								<div class="db-stat-item"> 
-									<span class="db-stat-label">Local Objectives</span> 
-									<span class="db-stat-value db-stat-highlight" id="statLocalPct">--</span> 
+									<span class="db-stat-label">% Objetivos Completados</span> 
+									<span class="db-stat-value db-stat-info" id="statPctObjetivos">0%</span> 
+								</div>
+								<div class="db-stat-item"> 
+									<span class="db-stat-label">Objetivos Completados</span> 
+									<span class="db-stat-value db-stat-success" id="statObjetivosCompletados">0</span> 
+								</div>
+								<div class="db-stat-item"> 
+									<span class="db-stat-label">Total Tareas</span> 
+									<span class="db-stat-value" id="statTotalTareas">0</span> 
+								</div>
+								<div class="db-stat-item"> 
+									<span class="db-stat-label">% Tareas Completadas</span> 
+									<span class="db-stat-value db-stat-highlight" id="statPctTareas">0%</span> 
+								</div>
+								<div class="db-stat-item"> 
+									<span class="db-stat-label">Tareas Completadas</span> 
+									<span class="db-stat-value db-stat-success" id="statTareasCompletadas">0</span> 
+								</div>
+								<div class="db-stat-item"> 
+									<span class="db-stat-label">Tareas Pendientes</span> 
+									<span class="db-stat-value db-stat-warning" id="statTareasPendientes">0</span> 
 								</div>
 							</div>
 						</div>

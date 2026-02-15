@@ -9,22 +9,22 @@
 	};
 
 	const COLORS = {
-		delay: '#C62828',
-		notStarted: '#F2C94C',
-		completed: '#009b4a',
-		onGoing: '#5bbfb5',
-		onHold: '#90a4ae',
-		barDark: '#2c4a62',
-		barMedium: '#3d6d8e',
-		barLight: '#5bbfb5'
+		delay: '#dc3545',      // Black for overdue/vencido
+		notStarted: '#ffc107', // Gray for pending
+		completed: '#009b4a',  // Green for completed
+		onGoing: '#495057',    // Dark gray for in progress
+		onHold: '#adb5bd',     // Light gray for on hold
+		barDark: '#009b4a',    // Green for primary bars
+		barMedium: '#ffc107',  // Dark gray for medium progress
+		barLight: '#ffc107'    // Gray for low progress
 	};
 	
 	const STATUS_MAP = {
-	'pendiente': 'Not Started',
-    'en proceso': 'On Going',
-    'completado': 'Completed',
-    'vencido': 'Delay',
-    'en espera': 'On Hold',
+	'pendiente': 'Pendiente',
+    'en proceso': 'En Proceso',
+    'completado': 'Completado',
+    'vencido': 'Vencido',
+    'en espera': 'En Espera',
 	};
 
 	let allProjects = [];
@@ -61,48 +61,71 @@
 		fetch(API.STATS).then(r => r.json()).then(data => {
 			if (data.success && data.stats) {
 				updateStatsRow(data.stats);
-				updateStatusBoxes(data.stats);
+				// FIX: Use project-level stats for status boxes, not task-level
+				updateStatusBoxesFromStats(data.stats);
 				updateTotalProgress(data.stats);
 			}
 		}).catch(err => console.error('Error loading stats:', err));
 	}
 
 	function updateStatsRow(stats) {
-		setText('#statTotalObjectives', stats.total_objetivos || 0);
+		// Total de proyectos
+		setText('#statTotalProyectos', stats.total_proyectos || 0);
 		
-		//calcular porcentajes de proyectos si la info esta disponible
-		if (stats.porcentaje_global !== undefined) {
-			setText('#statGlobalPct', stats.porcentaje_global + '%');
+		// Total de tareas
+		setText('#statTotalTareas', stats.total_tareas || 0);
+		
+		// Porcentaje de tareas completadas
+		if (stats.porcentaje_tareas !== undefined) {
+			setText('#statPctTareas', stats.porcentaje_tareas + '%');
 		}
-		if (stats.porcentaje_regional !== undefined) {
-			setText('#statRegionalPct', stats.porcentaje_regional + '%');
+		
+		// Total de objetivos
+		setText('#statTotalObjetivos', stats.total_objetivos || 0);
+		
+		// Porcentaje de objetivos completados
+		if (stats.porcentaje_objetivos !== undefined) {
+			setText('#statPctObjetivos', stats.porcentaje_objetivos + '%');
 		}
-		if (stats.porcentaje_local !== undefined) {
-			setText('#statLocalPct', stats.porcentaje_local + '%');
+		
+		// Porcentaje de proyectos vencidos
+		if (stats.porcentaje_vencidos !== undefined) {
+			setText('#statPctVencidos', stats.porcentaje_vencidos + '%');
+		}
+		
+		// Tareas completadas (count)
+		setText('#statTareasCompletadas', stats.tareas_completadas || 0);
+		
+		// Tareas pendientes (count)
+		setText('#statTareasPendientes', stats.tareas_pendientes || 0);
+		
+		// Objetivos completados (count)
+		setText('#statObjetivosCompletados', stats.objetivos_completados || 0);
+	}
+
+	// FIX: New function that uses PROJECT-level stats from the API
+	function updateStatusBoxesFromStats(stats) {
+		// Use project counts from the stats endpoint (these are correct project-level stats)
+		if (stats.proyectos_completados !== undefined) {
+			setText('#boxCompleted', stats.proyectos_completados);
+		}
+		if (stats.proyectos_pendientes !== undefined) {
+			setText('#boxNotStarted', stats.proyectos_pendientes);
+		}
+		if (stats.proyectos_vencidos !== undefined) {
+			setText('#boxDelay', stats.proyectos_vencidos);
+		}
+		if (stats.proyectos_en_proceso !== undefined) {
+			setText('#boxOnGoing', stats.proyectos_en_proceso);
+		}
+		// Total projects count
+		if (stats.total_proyectos !== undefined) {
+			setText('#boxTotalTask', stats.total_proyectos);
 		}
 	}
 
-	function updateStatusBoxes(stats) {
-		//calcular todos los tareas desde proyectos o estadisticas
-		if (stats.total_tareas !== undefined) {
-			setText('#boxTotalTask', stats.total_tareas);
-		}
-		if (stats.tareas_completadas !== undefined) {
-			setText('#boxCompleted', stats.tareas_completadas);
-		}
-		if (stats.tareas_en_proceso !== undefined) {
-			setText('#boxOnGoing', stats.tareas_en_proceso);
-		}
-		if (stats.tareas_pendientes !== undefined) {
-			setText('#boxNotStarted', stats.tareas_pendientes);
-		}
-		if (stats.tareas_en_espera !== undefined) {
-			setText('#boxOnHold', stats.tareas_en_espera);
-		}
-		if (stats.tareas_retrasadas !== undefined) {
-			setText('#boxDelay', stats.tareas_retrasadas);
-		}
-	}
+	// REMOVED: Old updateStatusBoxes function that incorrectly used task-level stats
+	// The status boxes should show PROJECT counts, not TASK counts
 
 	function updateTotalProgress(stats) {
 		const pct = parseFloat(stats.porcentaje_tareas) || 0;
@@ -126,6 +149,7 @@
 				allProjects = data.proyectos;
 				displayTaskDetailsTable(allProjects);
 				updateDoughnutFromProjects(allProjects);
+				// FIX: Always update status boxes with project data (no conditional check)
 				updateStatusBoxesFromProjects(allProjects);
 				populateFilterDropdowns(allProjects);
 				updateResponsibleChart(allProjects);
@@ -148,8 +172,8 @@
 			const row = document.createElement('tr');
 			row.setAttribute('data-project-id', project.id_proyecto);
 			row.style.cursor = 'pointer';
-			const statusEN = mapStatus(project.estado);
-			const statusClass = getStatusCSSClass(statusEN);
+			const status = mapStatus(project.estado);
+			const statusClass = getStatusCSSClass(status);
 			const progressVal = parseInt(project.progreso) || 0;
 			const tier = getTier(progressVal);
 			const type = project.tipo_objetivo || project.tipo || 'Global Objectives';
@@ -157,7 +181,7 @@
 			row.innerHTML = ` 
                 <td><span class="db-collapse-toggle"><i class="mdi mdi-plus-box-outline"></i></span></td> 
                 <td>${escapeHtml(project.descripcion || project.nombre || '-')}</td> 
-                <td><span class="db-status-badge ${statusClass}">${statusEN}</span></td> 
+                <td><span class="db-status-badge ${statusClass}">${status}</span></td> 
                 <td style="white-space:nowrap;">${formatDate(project.fecha_cumplimiento)}</td> 
                 <td>${escapeHtml(project.participante || '-')}</td> 
                 <td> 
@@ -225,56 +249,58 @@
 		tbody.innerHTML = '';
 		if (!objectives || objectives.length === 0) {
 			tbody.innerHTML = `<tr><td colspan="4" class="text-center" style="padding:30px;"> 
-                <p style="font-size:0.8rem;color:#999;">No hay objetivos registrados</p> 
-            </td></tr>`;
+				<p style="font-size:0.8rem;color:#999;">No hay proyectos registrados</p> 
+			</td></tr>`;
 			return;
 		}
-		objectives.forEach(obj => {
+    	objectives.forEach(obj => {
 			const row = document.createElement('tr');
 			const progressVal = parseInt(obj.progreso) || 0;
 			const tier = getTier(progressVal);
+			
+			// Add project ID and cursor pointer for clickability
+			row.setAttribute('data-project-id', obj.id);
+			row.style.cursor = 'pointer';
+			
 			row.innerHTML = ` 
-                <td><span class="db-collapse-toggle"><i class="mdi mdi-plus-box-outline"></i></span></td> 
-                <td style="max-width:200px;">${escapeHtml(truncateText(obj.nombre, 80))}</td> 
-                <td>${escapeHtml(obj.responsable || '-')}</td> 
-                <td> 
-                    <div class="db-progress-badge"> 
-                        <span class="db-progress-text ${tier}">${progressVal} %</span> 
-                        <div class="db-progress-bar-mini"> 
-                            <div class="db-progress-bar-mini-fill ${tier}" style="width:${progressVal}%"></div> 
-                        </div> 
-                    </div> 
-                </td> 
-            `;
+				<td><span class="db-collapse-toggle"><i class="mdi mdi-plus-box-outline"></i></span></td> 
+				<td style="max-width:200px;">${escapeHtml(truncateText(obj.nombre, 80))}</td> 
+				<td>${escapeHtml(obj.responsable || '-')}</td> 
+				<td> 
+					<div class="db-progress-badge"> 
+						<span class="db-progress-text ${tier}">${progressVal} %</span> 
+						<div class="db-progress-bar-mini"> 
+							<div class="db-progress-bar-mini-fill ${tier}" style="width:${progressVal}%"></div> 
+						</div> 
+					</div> 
+				</td> 
+			`;
+			
+			// Add click event to open project details modal
+			row.addEventListener('click', function(e) {
+				if (e.target.closest('button')) return;
+				const projectId = this.getAttribute('data-project-id');
+				if (projectId && typeof window.viewProjectDetails === 'function') {
+					window.viewProjectDetails(projectId);
+				}
+			});
+			
+			// Add hover effect
+			row.addEventListener('mouseenter', function() {
+				this.style.backgroundColor = '#f8f9fa';
+			});
+			row.addEventListener('mouseleave', function() {
+				this.style.backgroundColor = '';
+			});
+			
 			tbody.appendChild(row);
 		});
 	}
 
 	function updateStatsFromObjectives(objectives) {
-		if (!objectives || objectives.length === 0) return;
-		setText('#statTotalObjectives', objectives.length);
-
-		//calcular porcentages
-		const globals = objectives.filter(o => (o.tipo || '').toLowerCase().includes('global'));
-		const regionals = objectives.filter(o => (o.tipo || '').toLowerCase().includes('regional'));
-		const locals = objectives.filter(o => (o.tipo || '').toLowerCase().includes('local'));
-		if (globals.length > 0) {
-			const avgGlobal = Math.round(globals.reduce((s, o) => s + (parseInt(o.progreso) || 0), 0) / globals.length);
-			setText('#statGlobalPct', avgGlobal + '%');
-		}
-		if (regionals.length > 0) {
-			const avgRegional = Math.round(regionals.reduce((s, o) => s + (parseInt(o.progreso) || 0), 0) / regionals.length);
-			setText('#statRegionalPct', avgRegional + '%');
-		}
-		if (locals.length > 0) {
-			const avgLocal = Math.round(locals.reduce((s, o) => s + (parseInt(o.progreso) || 0), 0) / locals.length);
-			setText('#statLocalPct', avgLocal + '%');
-		} else {
-			setText('#statLocalPct', '--');
-		}
-		//calcular el total del progreso de proyectos
-		const avgTotal = Math.round(objectives.reduce((s, o) => s + (parseInt(o.progreso) || 0), 0) / objectives.length);
-		updateTotalProgressDirect(avgTotal);
+		// This function now only exists for potential future use
+		// Total progress is correctly set by updateTotalProgress() from the stats API
+		// Do not recalculate or overwrite the progress value here
 	}
 
 	function updateTotalProgressDirect(pct) {
@@ -301,7 +327,7 @@
 				datasets: [{
 					data: [0, 0, 0, 0],
 					backgroundColor: [COLORS.delay, COLORS.notStarted, COLORS.completed, COLORS.onGoing],
-					borderColor: ['#fff', '#fff', '#fff', '#fff'],
+					borderColor: ['#ffffff', '#ffffff', '#ffffff', '#ffffff'],
 					borderWidth: 2
 				}]
 			},
@@ -315,24 +341,27 @@
 				},
 				legend: false,
 				legendCallback: function(chart) {
-					let html = '<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">';
+					let html = '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">';
 					const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-					html += '<div style="font-size:0.68rem;font-weight:600;color:#6b7b8d;margin-bottom:2px;">Status</div>';
+					html += '<div style="font-size:0.7rem;font-weight:600;color:#000000;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Estado</div>';
 					for (let i = 0; i < chart.data.datasets[0].data.length; i++) {
 						const val = chart.data.datasets[0].data[i];
-						const pct = total > 0 ? ((val / total) * 100).toFixed(2) : '0.00';
-						html += `<div style="display:flex;align-items:center;gap:6px;font-size:0.7rem;"> 
-                            <span style="width:8px;height:8px;border-radius:50%;background:${chart.data.datasets[0].backgroundColor[i]};display:inline-block;"></span> 
-                            <span style="color:#4a5568;">${chart.data.labels[i]}</span> 
+						const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0.0';
+						html += `<div style="display:flex;align-items:center;gap:8px;font-size:0.75rem;"> 
+                            <span style="width:10px;height:10px;border-radius:2px;background:${chart.data.datasets[0].backgroundColor[i]};display:inline-block;"></span> 
+                            <span style="color:#000000;font-weight:500;">${chart.data.labels[i]}</span>
+                            <span style="color:#6c757d;">(${val})</span>
                         </div>`;
 					}
 					html += '</div>';
 					return html;
 				},
 				tooltips: {
-					backgroundColor: '#1a2a3a',
+					backgroundColor: '#000000',
 					titleFontSize: 12,
+					titleFontColor: '#ffffff',
 					bodyFontSize: 11,
+					bodyFontColor: '#ffffff',
 					callbacks: {
 						label: function(tooltipItem, data) {
 							const val = data.datasets[0].data[tooltipItem.index];
@@ -356,25 +385,25 @@
 	function updateDoughnutFromProjects(projects) {
 		if (!doughnutChartInstance) return;
 		const counts = {
-			'Delay': 0,
-			'Not Started': 0,
-			'Completed': 0,
-			'On Going': 0
+			'Vencido': 0,
+			'Pendiente': 0,
+			'Completado': 0,
+			'En Proceso': 0
 		};
 		projects.forEach(p => {
-			const statusEN = mapStatus(p.estado);
-			if (counts.hasOwnProperty(statusEN)) {
-				counts[statusEN]++;
+			const status = mapStatus(p.estado);
+			if (counts.hasOwnProperty(status)) {
+				counts[status]++;
 			} else {
 				//estado desconocido-contar como atrasado
-				counts['Delay']++;
+				counts['Vencido']++;
 			}
 		});
 		doughnutChartInstance.data.datasets[0].data = [
-			counts['Delay'],
-			counts['Not Started'],
-			counts['Completed'],
-			counts['On Going']
+			counts['Vencido'],
+			counts['Pendiente'],
+			counts['Completado'],
+			counts['En Proceso']
 		];
 		doughnutChartInstance.update();
 		const legendEl = document.getElementById('doughnut-chart-legend');
@@ -382,7 +411,8 @@
 			legendEl.innerHTML = doughnutChartInstance.generateLegend();
 		}
 	}
-	// cajas de estados
+	
+	// FIX: Changed from setTextIfEmpty to setText to always update with correct project counts
 	function updateStatusBoxesFromProjects(projects) {
 		const counts = {
 			total: projects.length,
@@ -394,19 +424,21 @@
 		};
 		projects.forEach(p => {
 			const s = mapStatus(p.estado);
-			if (s === 'Completed') counts.completed++;
-			else if (s === 'On Going') counts.ongoing++;
-			else if (s === 'Not Started') counts.notStarted++;
-			else if (s === 'On Hold') counts.onHold++;
-			else if (s === 'Delay') counts.delay++;
+			if (s === 'Completado') counts.completed++;
+			else if (s === 'En Proceso') counts.ongoing++;
+			else if (s === 'Pendiente') counts.notStarted++;
+			else if (s === 'En Espera') counts.onHold++;
+			else if (s === 'Vencido') counts.delay++;
 		});
-		//actualizar solamente si no esta ya puesto por endpoints
-		setTextIfEmpty('#boxTotalTask', counts.total);
-		setTextIfEmpty('#boxCompleted', counts.completed);
-		setTextIfEmpty('#boxOnGoing', counts.ongoing);
-		setTextIfEmpty('#boxNotStarted', counts.notStarted);
-		setTextIfEmpty('#boxOnHold', counts.onHold);
-		setTextIfEmpty('#boxDelay', counts.delay);
+		
+		// FIX: Use setText() instead of setTextIfEmpty() to always update with correct values
+		// This ensures project counts are displayed, not task counts from the stats endpoint
+		setText('#boxTotalTask', counts.total);
+		setText('#boxCompleted', counts.completed);
+		setText('#boxOnGoing', counts.ongoing);
+		setText('#boxNotStarted', counts.notStarted);
+		setText('#boxOnHold', counts.onHold);
+		setText('#boxDelay', counts.delay);
 	}
 
 	// 6. grafica de barra de responsable
@@ -459,17 +491,18 @@
 							beginAtZero: true,
 							max: 100,
 							fontSize: 10,
+							fontColor: '#6c757d',
 							callback: v => v + '%'
 						},
 						gridLines: {
-							color: '#edf0f4',
-							zeroLineColor: '#edf0f4'
+							color: '#e9e9e9',
+							zeroLineColor: '#e9e9e9'
 						}
 					}],
 					yAxes: [{
 						ticks: {
 							fontSize: 10,
-							fontColor: '#3a4a5c'
+							fontColor: '#000000'
 						},
 						gridLines: {
 							display: false
@@ -477,7 +510,9 @@
 					}]
 				},
 				tooltips: {
-					backgroundColor: '#1a2a3a',
+					backgroundColor: '#000000',
+					titleFontColor: '#ffffff',
+					bodyFontColor: '#ffffff',
 					callbacks: {
 						label: (t) => ` ${t.value}%`
 					}
@@ -500,10 +535,10 @@
 		const labels = top.map(o => truncateText(o.nombre, 25));
 		const values = top.map(o => parseInt(o.progreso) || 0);
 		const bgColors = values.map(v => {
-			if (v >= 75) return COLORS.completed;
-			if (v >= 50) return COLORS.barDark;
-			if (v >= 25) return COLORS.barMedium;
-			return COLORS.barDark;
+			if (v >= 75) return COLORS.completed;   // Green for high progress
+			if (v >= 50) return COLORS.onGoing;     // Dark gray for medium-high
+			if (v >= 25) return COLORS.barMedium;   // Medium gray for medium-low
+			return COLORS.notStarted;               // Gray for low progress
 		});
 		if (objectivesChartInstance) {
 			objectivesChartInstance.destroy();
@@ -516,8 +551,8 @@
 					data: values,
 					backgroundColor: bgColors,
 					borderRadius: 3,
-					barThickness: 18,
-					maxBarThickness: 24
+					barThickness: 14,
+					maxBarThickness: 18
 				}]
 			},
 			options: {
@@ -532,27 +567,39 @@
 							beginAtZero: true,
 							max: 100,
 							fontSize: 10,
+							fontColor: '#6c757d',
 							callback: v => v + '%'
 						},
 						gridLines: {
-							color: '#edf0f4',
-							zeroLineColor: '#edf0f4'
+							color: '#e9e9e9',
+							zeroLineColor: '#e9e9e9'
 						}
 					}],
 					yAxes: [{
 						ticks: {
 							fontSize: 9,
-							fontColor: '#3a4a5c'
+							fontColor: '#000000',
+							padding: 8
 						},
 						gridLines: {
 							display: false
-						}
+						},
+						barPercentage: 0.6,
+						categoryPercentage: 0.7
 					}]
 				},
 				tooltips: {
-					backgroundColor: '#1a2a3a',
+					backgroundColor: '#000000',
+					titleFontColor: '#ffffff',
+					bodyFontColor: '#ffffff',
 					callbacks: {
 						label: (t) => ` ${t.value}%`
+					}
+				},
+				layout: {
+					padding: {
+						top: 5,
+						bottom: 5
 					}
 				}
 			}
@@ -589,7 +636,7 @@
 	}
 
 	function populateFilterDropdowns(projects) {
-		//llenar el dropdown
+		//llenar el dropdown de responsables
 		const respSelect = document.getElementById('filterResponsible');
 		if (respSelect) {
 			const existing = new Set();
@@ -605,13 +652,13 @@
 			});
 		}
 
-		//llenar el dropdown de proyectos
+		//llenar el dropdown de proyectos - usar directamente los proyectos recibidos
 		const objSelect = document.getElementById('filterObjective');
-		if (objSelect && allObjectives.length > 0) {
+		if (objSelect && projects.length > 0) {
 			const existing = new Set();
 			objSelect.querySelectorAll('option').forEach(o => existing.add(o.value));
-			allObjectives.forEach(obj => {
-				const name = obj.nombre || '';
+			projects.forEach(proj => {
+				const name = proj.nombre || proj.descripcion || '';
 				if (name && !existing.has(name)) {
 					const opt = document.createElement('option');
 					opt.value = name;
@@ -627,24 +674,51 @@
 		const respFilter = document.getElementById('filterResponsible')?.value || 'all';
 		const objFilter = document.getElementById('filterObjective')?.value || 'all';
 		let filtered = [...allProjects];
+		
+		// Filtrar por estado
 		if (statusFilter !== 'all') {
 			filtered = filtered.filter(p => {
 				const mappedStatus = mapStatus(p.estado);
 				return mappedStatus === statusFilter;
 			});
 		}
+		
+		// Filtrar por responsable
 		if (respFilter !== 'all') {
 			filtered = filtered.filter(p => p.participante === respFilter);
 		}
+		
+		// Filtrar por nombre de proyecto
+		if (objFilter !== 'all') {
+			filtered = filtered.filter(p => (p.nombre || p.descripcion || '') === objFilter);
+		}
+		
 		displayTaskDetailsTable(filtered);
 		updateDoughnutFromProjects(filtered);
 		updateStatusBoxesFromProjects(filtered);
 		updateResponsibleChart(filtered);
+		
 		//filtrar objetivos tambien
 		let filteredObj = [...allObjectives];
+		
+		// Filtrar objetivos por estado
+		if (statusFilter !== 'all') {
+			filteredObj = filteredObj.filter(o => {
+				const mappedStatus = mapStatus(o.estado);
+				return mappedStatus === statusFilter;
+			});
+		}
+		
+		// Filtrar objetivos por responsable
 		if (respFilter !== 'all') {
 			filteredObj = filteredObj.filter(o => o.responsable === respFilter);
 		}
+		
+		// Filtrar objetivos por nombre de proyecto
+		if (objFilter !== 'all') {
+			filteredObj = filteredObj.filter(o => (o.nombre || '') === objFilter);
+		}
+		
 		displayObjectivesTable(filteredObj);
 		updateObjectivesChart(filteredObj);
 	}
@@ -673,20 +747,20 @@
 
 	//funciones de utilidad
 	function mapStatus(estado) {
-		if (!estado) return 'Not Started';
+		if (!estado) return 'Pendiente';
 		const key = estado.toLowerCase().trim();
 		return STATUS_MAP[key] || estado;
 	}
 
-	function getStatusCSSClass(statusEN) {
+	function getStatusCSSClass(status) {
 		const map = {
-			'Delay': 'status-delay',
-			'Not Started': 'status-notstarted',
-			'Completed': 'status-completed',
-			'On Going': 'status-ongoing',
-			'On Hold': 'status-onhold'
+			'Vencido': 'status-delay',
+			'Pendiente': 'status-notstarted',
+			'Completado': 'status-completed',
+			'En Proceso': 'status-ongoing',
+			'En Espera': 'status-onhold'
 		};
-		return map[statusEN] || 'status-delay';
+		return map[status] || 'status-delay';
 	}
 
 	function getTier(val) {
@@ -701,11 +775,11 @@
 		if (el) el.textContent = text;
 	}
 
+	// NOTE: setTextIfEmpty is kept for backward compatibility but no longer used for status boxes
 	function setTextIfEmpty(selector, text) {
 		const el = document.querySelector(selector);
 		if (el) {
 			const current = el.textContent.trim();
-			//poner solamente si aun no se muestra el valor default
 			if (current === '0' || current === '-' || current === '' || current === '46' || current === '8' || current === '2' || current === '10' || current === '26') {
 				el.textContent = text;
 			}

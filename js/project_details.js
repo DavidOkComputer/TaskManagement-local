@@ -1,5 +1,22 @@
 /*project_details.js para la visualización del modal de detalles del proyecto*/
- 
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+function truncateText(text, length) {
+    if (!text) return '-';
+    return text.length > length ? text.substring(0, length) + '...' : text;
+}
+
 // Variable para almacenar los datos del proyecto actual
 let currentProjectDetails = null;
 let currentProjectTasks = [];

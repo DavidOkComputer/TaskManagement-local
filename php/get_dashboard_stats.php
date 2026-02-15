@@ -64,11 +64,6 @@ try {
             }
             $role_stmt->close();
         }
-        
-        // Si es gerente, también incluir proyectos donde está asignado
-        if ($is_manager && !$is_admin) {
-            // Los departamentos de proyectos asignados se manejarán en las consultas
-        }
     }
 
     // Función helper para verificar si una tabla existe
@@ -84,82 +79,48 @@ try {
         }
     }
 
+    // ==================== OBJETIVOS ====================
     $totalObjetivos = 0;
     $objetivosCompletados = 0;
-    $porcentajeObjetivos = 0;
+    $objetivosPendientes = 0;
+    $objetivosEnProceso = 0;
     $objetivosRetrasados = 0;
+    $porcentajeObjetivos = 0;
 
     if (tableExists($conexion, 'tbl_objetivos')) {
         try {
             if ($is_admin || !$id_usuario) {
-                // Admin ve todo
-                $queryObjetivos = "SELECT COUNT(*) as total FROM tbl_objetivos";
+                $queryObjetivos = "SELECT estado, COUNT(*) as cantidad FROM tbl_objetivos GROUP BY estado";
                 $stmtObjetivos = $conexion->prepare($queryObjetivos);
             } elseif ($is_manager && !empty($departamentos_usuario)) {
-                // Gerente ve objetivos de sus departamentos
                 $placeholders = implode(',', array_fill(0, count($departamentos_usuario), '?'));
-                $queryObjetivos = "SELECT COUNT(*) as total FROM tbl_objetivos WHERE id_departamento IN ($placeholders)";
+                $queryObjetivos = "SELECT estado, COUNT(*) as cantidad FROM tbl_objetivos WHERE id_departamento IN ($placeholders) GROUP BY estado";
                 $stmtObjetivos = $conexion->prepare($queryObjetivos);
                 $types = str_repeat('i', count($departamentos_usuario));
                 $stmtObjetivos->bind_param($types, ...$departamentos_usuario);
             } else {
-                // Usuario normal - solo sus departamentos
                 $stmtObjetivos = null;
             }
             
             if ($stmtObjetivos) {
                 $stmtObjetivos->execute();
                 $resultObjetivos = $stmtObjetivos->get_result();
-                if ($resultObjetivos && $row = $resultObjetivos->fetch_assoc()) {
-                    $totalObjetivos = (int)$row['total'];
+                while ($row = $resultObjetivos->fetch_assoc()) {
+                    $estado = strtolower(trim($row['estado']));
+                    $cantidad = (int)$row['cantidad'];
+                    $totalObjetivos += $cantidad;
+                    
+                    if ($estado === 'completado') {
+                        $objetivosCompletados = $cantidad;
+                    } elseif ($estado === 'pendiente') {
+                        $objetivosPendientes = $cantidad;
+                    } elseif ($estado === 'en proceso') {
+                        $objetivosEnProceso = $cantidad;
+                    } elseif ($estado === 'vencido') {
+                        $objetivosRetrasados = $cantidad;
+                    }
                 }
                 $stmtObjetivos->close();
-            }
-
-            // Objetivos completados
-            if ($is_admin || !$id_usuario) {
-                $queryCompletados = "SELECT COUNT(*) as completados FROM tbl_objetivos WHERE estado = 'completado'";
-                $stmtCompletados = $conexion->prepare($queryCompletados);
-            } elseif ($is_manager && !empty($departamentos_usuario)) {
-                $placeholders = implode(',', array_fill(0, count($departamentos_usuario), '?'));
-                $queryCompletados = "SELECT COUNT(*) as completados FROM tbl_objetivos WHERE estado = 'completado' AND id_departamento IN ($placeholders)";
-                $stmtCompletados = $conexion->prepare($queryCompletados);
-                $types = str_repeat('i', count($departamentos_usuario));
-                $stmtCompletados->bind_param($types, ...$departamentos_usuario);
-            } else {
-                $stmtCompletados = null;
-            }
-
-            if ($stmtCompletados) {
-                $stmtCompletados->execute();
-                $resultCompletados = $stmtCompletados->get_result();
-                if ($resultCompletados && $row = $resultCompletados->fetch_assoc()) {
-                    $objetivosCompletados = (int)$row['completados'];
-                }
-                $stmtCompletados->close();
-            }
-
-            // Objetivos vencidos
-            if ($is_admin || !$id_usuario) {
-                $queryRetrasados = "SELECT COUNT(*) as retrasados FROM tbl_objetivos WHERE estado = 'vencido'";
-                $stmtRetrasados = $conexion->prepare($queryRetrasados);
-            } elseif ($is_manager && !empty($departamentos_usuario)) {
-                $placeholders = implode(',', array_fill(0, count($departamentos_usuario), '?'));
-                $queryRetrasados = "SELECT COUNT(*) as retrasados FROM tbl_objetivos WHERE estado = 'vencido' AND id_departamento IN ($placeholders)";
-                $stmtRetrasados = $conexion->prepare($queryRetrasados);
-                $types = str_repeat('i', count($departamentos_usuario));
-                $stmtRetrasados->bind_param($types, ...$departamentos_usuario);
-            } else {
-                $stmtRetrasados = null;
-            }
-
-            if ($stmtRetrasados) {
-                $stmtRetrasados->execute();
-                $resultRetrasados = $stmtRetrasados->get_result();
-                if ($resultRetrasados && $row = $resultRetrasados->fetch_assoc()) {
-                    $objetivosRetrasados = (int)$row['retrasados'];
-                }
-                $stmtRetrasados->close();
             }
 
             $porcentajeObjetivos = $totalObjetivos > 0 ? round(($objetivosCompletados / $totalObjetivos) * 100, 1) : 0;
@@ -169,15 +130,12 @@ try {
         }
     }
 
+    // ==================== PROYECTOS ====================
     $totalProyectos = 0;
-    $estadosCount = [
-        'completado' => 0,
-        'en proceso' => 0,
-        'pendiente' => 0,
-        'vencido' => 0
-    ];
-    $projectsOnTime = 0;
-    $projectsOverdue = 0;
+    $proyectosCompletados = 0;
+    $proyectosEnProceso = 0;
+    $proyectosPendientes = 0;
+    $proyectosVencidos = 0;
 
     if (tableExists($conexion, 'tbl_proyectos')) {
         try {
@@ -197,26 +155,6 @@ try {
                 $types = "iii";
             }
 
-            // Total de proyectos
-            $queryProyectos = "
-                SELECT COUNT(DISTINCT p.id_proyecto) as total 
-                FROM tbl_proyectos p
-                LEFT JOIN tbl_proyecto_usuarios pu ON p.id_proyecto = pu.id_proyecto
-                WHERE $whereClause
-            ";
-            $stmtProyectos = $conexion->prepare($queryProyectos);
-            if ($stmtProyectos && !empty($params)) {
-                $stmtProyectos->bind_param($types, ...$params);
-            }
-            if ($stmtProyectos) {
-                $stmtProyectos->execute();
-                $resultProyectos = $stmtProyectos->get_result();
-                if ($resultProyectos && $row = $resultProyectos->fetch_assoc()) {
-                    $totalProyectos = (int)$row['total'];
-                }
-                $stmtProyectos->close();
-            }
-
             // Contar por estado
             $queryEstados = "
                 SELECT p.estado, COUNT(DISTINCT p.id_proyecto) as cantidad
@@ -234,25 +172,34 @@ try {
                 $resultEstados = $stmtEstados->get_result();
                 while ($estado = $resultEstados->fetch_assoc()) {
                     $estadoNombre = strtolower(trim($estado['estado']));
-                    if (isset($estadosCount[$estadoNombre])) {
-                        $estadosCount[$estadoNombre] = (int)$estado['cantidad'];
+                    $cantidad = (int)$estado['cantidad'];
+                    $totalProyectos += $cantidad;
+                    
+                    if ($estadoNombre === 'completado') {
+                        $proyectosCompletados = $cantidad;
+                    } elseif ($estadoNombre === 'en proceso') {
+                        $proyectosEnProceso = $cantidad;
+                    } elseif ($estadoNombre === 'pendiente') {
+                        $proyectosPendientes = $cantidad;
+                    } elseif ($estadoNombre === 'vencido') {
+                        $proyectosVencidos = $cantidad;
                     }
                 }
                 $stmtEstados->close();
             }
-
-            $projectsOverdue = $estadosCount['vencido'];
 
         } catch (Exception $e) {
             error_log('Error consultando proyectos: ' . $e->getMessage());
         }
     }
 
+    // ==================== TAREAS ====================
     $totalTareas = 0;
     $tareasCompletadas = 0;
+    $tareasPendientes = 0;
+    $tareasVencidas = 0;
+    $tareasPorVencer = 0; // Tareas que vencen en los próximos 3 días
     $porcentajeTareas = 0;
-    $tareasRetrasadas = 0;
-    $tareasEnProceso = 0;
 
     if (tableExists($conexion, 'tbl_tareas')) {
         try {
@@ -272,84 +219,58 @@ try {
                 $typesTareas = "ii";
             }
 
-            // Total tareas
-            $queryTareas = "
-                SELECT COUNT(*) as total 
+            // Contar tareas por estado
+            $queryTareasEstado = "
+                SELECT t.estado, COUNT(*) as cantidad
                 FROM tbl_tareas t
                 LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto
                 WHERE $whereClauseTareas
+                GROUP BY t.estado
             ";
-            $stmtTareas = $conexion->prepare($queryTareas);
-            if ($stmtTareas && !empty($paramsTareas)) {
-                $stmtTareas->bind_param($typesTareas, ...$paramsTareas);
+            $stmtTareasEstado = $conexion->prepare($queryTareasEstado);
+            if ($stmtTareasEstado && !empty($paramsTareas)) {
+                $stmtTareasEstado->bind_param($typesTareas, ...$paramsTareas);
             }
-            if ($stmtTareas) {
-                $stmtTareas->execute();
-                $resultTareas = $stmtTareas->get_result();
-                if ($resultTareas && $row = $resultTareas->fetch_assoc()) {
-                    $totalTareas = (int)$row['total'];
+            if ($stmtTareasEstado) {
+                $stmtTareasEstado->execute();
+                $resultTareasEstado = $stmtTareasEstado->get_result();
+                while ($row = $resultTareasEstado->fetch_assoc()) {
+                    $estado = strtolower(trim($row['estado']));
+                    $cantidad = (int)$row['cantidad'];
+                    $totalTareas += $cantidad;
+                    
+                    if ($estado === 'completado') {
+                        $tareasCompletadas = $cantidad;
+                    } elseif ($estado === 'pendiente') {
+                        $tareasPendientes = $cantidad;
+                    } elseif ($estado === 'vencido') {
+                        $tareasVencidas = $cantidad;
+                    }
                 }
-                $stmtTareas->close();
+                $stmtTareasEstado->close();
             }
 
-            // Tareas completadas
-            $queryTareasCompletadas = "
-                SELECT COUNT(*) as completadas 
+            // Tareas por vencer (próximos 3 días)
+            $queryPorVencer = "
+                SELECT COUNT(*) as cantidad
                 FROM tbl_tareas t
                 LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto
-                WHERE t.estado = 'completado' AND $whereClauseTareas
+                WHERE $whereClauseTareas
+                AND t.estado = 'pendiente'
+                AND t.fecha_cumplimiento IS NOT NULL
+                AND t.fecha_cumplimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY)
             ";
-            $stmtTareasCompletadas = $conexion->prepare($queryTareasCompletadas);
-            if ($stmtTareasCompletadas && !empty($paramsTareas)) {
-                $stmtTareasCompletadas->bind_param($typesTareas, ...$paramsTareas);
+            $stmtPorVencer = $conexion->prepare($queryPorVencer);
+            if ($stmtPorVencer && !empty($paramsTareas)) {
+                $stmtPorVencer->bind_param($typesTareas, ...$paramsTareas);
             }
-            if ($stmtTareasCompletadas) {
-                $stmtTareasCompletadas->execute();
-                $resultTareasCompletadas = $stmtTareasCompletadas->get_result();
-                if ($resultTareasCompletadas && $row = $resultTareasCompletadas->fetch_assoc()) {
-                    $tareasCompletadas = (int)$row['completadas'];
+            if ($stmtPorVencer) {
+                $stmtPorVencer->execute();
+                $resultPorVencer = $stmtPorVencer->get_result();
+                if ($resultPorVencer && $row = $resultPorVencer->fetch_assoc()) {
+                    $tareasPorVencer = (int)$row['cantidad'];
                 }
-                $stmtTareasCompletadas->close();
-            }
-
-            // Tareas vencidas
-            $queryTareasRetrasadas = "
-                SELECT COUNT(*) as retrasadas 
-                FROM tbl_tareas t
-                LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto
-                WHERE t.estado = 'vencido' AND $whereClauseTareas
-            ";
-            $stmtTareasRetrasadas = $conexion->prepare($queryTareasRetrasadas);
-            if ($stmtTareasRetrasadas && !empty($paramsTareas)) {
-                $stmtTareasRetrasadas->bind_param($typesTareas, ...$paramsTareas);
-            }
-            if ($stmtTareasRetrasadas) {
-                $stmtTareasRetrasadas->execute();
-                $resultTareasRetrasadas = $stmtTareasRetrasadas->get_result();
-                if ($resultTareasRetrasadas && $row = $resultTareasRetrasadas->fetch_assoc()) {
-                    $tareasRetrasadas = (int)$row['retrasadas'];
-                }
-                $stmtTareasRetrasadas->close();
-            }
-
-            // Tareas en proceso
-            $queryTareasEnProceso = "
-                SELECT COUNT(*) as en_proceso 
-                FROM tbl_tareas t
-                LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto
-                WHERE t.estado = 'en proceso' AND $whereClauseTareas
-            ";
-            $stmtTareasEnProceso = $conexion->prepare($queryTareasEnProceso);
-            if ($stmtTareasEnProceso && !empty($paramsTareas)) {
-                $stmtTareasEnProceso->bind_param($typesTareas, ...$paramsTareas);
-            }
-            if ($stmtTareasEnProceso) {
-                $stmtTareasEnProceso->execute();
-                $resultTareasEnProceso = $stmtTareasEnProceso->get_result();
-                if ($resultTareasEnProceso && $row = $resultTareasEnProceso->fetch_assoc()) {
-                    $tareasEnProceso = (int)$row['en_proceso'];
-                }
-                $stmtTareasEnProceso->close();
+                $stmtPorVencer->close();
             }
 
             $porcentajeTareas = $totalTareas > 0 ? round(($tareasCompletadas / $totalTareas) * 100, 1) : 0;
@@ -359,31 +280,95 @@ try {
         }
     }
 
-    // Calcular porcentajes
-    $porcentajeCompletados = $totalProyectos > 0 ? round(($estadosCount['completado'] / $totalProyectos) * 100, 1) : 0;
-    $porcentajeVencidos = $totalProyectos > 0 ? round(($estadosCount['vencido'] / $totalProyectos) * 100, 1) : 0;
-    $porcentajePendientes = $totalProyectos > 0 ? round(($estadosCount['pendiente'] / $totalProyectos) * 100, 1) : 0;
+    // ==================== PROYECTOS POR VENCER ====================
+    $proyectosPorVencer = 0;
+    
+    if (tableExists($conexion, 'tbl_proyectos')) {
+        try {
+            if ($is_admin || !$id_usuario) {
+                $queryProyPorVencer = "
+                    SELECT COUNT(*) as cantidad
+                    FROM tbl_proyectos
+                    WHERE estado IN ('pendiente', 'en proceso')
+                    AND fecha_cumplimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                ";
+                $stmtProyPorVencer = $conexion->prepare($queryProyPorVencer);
+            } elseif ($is_manager && !empty($departamentos_usuario)) {
+                $placeholders = implode(',', array_fill(0, count($departamentos_usuario), '?'));
+                $queryProyPorVencer = "
+                    SELECT COUNT(DISTINCT p.id_proyecto) as cantidad
+                    FROM tbl_proyectos p
+                    LEFT JOIN tbl_proyecto_usuarios pu ON p.id_proyecto = pu.id_proyecto
+                    WHERE (p.id_departamento IN ($placeholders) OR p.id_creador = ? OR p.id_participante = ? OR pu.id_usuario = ?)
+                    AND p.estado IN ('pendiente', 'en proceso')
+                    AND p.fecha_cumplimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                ";
+                $stmtProyPorVencer = $conexion->prepare($queryProyPorVencer);
+                $paramsProyVencer = array_merge($departamentos_usuario, [$id_usuario, $id_usuario, $id_usuario]);
+                $typesProyVencer = str_repeat('i', count($departamentos_usuario)) . 'iii';
+                $stmtProyPorVencer->bind_param($typesProyVencer, ...$paramsProyVencer);
+            } else {
+                $queryProyPorVencer = "
+                    SELECT COUNT(DISTINCT p.id_proyecto) as cantidad
+                    FROM tbl_proyectos p
+                    LEFT JOIN tbl_proyecto_usuarios pu ON p.id_proyecto = pu.id_proyecto
+                    WHERE (p.id_creador = ? OR p.id_participante = ? OR pu.id_usuario = ?)
+                    AND p.estado IN ('pendiente', 'en proceso')
+                    AND p.fecha_cumplimiento BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                ";
+                $stmtProyPorVencer = $conexion->prepare($queryProyPorVencer);
+                $stmtProyPorVencer->bind_param('iii', $id_usuario, $id_usuario, $id_usuario);
+            }
+            
+            if ($stmtProyPorVencer) {
+                $stmtProyPorVencer->execute();
+                $resultProyPorVencer = $stmtProyPorVencer->get_result();
+                if ($resultProyPorVencer && $row = $resultProyPorVencer->fetch_assoc()) {
+                    $proyectosPorVencer = (int)$row['cantidad'];
+                }
+                $stmtProyPorVencer->close();
+            }
+        } catch (Exception $e) {
+            error_log('Error consultando proyectos por vencer: ' . $e->getMessage());
+        }
+    }
 
-    // Construir respuesta
+    // ==================== CALCULAR PORCENTAJES ====================
+    $porcentajeCompletados = $totalProyectos > 0 ? round(($proyectosCompletados / $totalProyectos) * 100, 1) : 0;
+    $porcentajeVencidos = $totalProyectos > 0 ? round(($proyectosVencidos / $totalProyectos) * 100, 1) : 0;
+    $porcentajePendientes = $totalProyectos > 0 ? round(($proyectosPendientes / $totalProyectos) * 100, 1) : 0;
+    $porcentajeEnProceso = $totalProyectos > 0 ? round(($proyectosEnProceso / $totalProyectos) * 100, 1) : 0;
+
+    // ==================== CONSTRUIR RESPUESTA ====================
     $response['success'] = true;
     $response['stats'] = [
+        // Objetivos
         'total_objetivos' => (int)$totalObjetivos,
-        'total_proyectos' => (int)$totalProyectos,
-        'total_tareas' => (int)$totalTareas,
-        'porcentaje_tareas' => (float)$porcentajeTareas,
-        'porcentaje_objetivos' => (float)$porcentajeObjetivos,
-        'proyectos_completados' => (int)$estadosCount['completado'],
-        'proyectos_en_proceso' => (int)$estadosCount['en proceso'],
-        'proyectos_pendientes' => (int)$estadosCount['pendiente'],
-        'proyectos_vencidos' => (int)$estadosCount['vencido'],
+        'objetivos_completados' => (int)$objetivosCompletados,
+        'objetivos_pendientes' => (int)$objetivosPendientes,
+        'objetivos_en_proceso' => (int)$objetivosEnProceso,
         'objetivos_retrasados' => (int)$objetivosRetrasados,
-        'tareas_retrasadas' => (int)$tareasRetrasadas,
-        'tareas_en_proceso' => (int)$tareasEnProceso,
+        'porcentaje_objetivos' => (float)$porcentajeObjetivos,
+        
+        // Proyectos
+        'total_proyectos' => (int)$totalProyectos,
+        'proyectos_completados' => (int)$proyectosCompletados,
+        'proyectos_en_proceso' => (int)$proyectosEnProceso,
+        'proyectos_pendientes' => (int)$proyectosPendientes,
+        'proyectos_vencidos' => (int)$proyectosVencidos,
+        'proyectos_por_vencer' => (int)$proyectosPorVencer,
         'porcentaje_completados' => (float)$porcentajeCompletados,
         'porcentaje_vencidos' => (float)$porcentajeVencidos,
         'porcentaje_pendientes' => (float)$porcentajePendientes,
-        'progreso_promedio_en_proceso' => 0,
-        'proyectos_a_tiempo' => (int)$projectsOnTime
+        'porcentaje_en_proceso' => (float)$porcentajeEnProceso,
+        
+        // Tareas
+        'total_tareas' => (int)$totalTareas,
+        'tareas_completadas' => (int)$tareasCompletadas,
+        'tareas_pendientes' => (int)$tareasPendientes,
+        'tareas_vencidas' => (int)$tareasVencidas,
+        'tareas_por_vencer' => (int)$tareasPorVencer,
+        'porcentaje_tareas' => (float)$porcentajeTareas
     ];
 
     // Metadata sobre el alcance
@@ -407,22 +392,27 @@ try {
         'error_detail' => $e->getMessage(),
         'stats' => [
             'total_objetivos' => 0,
-            'total_proyectos' => 0,
-            'total_tareas' => 0,
-            'porcentaje_tareas' => 0,
+            'objetivos_completados' => 0,
+            'objetivos_pendientes' => 0,
+            'objetivos_en_proceso' => 0,
+            'objetivos_retrasados' => 0,
             'porcentaje_objetivos' => 0,
+            'total_proyectos' => 0,
             'proyectos_completados' => 0,
             'proyectos_en_proceso' => 0,
             'proyectos_pendientes' => 0,
             'proyectos_vencidos' => 0,
-            'objetivos_retrasados' => 0,
-            'tareas_retrasadas' => 0,
-            'tareas_en_proceso' => 0,
+            'proyectos_por_vencer' => 0,
             'porcentaje_completados' => 0,
             'porcentaje_vencidos' => 0,
             'porcentaje_pendientes' => 0,
-            'progreso_promedio_en_proceso' => 0,
-            'proyectos_a_tiempo' => 0
+            'porcentaje_en_proceso' => 0,
+            'total_tareas' => 0,
+            'tareas_completadas' => 0,
+            'tareas_pendientes' => 0,
+            'tareas_vencidas' => 0,
+            'tareas_por_vencer' => 0,
+            'porcentaje_tareas' => 0
         ]
     ];
 
