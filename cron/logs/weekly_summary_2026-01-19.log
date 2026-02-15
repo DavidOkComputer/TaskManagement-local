@@ -1,0 +1,28 @@
+[2026-01-19 15:00:01] [INFO] === Iniciando envío de resumen semanal ===
+[2026-01-19 15:00:01] [INFO] Usuarios para enviar resumen: 12
+[2026-01-19 15:00:01] [INFO] Procesando usuario: David Barreto (francisco.barreto@nidec.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para francisco.barreto@nidec.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Francisco Valdez (francisco.valdez@nidec.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para francisco.valdez@nidec.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Jhon Doe (jhon.doe@nidec.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para jhon.doe@nidec.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Juan Dou (juan.dou@nidec-motor.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para juan.dou@nidec-motor.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Frenkie DeJong (frenkie.dejong@nidec-motor.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para frenkie.dejong@nidec-motor.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Luis Ortiz (luis.ortiz@nidec-motor.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para luis.ortiz@nidec-motor.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Margarita Barbosa (margarita.barbosa@nidec-motor.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para margarita.barbosa@nidec-motor.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Jesus Dominguez (jesus.dominguez@nidec-motor.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para jesus.dominguez@nidec-motor.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Jose Miguel Escamilla (jose.miguel@nidec-ga.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para jose.miguel@nidec-ga.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Humberto Araguz Cruz (humberto.araguz@nidec-motor.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para humberto.araguz@nidec-motor.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Yaneth Zaleta (yaneth.d.zaleta@nidec-ga.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para yaneth.d.zaleta@nidec-ga.com
+[2026-01-19 15:00:01] [INFO] Procesando usuario: Felipe Mireles (felipe.mireles@nidec-ga.com)
+[2026-01-19 15:00:01] [INFO] Email encolado correctamente para felipe.mireles@nidec-ga.com
+[2026-01-19 15:00:01] [INFO] === Resumen semanal completado ===
+[2026-01-19 15:00:01] [INFO] Total de emails en cola: 12

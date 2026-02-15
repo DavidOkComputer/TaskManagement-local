@@ -1,4 +1,4 @@
-/*manager_manage_projects.js - Gestión de proyectos para gerentes con filtrado por URL*/
+/*manager_manage_projects.js para la gestión de proyectos para gerentes con filtrado por URL*/
 
 const Config = {
 	API_ENDPOINTS: {
@@ -68,9 +68,6 @@ function checkUrlParameters() {
 	}
 }
 
-/**
- * Configura el selector de filtro por estado
- */
 function setupStatusFilter() {
 	const rowsPerPageControl = document.querySelector('.rows-per-page-control');
 	if (rowsPerPageControl && !document.getElementById('statusFilterSelect')) {
@@ -111,9 +108,6 @@ function setupStatusFilter() {
 	}
 }
 
-/**
- * Muestra indicador de filtro de estado activo
- */
 function showActiveStatusFilterIndicator(estado) {
 	const clearBtn = document.getElementById('clearStatusFilterBtn');
 	if (clearBtn) {
@@ -126,9 +120,6 @@ function showActiveStatusFilterIndicator(estado) {
 	}
 }
 
-/**
- * Aplica todos los filtros activos (estado + búsqueda/empleado)
- */
 function applyAllFilters() {
 	let result = [...allProjects];
 	
@@ -164,9 +155,6 @@ function applyAllFilters() {
 	showActiveStatusFilterIndicator(activeStatusFilter);
 }
 
-/**
- * Limpia el filtro de estado
- */
 function clearStatusFilter() {
 	activeStatusFilter = null;
 	const filterSelect = document.getElementById('statusFilterSelect');
@@ -182,9 +170,6 @@ function clearStatusFilter() {
 	applyAllFilters();
 }
 
-/**
- * Actualiza la URL con los filtros actuales
- */
 function updateURL() {
 	const url = new URL(window.location);
 	
@@ -197,9 +182,6 @@ function updateURL() {
 	window.history.replaceState({}, '', url);
 }
 
-/**
- * Función para filtrar por estado desde la URL (llamada desde el dashboard)
- */
 function filterByStatus(estado) {
 	activeStatusFilter = estado ? estado.toLowerCase() : null;
 	

@@ -612,8 +612,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		statusBadge.textContent = statusInfo.text;
 		statusBadge.className = `badge ${statusInfo.badgeClass}`;
 		// Link para ver/actualizar tarea - versión de usuario 
-		document.getElementById('modalEditTaskBtn').href =
-			`../revisarTareas_user/?task_id=${task.id_tarea}`;
+		//document.getElementById('modalEditTaskBtn').href =
+		//	`../revisarTareas_user/?task_id=${task.id_tarea}`;
 		// Mostrar modal 
 		const modal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
 		modal.show();

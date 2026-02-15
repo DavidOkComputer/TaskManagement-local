@@ -1,0 +1,246 @@
+[07:55:37] ========================================== 
+[07:55:37] Iniciando ejecucion de check deadlines 
+[07:55:37] ========================================== 
+[07:55:37] Ejecutando check_deadlines.php... 
+[2026-01-19 14:55:37] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-19 14:55:37] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-19 14:55:37] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-19 14:55:37] [INFO] Buscando tareas que vencen mañana...
+[2026-01-19 14:55:37] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-19 14:55:37] [INFO] Buscando tareas vencidas...
+Email encolado para usuario 3: Tarea vencida
+Email encolado para usuario 7: Tarea vencida
+Email encolado para usuario 3: Tarea vencida
+Email encolado para usuario 3: Tarea vencida
+Email encolado para usuario 3: Tarea vencida
+Email encolado para usuario 3: Tarea vencida
+Email encolado para usuario 14: Tarea vencida
+Email encolado para usuario 14: Tarea vencida
+Email encolado para usuario 14: Tarea vencida
+Email encolado para usuario 15: Tarea vencida
+Email encolado para usuario 15: Tarea vencida
+Email encolado para usuario 14: Tarea vencida
+Email encolado para usuario 6: Tarea vencida
+Email encolado para usuario 6: Tarea vencida
+Email encolado para usuario 7: Tarea vencida
+[2026-01-19 14:55:38] [INFO] Tareas vencidas (asignados): 15 notificaciones procesadas
+[2026-01-19 14:55:38] [INFO] Buscando tareas vencidas para notificar a creadores...
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+Email encolado para usuario 1: Tarea vencida (como creador)
+[2026-01-19 14:55:38] [INFO] Creadores notificados de tareas vencidas: 13
+[2026-01-19 14:55:38] [INFO] Buscando proyectos vencidos...
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 3: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 3: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 3: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 6: Proyecto vencido
+Email encolado para usuario 7: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 3: Proyecto vencido
+Email encolado para usuario 6: Proyecto vencido
+Email encolado para usuario 11: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 14: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 15: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 14: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+Email encolado para usuario 16: Proyecto vencido
+Email encolado para usuario 1: Proyecto vencido
+[2026-01-19 14:55:38] [INFO] Proyectos vencidos notificados: 26
+[2026-01-19 14:55:38] [INFO] === Verificación completada ===
+[2026-01-19 14:55:38] [INFO] Total de notificaciones procesadas: 54
+[2026-01-19 14:55:38] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-19 14:55:38] [INFO]  - Vencen mañana: 0
+[2026-01-19 14:55:38] [INFO]  - Vencidas (asignados): 15
+[2026-01-19 14:55:38] [INFO]  - Vencidas (creadores): 13
+[2026-01-19 14:55:38] [INFO]  - Proyectos vencidos: 26
+[07:55:37] Tareas completadas 
+ 
+[08:00:02] ========================================== 
+[08:00:02] Iniciando ejecucion de check deadlines 
+[08:00:02] ========================================== 
+[08:00:02] Ejecutando check_deadlines.php... 
+[2026-01-19 15:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-19 15:00:02] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-19 15:00:02] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-19 15:00:02] [INFO] Buscando tareas que vencen mañana...
+[2026-01-19 15:00:02] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-19 15:00:02] [INFO] Buscando tareas vencidas...
+[2026-01-19 15:00:02] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-19 15:00:02] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-19 15:00:02] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-19 15:00:02] [INFO] Buscando proyectos vencidos...
+[2026-01-19 15:00:02] [INFO] Proyectos vencidos notificados: 26
+[2026-01-19 15:00:02] [INFO] === Verificación completada ===
+[2026-01-19 15:00:02] [INFO] Total de notificaciones procesadas: 26
+[2026-01-19 15:00:02] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-19 15:00:02] [INFO]  - Vencen mañana: 0
+[2026-01-19 15:00:02] [INFO]  - Vencidas (asignados): 0
+[2026-01-19 15:00:02] [INFO]  - Vencidas (creadores): 0
+[2026-01-19 15:00:02] [INFO]  - Proyectos vencidos: 26
+[08:00:02] Tareas completadas 
+ 
+[08:00:21] ========================================== 
+[08:00:21] Iniciando ejecucion de check deadlines 
+[08:00:21] ========================================== 
+[08:00:21] Ejecutando check_deadlines.php... 
+[2026-01-19 15:00:22] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-19 15:00:22] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-19 15:00:22] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-19 15:00:22] [INFO] Buscando tareas que vencen mañana...
+[2026-01-19 15:00:22] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-19 15:00:22] [INFO] Buscando tareas vencidas...
+[2026-01-19 15:00:22] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-19 15:00:22] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-19 15:00:22] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-19 15:00:22] [INFO] Buscando proyectos vencidos...
+[2026-01-19 15:00:22] [INFO] Proyectos vencidos notificados: 26
+[2026-01-19 15:00:22] [INFO] === Verificación completada ===
+[2026-01-19 15:00:22] [INFO] Total de notificaciones procesadas: 26
+[2026-01-19 15:00:22] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-19 15:00:22] [INFO]  - Vencen mañana: 0
+[2026-01-19 15:00:22] [INFO]  - Vencidas (asignados): 0
+[2026-01-19 15:00:22] [INFO]  - Vencidas (creadores): 0
+[2026-01-19 15:00:22] [INFO]  - Proyectos vencidos: 26
+[08:00:21] Tareas completadas 
+ 
+[08:55:36] ========================================== 
+[08:55:36] Iniciando ejecucion de check deadlines 
+[08:55:36] ========================================== 
+[08:55:36] Ejecutando check_deadlines.php... 
+[2026-01-19 15:55:36] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-19 15:55:36] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-19 15:55:36] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-19 15:55:36] [INFO] Buscando tareas que vencen mañana...
+[2026-01-19 15:55:36] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-19 15:55:36] [INFO] Buscando tareas vencidas...
+[2026-01-19 15:55:36] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-19 15:55:36] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-19 15:55:36] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-19 15:55:36] [INFO] Buscando proyectos vencidos...
+[2026-01-19 15:55:36] [INFO] Proyectos vencidos notificados: 26
+[2026-01-19 15:55:36] [INFO] === Verificación completada ===
+[2026-01-19 15:55:36] [INFO] Total de notificaciones procesadas: 26
+[2026-01-19 15:55:36] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-19 15:55:36] [INFO]  - Vencen mañana: 0
+[2026-01-19 15:55:36] [INFO]  - Vencidas (asignados): 0
+[2026-01-19 15:55:36] [INFO]  - Vencidas (creadores): 0
+[2026-01-19 15:55:36] [INFO]  - Proyectos vencidos: 26
+[08:55:36] Tareas completadas 
+ 
+[09:00:02] ========================================== 
+[09:00:02] Iniciando ejecucion de check deadlines 
+[09:00:02] ========================================== 
+[09:00:02] Ejecutando check_deadlines.php... 
+[2026-01-19 16:00:02] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-19 16:00:02] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-19 16:00:02] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-19 16:00:02] [INFO] Buscando tareas que vencen mañana...
+[2026-01-19 16:00:02] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-19 16:00:02] [INFO] Buscando tareas vencidas...
+[2026-01-19 16:00:02] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-19 16:00:02] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-19 16:00:02] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-19 16:00:02] [INFO] Buscando proyectos vencidos...
+[2026-01-19 16:00:02] [INFO] Proyectos vencidos notificados: 26
+[2026-01-19 16:00:02] [INFO] === Verificación completada ===
+[2026-01-19 16:00:02] [INFO] Total de notificaciones procesadas: 26
+[2026-01-19 16:00:02] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-19 16:00:02] [INFO]  - Vencen mañana: 0
+[2026-01-19 16:00:02] [INFO]  - Vencidas (asignados): 0
+[2026-01-19 16:00:02] [INFO]  - Vencidas (creadores): 0
+[2026-01-19 16:00:02] [INFO]  - Proyectos vencidos: 26
+[09:00:02] Tareas completadas 
+ 
+[09:55:36] ========================================== 
+[09:55:36] Iniciando ejecucion de check deadlines 
+[09:55:36] ========================================== 
+[09:55:36] Ejecutando check_deadlines.php... 
+[2026-01-19 16:55:36] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-19 16:55:36] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-19 16:55:36] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-19 16:55:36] [INFO] Buscando tareas que vencen mañana...
+[2026-01-19 16:55:36] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-19 16:55:36] [INFO] Buscando tareas vencidas...
+[2026-01-19 16:55:36] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-19 16:55:36] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-19 16:55:36] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-19 16:55:36] [INFO] Buscando proyectos vencidos...
+[2026-01-19 16:55:36] [INFO] Proyectos vencidos notificados: 26
+[2026-01-19 16:55:36] [INFO] === Verificación completada ===
+[2026-01-19 16:55:36] [INFO] Total de notificaciones procesadas: 26
+[2026-01-19 16:55:36] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-19 16:55:36] [INFO]  - Vencen mañana: 0
+[2026-01-19 16:55:36] [INFO]  - Vencidas (asignados): 0
+[2026-01-19 16:55:36] [INFO]  - Vencidas (creadores): 0
+[2026-01-19 16:55:36] [INFO]  - Proyectos vencidos: 26
+[09:55:36] Tareas completadas 
+ 
+[10:00:03] ========================================== 
+[10:00:03] Iniciando ejecucion de check deadlines 
+[10:00:03] ========================================== 
+[10:00:03] Ejecutando check_deadlines.php... 
+[2026-01-19 17:00:03] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-19 17:00:03] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-19 17:00:03] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-19 17:00:03] [INFO] Buscando tareas que vencen mañana...
+[2026-01-19 17:00:03] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-19 17:00:03] [INFO] Buscando tareas vencidas...
+[2026-01-19 17:00:03] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-19 17:00:03] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-19 17:00:03] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-19 17:00:03] [INFO] Buscando proyectos vencidos...
+[2026-01-19 17:00:03] [INFO] Proyectos vencidos notificados: 26
+[2026-01-19 17:00:03] [INFO] === Verificación completada ===
+[2026-01-19 17:00:03] [INFO] Total de notificaciones procesadas: 26
+[2026-01-19 17:00:03] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-19 17:00:03] [INFO]  - Vencen mañana: 0
+[2026-01-19 17:00:03] [INFO]  - Vencidas (asignados): 0
+[2026-01-19 17:00:03] [INFO]  - Vencidas (creadores): 0
+[2026-01-19 17:00:03] [INFO]  - Proyectos vencidos: 26
+[10:00:03] Tareas completadas 
+ 
+[10:55:36] ========================================== 
+[10:55:36] Iniciando ejecucion de check deadlines 
+[10:55:36] ========================================== 
+[10:55:36] Ejecutando check_deadlines.php... 
+[2026-01-19 17:55:36] [INFO] === Iniciando verificación de vencimientos ===
+[2026-01-19 17:55:36] [INFO] Buscando tareas que vencen en 3 días...
+[2026-01-19 17:55:36] [INFO] Tareas próximas a vencer: 0 notificaciones procesadas
+[2026-01-19 17:55:36] [INFO] Buscando tareas que vencen mañana...
+[2026-01-19 17:55:36] [INFO] Tareas que vencen mañana: 0 notificaciones procesadas
+[2026-01-19 17:55:36] [INFO] Buscando tareas vencidas...
+[2026-01-19 17:55:36] [INFO] Tareas vencidas (asignados): 0 notificaciones procesadas
+[2026-01-19 17:55:36] [INFO] Buscando tareas vencidas para notificar a creadores...
+[2026-01-19 17:55:36] [INFO] Creadores notificados de tareas vencidas: 0
+[2026-01-19 17:55:36] [INFO] Buscando proyectos vencidos...
+[2026-01-19 17:55:36] [INFO] Proyectos vencidos notificados: 26
+[2026-01-19 17:55:36] [INFO] === Verificación completada ===
+[2026-01-19 17:55:36] [INFO] Total de notificaciones procesadas: 26
+[2026-01-19 17:55:36] [INFO]  - Próximas a vencer (3 días): 0
+[2026-01-19 17:55:36] [INFO]  - Vencen mañana: 0
+[2026-01-19 17:55:36] [INFO]  - Vencidas (asignados): 0
+[2026-01-19 17:55:36] [INFO]  - Vencidas (creadores): 0
+[2026-01-19 17:55:36] [INFO]  - Proyectos vencidos: 26
+[10:55:36] Tareas completadas 
+ 

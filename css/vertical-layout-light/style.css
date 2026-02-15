@@ -20427,7 +20427,8 @@ code {
 }
 
 .home-tab .statistics-details {
-  margin-bottom: 5px;
+  margin-bottom: 0px;
+  padding: 0rem;
   background-color: #e9e9e9;
 }
 
@@ -20435,9 +20436,10 @@ code {
   font-style: normal;
   font-weight: 500;
   font-size: 13px;
-  line-height: 18px;
+  line-height: 5px;
   color: #8D8D8D;
-  margin-bottom: 4px;
+  margin-bottom: 0px;
+  padding: 0rem;
 }
 
 @media (max-width: 991px) {
@@ -20450,7 +20452,7 @@ code {
   font-style: normal;
   font-weight: bold;
   font-size: 26px;
-  line-height: 36px;
+  line-height: 2px;
   color: #000000;
   margin-bottom: 0;
 }
@@ -20465,7 +20467,7 @@ code {
   font-style: normal;
   font-weight: bold;
   font-size: 12px;
-  line-height: 16px;
+  line-height: 5px;
 }
 
 .home-tab .statistics-details .status i {
@@ -22574,7 +22576,6 @@ code {
 
 /*estilos para filtrar proyectos por estado*/
 
-/* Filter control styling */
 .rows-per-page-control {
     display: flex;
     flex-wrap: wrap;
@@ -26394,7 +26395,8 @@ dl li {
 .tab-content {
   border: 1px solid #dee2e6;
   border-top: 0;
-  padding: 2rem 1rem;
+  padding: 0rem ;
+  margin:0rem;
   text-align: justify;
 }
 
@@ -26431,7 +26433,7 @@ dl li {
   font-size: 13px;
   line-height: 18px;
   color: #212121;
-  padding: 12px 14px;
+  padding: 2px 14px;
   border: none;
   border-right: 1px solid #dee2e6;
   font-family: "Manrope", sans-serif;
@@ -52437,7 +52439,8 @@ code {
 }
 
 .home-tab .statistics-details {
-  margin-bottom: 5px;
+  margin-bottom: 0px;
+  padding: 0rem;
   background-color: #e9e9e9;
 }
 
@@ -52445,7 +52448,7 @@ code {
   font-style: normal;
   font-weight: 500;
   font-size: 13px;
-  line-height: 18px;
+  line-height: 15px;
   color: #8D8D8D;
   margin-bottom: 4px;
 }
@@ -52460,7 +52463,7 @@ code {
   font-style: normal;
   font-weight: bold;
   font-size: 26px;
-  line-height: 36px;
+  line-height: 8px;
   color: #000000;
   margin-bottom: 0;
 }
@@ -55565,46 +55568,49 @@ li[data-task-id] .text-danger.fw-bold[title="Tarea vencida"] {
 #taskDetailModal p { 
     font-size: 14px; 
 } 
-/* estilos para el index hecho por mi */ 
-         .content-wrapper { 
-         padding-bottom: 0 !important; 
-         } 
-         .statistics-details > div { 
-         padding: 5px 8px !important; 
-         } 
-         .card-body { 
-         padding: 12px !important; 
-         } 
-         .table-sm td, .table-sm th { 
-         padding: 0.4rem !important; 
-         font-size: 0.85rem !important; 
-         } 
-         .progress { 
-         height: 16px !important; 
-         font-size: 0.7rem !important; 
-         } 
+
+      /* estilos para el index  */ 
+        .content-wrapper { 
+        padding-bottom: 0 !important; 
+        } 
+        .statistics-details > div { 
+        padding: 0px 8px !important; 
+        } 
+        .card-body { 
+        padding: 12px !important; 
+        } 
+        .table-sm td, .table-sm th { 
+        padding: 0.4rem !important; 
+        font-size: 0.85rem !important; 
+        } 
+        .progress { 
+        height: 16px !important; 
+        font-size: 0.7rem !important; 
+        } 
          /* no scroll en contenido */ 
-         .tab-content-basic { 
-         overflow: hidden; 
-         } 
-         /* scrollbar para las tablas*/ 
-         .table-responsive::-webkit-scrollbar { 
-         width: 6px; 
-         height: 6px; 
-         } 
-         .table-responsive::-webkit-scrollbar-track { 
-         background: #f1f1f1; 
-         } 
-         .table-responsive::-webkit-scrollbar-thumb { 
-         background: #888; 
-         border-radius: 3px; 
-         } 
-         .table-responsive::-webkit-scrollbar-thumb:hover { 
-         background: #555; 
-         } 
-         
-         /*widget de departamentos*/
-         .departments-widget {
+        .tab-content-basic { 
+        overflow: hidden; 
+        padding: 0;
+        margin: 0;
+        } 
+        /* scrollbar para las tablas*/ 
+        .table-responsive::-webkit-scrollbar { 
+        width: 6px; 
+        height: 6px; 
+        } 
+        .table-responsive::-webkit-scrollbar-track { 
+        background: #f1f1f1; 
+        } 
+        .table-responsive::-webkit-scrollbar-thumb { 
+        background: #888; 
+        border-radius: 3px; 
+        } 
+        .table-responsive::-webkit-scrollbar-thumb:hover { 
+        background: #555; 
+        } 
+        
+        /*widget de departamentos*/
+        .departments-widget {
             display: flex;
             gap: 12px;
             padding: 8px 16px;

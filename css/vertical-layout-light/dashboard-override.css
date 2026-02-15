@@ -1,0 +1,760 @@
+/* ===================================================== 
+DASHBOARD OVERRIDE STYLES 
+File: dashboard-override.css 
+Place in: ../css/vertical-layout-light/ 
+===================================================== */ 
+/* ---- Content wrapper override ---- */ 
+.content-wrapper { 
+background: #d6dce4 !important; 
+padding: 10px 12px !important; 
+} 
+/* ===================================================== 
+ROW 1: DARK HEADER BAR */
+/* Force the navbar menu wrapper to take ALL remaining space */ 
+.navbar-menu-wrapper { 
+flex: 1 1 0% !important; 
+width: 0 !important; 
+} 
+.db-header-bar { 
+display: flex; 
+align-items: center; 
+justify-content: space-between; 
+background: linear-gradient(135deg, #1a2a3a 0%, #243447 50%, #1a2a3a 100%); 
+border-radius: 6px; 
+padding: 6px 14px; 
+margin: 0; 
+gap: 10px; 
+flex-wrap: nowrap; 
+height: 54px; 
+overflow: hidden; 
+width: 100%; 
+} 
+/* LEFT: Name + subtitle — fixed proportion, truncates if needed */ 
+.db-header-left { 
+display: flex; 
+align-items: center; 
+gap: 8px; 
+flex: 0 1 auto;         /* can shrink but won't grow */ 
+min-width: 0;            /* allow truncation */ 
+overflow: hidden; 
+} 
+.db-menu-toggle { 
+background: none; 
+border: none; 
+color: #fff; 
+font-size: 1.4rem; 
+padding: 4px; 
+cursor: pointer; 
+flex-shrink: 0; 
+} 
+.db-header-logo { 
+height: 32px; 
+width: auto; 
+filter: brightness(0) invert(1); 
+flex-shrink: 0; 
+} 
+.db-header-title { 
+display: flex; 
+flex-direction: column; 
+line-height: 1.1; 
+min-width: 0;            /* allow text truncation */ 
+overflow: hidden; 
+} 
+.db-title-main { 
+font-size: 0.88rem; 
+font-weight: 700; 
+color: #ffffff; 
+letter-spacing: 0.3px; 
+white-space: nowrap; 
+overflow: hidden; 
+text-overflow: ellipsis; 
+} 
+.db-title-sub { 
+font-size: 0.72rem; 
+font-weight: 600; 
+color: #8cc8e8; 
+letter-spacing: 0.5px; 
+white-space: nowrap; 
+overflow: hidden; 
+text-overflow: ellipsis; 
+} 
+/* CENTER: Filter dropdowns — takes remaining space, shrinks gracefully */ 
+.db-header-filters { 
+display: flex; 
+align-items: center; 
+gap: 8px; 
+flex: 1 1 0%;            /* fill remaining space, can shrink to 0 */ 
+min-width: 0; 
+justify-content: center; 
+overflow: hidden; 
+} 
+.db-filter-group { 
+display: flex; 
+flex-direction: column; 
+gap: 1px; 
+min-width: 0; 
+flex: 0 1 auto; 
+} 
+.db-filter-label { 
+font-size: 0.6rem; 
+color: #a0b4c8; 
+font-weight: 600; 
+letter-spacing: 0.3px; 
+text-transform: uppercase; 
+padding-left: 2px; 
+white-space: nowrap; 
+} 
+.db-filter-select { 
+background: #2c4a62; 
+border: 1px solid #3d6080; 
+border-radius: 4px; 
+color: #ffffff; 
+font-size: 0.74rem; 
+padding: 3px 24px 3px 8px; 
+min-width: 0; 
+width: 140px; 
+max-width: 180px; 
+cursor: pointer; 
+outline: none; 
+appearance: none; 
+-webkit-appearance: none; 
+-moz-appearance: none; 
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0b4c8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); 
+background-repeat: no-repeat; 
+background-position: right 6px center; 
+white-space: nowrap; 
+overflow: hidden; 
+text-overflow: ellipsis; 
+} 
+.db-filter-select:focus { 
+border-color: #5b9bd5; 
+box-shadow: 0 0 0 2px rgba(91, 155, 213, 0.3); 
+} 
+.db-filter-select option { 
+background: #1a2a3a; 
+color: #fff; 
+} 
+/* RIGHT: Progress circle — fixed size, never shrinks */ 
+.db-header-right { 
+display: flex; 
+align-items: center; 
+gap: 6px; 
+flex: 0 0 auto;         /* never grow, never shrink */ 
+} 
+.db-progress-label { 
+font-size: 0.65rem; 
+font-weight: 700; 
+color: #ffffff; 
+letter-spacing: 0.3px; 
+text-transform: uppercase; 
+white-space: nowrap; 
+} 
+.db-progress-circle { 
+position: relative; 
+width: 44px; 
+height: 44px; 
+flex-shrink: 0; 
+} 
+.db-progress-circle svg { 
+width: 100%; 
+height: 100%; 
+transform: rotate(-90deg); 
+} 
+.db-progress-bg { 
+fill: none; 
+stroke: #2c4a62; 
+stroke-width: 5; 
+} 
+.db-progress-fill { 
+fill: none; 
+stroke: #5bbfb5; 
+stroke-width: 5; 
+stroke-linecap: round; 
+transition: stroke-dashoffset 0.8s ease; 
+} 
+.db-progress-value { 
+position: absolute; 
+top: 50%; 
+left: 50%; 
+transform: translate(-50%, -50%); 
+font-size: 0.78rem; 
+font-weight: 800; 
+color: #5bbfb5; 
+} 
+/* ===================================================== 
+ROW 2: SUMMARY STATS + TABS 
+===================================================== */ 
+.db-stats-row { 
+display: flex; 
+align-items: center; 
+justify-content: space-between; 
+background: #ffffff; 
+border-radius: 6px; 
+padding: 10px 20px; 
+margin-bottom: 8px; 
+gap: 12px; 
+flex-wrap: wrap; 
+box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
+} 
+.db-stats-left { 
+display: flex; 
+align-items: center; 
+gap: 30px; 
+flex-wrap: wrap; 
+} 
+.db-stat-item { 
+display: flex; 
+flex-direction: column; 
+align-items: center; 
+gap: 2px; 
+} 
+.db-stat-label { 
+font-size: 0.72rem; 
+font-weight: 600; 
+color: #6b7b8d; 
+text-transform: capitalize; 
+white-space: nowrap; 
+} 
+.db-stat-value { 
+font-size: 1.6rem; 
+font-weight: 800; 
+color: #1a2a3a; 
+line-height: 1; 
+} 
+.db-stat-highlight { 
+color: #1a2a3a; 
+} 
+.db-stats-right { 
+display: flex; 
+gap: 8px; 
+} 
+.db-tab-btn { 
+background: #e8edf2; 
+border: 1px solid #c5d0db; 
+border-radius: 4px; 
+padding: 7px 18px; 
+font-size: 0.78rem; 
+font-weight: 600; 
+color: #4a5568; 
+cursor: pointer; 
+transition: all 0.2s ease; 
+white-space: nowrap; 
+} 
+.db-tab-btn:hover { 
+background: #dce3ea; 
+border-color: #a0b4c8; 
+} 
+.db-tab-btn.active { 
+background: #2c4a62; 
+color: #ffffff; 
+border-color: #2c4a62; 
+} 
+/* ===================================================== 
+ROW 3: MAIN DASHBOARD — 3-COLUMN LAYOUT 
+===================================================== */ 
+.db-main-row { 
+display: flex; 
+gap: 8px; 
+margin-bottom: 8px; 
+align-items: stretch; 
+height: 280px;        /* reduced: 3 status boxes instead of 6 */ 
+overflow: hidden; 
+} 
+/* Column 1: Progress by Responsible */ 
+.db-col-responsible { 
+flex: 3; 
+min-width: 0; 
+display: flex; 
+} 
+.db-col-responsible .db-card-inner { 
+flex: 1; 
+display: flex; 
+flex-direction: column; 
+overflow: hidden; 
+} 
+.db-responsible-chart { 
+flex: 1; 
+min-height: 0; 
+position: relative; 
+overflow: hidden; 
+} 
+.db-responsible-chart canvas { 
+position: absolute; 
+top: 0; 
+left: 0; 
+width: 100% !important; 
+height: 100% !important; 
+} 
+/* Column 2: Center — Status Boxes + Objectives Progress */ 
+.db-col-center { 
+flex: 4.5; 
+min-width: 0; 
+display: flex; 
+flex-direction: column; 
+gap: 6px; 
+} 
+/* Status summary boxes — single row of 3 */ 
+.db-status-boxes { 
+display: grid; 
+grid-template-columns: repeat(3, 1fr); 
+gap: 6px; 
+flex-shrink: 0; 
+} 
+.db-status-box { 
+background: #ffffff; 
+border: 1px solid #e2e8f0; 
+border-radius: 5px; 
+padding: 8px 8px; 
+text-align: center; 
+display: flex; 
+flex-direction: column; 
+justify-content: center; 
+align-items: center; 
+transition: transform 0.15s ease, box-shadow 0.15s ease; 
+box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
+} 
+.db-status-box:hover { 
+transform: translateY(-1px); 
+box-shadow: 0 2px 6px rgba(0,0,0,0.08); 
+} 
+.db-status-box-label { 
+font-size: 0.62rem; 
+font-weight: 600; 
+color: #6b7b8d; 
+text-transform: uppercase; 
+letter-spacing: 0.3px; 
+margin-bottom: 2px; 
+white-space: nowrap; 
+} 
+.db-status-box-value { 
+font-size: 1.4rem; 
+font-weight: 800; 
+color: #1a2a3a; 
+line-height: 1.1; 
+} 
+/* Status box color accents */ 
+.db-status-total { 
+border-top: 3px solid #2c4a62; 
+} 
+.db-status-total .db-status-box-value { 
+color: #2c4a62; 
+} 
+.db-status-completed { 
+border-top: 3px solid #34b1aa; 
+} 
+.db-status-completed .db-status-box-value { 
+color: #34b1aa; 
+} 
+.db-status-ongoing { 
+border-top: 3px solid #5bbfb5; 
+} 
+.db-status-ongoing .db-status-box-value { 
+color: #5bbfb5; 
+} 
+.db-status-notstarted { 
+border-top: 3px solid #f5a623; 
+} 
+.db-status-notstarted .db-status-box-value { 
+color: #f5a623; 
+} 
+.db-status-onhold { 
+border-top: 3px solid #a0b4c8; 
+} 
+.db-status-onhold .db-status-box-value { 
+color: #a0b4c8; 
+} 
+.db-status-delay { 
+border-top: 3px solid #e74c3c; 
+} 
+.db-status-delay .db-status-box-value { 
+color: #e74c3c; 
+} 
+/* Objectives Progress card (below status boxes) */ 
+.db-objectives-card { 
+flex: 1; 
+min-height: 0; 
+display: flex; 
+flex-direction: column; 
+} 
+.db-objectives-chart { 
+flex: 1; 
+min-height: 0; 
+position: relative; 
+overflow: hidden; 
+} 
+.db-objectives-chart canvas { 
+position: absolute; 
+top: 0; 
+left: 0; 
+width: 100% !important; 
+height: 100% !important; 
+} 
+/* Column 3: Doughnut chart — compact, less vertical space */ 
+.db-col-doughnut { 
+flex: 2.5; 
+min-width: 0; 
+display: flex; 
+} 
+.db-col-doughnut .db-card-inner { 
+flex: 1; 
+display: flex; 
+flex-direction: column; 
+overflow: hidden; 
+padding: 10px 12px; 
+} 
+.db-col-doughnut .db-section-title { 
+margin-bottom: 4px; 
+padding-bottom: 3px; 
+} 
+/* Shared card style */ 
+.db-card-inner { 
+background: #ffffff; 
+border-radius: 6px; 
+padding: 14px 16px; 
+box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
+display: flex; 
+flex-direction: column; 
+} 
+.db-section-title { 
+font-size: 0.82rem; 
+font-weight: 700; 
+color: #1a2a3a; 
+margin-bottom: 10px; 
+padding-bottom: 4px; 
+border-bottom: 2px solid #e8edf2; 
+flex-shrink: 0; 
+} 
+/* ---- Doughnut chart ---- */ 
+.db-doughnut-container { 
+flex: 1; 
+display: flex; 
+justify-content: center; 
+align-items: center; 
+min-height: 0; 
+padding: 4px; 
+overflow: hidden; 
+} 
+.db-doughnut-container canvas { 
+max-width: 100%; 
+max-height: 100%; 
+flex-shrink: 1; 
+} 
+.db-doughnut-legend { 
+text-align: right; 
+padding: 2px 8px 0; 
+font-size: 0.68rem; 
+flex-shrink: 0; 
+} 
+/* ===================================================== 
+ROW 4: BOTTOM TABLES 
+===================================================== */ 
+.db-bottom-row { 
+display: flex; 
+gap: 8px; 
+min-height: 280px; 
+} 
+.db-table-left { 
+flex: 4; 
+min-width: 0; 
+} 
+.db-table-right { 
+flex: 6; 
+min-width: 0; 
+} 
+.db-table-card { 
+padding: 0 !important; 
+overflow: hidden; 
+} 
+.db-table-card .db-section-title { 
+padding: 10px 14px; 
+margin-bottom: 0; 
+border-bottom: none; 
+background: #f7f9fb; 
+} 
+.db-table-responsive { 
+overflow: auto; 
+max-height: 260px; 
+} 
+/* ---- Custom table styles ---- */ 
+.db-table { 
+width: 100%; 
+border-collapse: collapse; 
+font-size: 0.76rem; 
+} 
+.db-table thead { 
+position: sticky; 
+top: 0; 
+z-index: 5; 
+} 
+.db-table thead tr { 
+background: #2c4a62; 
+} 
+.db-table thead th { 
+padding: 8px 10px; 
+font-weight: 600; 
+font-size: 0.72rem; 
+color: #ffffff; 
+text-transform: capitalize; 
+white-space: nowrap; 
+border: none; 
+letter-spacing: 0.2px; 
+} 
+.db-table tbody tr { 
+border-bottom: 1px solid #edf0f4; 
+transition: background 0.15s ease; 
+} 
+.db-table tbody tr:hover { 
+background: #f0f5fa; 
+} 
+.db-table tbody td { 
+padding: 8px 10px; 
+color: #3a4a5c; 
+vertical-align: middle; 
+font-size: 0.76rem; 
+} 
+.db-table tbody td:first-child { 
+width: 28px; 
+text-align: center; 
+} 
+/* ---- Progress bar inside tables ---- */ 
+.db-progress-badge { 
+display: inline-flex; 
+align-items: center; 
+gap: 6px; 
+min-width: 100px; 
+} 
+.db-progress-badge .db-progress-text { 
+font-size: 0.7rem; 
+font-weight: 700; 
+color: #ffffff; 
+background: #34b1aa; 
+padding: 2px 8px; 
+border-radius: 10px; 
+min-width: 40px; 
+text-align: center; 
+white-space: nowrap; 
+} 
+.db-progress-badge .db-progress-bar-mini { 
+flex: 1; 
+height: 8px; 
+background: #e8edf2; 
+border-radius: 4px; 
+overflow: hidden; 
+} 
+.db-progress-badge .db-progress-bar-mini-fill { 
+height: 100%; 
+border-radius: 4px; 
+transition: width 0.5s ease; 
+} 
+/* Progress bar color tiers */ 
+.db-progress-bar-mini-fill.tier-low { background: linear-gradient(90deg, #e74c3c, #f06050); } 
+.db-progress-bar-mini-fill.tier-medium { background: linear-gradient(90deg, #f5a623, #f7c948); } 
+.db-progress-bar-mini-fill.tier-good { background: linear-gradient(90deg, #5bbfb5, #6dd5c8); } 
+.db-progress-bar-mini-fill.tier-great { background: linear-gradient(90deg, #34b1aa, #3dcfb6); } 
+.db-progress-text.tier-low { background: #e74c3c; } 
+.db-progress-text.tier-medium { background: #f5a623; } 
+.db-progress-text.tier-good { background: #5bbfb5; } 
+.db-progress-text.tier-great { background: #34b1aa; } 
+/* ---- Status badges in task details ---- */ 
+.db-status-badge { 
+display: inline-block; 
+padding: 3px 10px; 
+border-radius: 10px; 
+font-size: 0.68rem; 
+font-weight: 600; 
+white-space: nowrap; 
+} 
+.db-status-badge.status-delay { background: #fde8e8; color: #e74c3c; } 
+.db-status-badge.status-completed { background: #e6f7f5; color: #34b1aa; } 
+.db-status-badge.status-ongoing { background: #e8f5e9; color: #4caf50; } 
+.db-status-badge.status-notstarted { background: #fff8e1; color: #f5a623; } 
+.db-status-badge.status-onhold { background: #eceff1; color: #78909c; } 
+/* ---- Type badges ---- */ 
+.db-type-badge { 
+display: inline-block; 
+padding: 3px 8px; 
+border-radius: 4px; 
+font-size: 0.66rem; 
+font-weight: 600; 
+white-space: nowrap; 
+} 
+.db-type-badge.type-global { background: #e3f2fd; color: #1565c0; } 
+.db-type-badge.type-regional { background: #f3e5f5; color: #7b1fa2; } 
+.db-type-badge.type-local { background: #e8f5e9; color: #2e7d32; } 
+/* ---- Collapse toggle icon ---- */ 
+.db-collapse-toggle { 
+cursor: pointer; 
+color: #a0b4c8; 
+font-size: 0.9rem; 
+transition: color 0.15s; 
+display: inline-flex; 
+align-items: center; 
+justify-content: center; 
+width: 20px; 
+height: 20px; 
+} 
+.db-collapse-toggle:hover { 
+color: #2c4a62; 
+} 
+/* ===================================================== 
+RESPONSIVE BREAKPOINTS 
+===================================================== */ 
+/* Large tablets / small desktops */ 
+@media (max-width: 1200px) { 
+.db-filter-select { width: 120px; max-width: 140px; font-size: 0.7rem; } 
+.db-header-filters { gap: 6px; } 
+.db-title-main { font-size: 0.82rem; } 
+.db-title-sub { font-size: 0.66rem; } 
+.db-progress-label { font-size: 0.6rem; } 
+.db-col-responsible { flex: 3; } 
+.db-col-center { flex: 4.5; } 
+.db-col-doughnut { flex: 2.5; } 
+} 
+/* Tablets */ 
+@media (max-width: 992px) { 
+.db-header-bar { 
+flex-wrap: wrap;     /* allow wrapping on tablets */ 
+height: auto; 
+padding: 8px 14px; 
+gap: 6px; 
+} 
+.db-header-left { 
+flex: 0 0 auto; 
+width: auto; 
+} 
+.db-header-filters { 
+flex: 1 1 100%; 
+order: 3; 
+justify-content: flex-start; 
+flex-wrap: wrap; 
+} 
+.db-filter-select { width: 130px; } 
+.db-header-right { flex: 0 0 auto; } 
+.db-stats-row { 
+flex-direction: column; 
+align-items: stretch; 
+gap: 10px; 
+} 
+.db-stats-left { justify-content: center; } 
+.db-stats-right { justify-content: center; } 
+/* Stack ROW 3 to 2 rows */ 
+.db-main-row { 
+flex-wrap: wrap; 
+height: auto; 
+overflow: visible; 
+} 
+.db-col-responsible { 
+flex: 1 1 48%; 
+} 
+.db-col-responsible .db-responsible-chart { 
+height: 200px; 
+flex: none; 
+} 
+.db-col-center { 
+flex: 1 1 100%; 
+order: 3; 
+} 
+.db-col-center .db-objectives-chart { 
+height: 180px; 
+flex: none; 
+} 
+.db-col-doughnut { 
+flex: 1 1 48%; 
+} 
+.db-col-doughnut .db-doughnut-container { 
+height: 200px; 
+flex: none; 
+} 
+.db-status-boxes { 
+grid-template-columns: repeat(3, 1fr); 
+} 
+.db-bottom-row { flex-direction: column; } 
+.db-table-left, .db-table-right { flex: 1; } 
+} 
+/* Mobile */ 
+@media (max-width: 576px) { 
+.content-wrapper { padding: 6px 8px !important; } 
+.db-header-bar { 
+flex-direction: column; 
+align-items: stretch; 
+height: auto; 
+padding: 8px 10px; 
+gap: 8px; 
+} 
+.db-header-left { justify-content: center; } 
+.db-header-title { align-items: center; } 
+.db-title-main { font-size: 0.8rem; } 
+.db-title-sub { font-size: 0.68rem; } 
+.db-header-filters { 
+flex-direction: column; 
+align-items: stretch; 
+} 
+.db-filter-group { 
+flex-direction: row; 
+align-items: center; 
+gap: 8px; 
+} 
+.db-filter-label { min-width: 70px; } 
+.db-filter-select { flex: 1; width: auto; max-width: none; } 
+.db-header-right { justify-content: center; } 
+.db-progress-circle { width: 42px; height: 42px; } 
+.db-progress-value { font-size: 0.7rem; } 
+.db-stats-left { flex-direction: column; gap: 10px; } 
+.db-stat-value { font-size: 1.3rem; } 
+/* Stack ROW 3 fully */ 
+.db-main-row { 
+flex-direction: column; 
+height: auto; 
+overflow: visible; 
+} 
+.db-col-responsible, 
+.db-col-center, 
+.db-col-doughnut { 
+flex: 1 1 100%; 
+} 
+.db-col-responsible .db-responsible-chart { 
+height: 180px; 
+flex: none; 
+} 
+.db-col-center .db-objectives-chart { 
+height: 160px; 
+flex: none; 
+} 
+.db-col-doughnut .db-doughnut-container { 
+height: 200px; 
+flex: none; 
+} 
+.db-status-boxes { 
+grid-template-columns: repeat(3, 1fr); 
+} 
+.db-stats-right { flex-direction: column; } 
+.db-tab-btn { width: 100%; text-align: center; } 
+.db-bottom-row { gap: 6px; } 
+} 
+/* ===================================================== 
+SCROLLBAR STYLING 
+===================================================== */ 
+.db-table-responsive::-webkit-scrollbar { width: 6px; height: 6px; } 
+.db-table-responsive::-webkit-scrollbar-track { background: #f0f2f5; border-radius: 3px; } 
+.db-table-responsive::-webkit-scrollbar-thumb { background: #c5d0db; border-radius: 3px; } 
+.db-table-responsive::-webkit-scrollbar-thumb:hover { background: #a0b4c8; } 
+/* ===================================================== 
+LOADING & ANIMATION 
+===================================================== */ 
+@keyframes dbFadeIn { 
+from { opacity: 0; transform: translateY(6px); } 
+to { opacity: 1; transform: translateY(0); } 
+} 
+.db-header-bar, 
+.db-stats-row, 
+.db-card-inner, 
+.db-table-card, 
+.db-status-box { 
+animation: dbFadeIn 0.4s ease forwards; 
+} 
+.db-stats-row { animation-delay: 0.05s; } 
+.db-col-responsible .db-card-inner { animation-delay: 0.1s; } 
+.db-col-center .db-objectives-card { animation-delay: 0.12s; } 
+.db-col-doughnut .db-card-inner { animation-delay: 0.15s; } 
+.db-table-left .db-card-inner { animation-delay: 0.2s; } 
+.db-table-right .db-card-inner { animation-delay: 0.25s; }
