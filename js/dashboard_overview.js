@@ -9,14 +9,14 @@
 	};
 
 	const COLORS = {
-		delay: '#dc3545',      // Black for overdue/vencido
-		notStarted: '#ffc107', // Gray for pending
-		completed: '#009b4a',  // Green for completed
-		onGoing: '#495057',    // Dark gray for in progress
-		onHold: '#adb5bd',     // Light gray for on hold
-		barDark: '#009b4a',    // Green for primary bars
-		barMedium: '#ffc107',  // Dark gray for medium progress
-		barLight: '#ffc107'    // Gray for low progress
+		delay: '#dc3545',      
+		notStarted: '#ffc107', 
+		completed: '#009b4a',  
+		onGoing: '#ffaf00',    
+		onHold: '#adb5bd',     
+		barDark: '#009b4a',    
+		barMedium: '#ffc107',  
+		barLight: '#ffc107'    
 	};
 	
 	const STATUS_MAP = {
@@ -35,7 +35,6 @@
 	let objectivesChartInstance = null;
 	let currentProjectIdForUsers = null;
 	
-	//inicializacion
 	document.addEventListener('DOMContentLoaded', function() {
 		initDoughnutChart();
 		initFilterListeners();
@@ -56,12 +55,11 @@
 		}, 60000);
 	}
 
-	//ESTADISTICAS DE DASHBOARD resumen y cajas de estatus 
+	//resumen y cajas de estatus estadisticas de dashboard
 	function loadDashboardStats() {
 		fetch(API.STATS).then(r => r.json()).then(data => {
 			if (data.success && data.stats) {
 				updateStatsRow(data.stats);
-				// FIX: Use project-level stats for status boxes, not task-level
 				updateStatusBoxesFromStats(data.stats);
 				updateTotalProgress(data.stats);
 			}
@@ -103,9 +101,7 @@
 		setText('#statObjetivosCompletados', stats.objetivos_completados || 0);
 	}
 
-	// FIX: New function that uses PROJECT-level stats from the API
 	function updateStatusBoxesFromStats(stats) {
-		// Use project counts from the stats endpoint (these are correct project-level stats)
 		if (stats.proyectos_completados !== undefined) {
 			setText('#boxCompleted', stats.proyectos_completados);
 		}
@@ -118,14 +114,10 @@
 		if (stats.proyectos_en_proceso !== undefined) {
 			setText('#boxOnGoing', stats.proyectos_en_proceso);
 		}
-		// Total projects count
 		if (stats.total_proyectos !== undefined) {
 			setText('#boxTotalTask', stats.total_proyectos);
 		}
 	}
-
-	// REMOVED: Old updateStatusBoxes function that incorrectly used task-level stats
-	// The status boxes should show PROJECT counts, not TASK counts
 
 	function updateTotalProgress(stats) {
 		const pct = parseFloat(stats.porcentaje_tareas) || 0;
@@ -149,7 +141,6 @@
 				allProjects = data.proyectos;
 				displayTaskDetailsTable(allProjects);
 				updateDoughnutFromProjects(allProjects);
-				// FIX: Always update status boxes with project data (no conditional check)
 				updateStatusBoxesFromProjects(allProjects);
 				populateFilterDropdowns(allProjects);
 				updateResponsibleChart(allProjects);
@@ -258,7 +249,6 @@
 			const progressVal = parseInt(obj.progreso) || 0;
 			const tier = getTier(progressVal);
 			
-			// Add project ID and cursor pointer for clickability
 			row.setAttribute('data-project-id', obj.id);
 			row.style.cursor = 'pointer';
 			
@@ -276,7 +266,6 @@
 				</td> 
 			`;
 			
-			// Add click event to open project details modal
 			row.addEventListener('click', function(e) {
 				if (e.target.closest('button')) return;
 				const projectId = this.getAttribute('data-project-id');
@@ -285,7 +274,6 @@
 				}
 			});
 			
-			// Add hover effect
 			row.addEventListener('mouseenter', function() {
 				this.style.backgroundColor = '#f8f9fa';
 			});
@@ -298,9 +286,6 @@
 	}
 
 	function updateStatsFromObjectives(objectives) {
-		// This function now only exists for potential future use
-		// Total progress is correctly set by updateTotalProgress() from the stats API
-		// Do not recalculate or overwrite the progress value here
 	}
 
 	function updateTotalProgressDirect(pct) {
@@ -412,7 +397,6 @@
 		}
 	}
 	
-	// FIX: Changed from setTextIfEmpty to setText to always update with correct project counts
 	function updateStatusBoxesFromProjects(projects) {
 		const counts = {
 			total: projects.length,
@@ -431,8 +415,6 @@
 			else if (s === 'Vencido') counts.delay++;
 		});
 		
-		// FIX: Use setText() instead of setTextIfEmpty() to always update with correct values
-		// This ensures project counts are displayed, not task counts from the stats endpoint
 		setText('#boxTotalTask', counts.total);
 		setText('#boxCompleted', counts.completed);
 		setText('#boxOnGoing', counts.ongoing);
@@ -535,10 +517,10 @@
 		const labels = top.map(o => truncateText(o.nombre, 25));
 		const values = top.map(o => parseInt(o.progreso) || 0);
 		const bgColors = values.map(v => {
-			if (v >= 75) return COLORS.completed;   // Green for high progress
-			if (v >= 50) return COLORS.onGoing;     // Dark gray for medium-high
-			if (v >= 25) return COLORS.barMedium;   // Medium gray for medium-low
-			return COLORS.notStarted;               // Gray for low progress
+			if (v >= 75) return COLORS.completed;
+			if (v >= 50) return COLORS.onGoing;  
+			if (v >= 25) return COLORS.barMedium; 
+			return COLORS.notStarted;             
 		});
 		if (objectivesChartInstance) {
 			objectivesChartInstance.destroy();
@@ -775,7 +757,6 @@
 		if (el) el.textContent = text;
 	}
 
-	// NOTE: setTextIfEmpty is kept for backward compatibility but no longer used for status boxes
 	function setTextIfEmpty(selector, text) {
 		const el = document.querySelector(selector);
 		if (el) {
