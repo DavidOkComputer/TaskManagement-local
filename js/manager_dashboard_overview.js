@@ -1,16 +1,6 @@
-/** 
+/*manager_dashboard_overview.js Dashboard principal para gerentes*/
 
- * manager_dashboard_overview.js 
-
- * Dashboard principal para gerentes - Estilo Admin 
-
- * Filtrado por departamento(s) gestionado(s) 
-
- */
-
-// ============================================ 
-// CONFIGURACIÓN Y CONSTANTES 
-// ============================================ 
+//configuracion y constantes
 const ManagerDashboardConfig = {
 	API_ENDPOINTS: {
 		GET_PROJECTS: '../php/manager_get_projects.php',
@@ -33,9 +23,8 @@ const STATUS_MAP = {
 	'completado': 'Completado',
 	'vencido': 'Vencido'
 };
-// ============================================ 
-// VARIABLES GLOBALES 
-// ============================================ 
+
+//variables globales
 let allProjectsData = [];
 let allObjectivesData = [];
 let responsibleChartInstance = null;
@@ -43,30 +32,21 @@ let objectivesChartInstance = null;
 let doughnutChartInstance = null;
 let autoRefreshInterval = null;
 let isAutoRefreshActive = true;
-// ============================================ 
-// INICIALIZACIÓN 
-// ============================================ 
+
 document.addEventListener('DOMContentLoaded', function() {
 	initializeDashboard();
 });
 
 function initializeDashboard() {
-	// Inicializar gráficos vacíos 
 	initializeCharts();
-	// Cargar datos 
 	loadDashboardStats();
 	loadProjectsData();
 	loadObjectivesData();
-	// Configurar filtros 
 	setupFilterListeners();
-	// Iniciar auto-refresh 
 	startAutoRefresh();
-	// Configurar detección de visibilidad 
 	setupVisibilityDetection();
 }
-// ============================================ 
-// GRÁFICOS - INICIALIZACIÓN 
-// ============================================ 
+
 function initializeCharts() {
 	initResponsibleChart();
 	initObjectivesChart();
@@ -229,9 +209,7 @@ function initDoughnutChart() {
 	window.doughnutChart = doughnutChartInstance;
 	updateDoughnutLegend();
 }
-// ============================================ 
-// CARGA DE DATOS 
-// ============================================ 
+
 function loadDashboardStats() {
 	fetch(ManagerDashboardConfig.API_ENDPOINTS.GET_DASHBOARD_STATS).then(response => response.json()).then(data => {
 		if (data.success && data.stats) {
@@ -278,9 +256,7 @@ function loadObjectivesData() {
 		showTableError('objectivesTableBody', 'Error al cargar proyectos');
 	});
 }
-// ============================================ 
-// ACTUALIZACIÓN DE UI - ESTADÍSTICAS 
-// ============================================ 
+
 function updateStatsDisplay(stats) {
 	// Total Proyectos 
 	setText('statTotalProyectos', stats.total_proyectos || 0);
@@ -315,25 +291,17 @@ function updateTotalProgressCircle(stats) {
 		progressText.textContent = progressValue + '%';
 	}
 }
-// ============================================ 
-// ACTUALIZACIÓN DE UI - TABLAS 
-// ============================================ 
+
 function updateProjectsTable(projects) {
 	const tbody = document.getElementById('proyectosTableBody');
 	if (!tbody) return;
 	if (!projects || projects.length === 0) {
 		tbody.innerHTML = ` 
-
             <tr> 
-
                 <td colspan="7" class="text-center" style="padding:30px;"> 
-
                     <i class="mdi mdi-folder-open" style="font-size:32px;color:#ccc;"></i> 
-
                     <p class="mt-2 mb-0" style="font-size:0.8rem;">No hay proyectos disponibles</p> 
-
                 </td> 
-
             </tr>`;
 		return;
 	}
@@ -345,35 +313,20 @@ function updateProjectsTable(projects) {
 		const progressTier = getProgressTier(progreso);
 		const responsable = project.participante || 'Grupo';
 		html += ` 
-
             <tr style="cursor:pointer;" onclick="viewProjectDetails(${project.id_proyecto})"> 
-
                 <td><span class="db-collapse-toggle"><i class="mdi mdi-chevron-right"></i></span></td> 
-
                 <td><strong>${escapeHtml(truncateText(project.descripcion || project.nombre, 40))}</strong></td> 
-
                 <td><span class="db-status-badge ${statusClass}">${statusText}</span></td> 
-
                 <td>${formatDate(project.fecha_cumplimiento)}</td> 
-
                 <td>${escapeHtml(truncateText(responsable, 20))}</td> 
-
                 <td> 
-
                     <div class="db-progress-badge"> 
-
                         <span class="db-progress-text ${progressTier}">${progreso}%</span> 
-
                         <div class="db-progress-bar-mini"> 
-
                             <div class="db-progress-bar-mini-fill ${progressTier}" style="width:${progreso}%;"></div> 
-
                         </div> 
-
                     </div> 
-
                 </td> 
-
             </tr>`;
 	});
 	tbody.innerHTML = html;
@@ -384,17 +337,11 @@ function updateObjectivesTable(objectives) {
 	if (!tbody) return;
 	if (!objectives || objectives.length === 0) {
 		tbody.innerHTML = ` 
-
             <tr> 
-
                 <td colspan="4" class="text-center" style="padding:30px;"> 
-
                     <i class="mdi mdi-target" style="font-size:32px;color:#ccc;"></i> 
-
                     <p class="mt-2 mb-0" style="font-size:0.8rem;">No hay proyectos disponibles</p> 
-
                 </td> 
-
             </tr>`;
 		return;
 	}
@@ -405,38 +352,22 @@ function updateObjectivesTable(objectives) {
 		const typeClass = obj.tipo === 'Global' ? 'type-global' : 'type-regional';
 		const responsable = obj.participante || 'Grupo';
 		html += ` 
-
             <tr style="cursor:pointer;" onclick="viewProjectDetails(${obj.id_proyecto})"> 
-
-                <td><span class="db-type-badge ${typeClass}">${obj.tipo}</span></td> 
-
                 <td><strong>${escapeHtml(truncateText(obj.nombre, 30))}</strong></td> 
-
                 <td>${escapeHtml(truncateText(responsable, 15))}</td> 
-
                 <td> 
-
                     <div class="db-progress-badge"> 
-
                         <span class="db-progress-text ${progressTier}">${progreso}%</span> 
-
-                        <div class="db-progress-bar-mini"> 
-
+                        <div class="db-progress-bar-mini">
                             <div class="db-progress-bar-mini-fill ${progressTier}" style="width:${progreso}%;"></div> 
-
                         </div> 
-
                     </div> 
-
                 </td> 
-
             </tr>`;
 	});
 	tbody.innerHTML = html;
 }
-// ============================================ 
-// ACTUALIZACIÓN DE UI - GRÁFICOS 
-// ============================================ 
+
 function updateDoughnutFromProjects(projects) {
 	if (!doughnutChartInstance) return;
 	const counts = {
@@ -473,11 +404,8 @@ function updateDoughnutLegend() {
 	labels.forEach((label, i) => {
 		const pct = total > 0 ? ((data[i] / total) * 100).toFixed(0) : 0;
 		html += `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;"> 
-
             <span style="width:10px;height:10px;background:${colors[i]};border-radius:2px;"></span> 
-
             ${label}: ${data[i]} 
-
         </span>`;
 	});
 	html += '</div>';
@@ -536,9 +464,7 @@ function updateObjectivesChart(objectives) {
 	objectivesChartInstance.data.datasets[0].backgroundColor = sorted.map(o => getProgressColor(Math.round(parseFloat(o.progreso) || 0)));
 	objectivesChartInstance.update();
 }
-// ============================================ 
-// FILTROS 
-// ============================================ 
+
 function setupFilterListeners() {
 	const filterObjective = document.getElementById('filterObjective');
 	const filterStatus = document.getElementById('filterStatus');
@@ -609,9 +535,7 @@ function applyFilters() {
 	updateResponsibleChart(filteredProjects);
 	updateObjectivesChart(filteredObjectives);
 }
-// ============================================ 
-// AUTO-REFRESH 
-// ============================================ 
+
 function startAutoRefresh() {
 	stopAutoRefresh();
 	autoRefreshInterval = setInterval(() => {
@@ -646,9 +570,7 @@ function setupVisibilityDetection() {
 		}
 	});
 }
-// ============================================ 
-// UTILIDADES 
-// ============================================ 
+
 function setText(elementId, value) {
 	const el = document.getElementById(elementId);
 	if (el) {
@@ -723,23 +645,15 @@ function showTableError(tableId, message) {
 	const tbody = document.getElementById(tableId);
 	if (tbody) {
 		tbody.innerHTML = ` 
-
             <tr> 
-
                 <td colspan="7" class="text-center text-danger" style="padding:30px;"> 
-
                     <i class="mdi mdi-alert-circle" style="font-size:32px;"></i> 
-
                     <p class="mt-2 mb-0">${message}</p> 
-
                 </td> 
-
             </tr>`;
 	}
 }
-// ============================================ 
-// FUNCIONES GLOBALES (para onclick en HTML) 
-// ============================================ 
+
 window.viewProjectDetails = function(projectId) {
 	// Esta función está definida en manager_project_details.js 
 	if (typeof window.openProjectDetails === 'function') {
@@ -842,27 +756,16 @@ function displayModalUsers(usuarios) {
 		const progreso = Math.round(parseFloat(u.progreso) || 0);
 		const progressClass = getProgressBarColor(progreso);
 		html += ` 
-
             <tr> 
-
                 <td><strong>${escapeHtml(u.nombre_completo)}</strong></td> 
-
                 <td>${u.num_empleado || '-'}</td> 
-
                 <td><small>${escapeHtml(u.e_mail || '-')}</small></td> 
-
                 <td><span class="badge bg-secondary">${u.tareas_completadas || 0}/${u.tareas_asignadas || 0}</span></td> 
-
                 <td style="min-width:120px;"> 
-
                     <div class="progress" style="height:18px;"> 
-
                         <div class="progress-bar ${progressClass}" style="width:${progreso}%;">${progreso}%</div> 
-
                     </div> 
-
                 </td> 
-
             </tr>`;
 	});
 	tbody.innerHTML = html;
@@ -882,23 +785,14 @@ function displayModalTasks(tareas) {
 		const estadoClass = getStatusBadgeColor(t.estado);
 		const estadoText = STATUS_MAP[t.estado?.toLowerCase()] || t.estado;
 		html += ` 
-
             <tr> 
-
                 <td> 
-
                     <strong>${escapeHtml(t.nombre)}</strong> 
-
                     ${t.descripcion ? '<small class="text-muted d-block">' + truncateText(t.descripcion, 50) + '</small>' : ''} 
-
                 </td> 
-
                 <td>${escapeHtml(t.asignado_a || 'Sin asignar')}</td> 
-
                 <td>${formatDate(t.fecha_cumplimiento)}</td> 
-
                 <td><span class="badge badge-${estadoClass}">${estadoText}</span></td> 
-
             </tr>`;
 	});
 	tbody.innerHTML = html;
@@ -926,15 +820,10 @@ function showModalError(message) {
 	const loading = document.getElementById('projectDetailsLoading');
 	if (loading) {
 		loading.innerHTML = ` 
-
             <div class="text-center py-5"> 
-
                 <i class="mdi mdi-alert-circle-outline text-danger" style="font-size:3rem;"></i> 
-
                 <p class="mt-3 text-danger">${message}</p> 
-
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button> 
-
             </div>`;
 	}
 }

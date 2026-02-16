@@ -1,7 +1,5 @@
 <?php
-/**
-* manager_get_objectives_dashboard.php
-* Obtiene proyectos formateados como objetivos para el dashboard del gerente
+/*manager_get_objectives_dashboard.php Obtiene proyectos formateados como objetivos para el dashboard del gerente
 */
  
 header('Content-Type: application/json; charset=utf-8');
@@ -20,15 +18,6 @@ $response = [
 ];
  
 try {
-    // ============================================
-    // PASO 1: VERIFICAR AUTENTICACIÓN (DEBE IR PRIMERO)
-    // ============================================
-    $id_usuario = $_SESSION['user_id'] ?? $_SESSION['id_usuario'] ?? null;
-    
-    if (!$id_usuario) {
-        throw new Exception('Usuario no autenticado');
-    }
-    
     require_once('db_config.php');
     $conn = getDBConnection();
     
@@ -36,9 +25,7 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
     
-    // ============================================
-    // PASO 2: OBTENER ROLES DEL USUARIO
-    // ============================================
+    // saber los roles del usuario
     $role_query = "
         SELECT
             ur.id_rol,
@@ -72,10 +59,6 @@ try {
     }
     $role_stmt->close();
     
-    // ============================================
-    // PASO 3: CONSTRUIR Y EJECUTAR CONSULTA
-    // ============================================
-    
     if ($is_admin) {
         // Admin ve todos los proyectos
         $query = "
@@ -96,7 +79,6 @@ try {
         ";
         
         $stmt = $conn->prepare($query);
-        // No parameters needed for admin query
         
     } elseif (count($departamentos_gerente) > 0) {
         // Gerente CON departamentos asignados
@@ -129,15 +111,13 @@ try {
         $stmt = $conn->prepare($query);
         
         if ($stmt) {
-            // Build types string: one 'i' per department + 3 more for user id
             $types = str_repeat('i', count($departamentos_gerente)) . 'iii';
-            // Build params array: departments + user id three times
             $params = array_merge($departamentos_gerente, [$id_usuario, $id_usuario, $id_usuario]);
             $stmt->bind_param($types, ...$params);
         }
         
     } else {
-        // Gerente SIN departamentos - solo proyectos propios
+        // Gerente sin departamentos
         $query = "
             SELECT DISTINCT
                 p.id_proyecto,
@@ -176,9 +156,6 @@ try {
         throw new Exception('Error al ejecutar la consulta: ' . $stmt->error);
     }
     
-    // ============================================
-    // PASO 4: PROCESAR RESULTADOS
-    // ============================================
     $result = $stmt->get_result();
     $objetivos = [];
     

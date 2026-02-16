@@ -1,18 +1,10 @@
 
-/** 
-
- * manager_project_details.js 
-
- * Manejo del modal de detalles de proyecto para el dashboard del gerente 
-
- */
+/*manager_project_details.js Manejo del modal de detalles de proyecto para el dashboard del gerente */
 // Variable para almacenar los datos del proyecto actual 
 let currentProjectDetails = null;
 let currentProjectTasks = [];
 let projectDetailsModalInstance = null;
-// ============================================ 
-// INICIALIZACIÓN 
-// ============================================ 
+
 document.addEventListener('DOMContentLoaded', function() {
 	// Configurar botón de editar 
 	const btnEditProject = document.getElementById('btnEditProject');
@@ -27,16 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 	}
 });
-// ============================================ 
-// FUNCIONES PRINCIPALES 
-// ============================================ 
-/** 
 
- * Abre el modal y carga los detalles del proyecto 
-
- * @param {number} projectId - ID del proyecto 
-
- */
 function viewProjectDetails(projectId) {
 	const modal = document.getElementById('projectDetailsModal');
 	if (!modal) {
@@ -49,17 +32,11 @@ function viewProjectDetails(projectId) {
 	if (loadingEl) {
 		loadingEl.style.display = 'block';
 		loadingEl.innerHTML = ` 
-
             <div class="text-center py-5"> 
-
                 <div class="spinner-border text-primary" role="status"> 
-
                     <span class="visually-hidden">Cargando...</span> 
-
                 </div> 
-
                 <p class="mt-3">Cargando información del proyecto...</p> 
-
             </div>`;
 	}
 	if (contentEl) contentEl.style.display = 'none';
@@ -75,13 +52,7 @@ function viewProjectDetails(projectId) {
 }
 // Alias para compatibilidad 
 window.openProjectDetails = viewProjectDetails;
-/** 
 
- * Obtiene los detalles del proyecto desde el servidor 
-
- * @param {number} projectId - ID del proyecto 
-
- */
 function fetchProjectDetails(projectId) {
 	fetch(`../php/get_project_details.php?id=${projectId}`).then(response => {
 		if (!response.ok) {
@@ -101,26 +72,15 @@ function fetchProjectDetails(projectId) {
 		const loadingEl = document.getElementById('projectDetailsLoading');
 		if (loadingEl) {
 			loadingEl.innerHTML = ` 
-
                     <div class="text-center py-5"> 
-
                         <i class="mdi mdi-alert-circle-outline text-danger" style="font-size: 3rem;"></i> 
-
                         <p class="mt-3 text-danger">${error.message}</p> 
-
                         <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button> 
-
                     </div>`;
 		}
 	});
 }
-/** 
 
- * Muestra los detalles del proyecto en el modal 
-
- * @param {Object} proyecto - Datos del proyecto 
-
- */
 function displayProjectDetails(proyecto) {
 	const loadingEl = document.getElementById('projectDetailsLoading');
 	const contentEl = document.getElementById('projectDetailsContent');
@@ -190,13 +150,7 @@ function displayProjectDetails(proyecto) {
 		btnEdit.setAttribute('data-project-id', proyecto.id_proyecto);
 	}
 }
-/** 
 
- * Muestra la tabla de usuarios asignados 
-
- * @param {Array} usuarios - Lista de usuarios 
-
- */
 function displayProjectUsers(usuarios) {
 	const tbody = document.getElementById('detailUsuariosTableBody');
 	const countElement = document.getElementById('detailUsuariosCount');
@@ -204,15 +158,10 @@ function displayProjectUsers(usuarios) {
 	if (!tbody) return;
 	if (!usuarios || usuarios.length === 0) {
 		tbody.innerHTML = ` 
-
             <tr> 
-
                 <td colspan="5" class="text-center text-muted py-3"> 
-
                     Sin usuarios asignados 
-
                 </td> 
-
             </tr>`;
 		return;
 	}
@@ -221,52 +170,27 @@ function displayProjectUsers(usuarios) {
 		const progreso = Math.round(parseFloat(usuario.progreso) || 0);
 		const progressClass = getProgressBarClass(progreso);
 		html += ` 
-
             <tr> 
-
                 <td><strong>${escapeHtml(usuario.nombre_completo)}</strong></td> 
-
                 <td>${usuario.num_empleado || '-'}</td> 
-
                 <td><small>${escapeHtml(usuario.e_mail || '-')}</small></td> 
-
                 <td> 
-
                     <span class="badge bg-secondary">${usuario.tareas_completadas || 0}/${usuario.tareas_asignadas || 0}</span> 
-
                 </td> 
-
                 <td style="min-width: 120px;"> 
-
                     <div class="progress" style="height: 18px;"> 
-
                         <div class="progress-bar ${progressClass}" role="progressbar" 
-
                              style="width: ${progreso}%;" 
-
                              aria-valuenow="${progreso}" aria-valuemin="0" aria-valuemax="100"> 
-
                             ${progreso}% 
-
                         </div> 
-
                     </div> 
-
                 </td> 
-
             </tr>`;
 	});
 	tbody.innerHTML = html;
 }
-/** 
 
- * Muestra la tabla de tareas del proyecto 
-
- * @param {Array} tareas - Lista de tareas 
-
- * @param {string} filter - Filtro de estado (opcional) 
-
- */
 function displayProjectTasks(tareas, filter = 'all') {
 	const tbody = document.getElementById('detailTareasTableBody');
 	const noTareasDiv = document.getElementById('detailNoTareas');
@@ -292,65 +216,33 @@ function displayProjectTasks(tareas, filter = 'all') {
 	tareasToShow.forEach(tarea => {
 		const estadoClass = getStatusColor(tarea.estado);
 		html += ` 
-
             <tr> 
-
                 <td> 
-
                     <div> 
-
                         <strong>${escapeHtml(tarea.nombre)}</strong> 
-
                         ${tarea.descripcion ? `<small class="text-muted d-block">${truncateText(tarea.descripcion, 50)}</small>` : ''} 
-
                     </div> 
-
                 </td> 
-
                 <td>${escapeHtml(tarea.asignado_a || 'Sin asignar')}</td> 
-
                 <td>${formatDateShort(tarea.fecha_cumplimiento)}</td> 
-
                 <td> 
-
                     <span class="badge badge-${estadoClass}">${capitalizeFirst(tarea.estado)}</span> 
-
                 </td> 
-
             </tr>`;
 	});
 	tbody.innerHTML = html;
 }
-// ============================================ 
-// ACCIONES 
-// ============================================ 
-/** 
 
- * Redirige a la página de edición del proyecto 
-
- * @param {number} idProyecto - ID del proyecto 
-
- */
 function editarProyecto(idProyecto) {
 	window.location.href = `../nuevoProyectoGerente/?edit=${idProyecto}`;
 }
-/** 
 
- * Redirige desde el modal al editar 
-
- */
 function editarProyectoFromModal() {
 	if (currentProjectDetails) {
 		editarProyecto(currentProjectDetails.id_proyecto);
 	}
 }
-/** 
 
- * Filtra las tareas del proyecto por estado 
-
- * @param {string} filter - Estado a filtrar 
-
- */
 function filterProjectTasks(filter) {
 	// Actualizar botones activos 
 	const buttons = document.querySelectorAll('#projectDetailsModal .btn-group .btn');
@@ -363,9 +255,7 @@ function filterProjectTasks(filter) {
 	// Re-mostrar tareas filtradas 
 	displayProjectTasks(currentProjectTasks, filter);
 }
-// ============================================ 
-// UTILIDADES 
-// ============================================ 
+
 function setText(elementId, value) {
 	const el = document.getElementById(elementId);
 	if (el) el.textContent = value;
@@ -431,9 +321,7 @@ function escapeHtml(text) {
 	};
 	return String(text).replace(/[&<>"']/g, m => map[m]);
 }
-// ============================================ 
-// EXPORTAR FUNCIONES GLOBALES 
-// ============================================ 
+//funciones globales
 window.viewProjectDetails = viewProjectDetails;
 window.editarProyecto = editarProyecto;
 window.editarProyectoFromModal = editarProyectoFromModal;

@@ -62,9 +62,9 @@ require_once('../php/check_auth.php');
                            <label class="db-filter-label">Estado</label> 
                            <select class="db-filter-select" id="filterStatus">
                               <option value="all">Todos</option>
-                              <option value="Completed">Completados</option>
-                              <option value="Not Started">Pendientes</option>
-                              <option value="Delay">Atrasados</option>
+                              <option value="Completado">Completados</option>
+                              <option value="Pendiente">Pendientes</option>
+                              <option value="Vencido">Atrasados</option>
                            </select>
                         </div>
                         <div class="db-filter-group">
