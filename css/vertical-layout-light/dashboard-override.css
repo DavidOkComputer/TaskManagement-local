@@ -1,25 +1,29 @@
 /*dashboard-override.css */
-.content-wrapper {
-    background: #d6dce4 !important;
-    padding: 10px 12px !important;
+ .content-wrapper {
+     background: #d6dce4 !important;
+     padding: 10px 12px !important;
+     display: flex !important;
+     flex-direction: column !important;
+     height: calc(100vh - 70px) !important;
+     overflow: hidden !important;
 }
-.navbar-menu-wrapper {
-    flex: 1 1 0% !important;
-    width: 0 !important;
+ .navbar-menu-wrapper {
+     flex: 1 1 0% !important;
+     width: 0 !important;
 }
-.db-header-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #009b4a;
-    border-radius: 6px;
-    padding: 6px 14px;
-    margin: 0;
-    gap: 10px;
-    flex-wrap: nowrap;
-    height: 54px;
-    overflow: hidden;
-    width: 100%;
+ .db-header-bar {
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     background: #009b4a;
+     border-radius: 6px;
+     padding: 6px 14px;
+     margin: 0;
+     gap: 10px;
+     flex-wrap: nowrap;
+     height: 54px;
+     overflow: hidden;
+     width: 100%;
 }
  .db-header-left {
      display: flex;
@@ -183,6 +187,7 @@
      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
      border: 1px solid #e9e9e9;
      overflow: hidden;
+     flex-shrink: 0;
 }
  .db-stats-left {
      display: flex;
@@ -283,6 +288,7 @@
      align-items: stretch;
      height: 280px;
      overflow: hidden;
+     flex-shrink: 0;
 }
  .db-col-responsible {
      flex: 3;
@@ -481,19 +487,31 @@
  .db-bottom-row {
      display: flex;
      gap: 8px;
-     min-height: 280px;
+     flex: 1;
+     min-height: 0;
+     overflow: hidden;
 }
  .db-table-left {
      flex: 4;
      min-width: 0;
+     min-height: 0;
+     display: flex;
+     flex-direction: column;
 }
  .db-table-right {
      flex: 6;
      min-width: 0;
+     min-height: 0;
+     display: flex;
+     flex-direction: column;
 }
  .db-table-card {
      padding: 0 !important;
      overflow: hidden;
+     flex: 1;
+     min-height: 0;
+     display: flex;
+     flex-direction: column;
 }
  .db-table-card .db-section-title {
      padding: 10px 14px;
@@ -501,10 +519,12 @@
      border-bottom: none;
      background: #f8f9fa;
      border-bottom: 2px solid #009b4a;
+     flex-shrink: 0;
 }
  .db-table-responsive {
      overflow: auto;
-     max-height: 260px;
+     flex: 1;
+     min-height: 0;
 }
  .db-table {
      width: 100%;
@@ -903,3 +923,4 @@
  .db-table-right .db-card-inner {
      animation-delay: 0.25s;
 }
+ 
