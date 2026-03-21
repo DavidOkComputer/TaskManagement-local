@@ -410,4 +410,10 @@ $user_id = $_SESSION[ 'user_id']; ?>
       <script src="../js/user_manage_objectives.js"></script>
       <script src="../js/notifications.js"></script>
     </body>
+    <footer>
+		<p 
+			style="font-size:0.7rem; text-align:center;">
+			2026 ACIM - Todos los derechos reservados Motores Reynosa S.A. de C.V.
+		</p>
+	</footer>
   </html>

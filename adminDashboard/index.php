@@ -523,4 +523,10 @@ require_once('../php/check_auth.php');
 		<script src="../js/ppe_chart_click.js"></script> 
 		<script src="../js/project_details.js"></script> 
 	</body>
+	<footer>
+		<p 
+			style="font-size:0.7rem; text-align:center;">
+			2026 ACIM - Todos los derechos reservados Motores Reynosa S.A. de C.V.
+		</p>
+	</footer>
 </html>
