@@ -172,7 +172,7 @@ if ($user_rol !== 2 && $user_rol !== 1) {
                                 <?php echo htmlspecialchars($user_name); ?>
                             </span>
                         </h1>
-                        <h3 class="welcome-sub-text">Cargando departamento...</h3>
+                        <h3 class="welcome-sub-text">MOTORES REYNOSA | Cargando departamento...</h3>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">

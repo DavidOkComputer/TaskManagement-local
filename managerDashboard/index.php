@@ -49,7 +49,7 @@ require_once('../php/check_auth.php');
 						<div class="db-header-left">
 							<div class="db-header-title"> 
 								<span class="db-title-main"><?php echo $_SESSION['nombre']; echo ' '; echo $_SESSION['apellido']; ?></span> 
-								<span class="db-title-sub">Tu resumen de esta semana</span> 
+								<span class="db-title-sub">MOTORES REYNOSA | Tu resumen de esta semana</span> 
 							</div>
 						</div>
 						<div class="db-header-filters">

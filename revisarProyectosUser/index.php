@@ -74,7 +74,7 @@ $user_id = $_SESSION[ 'user_id']; ?>
                   </span>
                 </h1>
                 <h3 class="welcome-sub-text">
-                  Gestiona tus proyectos asignados
+                  MOTORES REYNOSA | Gestiona tus proyectos asignados
                 </h3>
               </li>
             </ul>

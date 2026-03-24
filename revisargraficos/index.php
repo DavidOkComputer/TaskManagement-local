@@ -53,7 +53,7 @@ require_once('../php/check_auth.php');
                 echo $_SESSION['nombre'];
               ?>
             </span></h1>
-            <h3 class="welcome-sub-text">Tu resumen de esta semana</h3>
+            <h3 class="welcome-sub-text">MOTORES REYNOSA | Tu resumen de esta semana</h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">

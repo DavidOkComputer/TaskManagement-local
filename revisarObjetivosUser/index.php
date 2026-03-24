@@ -62,7 +62,7 @@ $user_id = $_SESSION[ 'user_id']; ?>
                   </span>
                 </h1>
                 <h3 class="welcome-sub-text">
-                  Gestiona tus objetivos personales
+                  MOTORES REYNOSA | Gestiona tus objetivos personales
                 </h3>
               </li>
             </ul>

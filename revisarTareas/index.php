@@ -63,7 +63,7 @@ $user_id = $_SESSION[ 'user_id'];
 									</span>
 								</h1>
 								<h3 class="welcome-sub-text">
-									Crea y desarrolla nuevas tareas
+									MOTORES REYNOSA | Crea y desarrolla nuevas tareas
 								</h3>
 							</li>
 						</ul>

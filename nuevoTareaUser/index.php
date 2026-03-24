@@ -56,7 +56,7 @@ $user_id = $_SESSION['user_id'];
                 <?php echo htmlspecialchars($user_name); ?>
               </span>
             </h1>
-            <h3 class="welcome-sub-text">Crea y desarrolla nuevas tareas </h3>
+            <h3 class="welcome-sub-text">MOTORES REYNOSA | Crea y desarrolla nuevas tareas </h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">
