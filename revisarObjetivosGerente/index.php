@@ -310,6 +310,7 @@ $user_id = $_SESSION['user_id'];
   <!-- End custom js for this page-->
   <script src="../js/manager_manage_objectives.js"> </script>
   <script src="../js/notifications.js"></script>
+  <script src="../js/session_timeout.js"></script>
 </body>
 <footer>
 		<p 

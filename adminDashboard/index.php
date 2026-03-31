@@ -522,6 +522,7 @@ require_once('../php/check_auth.php');
 		<script src="../js/datetime_widget.js"></script> 
 		<script src="../js/ppe_chart_click.js"></script> 
 		<script src="../js/project_details.js"></script> 
+		<script src="../js/session_timeout.js"></script>
 	</body>
 	<footer>
 		<p 

@@ -300,6 +300,7 @@ $user_id = $_SESSION['user_id'];
     <!-- End custom js for this page--> 
     <script src="../js/create_department.js"></script> 
     <script src="../js/notifications.js"></script>
+    <script src="../js/session_timeout.js"></script>
 </body> 
 <footer>
 		<p 

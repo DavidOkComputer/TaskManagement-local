@@ -340,6 +340,7 @@ $_SESSION['is_manager'] = $is_manager;
   <!-- Manager Task Management Script -->
   <script src="../js/manager_manage_tasks.js"></script>
   <script src="../js/notifications.js"></script>
+  <script src="../js/session_timeout.js"></script>
 </body>
 <footer>
 		<p 

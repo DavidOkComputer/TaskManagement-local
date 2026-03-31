@@ -269,6 +269,7 @@ require_once('../php/check_auth.php');
   <script src="../js/manager_charts_scatter.js"></script><!--Para grafica de medidas de eficiencia-->
   <script src="../js/manager_charts_workload.js"></script><!--Para grafica de distribucion de carga-->
   <script src="../js/notifications.js"></script>
+  <script src="../js/session_timeout.js"></script>
   <!-- End custom js for this page-->
 </body>
 <footer>

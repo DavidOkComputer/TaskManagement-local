@@ -409,6 +409,7 @@ $user_id = $_SESSION['user_id'];
   <!-- Employee Management JS -->
   <script src="../js/manage_users_gerente.js"></script>
   <script src="../js/notifications.js"></script>
+  <script src="../js/session_timeout.js"></script>
   <!-- End custom js for this page-->
 </body>
 <footer>

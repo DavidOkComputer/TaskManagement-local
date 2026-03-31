@@ -313,6 +313,7 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/dashboard.js"></script>
   <script src="../js/manager_list_total_projects.js"></script>
   <script src="../js/notifications.js"></script>
+  <script src="../js/session_timeout.js"></script>
   <!-- End custom js for this page-->
 </body>
 <footer>

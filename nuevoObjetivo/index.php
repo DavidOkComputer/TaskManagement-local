@@ -385,6 +385,7 @@ $user_id = $_SESSION['user_id'];
   <!-- Custom js for objective form -->
   <script src="../js/objetivo_form.js"></script>
   <script src="../js/notifications.js"></script>
+  <script src="../js/session_timeout.js"></script>
   <!-- End custom js for this page-->
   
   <script>

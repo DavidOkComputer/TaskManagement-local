@@ -349,6 +349,7 @@
 		</script>  
 		<script src="../js/gantt_chart.js"></script> 
 		<script src="../js/notifications.js"></script> 
+		<script src="../js/session_timeout.js"></script>
 	</body>
 	<footer>
 		<p 

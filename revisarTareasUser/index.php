@@ -258,6 +258,7 @@ $user_id = $_SESSION['user_id'];
   <!-- End custom js for this page-->
   <script src="../js/user_manage_tasks.js"></script>
   <script src="../js/notifications.js"></script>
+  <script src="../js/session_timeout.js"></script>
 </body>
 <footer>
 		<p 

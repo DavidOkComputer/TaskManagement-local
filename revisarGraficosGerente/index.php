@@ -428,6 +428,7 @@ if ($user_rol !== 2 && $user_rol !== 1) {
     <script src="../js/manager_charts_workload.js"></script>
     <script src="../js/manager_load_departments_dropdown.js"></script>
     <script src="../js/notifications.js"></script>
+    <script src="../js/session_timeout.js"></script>
 </body>
 <footer>
 		<p 

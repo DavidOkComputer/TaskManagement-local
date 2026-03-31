@@ -628,6 +628,7 @@ require_once('../php/check_auth.php');
   <script src="../js/custom_dialogs.js"></script>
   <script src="../js/notifications.js"></script>
   <script src="../js/user_project_details.js"></script>
+  <script src="../js/session_timeout.js"></script>
   <!-- End custom js for this page-->
 </body>
 <footer>

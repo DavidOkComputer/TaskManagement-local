@@ -311,6 +311,7 @@ $user_id = $_SESSION['user_id'];
   <script src="../js/custom_dialogs.js"></script>
   <script src="../js/user_list_overdue_projects.js"></script>
   <script src="../js/notifications.js"></script>
+  <script src="../js/session_timeout.js"></script>
   <!-- End custom js for this page-->
 </body>
 <footer>
