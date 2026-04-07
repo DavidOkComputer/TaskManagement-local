@@ -1,4 +1,5 @@
-// manage_users.js para manejar los usuarios creados 
+
+// manage_users.js para manejar los usuarios creados
 const Config = {
 	API_ENDPOINTS: {
 		DELETE: '../php/delete_users.php',
@@ -11,8 +12,8 @@ const Config = {
 	UPLOADS_BASE: '../uploads/profile_pictures/'
 };
 const AUTO_REFRESH_CONFIG = {
-	USERS_INTERVAL: 120000, // 2 minutos  
-	MODAL_INTERVAL: 120000, // 2 minutos 
+	USERS_INTERVAL: 120000, // 2 minutos
+	MODAL_INTERVAL: 120000, // 2 minutos
 	DEBUG: false
 };
 const IMAGE_CONFIG = {
@@ -33,18 +34,18 @@ let totalPages = 0;
 let autoRefreshInterval = null;
 let modalRefreshInterval = null;
 let currentUserIdForProject = null;
-// Variables para foto de perfil en edición 
+// Variables para foto de perfil en edición
 let editSelectedImage = null;
 let editRemovePhoto = false;
-// Cache para evitar llamadas repetidas 
+// Cache para evitar llamadas repetidas
 let lastUsersLoad = 0;
-const MIN_LOAD_INTERVAL = 5000; // Mínimo 5 segundos entre cargas 
+const MIN_LOAD_INTERVAL = 5000; // Mínimo 5 segundos entre cargas
 
 document.addEventListener('DOMContentLoaded', function() {
 	loadDepartamentos();
 	loadManagers(); // Cargar lista de gerentes
 	loadUsuarios();
-	// Iniciar auto-refresh después de un delay 
+	// Iniciar auto-refresh después de un delay
 	setTimeout(() => {
 		startAutoRefresh();
 	}, 5000);
@@ -64,21 +65,22 @@ document.addEventListener('DOMContentLoaded', function() {
 	setupPagination();
 	setupModalEventListeners();
 	setupEditProfilePictureHandlers();
+	setupPasswordToggleHandlers();
 });
 createCustomDialogSystem();
 
 function getProfilePictureUrl(usuario, thumbnail = true) {
-	// Si no hay foto, retornar default 
+	// Si no hay foto, retornar default
 	if (!usuario || !usuario.foto_perfil) {
 		return Config.DEFAULT_AVATAR;
 	}
-	// Construir path correcto 
+	// Construir path correcto
 	if (thumbnail && usuario.foto_thumbnail) {
 		return '../' + usuario.foto_thumbnail;
 	} else if (usuario.foto_url) {
 		return '../' + usuario.foto_url;
 	} else if (usuario.foto_perfil) {
-		// Fallback: construir URL manualmente 
+		// Fallback: construir URL manualmente
 		if (thumbnail) {
 			return Config.UPLOADS_BASE + 'thumbnails/thumb_' + usuario.foto_perfil;
 		}
@@ -88,7 +90,7 @@ function getProfilePictureUrl(usuario, thumbnail = true) {
 }
 
 function handleImageError(imgElement) {
-	// Evitar loop infinito verificando si ya se intentó el fallback 
+	// Evitar loop infinito verificando si ya se intentó el fallback
 	if (imgElement.dataset.fallbackApplied === 'true') {
 		return;
 	}
@@ -119,6 +121,55 @@ function setupEditProfilePictureHandlers() {
 	const editModal = document.getElementById('editUserModal');
 	if (editModal) {
 		editModal.addEventListener('hidden.bs.modal', resetEditImageState);
+	}
+}
+
+function setupPasswordToggleHandlers() {
+	// Toggle para campo de nueva contraseña
+	const togglePassword = document.getElementById('toggleEditPassword');
+	if (togglePassword) {
+		togglePassword.addEventListener('click', function() {
+			const input = document.getElementById('editPassword');
+			const icon = document.getElementById('editPasswordIcon');
+			if (input.type === 'password') {
+				input.type = 'text';
+				icon.className = 'mdi mdi-eye';
+			} else {
+				input.type = 'password';
+				icon.className = 'mdi mdi-eye-off';
+			}
+		});
+	}
+	// Toggle para campo de confirmar contraseña
+	const toggleConfirm = document.getElementById('toggleEditPasswordConfirm');
+	if (toggleConfirm) {
+		toggleConfirm.addEventListener('click', function() {
+			const input = document.getElementById('editPasswordConfirm');
+			const icon = document.getElementById('editPasswordConfirmIcon');
+			if (input.type === 'password') {
+				input.type = 'text';
+				icon.className = 'mdi mdi-eye';
+			} else {
+				input.type = 'password';
+				icon.className = 'mdi mdi-eye-off';
+			}
+		});
+	}
+	// Validación en tiempo real de coincidencia
+	const confirmInput = document.getElementById('editPasswordConfirm');
+	if (confirmInput) {
+		confirmInput.addEventListener('input', function() {
+			const password = document.getElementById('editPassword').value;
+			const confirm = this.value;
+			const feedback = document.getElementById('passwordMatchFeedback');
+			if (confirm.length > 0 && password !== confirm) {
+				this.classList.add('is-invalid');
+				if (feedback) feedback.style.display = 'block';
+			} else {
+				this.classList.remove('is-invalid');
+				if (feedback) feedback.style.display = 'none';
+			}
+		});
 	}
 }
 
@@ -228,7 +279,7 @@ function setEditCurrentPhoto(photoUrl, hasPhoto) {
 		currentPhoto.src = photoUrl || Config.DEFAULT_AVATAR;
 		currentPhoto.onerror = function() {
 			this.src = Config.DEFAULT_AVATAR;
-			this.onerror = null; // Prevenir loop 
+			this.onerror = null; // Prevenir loop
 		};
 	}
 	if (currentPhotoContainer) {
@@ -255,7 +306,7 @@ function startAutoRefresh() {
 		clearInterval(autoRefreshInterval);
 	}
 	autoRefreshInterval = setInterval(() => {
-		// Solo refrescar si la pestaña está visible 
+		// Solo refrescar si la pestaña está visible
 		if (!document.hidden) {
 			refreshUserData();
 		}
@@ -274,7 +325,7 @@ function stopAutoRefresh() {
 }
 
 function refreshUserData() {
-	// Evitar llamadas muy frecuentes 
+	// Evitar llamadas muy frecuentes
 	const now = Date.now();
 	if (now - lastUsersLoad < MIN_LOAD_INTERVAL) {
 		return;
@@ -291,7 +342,7 @@ function refreshUserData() {
 				lastUsersLoad = Date.now();
 				const searchInput = document.getElementById('searchUser');
 				const currentSearchQuery = searchInput ? searchInput.value : '';
-				// Usar cache de progreso si está disponible para evitar llamadas extra 
+				// Usar cache de progreso si está disponible para evitar llamadas extra
 				const usersWithProgress = data.usuarios.map(usuario => {
 					const cachedProgress = usersProgressCache[usuario.id_usuario];
 					if (cachedProgress) {
@@ -322,7 +373,7 @@ function refreshUserData() {
 					currentPage = newTotalPages;
 				}
 				displayUsuarios(filteredUsuarios);
-				// Actualizar progreso en segundo plano (sin bloquear UI) 
+				// Actualizar progreso en segundo plano (sin bloquear UI)
 				updateProgressInBackground(data.usuarios);
 			}
 		})
@@ -331,10 +382,10 @@ function refreshUserData() {
 		});
 }
 
-// Actualizar progreso en segundo plano sin bloquear 
+// Actualizar progreso en segundo plano sin bloquear
 async function updateProgressInBackground(usuarios) {
 	for (const usuario of usuarios) {
-		// No actualizar si ya tenemos datos recientes 
+		// No actualizar si ya tenemos datos recientes
 		if (usersProgressCache[usuario.id_usuario]?.lastUpdate > Date.now() - 60000) {
 			continue;
 		}
@@ -344,7 +395,7 @@ async function updateProgressInBackground(usuarios) {
 				...progress,
 				lastUpdate: Date.now()
 			};
-			// Actualizar en el array 
+			// Actualizar en el array
 			const index = allUsuarios.findIndex(u => u.id_usuario === usuario.id_usuario);
 			if (index !== -1) {
 				allUsuarios[index] = {
@@ -353,20 +404,20 @@ async function updateProgressInBackground(usuarios) {
 				};
 			}
 		} catch (e) {
-			// Ignorar errores individuales 
+			// Ignorar errores individuales
 		}
-		// Pequeña pausa para no sobrecargar 
+		// Pequeña pausa para no sobrecargar
 		await new Promise(r => setTimeout(r, 100));
 	}
 }
 
 function loadDepartamentos() {
 	fetch(Config.API_ENDPOINTS.GET_DEPARTMENTS, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		})
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	})
 		.then(response => {
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
@@ -389,11 +440,11 @@ function loadDepartamentos() {
 
 function loadManagers() {
 	fetch(Config.API_ENDPOINTS.GET_MANAGERS, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		})
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	})
 		.then(response => {
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
@@ -430,9 +481,9 @@ function populateDepartamentosDropdown() {
 function populateSuperiorDropdown(excludeUserId = null) {
 	const dropdown = document.getElementById('editSuperior');
 	if (!dropdown) return;
-	
+
 	dropdown.innerHTML = '<option value="0">-- Sin superior asignado --</option>';
-	
+
 	allManagers.forEach(manager => {
 		// Excluir al usuario que se está editando
 		if (excludeUserId && manager.id_usuario == excludeUserId) {
@@ -461,7 +512,7 @@ async function loadUsuarios() {
 		if (data.success && data.usuarios) {
 			lastUsersLoad = Date.now();
 			allUsuarios = data.usuarios;
-			// Inicializar con progreso 0, luego cargar en segundo plano 
+			// Inicializar con progreso 0, luego cargar en segundo plano
 			allUsuarios = allUsuarios.map(usuario => ({
 				...usuario,
 				avgProgress: 0,
@@ -472,7 +523,7 @@ async function loadUsuarios() {
 			filteredUsuarios = [...allUsuarios];
 			currentPage = 1;
 			displayUsuarios(allUsuarios);
-			// Cargar progreso en segundo plano 
+			// Cargar progreso en segundo plano
 			loadProgressAsync();
 		} else {
 			const errorMsg = data.message || 'Error desconocido';
@@ -493,14 +544,14 @@ async function loadProgressAsync() {
 				...progress,
 				lastUpdate: Date.now()
 			};
-			// Actualizar usuario en el array 
+			// Actualizar usuario en el array
 			const index = allUsuarios.findIndex(u => u.id_usuario === usuario.id_usuario);
 			if (index !== -1) {
 				allUsuarios[index] = {
 					...allUsuarios[index],
 					...progress
 				};
-				// Actualizar también en filteredUsuarios 
+				// Actualizar también en filteredUsuarios
 				const filteredIndex = filteredUsuarios.findIndex(u => u.id_usuario === usuario.id_usuario);
 				if (filteredIndex !== -1) {
 					filteredUsuarios[filteredIndex] = {
@@ -509,38 +560,38 @@ async function loadProgressAsync() {
 					};
 				}
 			}
-			// Actualizar la fila específica en la tabla sin recargar todo 
+			// Actualizar la fila específica en la tabla sin recargar todo
 			updateUserRowProgress(usuario.id_usuario, progress);
 		} catch (e) {
 			console.error('Error loading progress for user', usuario.id_usuario, e);
 		}
-		// Pequeña pausa 
+		// Pequeña pausa
 		await new Promise(r => setTimeout(r, 50));
 	}
 }
 
 function updateUserRowProgress(userId, progress) {
-	// Buscar la fila del usuario y actualizar solo el progreso 
+	// Buscar la fila del usuario y actualizar solo el progreso
 	const row = document.querySelector(`tr[data-user-id="${userId}"]`);
 	if (row) {
 		const progressCell = row.querySelector('.progress-cell');
 		if (progressCell) {
-			progressCell.innerHTML = ` 
-                <div class="d-flex flex-column"> 
-                    <div class="d-flex justify-content-between mb-1"> 
-                        <small>${progress.avgProgress ? progress.avgProgress.toFixed(1) : '0.0'}%</small> 
-                        <small>${progress.totalProjects || 0} proyecto${progress.totalProjects !== 1 ? 's' : ''}</small> 
-                    </div> 
-                    <div class="progress" style="height: 8px;"> 
-                        <div class="progress-bar ${getProgressBarClass(progress.avgProgress || 0)}" 
-                             role="progressbar" 
-                             style="width: ${progress.avgProgress || 0}%;" 
-                             aria-valuenow="${progress.avgProgress || 0}" 
-                             aria-valuemin="0" 
-                             aria-valuemax="100"> 
-                        </div> 
-                    </div> 
-                </div> 
+			progressCell.innerHTML = `
+                <div class="d-flex flex-column">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>${progress.avgProgress ? progress.avgProgress.toFixed(1) : '0.0'}%</small>
+                        <small>${progress.totalProjects || 0} proyecto${progress.totalProjects !== 1 ? 's' : ''}</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar ${getProgressBarClass(progress.avgProgress || 0)}"
+                             role="progressbar"
+                             style="width: ${progress.avgProgress || 0}%;"
+                             aria-valuenow="${progress.avgProgress || 0}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
             `;
 		}
 	}
@@ -664,8 +715,8 @@ function updatePaginationControls() {
 	infoText.className = 'pagination-info';
 	const startItem = filteredUsuarios.length > 0 ? ((currentPage - 1) * rowsPerPage) + 1 : 0;
 	const endItem = Math.min(currentPage * rowsPerPage, filteredUsuarios.length);
-	infoText.innerHTML = ` 
-        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredUsuarios.length}</strong> empleados</p> 
+	infoText.innerHTML = `
+        <p>Mostrando <strong>${startItem}</strong> a <strong>${endItem}</strong> de <strong>${filteredUsuarios.length}</strong> empleados</p>
     `;
 	paginationContainer.appendChild(infoText);
 	if (totalPages <= 1) return;
@@ -800,45 +851,45 @@ async function showUserProjects(userId, userName, userEmail) {
 	document.getElementById('totalTasks').textContent = totalTasks;
 	document.getElementById('avgProgress').textContent = avgProgress.toFixed(1) + '%';
 	const projectsList = document.getElementById('projectsList');
-	projectsList.innerHTML = projects.map(project => `  
-        <div class="card mb-3">  
-            <div class="card-body">  
-                <div class="d-flex justify-content-between align-items-start mb-2">  
-                    <div>  
-                        <h6 class="mb-1 fw-bold">${escapeHtml(project.nombre || '')}</h6>  
-                        <p class="text-muted mb-2 small">${escapeHtml(project.descripcion || 'Sin descripción')}</p>  
-                    </div>  
-                    <span class="badge ${getStatusBadgeClass(project.estado)}">${project.estado || 'N/A'}</span>  
-                </div>  
-                <div class="row mb-2">  
-                    <div class="col-6">  
-                        <small class="text-muted">  
-                            <i class="mdi mdi-view-grid"></i> Área: ${escapeHtml(project.area || 'N/A')}  
-                        </small>  
-                    </div>  
-                    <div class="col-6">  
-                        <small class="text-muted">  
-                            <i class="mdi mdi-calendar"></i> ${formatDate(project.fecha_cumplimiento)}  
-                        </small>  
-                    </div>  
-                </div>  
-                <div class="mb-2">  
-                    <div class="d-flex justify-content-between mb-1">  
-                        <small class="text-muted">Progreso: ${project.progreso_porcentaje || project.progreso || 0}%</small>  
-                        <small class="text-muted">${project.tareas_completadas || 0}/${project.tareas_totales || 0} tareas</small>  
-                    </div>  
-                    <div class="progress" style="height: 10px;">  
-                        <div class="progress-bar ${getProgressBarClass(project.progreso || 0)}"   
-                             role="progressbar"   
-                             style="width: ${project.progreso || 0}%;"  
-                             aria-valuenow="${project.progreso || 0}"   
-                             aria-valuemin="0"   
-                             aria-valuemax="100">  
-                        </div>  
-                    </div>  
-                </div>  
-            </div>  
-        </div>  
+	projectsList.innerHTML = projects.map(project => `
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h6 class="mb-1 fw-bold">${escapeHtml(project.nombre || '')}</h6>
+                        <p class="text-muted mb-2 small">${escapeHtml(project.descripcion || 'Sin descripción')}</p>
+                    </div>
+                    <span class="badge ${getStatusBadgeClass(project.estado)}">${project.estado || 'N/A'}</span>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="mdi mdi-view-grid"></i> Área: ${escapeHtml(project.area || 'N/A')}
+                        </small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">
+                            <i class="mdi mdi-calendar"></i> ${formatDate(project.fecha_cumplimiento)}
+                        </small>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">Progreso: ${project.progreso_porcentaje || project.progreso || 0}%</small>
+                        <small class="text-muted">${project.tareas_completadas || 0}/${project.tareas_totales || 0} tareas</small>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar ${getProgressBarClass(project.progreso || 0)}"
+                             role="progressbar"
+                             style="width: ${project.progreso || 0}%;"
+                             aria-valuenow="${project.progreso || 0}"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     `).join('');
 }
 
@@ -883,13 +934,13 @@ async function displayUsuarios(usuarios) {
 		return;
 	}
 	if (paginatedUsuarios.length === 0) {
-		tableBody.innerHTML = `  
-            <tr>  
-                <td colspan="6" class="text-center empty-state">  
-                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i>  
-                    <h5 class="mt-3">No se encontraron resultados en esta página</h5>  
-                </td>  
-            </tr>  
+		tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center empty-state">
+                    <i class="mdi mdi-magnify" style="font-size: 48px; color: #ccc;"></i>
+                    <h5 class="mt-3">No se encontraron resultados en esta página</h5>
+                </td>
+            </tr>
         `;
 		updatePaginationControls();
 		return;
@@ -905,88 +956,88 @@ async function displayUsuarios(usuarios) {
 
 function createUsuarioRow(usuario) {
 	const tr = document.createElement('tr');
-	tr.dataset.userId = usuario.id_usuario; // Para actualizaciones parciales 
+	tr.dataset.userId = usuario.id_usuario; // Para actualizaciones parciales
 	const rolBadge = getRolBadge(usuario.id_rol);
 	const nombreCompleto = `${usuario.nombre} ${usuario.apellido}`;
-	// Usar la función helper para obtener URL correcta 
+	// Usar la función helper para obtener URL correcta
 	const fotoUrl = getProfilePictureUrl(usuario, true);
-	tr.innerHTML = ` 
-        <td> 
-            <div class="d-flex align-items-center"> 
-                <img src="${fotoUrl}"  
-                     alt="Foto de ${escapeHtml(nombreCompleto)}"  
-                     class="profile-thumbnail me-3" 
-                     style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #e9ecef;" 
-                     onerror="handleImageError(this)"> 
-                <div> 
-                    <h6 class="mb-0">${escapeHtml(nombreCompleto)}</h6> 
-                    <small class="text-muted">${escapeHtml(usuario.e_mail || '')}</small> 
-                </div> 
-            </div> 
-        </td> 
-        <td> 
-            <h6>${getDepartamentoName(usuario.id_departamento)}</h6> 
-            <p class="text-muted mb-0">${escapeHtml(usuario.usuario || '')}</p> 
-        </td> 
-        <td> 
-            <h6>${getSuperiorName(usuario.id_superior)}</h6> 
-        </td> 
-        <td> 
-            ${rolBadge} 
-        </td> 
-        <td class="progress-cell"> 
-            <div class="d-flex flex-column"> 
-                <div class="d-flex justify-content-between mb-1"> 
-                    <small>${usuario.avgProgress ? usuario.avgProgress.toFixed(1) : '0.0'}%</small> 
-                    <small>${usuario.totalProjects || 0} proyecto${usuario.totalProjects !== 1 ? 's' : ''}</small> 
-                </div> 
-                <div class="progress" style="height: 8px;"> 
-                    <div class="progress-bar ${getProgressBarClass(usuario.avgProgress || 0)}" 
-                         role="progressbar" 
-                         style="width: ${usuario.avgProgress || 0}%;" 
-                         aria-valuenow="${usuario.avgProgress || 0}" 
-                         aria-valuemin="0" 
-                         aria-valuemax="100"> 
-                    </div> 
-                </div> 
-            </div> 
-        </td> 
-        <td class="action-buttons"> 
-            <div class="btn-group" role="group"> 
-                <button type="button" class="btn btn-sm btn-info btn-view-projects" 
-                        data-user-id="${usuario.id_usuario}" 
-                        data-nombre="${escapeHtml(nombreCompleto)}" 
-                        data-email="${escapeHtml(usuario.e_mail || '')}" 
-                        title="Ver proyectos"> 
-                    <i class="mdi mdi-folder-account"></i> 
-                </button> 
-                <button type="button" class="btn btn-sm btn-success btn-edit" 
-                        data-user-id="${usuario.id_usuario}" 
-                        data-nombre="${escapeHtml(usuario.nombre || '')}" 
-                        data-apellido="${escapeHtml(usuario.apellido || '')}" 
-                        data-usuario="${escapeHtml(usuario.usuario || '')}" 
-                        data-email="${escapeHtml(usuario.e_mail || '')}" 
-                        data-depart="${usuario.id_departamento}" 
-                        data-superior="${usuario.id_superior || 0}" 
-                        data-foto="${usuario.foto_perfil || ''}" 
-                        data-foto-url="${usuario.foto_url || ''}" 
-                        title="Editar usuario"> 
-                    <i class="mdi mdi-pencil"></i> 
-                </button> 
-                <button type="button" class="btn btn-sm btn-primary btn-manage-roles" 
-                        data-user-id="${usuario.id_usuario}" 
-                        data-user-name="${escapeHtml(nombreCompleto)}" 
-                        title="Gestionar roles"> 
-                    <i class="mdi mdi-account-key"></i> 
-                </button> 
-                <button type="button" class="btn btn-sm btn-danger btn-delete" 
-                        data-user-id="${usuario.id_usuario}" 
-                        data-nombre="${escapeHtml(nombreCompleto)}" 
-                        title="Eliminar usuario"> 
-                    <i class="mdi mdi-delete"></i> 
-                </button> 
-            </div> 
-        </td> 
+	tr.innerHTML = `
+        <td>
+            <div class="d-flex align-items-center">
+                <img src="${fotoUrl}"
+                     alt="Foto de ${escapeHtml(nombreCompleto)}"
+                     class="profile-thumbnail me-3"
+                     style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #e9ecef;"
+                     onerror="handleImageError(this)">
+                <div>
+                    <h6 class="mb-0">${escapeHtml(nombreCompleto)}</h6>
+                    <small class="text-muted">${escapeHtml(usuario.e_mail || '')}</small>
+                </div>
+            </div>
+        </td>
+        <td>
+            <h6>${getDepartamentoName(usuario.id_departamento)}</h6>
+            <p class="text-muted mb-0">${escapeHtml(usuario.usuario || '')}</p>
+        </td>
+        <td>
+            <h6>${getSuperiorName(usuario.id_superior)}</h6>
+        </td>
+        <td>
+            ${rolBadge}
+        </td>
+        <td class="progress-cell">
+            <div class="d-flex flex-column">
+                <div class="d-flex justify-content-between mb-1">
+                    <small>${usuario.avgProgress ? usuario.avgProgress.toFixed(1) : '0.0'}%</small>
+                    <small>${usuario.totalProjects || 0} proyecto${usuario.totalProjects !== 1 ? 's' : ''}</small>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar ${getProgressBarClass(usuario.avgProgress || 0)}"
+                         role="progressbar"
+                         style="width: ${usuario.avgProgress || 0}%;"
+                         aria-valuenow="${usuario.avgProgress || 0}"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+        </td>
+        <td class="action-buttons">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-info btn-view-projects"
+                        data-user-id="${usuario.id_usuario}"
+                        data-nombre="${escapeHtml(nombreCompleto)}"
+                        data-email="${escapeHtml(usuario.e_mail || '')}"
+                        title="Ver proyectos">
+                    <i class="mdi mdi-folder-account"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-success btn-edit"
+                        data-user-id="${usuario.id_usuario}"
+                        data-nombre="${escapeHtml(usuario.nombre || '')}"
+                        data-apellido="${escapeHtml(usuario.apellido || '')}"
+                        data-usuario="${escapeHtml(usuario.usuario || '')}"
+                        data-email="${escapeHtml(usuario.e_mail || '')}"
+                        data-depart="${usuario.id_departamento}"
+                        data-superior="${usuario.id_superior || 0}"
+                        data-foto="${usuario.foto_perfil || ''}"
+                        data-foto-url="${usuario.foto_url || ''}"
+                        title="Editar usuario">
+                    <i class="mdi mdi-pencil"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-primary btn-manage-roles"
+                        data-user-id="${usuario.id_usuario}"
+                        data-user-name="${escapeHtml(nombreCompleto)}"
+                        title="Gestionar roles">
+                    <i class="mdi mdi-account-key"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-danger btn-delete"
+                        data-user-id="${usuario.id_usuario}"
+                        data-nombre="${escapeHtml(nombreCompleto)}"
+                        title="Eliminar usuario">
+                    <i class="mdi mdi-delete"></i>
+                </button>
+            </div>
+        </td>
     `;
 	return tr;
 }
@@ -1066,7 +1117,7 @@ function filterUsuarios() {
 }
 
 function attachButtonListeners() {
-	// Botones de editar 
+	// Botones de editar
 	const editButtons = document.querySelectorAll('.btn-edit');
 	editButtons.forEach(button => {
 		button.addEventListener('click', function() {
@@ -1082,7 +1133,7 @@ function attachButtonListeners() {
 			openEditModal(userId, nombre, apellido, usuario, email, depart, superior, foto, fotoUrl);
 		});
 	});
-	// Botones de eliminar 
+	// Botones de eliminar
 	const deleteButtons = document.querySelectorAll('.btn-delete');
 	deleteButtons.forEach(button => {
 		button.addEventListener('click', function() {
@@ -1091,7 +1142,7 @@ function attachButtonListeners() {
 			confirmDelete(userId, nombre);
 		});
 	});
-	// Botones de ver proyectos 
+	// Botones de ver proyectos
 	const viewProjectsButtons = document.querySelectorAll('.btn-view-projects');
 	viewProjectsButtons.forEach(button => {
 		button.addEventListener('click', function() {
@@ -1106,7 +1157,7 @@ function attachButtonListeners() {
 		button.addEventListener('click', function() {
 			const userId = this.getAttribute('data-user-id');
 			const userName = this.getAttribute('data-user-name');
-			// Llamar a la función del user_roles_manager.js 
+			// Llamar a la función del user_roles_manager.js
 			if (typeof openRolesManager === 'function') {
 				openRolesManager(userId, userName);
 			} else {
@@ -1131,20 +1182,20 @@ function openEditModal(userId, nombre, apellido, usuario, email, departId, super
 	document.getElementById('editApellido').value = apellido || '';
 	document.getElementById('editUsuario').value = usuario || '';
 	document.getElementById('editEmail').value = email || '';
-	
+
 	const departmentDropdown = document.getElementById('editDepartamento');
 	if (departmentDropdown) {
 		departmentDropdown.value = departId || '';
 	}
-	
+
 	// Poblar y seleccionar el superior
 	populateSuperiorDropdown(userId); // Excluir al usuario actual
 	const superiorDropdown = document.getElementById('editSuperior');
 	if (superiorDropdown) {
 		superiorDropdown.value = superiorId || '0';
 	}
-	
-	// Configurar foto actual 
+
+	// Configurar foto actual
 	const hasPhoto = foto && foto.length > 0;
 	let photoUrl = Config.DEFAULT_AVATAR;
 	if (hasPhoto) {
@@ -1159,6 +1210,17 @@ function openEditModal(userId, nombre, apellido, usuario, email, departId, super
 	if (currentPhotoInput) {
 		currentPhotoInput.value = foto || '';
 	}
+	// Limpiar campos de contraseña
+	const editPassword = document.getElementById('editPassword');
+	const editPasswordConfirm = document.getElementById('editPasswordConfirm');
+	if (editPassword) editPassword.value = '';
+	if (editPasswordConfirm) {
+		editPasswordConfirm.value = '';
+		editPasswordConfirm.classList.remove('is-invalid');
+	}
+	const passwordFeedback = document.getElementById('passwordMatchFeedback');
+	if (passwordFeedback) passwordFeedback.style.display = 'none';
+
 	const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
 	modal.show();
 }
@@ -1187,7 +1249,15 @@ function handleSaveUserChanges(event) {
 	formData.append('e_mail', email);
 	formData.append('id_departamento', id_departamento);
 	formData.append('id_superior', id_superior);
-	
+
+	// Agregar contraseña solo si se proporcionó
+	const newPassword = document.getElementById('editPassword') ? document.getElementById('editPassword').value : '';
+	const confirmPassword = document.getElementById('editPasswordConfirm') ? document.getElementById('editPasswordConfirm').value : '';
+	if (newPassword.length > 0) {
+		formData.append('new_password', newPassword);
+		formData.append('confirm_password', confirmPassword);
+	}
+
 	if (editSelectedImage) {
 		formData.append('foto_perfil', editSelectedImage);
 	}
@@ -1195,9 +1265,9 @@ function handleSaveUserChanges(event) {
 		formData.append('remove_photo', 'true');
 	}
 	fetch('../php/update_users.php', {
-			method: 'POST',
-			body: formData
-		})
+		method: 'POST',
+		body: formData
+	})
 		.then(response => {
 			if (!response.ok) {
 				throw new Error(`HTTP error! status: ${response.status}`);
@@ -1210,7 +1280,10 @@ function handleSaveUserChanges(event) {
 				modal.hide();
 				loadUsuarios();
 				loadManagers(); // Recargar lista de gerentes en caso de cambios
-				showSuccess('Usuario actualizado exitosamente');
+				const msg = responseData.password_changed
+					? 'Usuario actualizado exitosamente. La contraseña ha sido cambiada.'
+					: 'Usuario actualizado exitosamente';
+				showSuccess(msg);
 			} else {
 				const errorMsg = responseData.message || responseData.error || 'Error desconocido';
 				showError('Error al actualizar usuario: ' + errorMsg);
@@ -1238,14 +1311,14 @@ function confirmDelete(id, nombre) {
 
 function deleteUser(id) {
 	fetch(Config.API_ENDPOINTS.DELETE, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				id_usuario: id
-			})
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({
+			id_usuario: id
 		})
+	})
 		.then(response => response.json())
 		.then(data => {
 			if (data.success) {
@@ -1282,10 +1355,10 @@ function showAlert(message, type) {
 	const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
 	const icon = type === 'success' ? 'mdi-check-circle' : 'mdi-alert-circle';
 	alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
-	alertDiv.innerHTML = `  
-        <i class="mdi ${icon} me-2"></i>  
-        ${message}  
-        <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button>  
+	alertDiv.innerHTML = `
+        <i class="mdi ${icon} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.style.display='none'"></button>
     `;
 	alertDiv.style.display = 'block';
 	setTimeout(() => {
@@ -1313,12 +1386,12 @@ function displayNotification(message, type = 'info') {
 	if (!toastContainer) {
 		toastContainer = document.createElement('div');
 		toastContainer.id = 'toastContainer';
-		toastContainer.style.cssText = ` 
-            position: fixed; 
-            top: 20px; 
-            right: 20px; 
-            z-index: 9999; 
-            max-width: 400px; 
+		toastContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
         `;
 		document.body.appendChild(toastContainer);
 	}
@@ -1330,22 +1403,22 @@ function displayNotification(message, type = 'info') {
 	} [type] || '#6c757d';
 	const toast = document.createElement('div');
 	toast.id = toastId;
-	toast.style.cssText = ` 
-        background-color: ${bgColor}; 
-        color: white; 
-        padding: 15px 20px; 
-        border-radius: 8px; 
-        margin-bottom: 10px; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
-        display: flex; 
-        align-items: center; 
-        gap: 10px; 
-        animation: slideIn 0.3s ease-out; 
+	toast.style.cssText = `
+        background-color: ${bgColor};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideIn 0.3s ease-out;
     `;
-	toast.innerHTML = ` 
-        <span>${message}</span> 
-        <button style="background:none;border:none;color:white;cursor:pointer;font-size:18px;margin-left:auto;padding:0;"  
-                onclick="this.parentElement.remove()">×</button> 
+	toast.innerHTML = `
+        <span>${message}</span>
+        <button style="background:none;border:none;color:white;cursor:pointer;font-size:18px;margin-left:auto;padding:0;"
+                onclick="this.parentElement.remove()">×</button>
     `;
 	toastContainer.appendChild(toast);
 	setTimeout(() => {
@@ -1391,6 +1464,17 @@ function validateEditForm() {
 	if (!departamento) {
 		errors.push('Debe seleccionar un departamento');
 	}
+	// Validar contraseña solo si se ingresó algo
+	const password = document.getElementById('editPassword') ? document.getElementById('editPassword').value : '';
+	const passwordConfirm = document.getElementById('editPasswordConfirm') ? document.getElementById('editPasswordConfirm').value : '';
+	if (password.length > 0) {
+		if (password.length < 6) {
+			errors.push('La contraseña debe tener al menos 6 caracteres');
+		}
+		if (password !== passwordConfirm) {
+			errors.push('Las contraseñas no coinciden');
+		}
+	}
 	return {
 		isValid: errors.length === 0,
 		errors: errors
@@ -1399,27 +1483,27 @@ function validateEditForm() {
 
 function createCustomDialogSystem() {
 	if (document.getElementById('customConfirmModal')) return;
-	const dialogHTML = ` 
-        <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog"> 
-            <div class="modal-dialog modal-dialog-centered" role="document"> 
-                <div class="modal-content"> 
-                    <div class="modal-header"> 
-                        <h5 class="modal-title"> 
-                            <i class="mdi mdi-help-circle-outline me-2"></i> 
-                            <span id="confirmTitle">Confirmar acción</span> 
-                        </h5> 
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button> 
-                    </div> 
-                    <div class="modal-body"> 
-                        <p id="confirmMessage" class="mb-0"></p> 
-                    </div> 
-                    <div class="modal-footer"> 
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="confirmCancelBtn">Cancelar</button> 
-                        <button type="button" class="btn btn-primary" id="confirmOkBtn">Aceptar</button> 
-                    </div> 
-                </div> 
-            </div> 
-        </div> 
+	const dialogHTML = `
+        <div class="modal fade" id="customConfirmModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="mdi mdi-help-circle-outline me-2"></i>
+                            <span id="confirmTitle">Confirmar acción</span>
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmMessage" class="mb-0"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="confirmCancelBtn">Cancelar</button>
+                        <button type="button" class="btn btn-primary" id="confirmOkBtn">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     `;
 	document.body.insertAdjacentHTML('beforeend', dialogHTML);
 }
@@ -1463,19 +1547,19 @@ function showConfirm(message, onConfirm, title = 'Confirmar acción', options = 
 	confirmModal.show();
 }
 
-// Exponer funciones necesarias globalmente 
+// Exponer funciones necesarias globalmente
 window.confirmDelete = confirmDelete;
 window.changePage = changePage;
 window.stopAutoRefresh = stopAutoRefresh;
 window.startAutoRefresh = startAutoRefresh;
 window.handleImageError = handleImageError;
 
-// Agregar estilos para la animación 
+// Agregar estilos para la animación
 const style = document.createElement('style');
-style.textContent = ` 
-    @keyframes slideIn { 
-        from { transform: translateX(100%); opacity: 0; } 
-        to { transform: translateX(0); opacity: 1; } 
-    } 
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
 `;
 document.head.appendChild(style);

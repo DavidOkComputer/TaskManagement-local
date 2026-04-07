@@ -1,9 +1,10 @@
+
 <?php
 require_once('../php/check_auth.php');
-$user_name = $_SESSION['nombre']; 
-$user_apellido = $_SESSION['apellido']; 
-$user_email = $_SESSION['e_mail']; 
-$user_id = $_SESSION['user_id']; 
+$user_name = $_SESSION['nombre'];
+$user_apellido = $_SESSION['apellido'];
+$user_email = $_SESSION['e_mail'];
+$user_id = $_SESSION['user_id'];
 // Gestion de empleados
 ?>
 <!DOCTYPE html>
@@ -31,7 +32,7 @@ $user_id = $_SESSION['user_id'];
   <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
 </head>
 <body>
-  <div class="container-scroller"> 
+  <div class="container-scroller">
     <!-- partial:partials/_navbar.html -->
     <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
       <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
@@ -49,10 +50,10 @@ $user_id = $_SESSION['user_id'];
           </a>
         </div>
       </div>
-      <div class="navbar-menu-wrapper d-flex align-items-top"> 
+      <div class="navbar-menu-wrapper d-flex align-items-top">
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-            <h1 class="welcome-text">Buenos dias, 
+            <h1 class="welcome-text">Buenos dias,
               <span class="text-black fw-bold">
                 <?php echo htmlspecialchars($user_name); ?>
               </span>
@@ -67,7 +68,7 @@ $user_id = $_SESSION['user_id'];
               <input type="search" class="form-control" id="searchUser" placeholder="Buscar usuario" title="Search here">
             </form>
           </li>
-          <li class="nav-item dropdown"> 
+          <li class="nav-item dropdown">
               <a class="nav-link count-indicator" id="countDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                   <i class="icon-bell"></i>
                   <span class="count" style="display: none;"></span>
@@ -95,7 +96,7 @@ $user_id = $_SESSION['user_id'];
           <li class="nav-item dropdown d-none d-lg-block user-dropdown">
             <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
               <i class="mdi mdi-account" alt="profile icon"></i>
-            </a>  
+            </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
                 <p class="mb-1 mt-3 font-weight-semibold">
@@ -125,7 +126,7 @@ $user_id = $_SESSION['user_id'];
             <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
               <i class="menu-icon mdi mdi-account-multiple"></i>
               <span class="menu-title">Empleados</span>
-              <i class="menu-arrow"></i> 
+              <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="ui-basic">
               <ul class="nav flex-column sub-menu">
@@ -138,7 +139,7 @@ $user_id = $_SESSION['user_id'];
             <a class="nav-link" data-bs-toggle="collapse" href="#departamentos" aria-expanded="false" aria-controls="ui-basic">
               <i class="menu-icon mdi mdi-view-week"></i>
               <span class="menu-title">Departamentos</span>
-              <i class="menu-arrow"></i> 
+              <i class="menu-arrow"></i>
             </a>
             <div class="collapse" id="departamentos">
               <ul class="nav flex-column sub-menu">
@@ -287,14 +288,14 @@ $user_id = $_SESSION['user_id'];
             </div>
           </div>
         </div>
-      </div>    
+      </div>
       <!-- main-panel ends -->
     </div>
-    <!-- content-wrapper ends --> 
+    <!-- content-wrapper ends -->
   </div>
   <!-- page-body-wrapper ends -->
    <footer>
-		<p 
+		<p
 			style="font-size:0.7rem; text-align:center;">
 			2026 ACIM - Todos los derechos reservados Motores Reynosa S.A. de C.V.
 		</p>
@@ -302,80 +303,80 @@ $user_id = $_SESSION['user_id'];
 </div>
 <!-- container-scroller -->
 
-<!-- Modal de Gestión de Roles --> 
+<!-- Modal de Gestión de Roles -->
     <div class="modal fade" id="rolesManagerModal" tabindex="-1" aria-labelledby="rolesManagerTitle" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content">
               <div class="modal-header bg-primary text-white">
-                  <h5 class="modal-title" id="rolesManagerTitle"> 
-                  <i class="mdi mdi-account-key me-2"></i>Gestionar Roles 
+                  <h5 class="modal-title" id="rolesManagerTitle">
+                  <i class="mdi mdi-account-key me-2"></i>Gestionar Roles
                   </h5>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button> 
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
               </div>
               <div class="modal-body">
-                  <!-- Alerta para mensajes --> 
+                  <!-- Alerta para mensajes -->
                   <div id="rolesManagerAlert" class="alert" style="display: none;"></div>
-                  <!-- Roles Actuales --> 
+                  <!-- Roles Actuales -->
                   <div class="card mb-4">
                   <div class="card-header bg-light">
-                      <h6 class="mb-0"> 
-                          <i class="mdi mdi-format-list-bulleted me-2"></i>Roles Asignados 
+                      <h6 class="mb-0">
+                          <i class="mdi mdi-format-list-bulleted me-2"></i>Roles Asignados
                       </h6>
                   </div>
                   <div class="card-body p-0">
                       <div id="currentRolesList">
-                          <!-- Se llena dinámicamente --> 
+                          <!-- Se llena dinámicamente -->
                       </div>
                   </div>
                   </div>
-                  <!-- Agregar Nuevo Rol --> 
+                  <!-- Agregar Nuevo Rol -->
                   <div class="card border-success">
                   <div class="card-header bg-success text-white">
-                      <h6 class="mb-0"> 
-                          <i class="mdi mdi-plus-circle me-2"></i>Agregar Nuevo Rol 
+                      <h6 class="mb-0">
+                          <i class="mdi mdi-plus-circle me-2"></i>Agregar Nuevo Rol
                       </h6>
                   </div>
                   <div class="card-body">
                       <div class="row g-3">
                           <div class="col-md-5">
-                              <label class="form-label">Departamento</label> 
+                              <label class="form-label">Departamento</label>
                               <select class="form-select" id="newRoleDepartamento">
                               <option value="">Seleccione un departamento</option>
                               </select>
-                              <small class="text-muted">Solo departamentos sin rol asignado</small> 
+                              <small class="text-muted">Solo departamentos sin rol asignado</small>
                           </div>
                           <div class="col-md-4">
-                              <label class="form-label">Rol</label> 
+                              <label class="form-label">Rol</label>
                               <select class="form-select" id="newRoleRol">
                               <option value="">Seleccione un rol</option>
                               </select>
                           </div>
                           <div class="col-md-3">
-                              <label class="form-label d-block">&nbsp;</label> 
-                              <div class="form-check mt-2"> 
-                              <input class="form-check-input" type="checkbox" id="newRoleEsPrincipal"> 
-                              <label class="form-check-label" for="newRoleEsPrincipal"> 
-                              <i class="mdi mdi-star text-warning"></i> Principal 
-                              </label> 
+                              <label class="form-label d-block">&nbsp;</label>
+                              <div class="form-check mt-2">
+                              <input class="form-check-input" type="checkbox" id="newRoleEsPrincipal">
+                              <label class="form-check-label" for="newRoleEsPrincipal">
+                              <i class="mdi mdi-star text-warning"></i> Principal
+                              </label>
                               </div>
                           </div>
                       </div>
-                      <div class="mt-3"> 
-                          <button type="button" class="btn btn-success" id="btnAddRole" onclick="addNewRole()"> 
-                          <i class="mdi mdi-plus"></i> Agregar Rol 
-                          </button> 
+                      <div class="mt-3">
+                          <button type="button" class="btn btn-success" id="btnAddRole" onclick="addNewRole()">
+                          <i class="mdi mdi-plus"></i> Agregar Rol
+                          </button>
                       </div>
                   </div>
                   </div>
               </div>
-              <div class="modal-footer"> 
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> 
-                  <i class="mdi mdi-close"></i> Cerrar 
-                  </button> 
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  <i class="mdi mdi-close"></i> Cerrar
+                  </button>
               </div>
           </div>
       </div>
-    </div> 
+    </div>
 
 <!-- Edit User Modal - Updated with Superior Selection -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
@@ -391,7 +392,7 @@ $user_id = $_SESSION['user_id'];
                 <form id="editUserForm" enctype="multipart/form-data">
                     <input type="hidden" id="editUserId">
                     <input type="hidden" id="editCurrentFotoName">
-                    
+
                     <!-- Sección de Foto de Perfil -->
                     <div class="row mb-4">
                         <div class="col-12">
@@ -399,49 +400,49 @@ $user_id = $_SESSION['user_id'];
                                 <label class="form-label fw-bold">
                                     <i class="mdi mdi-camera me-1"></i>Foto de Perfil
                                 </label>
-                                
+
                                 <!-- Contenedor de foto actual -->
                                 <div id="editCurrentPhotoContainer" class="text-center mb-3">
-                                    <img id="editCurrentPhoto" 
-                                         src="../images/default-avatar.png" 
-                                         alt="Foto actual" 
+                                    <img id="editCurrentPhoto"
+                                         src="../images/default-avatar.png"
+                                         alt="Foto actual"
                                          class="edit-photo-preview">
                                     <p class="text-muted small mb-2">Foto actual</p>
                                 </div>
-                                
+
                                 <!-- Contenedor de nueva foto (preview) -->
                                 <div id="editNewPhotoContainer" class="text-center mb-3" style="display: none;">
-                                    <img id="editImagePreview" 
-                                         src="" 
-                                         alt="Nueva foto" 
+                                    <img id="editImagePreview"
+                                         src=""
+                                         alt="Nueva foto"
                                          class="edit-photo-preview"
                                          style="border-color: #28a745;">
                                     <p class="text-success small mb-2">
                                         <i class="mdi mdi-check-circle"></i> Nueva foto seleccionada
                                     </p>
                                 </div>
-                                
+
                                 <!-- Drop Zone para nueva foto -->
                                 <div id="editProfilePictureDropZone" class="edit-photo-dropzone">
-                                    <input type="file" 
-                                           id="editFotoPerfil" 
-                                           name="foto_perfil" 
+                                    <input type="file"
+                                           id="editFotoPerfil"
+                                           name="foto_perfil"
                                            accept="image/jpeg,image/png,image/gif,image/webp"
                                            style="display: none;">
                                     <i class="mdi mdi-cloud-upload" style="font-size: 32px; color: #ccc;"></i>
                                     <p class="mb-0 small">Arrastra una imagen o haz clic para cambiar la foto</p>
                                     <small class="text-muted">JPG, PNG, GIF o WebP - Máximo 5MB</small>
                                 </div>
-                                
+
                                 <!-- Botones de acción para foto -->
                                 <div class="mt-2 d-flex gap-2 justify-content-center">
-                                    <button type="button" 
-                                            id="editChangeProfilePicture" 
+                                    <button type="button"
+                                            id="editChangeProfilePicture"
                                             class="btn btn-sm btn-outline-primary">
                                         <i class="mdi mdi-camera"></i> Cambiar foto
                                     </button>
-                                    <button type="button" 
-                                            id="editRemoveProfilePicture" 
+                                    <button type="button"
+                                            id="editRemoveProfilePicture"
                                             class="btn btn-sm btn-outline-danger"
                                             style="display: none;">
                                         <i class="mdi mdi-delete"></i> Eliminar foto
@@ -450,9 +451,9 @@ $user_id = $_SESSION['user_id'];
                             </div>
                         </div>
                     </div>
-                    
+
                     <hr class="mb-4">
-                    
+
                     <!-- Datos del Usuario -->
                     <div class="row">
                         <div class="col-md-6">
@@ -472,7 +473,7 @@ $user_id = $_SESSION['user_id'];
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -492,7 +493,54 @@ $user_id = $_SESSION['user_id'];
                             </div>
                         </div>
                     </div>
-                    
+
+                    <!-- Sección de Contraseña (Opcional) -->
+                    <div class="row">
+                        <div class="col-12 mb-2">
+                            <div class="d-flex align-items-center">
+                                <hr class="flex-grow-1">
+                                <span class="px-3 text-muted small fw-bold">
+                                    <i class="mdi mdi-lock-outline me-1"></i>CAMBIAR CONTRASEÑA (Opcional)
+                                </span>
+                                <hr class="flex-grow-1">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editPassword" class="form-label">
+                                    <i class="mdi mdi-lock me-1"></i>Nueva Contraseña
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="editPassword"
+                                           maxlength="100" placeholder="Dejar vacío para no cambiar"
+                                           autocomplete="new-password">
+                                    <button class="btn btn-outline-primary" type="button" id="toggleEditPassword" title="Mostrar/ocultar contraseña">
+                                        <i class="mdi mdi-eye-off" id="editPasswordIcon"></i>
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">Mínimo 6 caracteres. Dejar vacío para mantener la actual.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="editPasswordConfirm" class="form-label">
+                                    <i class="mdi mdi-lock-check me-1"></i>Confirmar Contraseña
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="editPasswordConfirm"
+                                           maxlength="100" placeholder="Repetir nueva contraseña"
+                                           autocomplete="new-password">
+                                    <button class="btn btn-outline-primary" type="button" id="toggleEditPasswordConfirm" title="Mostrar/ocultar contraseña">
+                                        <i class="mdi mdi-eye-off" id="editPasswordConfirmIcon"></i>
+                                    </button>
+                                </div>
+                                <div id="passwordMatchFeedback" class="invalid-feedback" style="display: none;">
+                                    Las contraseñas no coinciden
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -514,7 +562,7 @@ $user_id = $_SESSION['user_id'];
                                     <!-- Se llena dinámicamente con gerentes -->
                                 </select>
                                 <small class="form-text text-muted">
-                                    <i class="mdi mdi-information-outline"></i> 
+                                    <i class="mdi mdi-information-outline"></i>
                                     Solo se muestran usuarios con rol de Gerente
                                 </small>
                             </div>
@@ -557,14 +605,14 @@ $user_id = $_SESSION['user_id'];
           </div>
           <p class="mt-3 text-muted">Cargando proyectos...</p>
         </div>
- 
+
         <!-- No Projects State -->
         <div id="noProjects" class="text-center py-5" style="display: none;">
           <i class="mdi mdi-folder-open-outline" style="font-size: 64px; color: #ccc;"></i>
           <h5 class="mt-3 text-muted">No hay proyectos asignados</h5>
           <p class="text-muted">Este empleado no tiene proyectos asignados actualmente.</p>
         </div>
- 
+
         <!-- Projects Container -->
         <div id="projectsContainer" style="display: none;">
           <!-- Summary Stats -->
@@ -597,7 +645,7 @@ $user_id = $_SESSION['user_id'];
               </div>
             </div>
           </div>
- 
+
           <!-- Projects List -->
           <h6 class="mb-3 fw-bold">Lista de Proyectos</h6>
           <div id="projectsList">
@@ -610,11 +658,11 @@ $user_id = $_SESSION['user_id'];
       </div>
     </div>
   </div>
-  
+
   <!-- plugins:js -->
   <script src="../vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
-   
+
   <script src="../js/user_roles_manager.js"></script>
   <script src="../vendors/chart.js/Chart.min.js"></script>
   <script src="../vendors/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
