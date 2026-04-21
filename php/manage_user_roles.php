@@ -50,7 +50,7 @@ try {
       $response = setPrincipalRole($conn);
       break;
     case "get_available":
-      // Obtener departamentos disponibles para asignar (donde el usuario no tiene rol)
+      // Obtener departamentos disponibles para asignar
       $response = getAvailableDepartments($conn);
       break;
     default:
@@ -69,7 +69,6 @@ echo json_encode($response, JSON_UNESCAPED_UNICODE);
 exit();
 
 // FUNCIONES
-
 function addRoleToUser($conn)
 {
   $id_usuario = isset($_POST["id_usuario"]) ? intval($_POST["id_usuario"]) : 0;

@@ -98,7 +98,7 @@ try {
         $result = $stmt->get_result();
  
     } elseif ($filter_departamento !== null && $filter_departamento > 0) {
-        // Filtrar solo por departamento (usuarios que pertenezcan a este departamento)
+        // Filtrar solo por departamento
         $query = "SELECT DISTINCT
                     u.id_usuario,
                     u.nombre,
@@ -228,3 +228,5 @@ try {
     error_log('get_users.php Error: ' . $e->getMessage());
 }
 ?>
+
+
