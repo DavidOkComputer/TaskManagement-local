@@ -541,33 +541,63 @@ $user_id = $_SESSION['user_id'];
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="editDepartamento" class="form-label">
-                                    <i class="mdi mdi-domain me-1"></i>Departamento <span class="text-danger">*</span>
-                                </label>
-                                <select class="form-control" id="editDepartamento" required>
-                                    <option value="">-- Seleccionar departamento --</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="editSuperior" class="form-label">
-                                    <i class="mdi mdi-account-supervisor me-1"></i>Superior (Gerente)
-                                </label>
-                                <select class="form-control" id="editSuperior">
-                                    <option value="0">-- Sin superior asignado --</option>
-                                    <!-- Se llena dinámicamente con gerentes -->
-                                </select>
-                                <small class="form-text text-muted">
-                                    <i class="mdi mdi-information-outline"></i>
-                                    Solo se muestran usuarios con rol de Gerente
-                                </small>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- AFTER -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label for="editDepartamento" class="form-label">
+                <i class="mdi mdi-domain me-1"></i>Departamento <span class="text-danger">*</span>
+            </label>
+            <select class="form-control" id="editDepartamento" required>
+                <option value="">-- Seleccionar departamento --</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <label for="editRol" class="form-label">
+                <i class="mdi mdi-shield-account me-1"></i>Rol <span class="text-danger">*</span>
+            </label>
+            <select class="form-control" id="editRol" required>
+                <option value="">-- Seleccionar rol --</option>
+                <option value="1">Administrador</option>
+                <option value="2">Gerente</option>
+                <option value="3">Usuario</option>
+            </select>
+            <small class="form-text text-muted">
+                <i class="mdi mdi-information-outline"></i>
+                Modifica el rol principal del usuario
+            </small>
+        </div>
+    </div>
+</div>
+
+                  <!-- Superior row below, unchanged -->
+                  <div class="row">
+                      <div class="col-md-6">
+                          <div class="mb-3">
+                              <label for="editSuperior" class="form-label">
+                                  <i class="mdi mdi-account-supervisor me-1"></i>Superior
+                              </label>
+                              <div class="d-flex gap-2 align-items-center mb-1">
+                                  <select class="form-control" id="editSuperior">
+                                      <option value="0">-- Sin superior asignado --</option>
+                                  </select>
+                                  <button type="button"
+                                          id="toggleSuperiorFilter"
+                                          class="btn btn-sm btn-outline-warning"
+                                          title="Cambiar entre gerentes y supervisores"
+                                          style="white-space: nowrap;">
+                                      <i class="mdi mdi-account-hard-hat"></i> Ver Supervisores
+                                  </button>
+                              </div>
+                              <small class="form-text text-muted" id="superiorFilterHint">
+                                  <i class="mdi mdi-information-outline"></i>
+                                  Mostrando usuarios con rol de <strong>Gerente</strong>
+                              </small>
+                          </div>
+                      </div>
+                  </div>
                 </form>
             </div>
             <div class="modal-footer">
