@@ -207,7 +207,35 @@ try {
 	}
 
 	//actualizar tarea con id_participante y validacion de permisos
-	$sql = "UPDATE tbl_tareas 
+	if ($id_participante === null) {
+    // id_participante is NULL
+    $sql = "UPDATE tbl_tareas 
+          SET    nombre = ?,  
+                 descripcion = ?,  
+                 id_proyecto = ?,  
+                 fecha_cumplimiento = ?,  
+                 estado = ?,  
+                 id_participante = NULL  
+          WHERE  id_tarea = ?";
+
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        throw new Exception("Error al preparar la consulta: " . $conn->error);
+    }
+
+    $stmt->bind_param(
+        "ssissi",
+        $nombre,
+        $descripcion,
+        $id_proyecto,
+        $fecha_cumplimiento,
+        $estado,
+        $id_tarea,
+    );
+} else {
+    // id_participante is a real user ID
+    $sql = "UPDATE tbl_tareas 
           SET    nombre = ?,  
                  descripcion = ?,  
                  id_proyecto = ?,  
@@ -216,22 +244,23 @@ try {
                  id_participante = ?  
           WHERE  id_tarea = ?";
 
-	$stmt = $conn->prepare($sql);
+    $stmt = $conn->prepare($sql);
 
-	if (!$stmt) {
-		throw new Exception("Error al preparar la consulta: " . $conn->error);
-	}
+    if (!$stmt) {
+        throw new Exception("Error al preparar la consulta: " . $conn->error);
+    }
 
-	$stmt->bind_param(
-		"ssissii",
-		$nombre,
-		$descripcion,
-		$id_proyecto,
-		$fecha_cumplimiento,
-		$estado,
-		$id_participante,
-		$id_tarea,
-	);
+    $stmt->bind_param(
+        "ssissii",
+        $nombre,
+        $descripcion,
+        $id_proyecto,
+        $fecha_cumplimiento,
+        $estado,
+        $id_participante,
+        $id_tarea,
+    );
+}
 
 	if (!$stmt->execute()) {
 		throw new Exception("Error al ejecutar la consulta: " . $stmt->error);

@@ -31,7 +31,7 @@ try {
 
     // Obtener información del proyecto (tipo y participante)
     $stmt = $conn->prepare("
-        SELECT id_tipo_proyecto, id_participante
+        SELECT id_tipo_proyecto, id_participante, es_libre
         FROM tbl_proyectos
         WHERE id_proyecto = ?
     ");
@@ -55,6 +55,7 @@ try {
     $proyecto = $result->fetch_assoc();
     $id_tipo_proyecto = intval($proyecto['id_tipo_proyecto']);
     $id_participante_individual = $proyecto['id_participante'];
+    $es_libre = intval($proyecto['es_libre'] ?? 0);
 
     $stmt->close();
 
@@ -148,8 +149,9 @@ try {
     $response['success'] = true;
     $response['usuarios'] = $usuarios;
     $response['tipo_proyecto'] = $id_tipo_proyecto;
+    $response['es_libre'] = $es_libre;
     $response['total_usuarios'] = count($usuarios);
-
+    
 } catch (Exception $e) {
     $response['message'] = 'Error al cargar usuarios del proyecto: ' . $e->getMessage();
     error_log('get_project_user.php Error: ' . $e->getMessage());

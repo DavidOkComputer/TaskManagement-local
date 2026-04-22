@@ -178,7 +178,37 @@ try {
 	}
 
 	//crear tarea
-	$sql = "INSERT INTO tbl_tareas ( 
+	if ($id_participante === null) {
+    // id_participante is NULL
+    $sql = "INSERT INTO tbl_tareas ( 
+                nombre,  
+                descripcion,  
+                id_proyecto,  
+                fecha_cumplimiento,  
+                estado,  
+                id_participante,  
+                id_creador,  
+                fecha_creacion 
+            ) VALUES (?, ?, ?, ?, ?, NULL, ?, NOW())";
+
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        throw new Exception("Error al preparar la consulta: " . $conn->error);
+    }
+
+    $stmt->bind_param(
+        "ssissi",
+        $nombre,
+        $descripcion,
+        $id_proyecto,
+        $fecha_vencimiento,
+        $estado,
+        $id_creador,
+    );
+} else {
+    // id_participante is a real user ID
+    $sql = "INSERT INTO tbl_tareas ( 
                 nombre,  
                 descripcion,  
                 id_proyecto,  
@@ -189,22 +219,23 @@ try {
                 fecha_creacion 
             ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
 
-	$stmt = $conn->prepare($sql);
+    $stmt = $conn->prepare($sql);
 
-	if (!$stmt) {
-		throw new Exception("Error al preparar la consulta: " . $conn->error);
-	}
+    if (!$stmt) {
+        throw new Exception("Error al preparar la consulta: " . $conn->error);
+    }
 
-	$stmt->bind_param(
-		"ssissii",
-		$nombre,
-		$descripcion,
-		$id_proyecto,
-		$fecha_vencimiento,
-		$estado,
-		$id_participante,
-		$id_creador,
-	);
+    $stmt->bind_param(
+        "ssissii",
+        $nombre,
+        $descripcion,
+        $id_proyecto,
+        $fecha_vencimiento,
+        $estado,
+        $id_participante,
+        $id_creador,
+    );
+}
 
 	if (!$stmt->execute()) {
 		throw new Exception("Error al crear la tarea: " . $stmt->error);
