@@ -53,9 +53,22 @@ $e_mail = trim($data['e_mail']);
 $id_departamento = isset($data['id_departamento']) ? intval($data['id_departamento']) : null;
 $id_rol = isset($data['id_rol']) ? intval($data['id_rol']) : null;
 $id_superior = isset($data['id_superior']) ? intval($data['id_superior']) : 0;
+$es_supervisor = isset($data['es_supervisor']) ? intval($data['es_supervisor']) : 0;
+$es_supervisor = ($es_supervisor === 1) ? 1 : 0;
 $remove_photo = isset($data['remove_photo']) && $data['remove_photo'] === 'true';
 $new_password = isset($data['new_password']) ? $data['new_password'] : '';
 $confirm_password = isset($data['confirm_password']) ? $data['confirm_password'] : '';
+
+//si llega el id sintético -2, normalizarlo
+if ($id_rol === -2) {
+    $id_rol = 2;
+    $es_supervisor = 1;
+}
+
+//es_supervisor solo aplica a gerentes (rol 2)
+if ($id_rol !== 2 && $es_supervisor === 1) {
+    $es_supervisor = 0;
+}
 
 // Validar formato email
 if (!filter_var($e_mail, FILTER_VALIDATE_EMAIL)) {
@@ -219,28 +232,38 @@ throw new Exception('Error al subir la imagen: ' . $uploadResult['message']);
 $conn->begin_transaction();
 
 try {
-// Actualizar datos básicos del usuario en tbl_usuarios (incluyendo id_superior)
-// Construir query dinámicamente para incluir contraseña solo si se proporcionó
+// Actualizar datos básicos del usuario en tbl_usuarios
+// Construir query dinámicamente para incluir contraseña solo si se da
 if ($hashedPassword !== null) {
-$update_stmt = $conn->prepare("
-UPDATE tbl_usuarios
-SET nombre = ?, apellido = ?, usuario = ?, e_mail = ?, foto_perfil = ?, id_superior = ?, acceso = ?
-WHERE id_usuario = ?
-");
-if (!$update_stmt) {
-throw new Exception("Prepare failed: " . $conn->error);
-}
-$update_stmt->bind_param("sssssisi", $nombre, $apellido, $usuario, $e_mail, $newPhotoFilename, $id_superior, $hashedPassword, $id_usuario);
+    $update_stmt = $conn->prepare("
+        UPDATE tbl_usuarios
+        SET nombre = ?, apellido = ?, usuario = ?, e_mail = ?, foto_perfil = ?,
+            id_superior = ?, es_supervisor = ?, acceso = ?
+        WHERE id_usuario = ?
+    ");
+    if (!$update_stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+    $update_stmt->bind_param(
+        "sssssiisi",
+        $nombre, $apellido, $usuario, $e_mail, $newPhotoFilename,
+        $id_superior, $es_supervisor, $hashedPassword, $id_usuario
+    );
 } else {
-$update_stmt = $conn->prepare("
-UPDATE tbl_usuarios
-SET nombre = ?, apellido = ?, usuario = ?, e_mail = ?, foto_perfil = ?, id_superior = ?
-WHERE id_usuario = ?
-");
-if (!$update_stmt) {
-throw new Exception("Prepare failed: " . $conn->error);
-}
-$update_stmt->bind_param("sssssii", $nombre, $apellido, $usuario, $e_mail, $newPhotoFilename, $id_superior, $id_usuario);
+    $update_stmt = $conn->prepare("
+        UPDATE tbl_usuarios
+        SET nombre = ?, apellido = ?, usuario = ?, e_mail = ?, foto_perfil = ?,
+            id_superior = ?, es_supervisor = ?
+        WHERE id_usuario = ?
+    ");
+    if (!$update_stmt) {
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+    $update_stmt->bind_param(
+        "sssssiii",
+        $nombre, $apellido, $usuario, $e_mail, $newPhotoFilename,
+        $id_superior, $es_supervisor, $id_usuario
+    );
 }
 
 if (!$update_stmt->execute()) {
@@ -380,7 +403,8 @@ $response['usuario'] = [
 'nombre_superior' => $updated_user['nombre_superior'],
 'foto_perfil' => $newPhotoFilename,
 'foto_url' => $newPhotoFilename ? 'uploads/profile_pictures/' . $newPhotoFilename : null,
-'foto_thumbnail' => $newPhotoFilename ? 'uploads/profile_pictures/thumbnails/thumb_' . $newPhotoFilename : null
+'foto_thumbnail' => $newPhotoFilename ? 'uploads/profile_pictures/thumbnails/thumb_' . $newPhotoFilename : null,
+'es_supervisor' => (bool)$es_supervisor
 ];
 
 } catch (Exception $e) {

@@ -34,42 +34,48 @@ class NotificationHelper
       "http://10.109.17.87/projectManagement",
     );
   }
-
-  public function notificarProyectoVencido(
-    $id_proyecto,
-    $id_usuario,
-    $nombre_proyecto,
-  ) {
-    // Verificar si ya se envió hoy
-    if (
-      $this->notificacionYaEnviada(
-        self::TIPO_PROYECTO_VENCIDO,
-        $id_proyecto,
-        $id_usuario,
-      )
-    ) {
-      return ["success" => false, "message" => "Notificación ya enviada hoy"];
-    }
-
-    $titulo = "Proyecto vencido";
-    $mensaje = "El proyecto '{$nombre_proyecto}' ha superado su fecha de entrega y requiere atención inmediata.";
-    $result = $this->crearNotificacion(
-      $id_usuario,
-      self::TIPO_PROYECTO_VENCIDO,
-      $titulo,
-      $mensaje,
+public function notificarProyectoVencido(
       $id_proyecto,
-      self::REF_PROYECTO,
-    );
+      $id_usuario,
+      $nombre_proyecto,
+      $es_libre = 0
+  ) {
+      // Verificar si ya se envió hoy
+      if (
+          $this->notificacionYaEnviada(
+              self::TIPO_PROYECTO_VENCIDO,
+              $id_proyecto,
+              $id_usuario,
+          )
+      ) {
+          return ["success" => false, "message" => "Notificación ya enviada hoy"];
+      }
 
-    if ($result["success"]) {
-      $this->registrarNotificacionEnviada(
-        self::TIPO_PROYECTO_VENCIDO,
-        $id_proyecto,
-        $id_usuario,
+      if ((int)$es_libre === 1) {
+          $titulo = "Proyecto Libre vencido";
+          $mensaje = "El Proyecto Libre '{$nombre_proyecto}' ha superado su fecha de entrega y requiere atención inmediata.";
+      } else {
+          $titulo = "Proyecto vencido";
+          $mensaje = "El proyecto '{$nombre_proyecto}' ha superado su fecha de entrega y requiere atención inmediata.";
+      }
+
+      $result = $this->crearNotificacion(
+          $id_usuario,
+          self::TIPO_PROYECTO_VENCIDO,
+          $titulo,
+          $mensaje,
+          $id_proyecto,
+          self::REF_PROYECTO,
       );
-    }
-    return $result;
+
+      if ($result["success"]) {
+          $this->registrarNotificacionEnviada(
+              self::TIPO_PROYECTO_VENCIDO,
+              $id_proyecto,
+              $id_usuario,
+          );
+      }
+      return $result;
   }
 
   public function notificarTareaVencida(
@@ -121,7 +127,7 @@ class NotificationHelper
     $nombre_proyecto,
     $dias_inactividad,
   ) {
-    // Usar tipo con días para evitar spam (solo una notificación por umbral de días)
+    // Usar tipo con días para evitar spam
     $tipo_evento = self::TIPO_INACTIVIDAD_PROYECTO . "_" . $dias_inactividad;
     if ($this->notificacionYaEnviada($tipo_evento, $id_proyecto, $id_usuario)) {
       return [
@@ -304,286 +310,329 @@ class NotificationHelper
     return $result;
   }
 
-  public function notificarTareaAsignada($id_tarea, $id_usuario_asignado, $nombre_tarea, $nombre_proyecto) {
-        $titulo = "Nueva tarea asignada";
-        $mensaje = "Se te ha asignado la tarea '{$nombre_tarea}' en el proyecto '{$nombre_proyecto}'.";
-        
-        return $this->crearNotificacion(
-            $id_usuario_asignado,
-            self::TIPO_TAREA_ASIGNADA,
-            $titulo,
-            $mensaje,
-            $id_tarea,
-            self::REF_TAREA
-        );
-    }
+  public function notificarTareaAsignada($id_tarea, $id_usuario_asignado, $nombre_tarea, $nombre_proyecto, $es_libre = 0) {
+      if ((int)$es_libre === 1) {
+          $titulo = "Nueva tarea asignada (Proyecto Libre)";
+          $mensaje = "Se te ha asignado la tarea '{$nombre_tarea}' en el Proyecto Libre '{$nombre_proyecto}' (asignación multidepartamental).";
+      } else {
+          $titulo = "Nueva tarea asignada";
+          $mensaje = "Se te ha asignado la tarea '{$nombre_tarea}' en el proyecto '{$nombre_proyecto}'.";
+      }
+
+      return $this->crearNotificacion(
+          $id_usuario_asignado,
+          self::TIPO_TAREA_ASIGNADA,
+          $titulo,
+          $mensaje,
+          $id_tarea,
+          self::REF_TAREA
+      );
+  }
     
-    public function notificarProyectoAsignado($id_proyecto, $id_usuario_asignado, $nombre_proyecto) {
-        $titulo = "Nuevo proyecto asignado";
-        $mensaje = "Se te ha asignado el proyecto '{$nombre_proyecto}'.";
-        
-        return $this->crearNotificacion(
-            $id_usuario_asignado,
-            self::TIPO_PROYECTO_ASIGNADO,
-            $titulo,
-            $mensaje,
-            $id_proyecto,
-            self::REF_PROYECTO
-        );
-    }
+
+  public function notificarProyectoAsignado($id_proyecto, $id_usuario_asignado, $nombre_proyecto, $es_libre = 0) {
+      if ((int)$es_libre === 1) {
+          $titulo = "Nuevo Proyecto Libre asignado";
+          $mensaje = "Se te ha asignado el Proyecto Libre '{$nombre_proyecto}' (proyecto multidepartamental, no cuenta para estadísticas).";
+      } else {
+          $titulo = "Nuevo proyecto asignado";
+          $mensaje = "Se te ha asignado el proyecto '{$nombre_proyecto}'.";
+      }
+
+      return $this->crearNotificacion(
+          $id_usuario_asignado,
+          self::TIPO_PROYECTO_ASIGNADO,
+          $titulo,
+          $mensaje,
+          $id_proyecto,
+          self::REF_PROYECTO
+      );
+  }
 
   public function notifyTaskAssigned($tarea_id, $asignado_por_id)
   {
-    $stmt = $this->conn->prepare(" 
-            SELECT t.id_tarea, t.nombre as tarea_nombre, t.descripcion as tarea_descripcion, 
-                   t.fecha_cumplimiento, t.id_participante, 
-                   u.id_usuario, u.nombre as usuario_nombre, u.apellido as usuario_apellido, u.e_mail as usuario_email, 
-                   p.nombre as proyecto_nombre, 
-                   a.nombre as asignador_nombre, a.apellido as asignador_apellido 
-            FROM tbl_tareas t 
-            JOIN tbl_usuarios u ON t.id_participante = u.id_usuario 
-            LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto 
-            LEFT JOIN tbl_usuarios a ON a.id_usuario = ? 
-            WHERE t.id_tarea = ? 
-        ");
+      // usamos LEFT JOIN para proyectos que puede ser libre id_departamento = NULL
+      $stmt = $this->conn->prepare("
+          SELECT t.id_tarea, t.nombre as tarea_nombre, t.descripcion as tarea_descripcion,
+                 t.fecha_cumplimiento, t.id_participante,
+                 u.id_usuario, u.nombre as usuario_nombre, u.apellido as usuario_apellido, u.e_mail as usuario_email,
+                 p.nombre as proyecto_nombre, p.es_libre as proyecto_es_libre,
+                 a.nombre as asignador_nombre, a.apellido as asignador_apellido
+          FROM tbl_tareas t
+          JOIN tbl_usuarios u ON t.id_participante = u.id_usuario
+          LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto
+          LEFT JOIN tbl_usuarios a ON a.id_usuario = ?
+          WHERE t.id_tarea = ?
+      ");
 
-    $stmt->bind_param("ii", $asignado_por_id, $tarea_id);
-    $stmt->execute();
-    $task = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    if (!$task || empty($task["usuario_email"])) {
-      return false;
-    }
-
-    // No notificar si se asigna a sí mismo
-    if ($task["id_usuario"] == $asignado_por_id) {
-      return false;
-    }
-
-    // Verificar preferencias
-    if (
-      !$this->verificarPreferenciaEmail(
-        $task["id_usuario"],
-        "notif_tarea_asignada",
-      )
-    ) {
-      return false;
-    }
-
-    $titulo = "Nueva tarea asignada: " . $task["tarea_nombre"];
-    $mensaje = "Se te ha asignado la tarea '{$task["tarea_nombre"]}'";
-
-    if ($task["proyecto_nombre"]) {
-      $mensaje .= " en el proyecto '{$task["proyecto_nombre"]}'";
-    }
-
-    // Crear notificación dentro de la app
-    $this->crearNotificacionSimple(
-      $task["id_usuario"],
-      self::TIPO_TAREA_ASIGNADA,
-      $titulo,
-      $mensaje,
-      $tarea_id,
-      self::REF_TAREA,
-    );
-
-    // Generar y encolar email
-    $html = $this->templates->render("tarea_asignada", [
-      "SUBJECT" => $titulo,
-      "NOMBRE_USUARIO" => $task["usuario_nombre"],
-      "NOMBRE_TAREA" => $task["tarea_nombre"],
-      "DESCRIPCION_TAREA" => $task["tarea_descripcion"] ?? "Sin descripción",
-      "NOMBRE_PROYECTO" => $task["proyecto_nombre"] ?? "Sin proyecto",
-      "FECHA_VENCIMIENTO" => $task["fecha_cumplimiento"]
-        ? date("d/m/Y", strtotime($task["fecha_cumplimiento"]))
-        : "Sin fecha definida",
-      "ASIGNADO_POR" => trim(
-        $task["asignador_nombre"] . " " . $task["asignador_apellido"],
-      ),
-      "URL_SISTEMA" => $this->systemUrl,
-    ]);
-
-    return $this->emailService->queueEmail(
-      $task["usuario_email"],
-      $task["usuario_nombre"] . " " . $task["usuario_apellido"],
-      $titulo,
-      $html,
-      self::TIPO_TAREA_ASIGNADA,
-      self::REF_TAREA,
-      $tarea_id,
-      2, // Alta prioridad
-    );
-  }
-
-  public function notifyProjectAssigned($proyecto_id, $usuario_ids, $creador_id)
-  {
-    if (!is_array($usuario_ids)) {
-      $usuario_ids = [$usuario_ids];
-    }
-
-    $resultados = [];
-    foreach ($usuario_ids as $usuario_id) {
-      // No notificar al creador
-
-      if ($usuario_id == $creador_id) {
-        continue;
-      }
-
-      $stmt = $this->conn->prepare(" 
-                SELECT p.id_proyecto, p.nombre as proyecto_nombre, p.descripcion as proyecto_descripcion, 
-                       p.fecha_cumplimiento, 
-                       d.nombre as departamento_nombre, 
-                       u.nombre as usuario_nombre, u.apellido as usuario_apellido, u.e_mail as usuario_email, 
-                       c.nombre as creador_nombre, c.apellido as creador_apellido 
-                FROM tbl_proyectos p 
-                JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento 
-                JOIN tbl_usuarios u ON u.id_usuario = ? 
-                LEFT JOIN tbl_usuarios c ON c.id_usuario = ? 
-                WHERE p.id_proyecto = ? 
-            ");
-
-      $stmt->bind_param("iii", $usuario_id, $creador_id, $proyecto_id);
+      $stmt->bind_param("ii", $asignado_por_id, $tarea_id);
       $stmt->execute();
-      $project = $stmt->get_result()->fetch_assoc();
+      $task = $stmt->get_result()->fetch_assoc();
       $stmt->close();
 
-      if (!$project || empty($project["usuario_email"])) {
-        $resultados[$usuario_id] = false;
-        continue;
+      if (!$task || empty($task["usuario_email"])) {
+          return false;
+      }
+
+      // No notificar si se asigna a sí mismo
+      if ($task["id_usuario"] == $asignado_por_id) {
+          return false;
       }
 
       // Verificar preferencias
       if (
-        !$this->verificarPreferenciaEmail(
-          $usuario_id,
-          "notif_proyecto_asignado",
-        )
+          !$this->verificarPreferenciaEmail(
+              $task["id_usuario"],
+              "notif_tarea_asignada",
+          )
       ) {
-        $resultados[$usuario_id] = false;
-        continue;
+          return false;
       }
 
-      $titulo = "Asignado a proyecto: " . $project["proyecto_nombre"];
-      $mensaje = "Has sido asignado al proyecto '{$project["proyecto_nombre"]}' en el departamento '{$project["departamento_nombre"]}'";
+      $es_libre = (int)($task["proyecto_es_libre"] ?? 0) === 1;
+      $libre_suffix = $es_libre ? " (Proyecto Libre)" : "";
 
-      // Crear notificación in-app
+      $titulo = "Nueva tarea asignada{$libre_suffix}: " . $task["tarea_nombre"];
+      $mensaje = "Se te ha asignado la tarea '{$task["tarea_nombre"]}'";
 
+      if ($task["proyecto_nombre"]) {
+          if ($es_libre) {
+              $mensaje .= " en el Proyecto Libre '{$task["proyecto_nombre"]}' (asignación multidepartamental)";
+          } else {
+              $mensaje .= " en el proyecto '{$task["proyecto_nombre"]}'";
+          }
+      }
+
+      // Crear notificación dentro de la app
       $this->crearNotificacionSimple(
-        $usuario_id,
-        self::TIPO_PROYECTO_ASIGNADO,
-        $titulo,
-        $mensaje,
-        $proyecto_id,
-        self::REF_PROYECTO,
+          $task["id_usuario"],
+          self::TIPO_TAREA_ASIGNADA,
+          $titulo,
+          $mensaje,
+          $tarea_id,
+          self::REF_TAREA,
       );
+
+      // Nombre de proyecto enriquecido para el email template
+      $nombre_proyecto_display = $task["proyecto_nombre"] ?? "Sin proyecto";
+      if ($es_libre && $task["proyecto_nombre"]) {
+          $nombre_proyecto_display = $task["proyecto_nombre"] . " (Proyecto Libre)";
+      }
 
       // Generar y encolar email
-      $html = $this->templates->render("proyecto_asignado", [
-        "SUBJECT" => $titulo,
-        "NOMBRE_USUARIO" => $project["usuario_nombre"],
-        "NOMBRE_PROYECTO" => $project["proyecto_nombre"],
-        "DESCRIPCION_PROYECTO" =>
-          $project["proyecto_descripcion"] ?? "Sin descripción",
-        "NOMBRE_DEPARTAMENTO" => $project["departamento_nombre"],
-        "FECHA_VENCIMIENTO" => $project["fecha_cumplimiento"]
-          ? date("d/m/Y", strtotime($project["fecha_cumplimiento"]))
-          : "Sin fecha definida",
-        "CREADO_POR" => trim(
-          $project["creador_nombre"] . " " . $project["creador_apellido"],
-        ),
-        "URL_SISTEMA" => $this->systemUrl,
+      $html = $this->templates->render("tarea_asignada", [
+          "SUBJECT" => $titulo,
+          "NOMBRE_USUARIO" => $task["usuario_nombre"],
+          "NOMBRE_TAREA" => $task["tarea_nombre"],
+          "DESCRIPCION_TAREA" => $task["tarea_descripcion"] ?? "Sin descripción",
+          "NOMBRE_PROYECTO" => $nombre_proyecto_display,
+          "FECHA_VENCIMIENTO" => $task["fecha_cumplimiento"]
+              ? date("d/m/Y", strtotime($task["fecha_cumplimiento"]))
+              : "Sin fecha definida",
+          "ASIGNADO_POR" => trim(
+              $task["asignador_nombre"] . " " . $task["asignador_apellido"],
+          ),
+          "URL_SISTEMA" => $this->systemUrl,
       ]);
 
-      $resultados[$usuario_id] = $this->emailService->queueEmail(
-        $project["usuario_email"],
-        $project["usuario_nombre"] . " " . $project["usuario_apellido"],
-        $titulo,
-        $html,
-        self::TIPO_PROYECTO_ASIGNADO,
-        self::REF_PROYECTO,
-        $proyecto_id,
-        3,
+      return $this->emailService->queueEmail(
+          $task["usuario_email"],
+          $task["usuario_nombre"] . " " . $task["usuario_apellido"],
+          $titulo,
+          $html,
+          self::TIPO_TAREA_ASIGNADA,
+          self::REF_TAREA,
+          $tarea_id,
+          2, // Alta prioridad
       );
-    }
-    return $resultados;
+  }
+
+  public function notifyProjectAssigned($proyecto_id, $usuario_ids, $creador_id)
+  {
+      if (!is_array($usuario_ids)) {
+          $usuario_ids = [$usuario_ids];
+      }
+
+      $resultados = [];
+      foreach ($usuario_ids as $usuario_id) {
+          // No notificar al creador
+          if ($usuario_id == $creador_id) {
+              continue;
+          }
+
+          // LEFT JOIN tbl_departamentos porque en Proyectos Libres id_departamento es NULL
+          $stmt = $this->conn->prepare("
+              SELECT p.id_proyecto, p.nombre as proyecto_nombre, p.descripcion as proyecto_descripcion,
+                     p.fecha_cumplimiento, p.es_libre,
+                     d.nombre as departamento_nombre,
+                     u.nombre as usuario_nombre, u.apellido as usuario_apellido, u.e_mail as usuario_email,
+                     c.nombre as creador_nombre, c.apellido as creador_apellido
+              FROM tbl_proyectos p
+              LEFT JOIN tbl_departamentos d ON p.id_departamento = d.id_departamento
+              JOIN tbl_usuarios u ON u.id_usuario = ?
+              LEFT JOIN tbl_usuarios c ON c.id_usuario = ?
+              WHERE p.id_proyecto = ?
+          ");
+
+          $stmt->bind_param("iii", $usuario_id, $creador_id, $proyecto_id);
+          $stmt->execute();
+          $project = $stmt->get_result()->fetch_assoc();
+          $stmt->close();
+
+          if (!$project || empty($project["usuario_email"])) {
+              $resultados[$usuario_id] = false;
+              continue;
+          }
+
+          // Verificar preferencias
+          if (
+              !$this->verificarPreferenciaEmail(
+                  $usuario_id,
+                  "notif_proyecto_asignado",
+              )
+          ) {
+              $resultados[$usuario_id] = false;
+              continue;
+          }
+
+          $es_libre = (int)($project["es_libre"] ?? 0) === 1;
+
+          if ($es_libre) {
+              $titulo = "Asignado a Proyecto Libre: " . $project["proyecto_nombre"];
+              $mensaje = "Has sido asignado al Proyecto Libre '{$project["proyecto_nombre"]}' (proyecto multidepartamental, no cuenta para estadísticas del sistema)";
+              $departamento_display = "Proyecto Libre (multidepartamental)";
+          } else {
+              $titulo = "Asignado a proyecto: " . $project["proyecto_nombre"];
+              $mensaje = "Has sido asignado al proyecto '{$project["proyecto_nombre"]}' en el departamento '{$project["departamento_nombre"]}'";
+              $departamento_display = $project["departamento_nombre"] ?? "Sin departamento";
+          }
+
+          // Crear notificación in-app
+          $this->crearNotificacionSimple(
+              $usuario_id,
+              self::TIPO_PROYECTO_ASIGNADO,
+              $titulo,
+              $mensaje,
+              $proyecto_id,
+              self::REF_PROYECTO,
+          );
+
+          // Generar y encolar email
+          $html = $this->templates->render("proyecto_asignado", [
+              "SUBJECT" => $titulo,
+              "NOMBRE_USUARIO" => $project["usuario_nombre"],
+              "NOMBRE_PROYECTO" => $project["proyecto_nombre"],
+              "DESCRIPCION_PROYECTO" =>
+                  $project["proyecto_descripcion"] ?? "Sin descripción",
+              "NOMBRE_DEPARTAMENTO" => $departamento_display,
+              "FECHA_VENCIMIENTO" => $project["fecha_cumplimiento"]
+                  ? date("d/m/Y", strtotime($project["fecha_cumplimiento"]))
+                  : "Sin fecha definida",
+              "CREADO_POR" => trim(
+                  $project["creador_nombre"] . " " . $project["creador_apellido"],
+              ),
+              "URL_SISTEMA" => $this->systemUrl,
+          ]);
+
+          $resultados[$usuario_id] = $this->emailService->queueEmail(
+              $project["usuario_email"],
+              $project["usuario_nombre"] . " " . $project["usuario_apellido"],
+              $titulo,
+              $html,
+              self::TIPO_PROYECTO_ASIGNADO,
+              self::REF_PROYECTO,
+              $proyecto_id,
+              3,
+          );
+      }
+      return $resultados;
   }
 
   public function notifyTaskCompleted($tarea_id, $completada_por_id)
   {
-    $stmt = $this->conn->prepare(" 
-            SELECT t.id_tarea, t.nombre as tarea_nombre, t.id_creador, 
-                   p.nombre as proyecto_nombre, 
-                   u.nombre as creador_nombre, u.apellido as creador_apellido, u.e_mail as creador_email, 
-                   c.nombre as completador_nombre, c.apellido as completador_apellido 
-            FROM tbl_tareas t 
-            JOIN tbl_usuarios u ON t.id_creador = u.id_usuario 
-            LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto 
-            LEFT JOIN tbl_usuarios c ON c.id_usuario = ? 
-            WHERE t.id_tarea = ? 
-        ");
+      $stmt = $this->conn->prepare("
+          SELECT t.id_tarea, t.nombre as tarea_nombre, t.id_creador,
+                 p.nombre as proyecto_nombre, p.es_libre as proyecto_es_libre,
+                 u.nombre as creador_nombre, u.apellido as creador_apellido, u.e_mail as creador_email,
+                 c.nombre as completador_nombre, c.apellido as completador_apellido
+          FROM tbl_tareas t
+          JOIN tbl_usuarios u ON t.id_creador = u.id_usuario
+          LEFT JOIN tbl_proyectos p ON t.id_proyecto = p.id_proyecto
+          LEFT JOIN tbl_usuarios c ON c.id_usuario = ?
+          WHERE t.id_tarea = ?
+      ");
 
-    $stmt->bind_param("ii", $completada_por_id, $tarea_id);
-    $stmt->execute();
-    $task = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
+      $stmt->bind_param("ii", $completada_por_id, $tarea_id);
+      $stmt->execute();
+      $task = $stmt->get_result()->fetch_assoc();
+      $stmt->close();
 
-    if (!$task || empty($task["creador_email"])) {
-      return false;
-    }
+      if (!$task || empty($task["creador_email"])) {
+          return false;
+      }
 
-    // No notificar si el creador completa su propia tarea
-    if ($task["id_creador"] == $completada_por_id) {
-      return false;
-    }
+      // No notificar si el creador completa su propia tarea
+      if ($task["id_creador"] == $completada_por_id) {
+          return false;
+      }
 
-    // Verificar preferencias
-    if (
-      !$this->verificarPreferenciaEmail(
-        $task["id_creador"],
-        "notif_tarea_completada",
-      )
-    ) {
-      return false;
-    }
+      // Verificar preferencias
+      if (
+          !$this->verificarPreferenciaEmail(
+              $task["id_creador"],
+              "notif_tarea_completada",
+          )
+      ) {
+          return false;
+      }
 
-    $titulo = "Tarea completada: " . $task["tarea_nombre"];
-    $mensaje =
-      "La tarea '{$task["tarea_nombre"]}' ha sido completada por " .
-      trim($task["completador_nombre"] . " " . $task["completador_apellido"]);
+      $es_libre = (int)($task["proyecto_es_libre"] ?? 0) === 1;
+      $libre_suffix = $es_libre ? " (Proyecto Libre)" : "";
 
-    // Crear notificación dentor de la app
-    $this->crearNotificacionSimple(
-      $task["id_creador"],
-      self::TIPO_TAREA_COMPLETADA,
-      $titulo,
-      $mensaje,
-      $tarea_id,
-      self::REF_TAREA,
-    );
+      $titulo = "Tarea completada{$libre_suffix}: " . $task["tarea_nombre"];
+      $mensaje =
+          "La tarea '{$task["tarea_nombre"]}' ha sido completada por " .
+          trim($task["completador_nombre"] . " " . $task["completador_apellido"]);
 
-    // Generar y encolar email
-    $html = $this->templates->render("tarea_completada", [
-      "SUBJECT" => $titulo,
-      "NOMBRE_USUARIO" => $task["creador_nombre"],
-      "NOMBRE_TAREA" => $task["tarea_nombre"],
-      "NOMBRE_PROYECTO" => $task["proyecto_nombre"] ?? "Sin proyecto",
-      "COMPLETADA_POR" => trim(
-        $task["completador_nombre"] . " " . $task["completador_apellido"],
-      ),
-      "FECHA_COMPLETADO" => date("d/m/Y H:i"),
-      "URL_SISTEMA" => $this->systemUrl,
-    ]);
+      // Crear notificación dentro de la app
+      $this->crearNotificacionSimple(
+          $task["id_creador"],
+          self::TIPO_TAREA_COMPLETADA,
+          $titulo,
+          $mensaje,
+          $tarea_id,
+          self::REF_TAREA,
+      );
 
-    return $this->emailService->queueEmail(
-      $task["creador_email"],
-      $task["creador_nombre"] . " " . $task["creador_apellido"],
-      $this->limpiarTituloEmail($titulo),
-      $html,
-      self::TIPO_TAREA_COMPLETADA,
-      self::REF_TAREA,
-      $tarea_id,
-      5, // Prioridad normal
-    );
+      // Nombre de proyecto enriquecido para el email template
+      $nombre_proyecto_display = $task["proyecto_nombre"] ?? "Sin proyecto";
+      if ($es_libre && $task["proyecto_nombre"]) {
+          $nombre_proyecto_display = $task["proyecto_nombre"] . " (Proyecto Libre)";
+      }
+
+      // Generar y encolar email
+      $html = $this->templates->render("tarea_completada", [
+          "SUBJECT" => $titulo,
+          "NOMBRE_USUARIO" => $task["creador_nombre"],
+          "NOMBRE_TAREA" => $task["tarea_nombre"],
+          "NOMBRE_PROYECTO" => $nombre_proyecto_display,
+          "COMPLETADA_POR" => trim(
+              $task["completador_nombre"] . " " . $task["completador_apellido"],
+          ),
+          "FECHA_COMPLETADO" => date("d/m/Y H:i"),
+          "URL_SISTEMA" => $this->systemUrl,
+      ]);
+
+      return $this->emailService->queueEmail(
+          $task["creador_email"],
+          $task["creador_nombre"] . " " . $task["creador_apellido"],
+          $this->limpiarTituloEmail($titulo),
+          $html,
+          self::TIPO_TAREA_COMPLETADA,
+          self::REF_TAREA,
+          $tarea_id,
+          5, // Prioridad normal
+      );
   }
 
   private function crearNotificacionSimple(

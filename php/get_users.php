@@ -18,11 +18,11 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
  
-    // Verificar si la columna foto_perfil existe (para compatibilidad)
+    // Verificar si la columna foto_perfil existe
     $checkColumn = $conn->query("SHOW COLUMNS FROM tbl_usuarios LIKE 'foto_perfil'");
     $hasFotoColumn = $checkColumn && $checkColumn->num_rows > 0;
  
-    // Campo adicional para foto de perfil (solo si existe la columna)
+    // Campo adicional para foto de perfil
     $fotoField = $hasFotoColumn ? ", u.foto_perfil" : "";
  
     // Obtener filtros
@@ -30,8 +30,8 @@ try {
     $filter_departamento = isset($_GET['id_departamento']) ? intval($_GET['id_departamento']) : null;
     $solo_principal = isset($_GET['solo_principal']) ? filter_var($_GET['solo_principal'], FILTER_VALIDATE_BOOLEAN) : true;
  
-    // Base query usando tbl_usuario_roles para obtener información de rol/departamento
-    // Por defecto usa el rol principal (es_principal = 1)
+    // Base query usando tbl_usuario_roles para obtener información de rol o departamento
+    // Por defecto usa el rol principal
     
     if ($filter_rol !== null && $filter_rol > 0 && $filter_departamento !== null && $filter_departamento > 0) {
         // Filtrar por rol Y departamento específico en tbl_usuario_roles
@@ -44,6 +44,7 @@ try {
                     u.acceso,
                     u.id_superior,
                     u.e_mail,
+                    u.es_supervisor,
                     ur.id_departamento,
                     ur.id_rol,
                     ur.es_principal,
@@ -66,7 +67,7 @@ try {
         $result = $stmt->get_result();
  
     } elseif ($filter_rol !== null && $filter_rol > 0) {
-        // Filtrar solo por rol (usuarios que tengan este rol en cualquier departamento)
+        // Filtrar solo por rol
         $query = "SELECT DISTINCT
                     u.id_usuario,
                     u.nombre,
@@ -76,6 +77,7 @@ try {
                     u.acceso,
                     u.id_superior,
                     u.e_mail,
+                    u.es_supervisor,
                     ur.id_departamento,
                     ur.id_rol,
                     ur.es_principal,
@@ -108,6 +110,7 @@ try {
                     u.acceso,
                     u.id_superior,
                     u.e_mail,
+                    u.es_supervisor,
                     ur.id_departamento,
                     ur.id_rol,
                     ur.es_principal,
@@ -130,7 +133,7 @@ try {
         $result = $stmt->get_result();
  
     } else {
-        // Sin filtros: obtener todos los usuarios con su rol principal
+        // Sin filtros obtener todos los usuarios con su rol principal
         $query = "SELECT DISTINCT
                     u.id_usuario,
                     u.nombre,
@@ -140,6 +143,7 @@ try {
                     u.acceso,
                     u.id_superior,
                     u.e_mail,
+                    u.es_supervisor,
                     COALESCE(ur.id_departamento, u.id_departamento) as id_departamento,
                     COALESCE(ur.id_rol, u.id_rol) as id_rol,
                     COALESCE(ur.es_principal, 1) as es_principal,
@@ -174,6 +178,7 @@ try {
             'acceso' => $row['acceso'] ?? '',
             'id_departamento' => (int)($row['id_departamento'] ?? 0),
             'id_superior' => (int)($row['id_superior'] ?? 0),
+            'es_supervisor' => (bool)($row['es_supervisor'] ?? false),
             'id_rol' => (int)($row['id_rol'] ?? 0),
             'nombre_rol' => $row['nombre_rol'] ?? '',
             'es_principal' => (bool)($row['es_principal'] ?? true),

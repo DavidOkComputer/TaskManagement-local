@@ -146,7 +146,7 @@ try {
 
 		// VALIDAR QUE EL USUARIO ASIGNADO PERTENECE AL PROYECTO
 
-		// Si es proyecto grupal (id_tipo_proyecto = 1)
+		// Si es proyecto grupal id_tipo_proyecto = 1
 		if ($projectData["id_tipo_proyecto"] == 1) {
 			// Verificar que el usuario está en tbl_proyecto_usuarios
 			$stmt = $conn->prepare("SELECT id_usuario 
@@ -165,7 +165,7 @@ try {
 			$stmt->close();
 		}
 
-		// Si es proyecto individual (id_tipo_proyecto = 2)
+		// Si es proyecto individual id_tipo_proyecto = 2
 		elseif ($projectData["id_tipo_proyecto"] == 2) {
 			// Verificar que el usuario es el asignado al proyecto
 

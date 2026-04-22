@@ -5,6 +5,7 @@ const Config = {
     GET_DEPARTMENTS: "../php/get_departments.php",
     GET_USERS: "../php/get_users.php",
     GET_MANAGERS: "../php/get_managers.php",
+    GET_ROLES: "../php/get_roles.php",
     UPDATE_USER: "../php/update_users.php",
   },
   DEFAULT_AVATAR: "../images/default-avatar.png",
@@ -37,15 +38,16 @@ let editSelectedImage = null;
 let editRemovePhoto = false;
 // Cache para evitar llamadas repetidas
 let lastUsersLoad = 0;
-
 let currentUserIdForProject = null;
 let superiorFilterMode = 0; // 0 = gerentes 1 = supervisores
+let allRoles = [];
 const MIN_LOAD_INTERVAL = 5000; // Mínimo 5 segundos entre cargas
 
 document.addEventListener("DOMContentLoaded", function () {
   loadDepartamentos();
   loadManagers(); // Cargar lista de gerentes
   loadUsuarios();
+  loadRoles();
   // Iniciar auto-refresh después de un delay
   setTimeout(() => {
     startAutoRefresh();
@@ -482,6 +484,49 @@ function loadManagers(esSupervisor = 0) {
       console.error("Error de conexión en loadManagers:", error);
       allManagers = [];
     });
+}
+
+
+function loadRoles() {
+  fetch(Config.API_ENDPOINTS.GET_ROLES, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  })
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then((data) => {
+        if (data.success && data.roles) {
+          allRoles = data.roles;
+          populateRolesDropdown();
+        } else {
+          console.warn("No se pudieron cargar los roles:", data.message);
+          allRoles = [];
+        }
+      })
+      .catch((error) => {
+        console.error("Error de conexión en loadRoles:", error);
+        allRoles = [];
+      });
+}
+
+function populateRolesDropdown() {
+  const dropdown = document.getElementById("editRol");
+  if (!dropdown) return;
+  dropdown.innerHTML = '<option value="">-- Seleccionar rol --</option>';
+  allRoles.forEach((rol) => {
+    const option = document.createElement("option");
+    option.value = rol.id_rol; // -2 para Supervisor
+    // primera letra mayuscula
+    const nombreCapitalizado =
+        rol.nombre.charAt(0).toUpperCase() + rol.nombre.slice(1);
+    option.textContent = nombreCapitalizado;
+    if (rol.es_supervisor) {
+      option.dataset.esSupervisor = "1";
+    }
+    dropdown.appendChild(option);
+  });
 }
 
 function populateDepartamentosDropdown() {
@@ -1110,8 +1155,9 @@ function createUsuarioRow(usuario) {
                         data-usuario="${escapeHtml(usuario.usuario || "")}"
                         data-email="${escapeHtml(usuario.e_mail || "")}"
                         data-depart="${usuario.id_departamento}"
-						data-rol="${usuario.id_rol || ""}"
+                        data-rol="${usuario.id_rol || ""}"
                         data-superior="${usuario.id_superior || 0}"
+                        data-es-supervisor="${usuario.es_supervisor ? 1 : 0}"
                         data-foto="${usuario.foto_perfil || ""}"
                         data-foto-url="${usuario.foto_url || ""}"
                         title="Editar usuario">
@@ -1227,17 +1273,19 @@ function attachButtonListeners() {
       const superior = this.getAttribute("data-superior");
       const foto = this.getAttribute("data-foto");
       const fotoUrl = this.getAttribute("data-foto-url");
+      const esSupervisor = this.getAttribute("data-es-supervisor"); // <-- NEW
       openEditModal(
-        userId,
-        nombre,
-        apellido,
-        usuario,
-        email,
-        depart,
-        rol,
-        superior,
-        foto,
-        fotoUrl,
+          userId,
+          nombre,
+          apellido,
+          usuario,
+          email,
+          depart,
+          rol,
+          superior,
+          foto,
+          fotoUrl,
+          esSupervisor, // <-- NEW
       );
     });
   });
@@ -1287,16 +1335,17 @@ function toggleSelectAll(event) {
 }
 
 function openEditModal(
-  userId,
-  nombre,
-  apellido,
-  usuario,
-  email,
-  departId,
-  rolId,
-  superiorId,
-  foto,
-  fotoUrl,
+    userId,
+    nombre,
+    apellido,
+    usuario,
+    email,
+    departId,
+    rolId,
+    superiorId,
+    foto,
+    fotoUrl,
+    esSupervisor,
 ) {
   document.getElementById("editUserId").value = userId;
   document.getElementById("editNombre").value = nombre || "";
@@ -1308,9 +1357,14 @@ function openEditModal(
   if (departmentDropdown) {
     departmentDropdown.value = departId || "";
   }
+
   const rolDropdown = document.getElementById("editRol");
   if (rolDropdown) {
-    rolDropdown.value = rolId || "";
+    if (parseInt(rolId) === 2 && parseInt(esSupervisor) === 1) {
+      rolDropdown.value = "-2";
+    } else {
+      rolDropdown.value = rolId || "";
+    }
   }
 
   // Poblar y seleccionar el superior
@@ -1365,13 +1419,24 @@ function handleSaveUserChanges(event) {
   const apellido = document.getElementById("editApellido").value.trim();
   const usuario = document.getElementById("editUsuario").value.trim();
   const email = document.getElementById("editEmail").value.trim();
+  const rolSelected = parseInt(document.getElementById("editRol").value) || 0;
   const id_departamento =
     parseInt(document.getElementById("editDepartamento").value) || 0;
   const id_superior =
     parseInt(document.getElementById("editSuperior").value) || 0;
-  const id_rol = parseInt(document.getElementById("editRol").value) || 0;
+  let id_rol;
+  let es_supervisor;
+  if (rolSelected === -2) {
+    id_rol = 2;
+    es_supervisor = 1;
+  } else {
+    id_rol = rolSelected;
+    es_supervisor = 0;
+  }
+
   const formData = new FormData();
   formData.append("id_rol", id_rol);
+  formData.append("es_supervisor", es_supervisor);
   formData.append("id_usuario", userId);
   formData.append("nombre", nombre);
   formData.append("apellido", apellido);
@@ -1604,7 +1669,7 @@ function validateEditForm() {
   if (!departamento) {
     errors.push("Debe seleccionar un departamento");
   }
-  if (!rol) {
+  if (!rol || parseInt(rol) === 0) {
     errors.push("Debe seleccionar un rol");
   }
   // Validar contraseña solo si se ingresó algo

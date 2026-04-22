@@ -316,73 +316,109 @@ $user_id = $_SESSION['user_id'];
                   </div>
 
                   <div class="row">
-                    <!--add the permisos de edicion here colmd6-->
-                    <div class="col-md-6">
-                      <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Permisos de edición <span class="text-danger">*</span></label>
-                          <div class="col-sm-4">
-                            <div class="form-check form-check-success">
-                              <label class="form-check-label">
-                                <input type="radio" 
-                                      class="form-check-input" 
-                                      name="puede_editar_otros" 
-                                      id="soloCreador" 
-                                      value="0"
-                                      checked
-                                      style="cursor:pointer;" 
-                                      required>
-                                Edición restringida
-                              </label>
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-3 col-form-label">Permisos de edición <span class="text-danger">*</span></label>
+                                <div class="col-sm-4">
+                                    <div class="form-check form-check-success">
+                                        <label class="form-check-label">
+                                            <input type="radio"
+                                                   class="form-check-input"
+                                                   name="puede_editar_otros"
+                                                   id="soloCreador"
+                                                   value="0"
+                                                   checked
+                                                   style="cursor:pointer;"
+                                                   required>
+                                            Edición restringida
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <div class="form-check form-check-success">
+                                        <label class="form-check-label">
+                                            <input type="radio"
+                                                   class="form-check-input"
+                                                   name="puede_editar_otros"
+                                                   id="otrosEditan"
+                                                   value="1"
+                                                   required
+                                                   style="cursor:pointer;">
+                                            Edición libre
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                          </div>
-                          <div class="col-sm-5">
-                            <div class="form-check form-check-success">
-                              <label class="form-check-label">
-                                <input type="radio" 
-                                      class="form-check-input" 
-                                      name="puede_editar_otros" 
-                                      id="otrosEditan" 
-                                      value="1" 
-                                      required
-                                      style="cursor:pointer;">
-                                Edición libre
-                              </label>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-3 col-form-label">Tipo de proyecto <span class="text-danger">*</span></label>
+                                <div class="col-sm-4">
+                                    <div class="form-check form-check-success">
+                                        <label class="form-check-label">
+                                            <input type="radio"
+                                                   class="form-check-input"
+                                                   name="id_tipo_proyecto"
+                                                   id="tipoProyecto1"
+                                                   value="2"
+                                                   required>
+                                            Individual
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-5">
+                                    <div class="form-check form-check-success">
+                                        <label class="form-check-label">
+                                            <input type="radio"
+                                                   class="form-check-input"
+                                                   name="id_tipo_proyecto"
+                                                   id="tipoProyecto2"
+                                                   value="1"
+                                                   required>
+                                            Grupal
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- NEW ROW: Alcance del proyecto (Libre toggle) -->
+                    <div class="row">
+                          <div class="col-md-12">
+                              <div class="form-group row">
+                                  <label class="col-sm-3 col-form-label">
+                                      Alcance del proyecto
+                                      <span id="libreBadgePreview" style="display: none; background-color: #009b4a; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; margin-left: 8px;">
+                                          <i class="mdi mdi-earth"></i> Libre
+                                      </span>
+                                  </label>
+                                  <div class="col-sm-9">
+                                      <label for="esLibre" id="esLibreBox" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 2px solid #009b4a; border-radius: 8px; background-color: #f8feff; cursor: pointer; transition: background-color 0.2s; user-select: none;">
+                                          <input type="checkbox"
+                                                 name="es_libre"
+                                                 id="esLibre"
+                                                 value="1"
+                                                 style="width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; background:#009b4a"
+                                                 >
+                                          <i class="mdi mdi-earth" style="font-size: 22px; color: #009b4a;"></i>
+                                          <div style="flex-grow: 1;">
+                                              <strong style="color: #000000; font-size: 1rem;">Proyecto Libre</strong>
+                                              <div style="font-size: 0.85rem; color: #555; margin-top: 2px;">
+                                                  Multidepartamental — permite asignar a usuarios de cualquier departamento. No cuenta para estadísticas del sistema.
+                                              </div>
+                                          </div>
+                                      </label>
+
+                                      <div id="libreNotice" style="display: none; background-color: #e9ecef; border-left: 4px solid #009b4a; padding: 10px 15px; border-radius: 4px; margin-top: 10px; color: #000000; font-size: 0.9rem;">
+                                          <i class="mdi mdi-information-outline me-1"></i>
+                                          <strong>Modo Proyecto Libre activo:</strong>
+                                          el campo Departamento está deshabilitado. Todos los usuarios del sistema están disponibles para asignación.
+                                      </div>
+                                  </div>
+                              </div>
                           </div>
                       </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="form-group row">
-                        <label class="col-sm-3 col-form-label">Tipo de proyecto <span class="text-danger">*</span></label>
-                        <div class="col-sm-4">
-                          <div class="form-check form-check-success">
-                            <label class="form-check-label">
-                              <input type="radio" 
-                                     class="form-check-input" 
-                                     name="id_tipo_proyecto" 
-                                     id="tipoProyecto1" 
-                                     value="2" 
-                                     required>
-                              Individual
-                            </label>
-                          </div>
-                        </div>
-                        <div class="col-sm-5">
-                          <div class="form-check form-check-success">
-                            <label class="form-check-label">
-                              <input type="radio" 
-                                     class="form-check-input" 
-                                     name="id_tipo_proyecto" 
-                                     id="tipoProyecto2" 
-                                     value="1" 
-                                     required>
-                              Grupal
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                   <div class="row">
                     <div class="col-md-6">
                       <div class="form-group row">

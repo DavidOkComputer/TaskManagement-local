@@ -560,13 +560,10 @@ $user_id = $_SESSION['user_id'];
             </label>
             <select class="form-control" id="editRol" required>
                 <option value="">-- Seleccionar rol --</option>
-                <option value="1">Administrador</option>
-                <option value="2">Gerente</option>
-                <option value="3">Usuario</option>
             </select>
             <small class="form-text text-muted">
                 <i class="mdi mdi-information-outline"></i>
-                Modifica el rol principal del usuario
+                Modifica el rol principal del usuario.
             </small>
         </div>
     </div>

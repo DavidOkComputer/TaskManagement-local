@@ -27,19 +27,24 @@ try {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    $query = "SELECT 
-                id_proyecto,
-                nombre,
-                descripcion,
-                fecha_inicio,
-                fecha_cumplimiento,
-                progreso,
-                estado,
-                id_creador,
-                puede_editar_otros,
-                id_tipo_proyecto
-            FROM tbl_proyectos
-            WHERE id_proyecto = ?";
+      $query = "SELECT
+          id_proyecto,
+          nombre,
+          descripcion,
+          id_departamento,
+          fecha_inicio,
+          fecha_cumplimiento,
+          progreso,
+          estado,
+          ar,
+          archivo_adjunto,
+          id_creador,
+          id_participante,
+          puede_editar_otros,
+          id_tipo_proyecto,
+          es_libre
+          FROM tbl_proyectos
+          WHERE id_proyecto = ?";
 
     $stmt = $conn->prepare($query);
 
@@ -61,14 +66,14 @@ try {
 
     $proyecto = $result->fetch_assoc();
 
-    // Asegurar que puede_editar_otros es un entero (0 o 1)
+    // Asegurar que puede_editar_otros es un entero
     if (isset($proyecto['puede_editar_otros'])) {
         $proyecto['puede_editar_otros'] = intval($proyecto['puede_editar_otros']);
     } else {
-        $proyecto['puede_editar_otros'] = 0; // default: solo creador puede editar
+        $proyecto['puede_editar_otros'] = 0; // default solo creador puede editar
     }
 
-    // Si es un proyecto grupal (id_tipo_proyecto == 1), obtener los usuarios asignados
+    // Si es un proyecto grupal id_tipo_proyecto == 1 obtener los usuarios asignados
     if (isset($proyecto['id_tipo_proyecto']) && intval($proyecto['id_tipo_proyecto']) == 1) {
         $sql_usuarios = "SELECT pu.id_usuario, u.nombre, u.apellido, u.e_mail, u.num_empleado
                         FROM tbl_proyecto_usuarios pu
@@ -107,19 +112,24 @@ try {
 
     // Construir respuesta con type casting para campos numéricos
     $response['success'] = true;
-    $response['proyecto'] = [
-        'id_proyecto' => (int)$proyecto['id_proyecto'],
-        'nombre' => $proyecto['nombre'],
-        'descripcion' => $proyecto['descripcion'],
-        'fecha_inicio' => $proyecto['fecha_inicio'],
-        'fecha_cumplimiento' => $proyecto['fecha_cumplimiento'],
-        'progreso' => (int)$proyecto['progreso'],
-        'estado' => $proyecto['estado'],
-        'id_creador' => (int)$proyecto['id_creador'],
-        'puede_editar_otros' => (int)$proyecto['puede_editar_otros'],
-        'id_tipo_proyecto' => (int)$proyecto['id_tipo_proyecto'],
-        'usuarios_asignados' => isset($proyecto['usuarios_asignados']) ? $proyecto['usuarios_asignados'] : null
-    ];
+      $response['proyecto'] = [
+          'id_proyecto' => (int)$proyecto['id_proyecto'],
+          'nombre' => $proyecto['nombre'],
+          'descripcion' => $proyecto['descripcion'],
+          'id_departamento' => $proyecto['id_departamento'] !== null ? (int)$proyecto['id_departamento'] : null,
+          'fecha_inicio' => $proyecto['fecha_inicio'],
+          'fecha_cumplimiento' => $proyecto['fecha_cumplimiento'],
+          'progreso' => (int)$proyecto['progreso'],
+          'estado' => $proyecto['estado'],
+          'ar' => $proyecto['ar'] ?? '',
+          'archivo_adjunto' => $proyecto['archivo_adjunto'] ?? '',
+          'id_creador' => (int)$proyecto['id_creador'],
+          'id_participante' => (int)($proyecto['id_participante'] ?? 0),
+          'puede_editar_otros' => (int)$proyecto['puede_editar_otros'],
+          'id_tipo_proyecto' => (int)$proyecto['id_tipo_proyecto'],
+          'es_libre' => (int)($proyecto['es_libre'] ?? 0),
+          'usuarios_asignados' => isset($proyecto['usuarios_asignados']) ? $proyecto['usuarios_asignados'] : null
+      ];
 
     $result->free();
     $stmt->close();
