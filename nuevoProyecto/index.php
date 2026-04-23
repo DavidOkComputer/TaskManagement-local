@@ -382,8 +382,6 @@ $user_id = $_SESSION['user_id'];
                             </div>
                         </div>
                     </div>
-
-                    <!-- NEW ROW: Alcance del proyecto (Libre toggle) -->
                     <div class="row">
                           <div class="col-md-12">
                               <div class="form-group row">

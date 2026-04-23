@@ -1,36 +1,39 @@
+
 /*manager_create_project.js para crear proyectos como gerente*/
 const editMode = {
 	isEditing: false,
-	projectId: null
+	projectId: null,
+	originalEsLibre: 0
 };
-// Estado para proyecto grupal 
+// Estado para proyecto grupal
 const grupalState = {
 	selectedUsers: [],
 	usuariosModal: null
 };
-// Estado del usuario y sus departamentos 
+// Estado del usuario y sus departamentos
 const userState = {
 	userId: null,
 	departmentId: null,
 	departmentName: null,
-	userDepartments: [], // Todos los departamentos del usuario 
+	userDepartments: [], // Todos los departamentos del usuario
 	hasMultipleDepartments: false,
 	isAdmin: false,
 	isManager: false,
 	canChooseDepartment: false,
-	includeAllDepartments: false 
+	includeAllDepartments: false,
+	isLibre: false
 };
 const app = {
 	usuarios: [],
-	allDepartmentUsers: [] 
+	allDepartmentUsers: []
 };
-// Inicializar página al cargar 
+// Inicializar página al cargar
 document.addEventListener('DOMContentLoaded', function() {
-	// Detectar si estamos en modo edición 
+	// Detectar si estamos en modo edición
 	const params = new URLSearchParams(window.location.search);
 	editMode.projectId = params.get('edit');
 	editMode.isEditing = !!editMode.projectId;
-	// Cambiar título y botón si estamos editando 
+	// Cambiar título y botón si estamos editando
 	if (editMode.isEditing) {
 		const titleEl = document.querySelector('h4.card-title');
 		const subtitleEl = document.querySelector('p.card-subtitle');
@@ -39,17 +42,138 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (subtitleEl) subtitleEl.textContent = 'Actualiza la información del proyecto';
 		if (btnCrear) btnCrear.textContent = 'Actualizar';
 	}
-	// Cargar departamentos del usuario 
+	// Cargar departamentos del usuario
 	cargarMisDepartamentos();
 	setupFormHandlers();
 	setupGrupalHandlers();
-	// Si es edición, cargar datos del proyecto después de cargar departamentos 
+	setupLibreToggleHandler();
+	// Si es edición cargar datos del proyecto después de cargar departamentos
 	if (editMode.isEditing) {
 		setTimeout(() => {
 			cargarProyectoParaEditar(editMode.projectId);
 		}, 500);
 	}
 });
+
+function setupLibreToggleHandler() {
+	const checkbox = document.getElementById('esLibre');
+	if (!checkbox) return;
+
+	checkbox.addEventListener('change', function() {
+		applyLibreState(this.checked);
+	});
+}
+
+function applyLibreState(isLibre) {
+	userState.isLibre = isLibre;
+
+	const deptSelect = document.getElementById('id_departamento');
+	const hiddenInput = document.getElementById('id_departamento_hidden');
+	const libreNotice = document.getElementById('libreNotice');
+	const libreBadgePreview = document.getElementById('libreBadgePreview');
+	const deptHelpText = deptSelect?.parentElement?.querySelector('.form-text');
+
+	if (isLibre) {
+		if (deptSelect) {
+			deptSelect.setAttribute('data-prev-value', deptSelect.value || '');
+
+			deptSelect.innerHTML = '<option value="__libre__" selected>— Proyecto Libre —</option>';
+			deptSelect.disabled = true;
+			deptSelect.style.cursor = 'not-allowed';
+			deptSelect.style.backgroundColor = '#e9ecef';
+		}
+		if (hiddenInput) hiddenInput.value = '';
+
+		userState.departmentId = null;
+		userState.departmentName = null;
+
+		if (libreNotice) libreNotice.style.display = 'block';
+		if (libreBadgePreview) libreBadgePreview.style.display = 'inline-block';
+		if (deptHelpText) {
+			deptHelpText.innerHTML = '<i class="mdi mdi-earth"></i> Proyectos Libres no se asocian a un departamento';
+		}
+
+		grupalState.selectedUsers = [];
+		updateSelectedCount();
+
+		loadUsuariosAllSystem();
+	} else {
+		//habilitar de nuevo seector de departamento
+		if (deptSelect) {
+			deptSelect.disabled = false;
+			deptSelect.style.cursor = 'pointer';
+			deptSelect.style.backgroundColor = '#ffffff';
+		}
+
+		if (libreNotice) libreNotice.style.display = 'none';
+		if (libreBadgePreview) libreBadgePreview.style.display = 'none';
+		if (deptHelpText) {
+			deptHelpText.innerHTML = '<i class="mdi mdi-information-outline"></i> Selecciona el departamento para el proyecto';
+		}
+
+		// limpoiar usuarios de grupo
+		grupalState.selectedUsers = [];
+		updateSelectedCount();
+
+		//re cargar departmanetos
+		cargarMisDepartamentos();
+	}
+}
+
+//obtener todos los usuarios del sistema
+function loadUsuariosAllSystem() {
+	const participanteSelect = document.getElementById('id_participante');
+	if (participanteSelect) {
+		participanteSelect.innerHTML = '<option value="">Cargando todos los usuarios...</option>';
+		participanteSelect.disabled = true;
+	}
+
+	fetch('../php/get_users.php')
+		.then(response => {
+			if (!response.ok) throw new Error('Error cargando usuarios');
+			return response.json();
+		})
+		.then(data => {
+			if (data.success && data.usuarios) {
+				const normalizedUsers = data.usuarios.map(u => ({
+					id_usuario: u.id_usuario,
+					nombre: u.nombre,
+					apellido: u.apellido,
+					nombre_completo: u.nombre_completo || `${u.nombre} ${u.apellido}`,
+					num_empleado: u.num_empleado,
+					e_mail: u.e_mail,
+					area: u.area || 'Sin departamento',
+					nombre_rol: u.nombre_rol || 'Sin rol',
+					es_rol_secundario: false
+				}));
+
+				app.usuarios = normalizedUsers;
+				app.allDepartmentUsers = normalizedUsers;
+
+				populateUsuariosSelectMultiDept(normalizedUsers);
+				populateGrupalModalMultiDept(normalizedUsers);
+
+				if (normalizedUsers.length === 0) {
+					showAlert('No hay usuarios en el sistema', 'info');
+				}
+			} else {
+				showAlert('Error al cargar usuarios: ' + (data.message || 'Error desconocido'), 'warning');
+				if (participanteSelect) {
+					participanteSelect.innerHTML = '<option value="">No hay usuarios disponibles</option>';
+				}
+			}
+		})
+		.catch(error => {
+			console.error('Error fetching all users:', error);
+			showAlert('Error al cargar usuarios: ' + error.message, 'danger');
+			if (participanteSelect) {
+				participanteSelect.innerHTML = '<option value="">Error al cargar usuarios</option>';
+			}
+		})
+		.finally(() => {
+			if (participanteSelect) participanteSelect.disabled = false;
+		});
+}
 
 function cargarMisDepartamentos() {
 	fetch('../php/user_get_my_departments.php')
@@ -61,17 +185,17 @@ function cargarMisDepartamentos() {
 		})
 		.then(data => {
 			if (data.success && data.departamentos && data.departamentos.length > 0) {
-				// Guardar estado del usuario 
+				// Guardar estado del usuario
 				userState.userDepartments = data.departamentos;
 				userState.hasMultipleDepartments = data.tiene_multiples_departamentos;
 				userState.isAdmin = data.permisos?.is_admin || false;
 				userState.isManager = data.permisos?.is_manager || false;
 				userState.canChooseDepartment = data.permisos?.puede_elegir_departamento || false;
-				// Configurar el selector de departamento 
+				// Configurar el selector de departamento
 				setupDepartmentSelector(data);
-				// Agregar toggle para mostrar usuarios de todos los departamentos 
+				// Agregar toggle para mostrar usuarios de todos los departamentos
 				if (userState.hasMultipleDepartments || userState.isAdmin) {
-					
+
 				}
 			} else {
 				showAlert('Error: No se pudieron cargar tus departamentos. ' + (data.message || ''), 'danger');
@@ -91,11 +215,11 @@ function setupDepartmentSelector(data) {
 		console.error('No se encontró el selector de departamento');
 		return;
 	}
-	// Limpiar el select 
+	// Limpiar el select
 	select.innerHTML = '';
-	// Determinar qué departamentos mostrar 
+	// Determinar qué departamentos mostrar
 	let departamentosParaMostrar = data.departamentos;
-	// Si es admin, puede elegir entre todos los departamentos 
+	// Si es admin, puede elegir entre todos los departamentos
 	if (userState.isAdmin && data.todos_departamentos && data.todos_departamentos.length > 0) {
 		departamentosParaMostrar = data.todos_departamentos.map(d => ({
 			...d,
@@ -104,7 +228,7 @@ function setupDepartmentSelector(data) {
 			es_principal: 0,
 			puede_gestionar: true
 		}));
-		// Marcar el departamento principal del admin 
+		// Marcar el departamento principal del admin
 		if (data.departamento_principal) {
 			const idx = departamentosParaMostrar.findIndex(
 				d => d.id_departamento === data.departamento_principal.id_departamento
@@ -115,7 +239,7 @@ function setupDepartmentSelector(data) {
 		}
 	}
 	if (departamentosParaMostrar.length === 1) {
-		// Solo un departamento - deshabilitar selector 
+		// Solo un departamento  deshabilitar selector
 		const dept = departamentosParaMostrar[0];
 		userState.departmentId = dept.id_departamento;
 		userState.departmentName = dept.nombre;
@@ -131,31 +255,31 @@ function setupDepartmentSelector(data) {
 		if (helpText) {
 			helpText.innerHTML = '<i class="mdi mdi-information-outline"></i> Tu departamento está asignado automáticamente';
 		}
-		// Cargar usuarios del departamento 
+		// Cargar usuarios del departamento
 		loadUsuariosDepartamento(dept.id_departamento);
 	} else {
-		// Múltiples departamentos - habilitar selección 
+		// VARIOS departamentos habilitar selección
 		select.disabled = false;
 		select.style.cursor = 'pointer';
 		select.style.backgroundColor = '#ffffff';
-		// Agregar opción por defecto 
+		// Agregar opciOn por defecto
 		const defaultOption = document.createElement('option');
 		defaultOption.value = '';
 		defaultOption.textContent = 'Seleccione un departamento';
 		defaultOption.disabled = true;
 		defaultOption.selected = true;
 		select.appendChild(defaultOption);
-		// Agregar departamentos 
+		// Agregar departamentos
 		departamentosParaMostrar.forEach(dept => {
 			const option = document.createElement('option');
 			option.value = dept.id_departamento;
-			// Construir texto de la opción 
+			// Construir texto de la opción
 			let optionText = dept.nombre;
-			// Agregar indicador de rol 
+			// Agregar indicador de rol
 			if (dept.nombre_rol) {
 				optionText += ` (${dept.nombre_rol})`;
 			}
-			// Agregar indicador de principal 
+			// Agregar indicador de principal
 			if (dept.es_principal === 1) {
 				optionText += ' ★';
 			}
@@ -164,7 +288,7 @@ function setupDepartmentSelector(data) {
 			option.setAttribute('data-es-principal', dept.es_principal || 0);
 			select.appendChild(option);
 		});
-		// Seleccionar el departamento principal por defecto 
+		// Seleccionar el departamento principal por defecto
 		const deptPrincipal = departamentosParaMostrar.find(d => d.es_principal === 1);
 		if (deptPrincipal) {
 			select.value = deptPrincipal.id_departamento;
@@ -183,14 +307,14 @@ function setupDepartmentSelector(data) {
 function setupAllDepartmentsToggle() {
 	const participanteContainer = document.getElementById('id_participante')?.closest('.col-sm-9');
 	if (!participanteContainer) return;
-	// Verificar si ya existe el toggle 
+	// Verificar si ya existe el toggle
 	if (document.getElementById('toggleAllDepartments')) return;
-	// Crear el toggle 
+	// Crear el toggle
 	const toggleContainer = document.createElement('div');
 	toggleContainer.className = 'form-check mt-2';
-	toggleContainer.innerHTML = ` 
+	toggleContainer.innerHTML = `
 
-    `;
+      `;
 
 	const existingHelpText = participanteContainer.querySelector('.form-text');
 	if (existingHelpText) {
@@ -203,11 +327,11 @@ function setupAllDepartmentsToggle() {
 	toggle.addEventListener('change', function() {
 		userState.includeAllDepartments = this.checked;
 		if (this.checked) {
-			// Cargar usuarios de todos los departamentos 
+			// Cargar usuarios de todos los departamentos
 			loadUsuariosAllDepartments();
 			showAlert('Mostrando usuarios de todos tus departamentos', 'info');
 		} else {
-			// Volver a cargar solo del departamento actual 
+			// Volver a cargar solo del departamento actual
 			if (userState.departmentId) {
 				loadUsuariosDepartamento(userState.departmentId);
 			}
@@ -219,31 +343,33 @@ function setupDepartmentChangeHandler() {
 	const select = document.getElementById('id_departamento');
 	const hiddenInput = document.getElementById('id_departamento_hidden');
 	if (!select) return;
-	// Remover listener anterior si existe 
+	// Remover listener anterior si existe
 	const newSelect = select.cloneNode(true);
 	select.parentNode.replaceChild(newSelect, select);
 	newSelect.addEventListener('change', function() {
+		if (userState.isLibre) return;
+
 		const selectedDeptId = parseInt(this.value);
 		if (selectedDeptId > 0) {
-			// Actualizar estado 
+			// Actualizar estado
 			userState.departmentId = selectedDeptId;
 			if (hiddenInput) hiddenInput.value = selectedDeptId;
-			// Encontrar el nombre del departamento 
+			// Encontrar el nombre del departamento
 			const selectedDept = userState.userDepartments.find(d => d.id_departamento === selectedDeptId);
 			if (selectedDept) {
 				userState.departmentName = selectedDept.nombre;
 			}
-			// Limpiar selección de usuarios para proyecto grupal 
+			// Limpiar selección de usuarios para proyecto grupal
 			grupalState.selectedUsers = [];
 			updateSelectedCount();
-			// Cargar usuarios según el toggle 
+			// Cargar usuarios según el toggle
 			const toggle = document.getElementById('toggleAllDepartments');
 			if (toggle && toggle.checked) {
 				loadUsuariosAllDepartments();
 			} else {
 				loadUsuariosDepartamento(selectedDeptId);
 			}
-			
+
 		}
 	});
 }
@@ -262,7 +388,7 @@ function loadUsuariosAllDepartments() {
 				app.allDepartmentUsers = data.usuarios;
 				populateUsuariosSelectMultiDept(data.usuarios);
 				populateGrupalModalMultiDept(data.usuarios);
-				
+
 				if (data.usuarios.length === 0) {
 					showAlert('No hay usuarios disponibles en tus departamentos', 'info');
 				}
@@ -293,13 +419,16 @@ function loadUsuariosDepartamento(departmentId) {
 		console.error('No se ha proporcionado ID de departamento');
 		return;
 	}
-	// Mostrar indicador de carga 
+	//si el libre esta activo no cargar el departamento del usuario
+	if (userState.isLibre) return;
+
+	// Mostrar indicador de carga
 	const participanteSelect = document.getElementById('id_participante');
 	if (participanteSelect) {
 		participanteSelect.innerHTML = '<option value="">Cargando usuarios...</option>';
 		participanteSelect.disabled = true;
 	}
-	// Usar el endpoint actualizado que soporta usuarios con roles secundarios 
+	// Usar el endpoint actualizado que soporta usuarios con roles secundarios
 	fetch(`../php/manager_get_users.php?id_departamento=${departmentId}`)
 		.then(response => response.json())
 		.then(data => {
@@ -307,7 +436,7 @@ function loadUsuariosDepartamento(departmentId) {
 				app.usuarios = data.usuarios;
 				populateUsuariosSelect(data.usuarios);
 				populateGrupalModal(data.usuarios);
-				
+
 				if (data.usuarios.length === 0) {
 					showAlert('No hay usuarios disponibles en este departamento', 'info');
 				}
@@ -340,7 +469,7 @@ function populateUsuariosSelect(usuarios) {
 	usuarios.forEach(usuario => {
 		const option = document.createElement('option');
 		option.value = usuario.id_usuario;
-		// Mostrar indicador si es rol secundario 
+		// Mostrar indicador si es rol secundario
 		let displayText = `${usuario.nombre_completo} (ID: ${usuario.num_empleado})`;
 		if (usuario.es_rol_secundario) {
 			displayText += ' [Rol secundario]';
@@ -354,7 +483,7 @@ function populateUsuariosSelectMultiDept(usuarios) {
 	const select = document.getElementById('id_participante');
 	if (!select) return;
 	select.innerHTML = '<option value="0">Sin usuario asignado</option>';
-	// Agrupar usuarios por departamento 
+	// Agrupar usuarios por departamento
 	const usuariosPorDepto = {};
 	usuarios.forEach(usuario => {
 		const deptName = usuario.area || 'Sin departamento';
@@ -363,7 +492,7 @@ function populateUsuariosSelectMultiDept(usuarios) {
 		}
 		usuariosPorDepto[deptName].push(usuario);
 	});
-	// Crear optgroups por departamento 
+	// Crear optgroups por departamento
 	Object.keys(usuariosPorDepto).sort().forEach(deptName => {
 		const optgroup = document.createElement('optgroup');
 		optgroup.label = `📁 ${deptName}`;
@@ -386,12 +515,12 @@ function populateGrupalModal(usuarios) {
 	if (!container) return;
 	container.innerHTML = '';
 	if (usuarios.length === 0) {
-		container.innerHTML = ` 
-            <div class="text-center py-4 text-muted"> 
-                <i class="mdi mdi-account-off" style="font-size: 48px;"></i> 
-                <p class="mt-2">No hay usuarios disponibles en este departamento</p> 
-            </div> 
-        `;
+		container.innerHTML = `
+              <div class="text-center py-4 text-muted">
+                  <i class="mdi mdi-account-off" style="font-size: 48px;"></i>
+                  <p class="mt-2">No hay usuarios disponibles en este departamento</p>
+              </div>
+          `;
 		return;
 	}
 	usuarios.forEach(usuario => {
@@ -406,15 +535,15 @@ function populateGrupalModalMultiDept(usuarios) {
 	if (!container) return;
 	container.innerHTML = '';
 	if (usuarios.length === 0) {
-		container.innerHTML = ` 
-            <div class="text-center py-4 text-muted"> 
-                <i class="mdi mdi-account-off" style="font-size: 48px;"></i> 
-                <p class="mt-2">No hay usuarios disponibles en tus departamentos</p> 
-            </div> 
-        `;
+		container.innerHTML = `
+              <div class="text-center py-4 text-muted">
+                  <i class="mdi mdi-account-off" style="font-size: 48px;"></i>
+                  <p class="mt-2">No hay usuarios disponibles</p>
+              </div>
+          `;
 		return;
 	}
-	// Agrupar usuarios por departamento 
+	// Agrupar usuarios por departamento
 	const usuariosPorDepto = {};
 	usuarios.forEach(usuario => {
 		const deptName = usuario.area || 'Sin departamento';
@@ -423,24 +552,24 @@ function populateGrupalModalMultiDept(usuarios) {
 		}
 		usuariosPorDepto[deptName].push(usuario);
 	});
-	// Crear secciones por departamento 
+	// Crear secciones por departamento
 	Object.keys(usuariosPorDepto).sort().forEach(deptName => {
-		// Header del departamento 
+		// Header del departamento
 		const deptHeader = document.createElement('div');
 		deptHeader.className = 'department-header bg-light p-2 mb-2 rounded';
-		deptHeader.innerHTML = ` 
-            <strong class="text-success"> 
-                <i class="mdi mdi-folder-outline me-1"></i>${deptName} 
-            </strong> 
-            <span class="badge bg-secondary ms-2">${usuariosPorDepto[deptName].length} usuarios</span> 
-        `;
+		deptHeader.innerHTML = `
+              <strong class="text-success">
+                  <i class="mdi mdi-folder-outline me-1"></i>${deptName}
+              </strong>
+              <span class="badge bg-secondary ms-2">${usuariosPorDepto[deptName].length} usuarios</span>
+          `;
 		container.appendChild(deptHeader);
-		// Usuarios del departamento 
+		// Usuarios del departamento
 		usuariosPorDepto[deptName].forEach(usuario => {
 			const userItem = createUserItem(usuario, true);
 			container.appendChild(userItem);
 		});
-		// Separador 
+		// Separador
 		const separator = document.createElement('hr');
 		separator.className = 'my-3';
 		container.appendChild(separator);
@@ -459,35 +588,35 @@ function createUserItem(usuario, showDepartment = false) {
 	const iconClass = isSelected ? 'mdi-checkbox-marked-circle-outline' : 'mdi-checkbox-blank-circle-outline';
 	const iconColor = isSelected ? '#009b4a' : '#999';
 	const bgColor = isSelected ? '#ffffff' : 'transparent';
-	// Badge para rol secundario 
+	// insignia para rol secundario
 	const rolSecundarioBadge = usuario.es_rol_secundario ?
 		'<span class="badge bg-info ms-2" style="font-size: 10px;">Rol secundario</span>' :
 		'';
 	const rolInfo = usuario.nombre_rol ? usuario.nombre_rol : 'Sin rol asignado';
-	// Mostrar departamento si se solicita 
+	// Mostrar departamento si se solicita
 	const deptInfo = showDepartment && usuario.area ?
 		`<small class="text-muted d-block"><i class="mdi mdi-folder"></i> ${usuario.area}</small>` :
 		'';
-	userItem.innerHTML = ` 
-        <div class="d-flex align-items-start justify-content-between"> 
-            <div class="flex-grow-1"> 
-                <strong class="d-block mb-1"> 
-                    ${usuario.nombre_completo} 
-                    ${rolSecundarioBadge} 
-                </strong> 
-                <small class="text-muted d-block">Empleado #${usuario.num_empleado}</small> 
-                <small class="text-muted d-block">${usuario.e_mail}</small> 
-                ${deptInfo} 
-                <small class="text-muted d-block"> 
-                    <span class="ms-0"><i class="mdi mdi-account-key"></i> ${rolInfo}</span> 
-                </small> 
-            </div> 
-            <div class="ms-3 d-flex align-items-center"> 
-                <i class="mdi ${iconClass} usuario-selection-icon" style="font-size: 28px; color: ${iconColor}; transition: all 0.3s ease; cursor: pointer;"></i> 
-            </div> 
-        </div> 
-        <input type="hidden" class="usuario-id" value="${usuario.id_usuario}"> 
-    `;
+	userItem.innerHTML = `
+          <div class="d-flex align-items-start justify-content-between">
+              <div class="flex-grow-1">
+                  <strong class="d-block mb-1">
+                      ${usuario.nombre_completo}
+                      ${rolSecundarioBadge}
+                  </strong>
+                  <small class="text-muted d-block">Empleado #${usuario.num_empleado}</small>
+                  <small class="text-muted d-block">${usuario.e_mail}</small>
+                  ${deptInfo}
+                  <small class="text-muted d-block">
+                      <span class="ms-0"><i class="mdi mdi-account-key"></i> ${rolInfo}</span>
+                  </small>
+              </div>
+              <div class="ms-3 d-flex align-items-center">
+                  <i class="mdi ${iconClass} usuario-selection-icon" style="font-size: 28px; color: ${iconColor}; transition: all 0.3s ease; cursor: pointer;"></i>
+              </div>
+          </div>
+          <input type="hidden" class="usuario-id" value="${usuario.id_usuario}">
+      `;
 	if (isSelected) {
 		userItem.classList.add('selected');
 		userItem.style.backgroundColor = bgColor;
@@ -543,7 +672,7 @@ function setupUsuarioItemHandlers() {
 				const text = item.textContent.toLowerCase();
 				item.style.display = text.includes(searchTerm) ? 'block' : 'none';
 			});
-			// También ocultar/mostrar headers de departamento si están vacíos 
+			// También ocultar o mostrar headers de departamento si están vacíos
 			const deptHeaders = document.querySelectorAll('.department-header');
 			deptHeaders.forEach(header => {
 				const nextItems = [];
@@ -573,19 +702,20 @@ function setupGrupalHandlers() {
 	const tipoProyectoRadios = document.querySelectorAll('input[name="id_tipo_proyecto"]');
 	const participanteField = document.getElementById('id_participante');
 	const btnSeleccionarGrupo = document.getElementById('btnSeleccionarGrupo');
-	// Handler para el botón "Grupo" 
+	// Handler para el botón "Grupo"
 	if (btnSeleccionarGrupo && !btnSeleccionarGrupo.hasListener) {
 		btnSeleccionarGrupo.addEventListener('click', function(e) {
 			e.preventDefault();
 			e.stopPropagation();
-			if (!userState.departmentId) {
+			//si es libre entonces no se requiere departamento
+			if (!userState.isLibre && !userState.departmentId) {
 				showAlert('Por favor, selecciona un departamento primero', 'warning');
 				return;
 			}
-			// Cambiar a proyecto grupal 
+			// Cambiar a proyecto grupal
 			const grupalRadio = document.querySelector('input[name="id_tipo_proyecto"][value="1"]');
 			if (grupalRadio) grupalRadio.checked = true;
-			// Mostrar modal 
+			// Mostrar modal
 			if (!grupalState.usuariosModal) {
 				const modalEl = document.getElementById('grupalUsuariosModal');
 				if (modalEl) {
@@ -605,8 +735,8 @@ function setupGrupalHandlers() {
 	}
 	tipoProyectoRadios.forEach(radio => {
 		radio.addEventListener('change', function() {
-			if (this.value == '1') { // Grupal 
-				if (!userState.departmentId) {
+			if (this.value == '1') { // Grupal
+				if (!userState.isLibre && !userState.departmentId) {
 					showAlert('Por favor, selecciona un departamento primero', 'warning');
 					const indivRadio = document.querySelector('input[name="id_tipo_proyecto"][value="2"]');
 					if (indivRadio) indivRadio.checked = true;
@@ -625,7 +755,7 @@ function setupGrupalHandlers() {
 					participanteField.disabled = true;
 					participanteField.value = '';
 				}
-			} else { // Individual 
+			} else { // Individual
 				grupalState.selectedUsers = [];
 				document.querySelectorAll('.usuario-item').forEach(item => {
 					const icon = item.querySelector('.usuario-selection-icon');
@@ -675,11 +805,31 @@ function cargarProyectoParaEditar(projectId) {
 				const descripcionEl = document.getElementById('descripcion');
 				if (nombreEl) nombreEl.value = proyecto.nombre || '';
 				if (descripcionEl) descripcionEl.value = proyecto.descripcion || '';
-				// Establecer el departamento del proyecto 
-				if (proyecto.id_departamento) {
+
+				const esLibreCheckbox = document.getElementById('esLibre');
+				const esLibreBox = document.getElementById('esLibreBox');
+				editMode.originalEsLibre = proyecto.es_libre === 1 ? 1 : 0;
+
+				if (esLibreCheckbox) {
+					esLibreCheckbox.checked = (proyecto.es_libre === 1);
+					//bloquear el checkbox osea no se puede cambiar el tipo cuando se edita
+					esLibreCheckbox.disabled = true;
+					if (esLibreBox) {
+						esLibreBox.style.cursor = 'not-allowed';
+						esLibreBox.style.opacity = '0.85';
+						//blockear click en etiqueta tambien
+						esLibreBox.addEventListener('click', function(e) {
+							e.preventDefault();
+						}, true);
+					}
+					applyLibreState(proyecto.es_libre === 1);
+				}
+
+				// Establecer el departamento del proyecto (only if NOT libre)
+				if (!proyecto.es_libre && proyecto.id_departamento) {
 					const deptSelect = document.getElementById('id_departamento');
 					const hiddenInput = document.getElementById('id_departamento_hidden');
-					// Verificar si el usuario tiene acceso a este departamento 
+					// Verificar si el usuario tiene acceso a este departamento
 					const deptPermitido = userState.userDepartments.find(
 						d => d.id_departamento === proyecto.id_departamento
 					);
@@ -692,7 +842,7 @@ function cargarProyectoParaEditar(projectId) {
 						showAlert('Advertencia: Este proyecto pertenece a un departamento al que no tienes acceso', 'warning');
 					}
 				}
-				// Fechas 
+				// Fechas
 				const fechaCreacionEl = document.getElementById('fecha_creacion');
 				const fechaCumplimientoEl = document.getElementById('fecha_cumplimiento');
 				if (proyecto.fecha_inicio && fechaCreacionEl) {
@@ -709,18 +859,18 @@ function cargarProyectoParaEditar(projectId) {
 				if (progresoEl) progresoEl.value = proyecto.progreso || 0;
 				if (arEl) arEl.value = proyecto.ar || '';
 				if (estadoEl) estadoEl.value = proyecto.estado || 'pendiente';
-				// Tipo de proyecto 
+				// Tipo de proyecto
 				const tipoValue = proyecto.id_tipo_proyecto == 1 ? '1' : '2';
 				const tipoRadio = document.querySelector(`input[name="id_tipo_proyecto"][value="${tipoValue}"]`);
 				if (tipoRadio) tipoRadio.checked = true;
-				// Participante individual 
+				// Participante individual
 				setTimeout(() => {
 					const participanteEl = document.getElementById('id_participante');
 					if (proyecto.id_participante && participanteEl) {
 						participanteEl.value = proyecto.id_participante;
 					}
 				}, 600);
-				// Si es grupal, cargar los usuarios asignados 
+				// Si es grupal, cargar los usuarios asignados
 				if (tipoValue == '1' && proyecto.usuarios_asignados) {
 					grupalState.selectedUsers = proyecto.usuarios_asignados.map(u => u.id_usuario);
 					setTimeout(() => {
@@ -740,7 +890,7 @@ function cargarProyectoParaEditar(projectId) {
 						updateSelectedCount();
 					}, 700);
 				}
-				// Permisos de edición 
+				// Permisos de edición
 				const puedeEditarOtros = proyecto.puede_editar_otros == 1 ? '1' : '0';
 				const permisoRadio = document.querySelector(`input[name="puede_editar_otros"][value="${puedeEditarOtros}"]`);
 				if (permisoRadio) permisoRadio.checked = true;
@@ -819,7 +969,8 @@ function crearProyecto() {
 		form.classList.add('was-validated');
 		return;
 	}
-	if (!userState.departmentId) {
+	//requerimeintos de departamento solo aplican cuando no es libre
+	if (!userState.isLibre && !userState.departmentId) {
 		showAlert('Error: Debes seleccionar un departamento', 'danger');
 		return;
 	}
@@ -832,8 +983,14 @@ function crearProyecto() {
 		btnCrear.disabled = true;
 		btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creando...';
 	}
-	// Asegurar que el departamento correcto esté en el formData 
-	formData.set('id_departamento', userState.departmentId);
+	// Asegurar que el departamento correcto esté en el formData
+	if (userState.isLibre) {
+		formData.set('es_libre', '1');
+		formData.delete('id_departamento');
+	} else {
+		formData.set('es_libre', '0');
+		formData.set('id_departamento', userState.departmentId);
+	}
 	if (archivoInput && archivoInput.files.length > 0) {
 		uploadFile(archivoInput.files[0], function(filePath) {
 			if (filePath) {
@@ -873,7 +1030,7 @@ function editarProyecto() {
 		form.classList.add('was-validated');
 		return;
 	}
-	if (!userState.departmentId) {
+	if (!userState.isLibre && !userState.departmentId) {
 		showAlert('Error: Debes seleccionar un departamento', 'danger');
 		return;
 	}
@@ -886,7 +1043,13 @@ function editarProyecto() {
 		btnCrear.disabled = true;
 		btnCrear.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Actualizando...';
 	}
-	formData.set('id_departamento', userState.departmentId);
+	//siempre enviar el valor original de es lirbe
+	formData.set('es_libre', editMode.originalEsLibre === 1 ? '1' : '0');
+	if (userState.isLibre) {
+		formData.delete('id_departamento');
+	} else {
+		formData.set('id_departamento', userState.departmentId);
+	}
 	if (archivoInput && archivoInput.files.length > 0) {
 		uploadFile(archivoInput.files[0], function(filePath) {
 			if (filePath) {
@@ -922,9 +1085,9 @@ function uploadFile(file, callback) {
 	const fileFormData = new FormData();
 	fileFormData.append('archivo', file);
 	fetch('../php/upload_file.php', {
-			method: 'POST',
-			body: fileFormData
-		})
+		method: 'POST',
+		body: fileFormData
+	})
 		.then(response => {
 			if (!response.ok) {
 				throw new Error('Network response was not ok');
@@ -952,9 +1115,9 @@ function submitForm(formData, btnCrear, action) {
 		formData.append('id_proyecto', editMode.projectId);
 	}
 	fetch(endpoint, {
-			method: 'POST',
-			body: formData
-		})
+		method: 'POST',
+		body: formData
+	})
 		.then(response => {
 			if (!response.ok) {
 				throw new Error('Network response was not ok');
@@ -1001,10 +1164,10 @@ function showAlert(message, type) {
 	const alertDiv = document.createElement('div');
 	alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
 	alertDiv.setAttribute('role', 'alert');
-	alertDiv.innerHTML = ` 
-        ${message} 
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> 
-    `;
+	alertDiv.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
 	alertContainer.innerHTML = '';
 	alertContainer.appendChild(alertDiv);
 	setTimeout(function() {

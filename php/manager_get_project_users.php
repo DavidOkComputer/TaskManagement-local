@@ -62,11 +62,11 @@ try {
     $role_stmt->close();
 
     // Obtener información del proyecto
-    $stmt = $conn->prepare(" 
-        SELECT id_tipo_proyecto, id_participante, id_departamento, id_creador 
-        FROM tbl_proyectos 
-        WHERE id_proyecto = ? 
-    ");
+    $stmt = $conn->prepare("
+      SELECT id_tipo_proyecto, id_participante, id_departamento, id_creador, es_libre
+      FROM tbl_proyectos
+      WHERE id_proyecto = ?
+      ");
 
     if (!$stmt) {
         throw new Exception("Error al preparar la consulta: " . $conn->error);
@@ -84,11 +84,12 @@ try {
     }
 
     $proyecto = $result->fetch_assoc();
-    $id_tipo_proyecto = intval($proyecto["id_tipo_proyecto"]);
-    $id_participante_individual = $proyecto["id_participante"];
-    $id_departamento_proyecto = intval($proyecto["id_departamento"]);
-    $id_creador_proyecto = intval($proyecto["id_creador"]);
-    $stmt->close();
+      $id_tipo_proyecto = intval($proyecto["id_tipo_proyecto"]);
+      $id_participante_individual = $proyecto["id_participante"];
+      $id_departamento_proyecto = intval($proyecto["id_departamento"]);
+      $id_creador_proyecto = intval($proyecto["id_creador"]);
+      $es_libre = intval($proyecto["es_libre"] ?? 0);
+      $stmt->close();
     $has_access = false;
 
     // Admin tiene acceso a todo
@@ -282,10 +283,11 @@ try {
     }
 
     $response["success"] = true;
-    $response["usuarios"] = $usuarios;
-    $response["tipo_proyecto"] = $id_tipo_proyecto;
-    $response["total_usuarios"] = count($usuarios);
-    $response["id_departamento"] = $id_departamento_proyecto;
+      $response["usuarios"] = $usuarios;
+      $response["tipo_proyecto"] = $id_tipo_proyecto;
+      $response["es_libre"] = $es_libre;
+      $response["total_usuarios"] = count($usuarios);
+      $response["id_departamento"] = $id_departamento_proyecto;
 } catch (Exception $e) {
     $response["message"] =
         "Error al cargar usuarios del proyecto: " . $e->getMessage();

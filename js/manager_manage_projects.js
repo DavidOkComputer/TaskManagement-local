@@ -3,7 +3,7 @@
 const Config = {
 	API_ENDPOINTS: {
 		DELETE: '../php/delete_project.php',
-		GET_PROJECT_USERS: '../php/get_project_users.php',
+		GET_PROJECT_USERS: '../php/get_project_user.php',
 		UPDATE_STATUS: '../php/update_project_status.php'
 	}
 };

@@ -61,13 +61,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button> 
                         </div> 
                         <div class="modal-body"> 
-                            <!-- Libre project indicator (shown only when the selected project is Libre) -->
-                            <div id="taskModalLibreIndicator" style="display: none; background-color: #d1ecf1; border-left: 4px solid #17a2b8; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; color: #0c5460; font-size: 0.9rem;">
-                                <span style="background-color: #17a2b8; color: #fff; padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 500; display: inline-flex; align-items: center; gap: 4px;">
-                                    <i class="mdi mdi-earth"></i> Proyecto Libre
-                                </span>
-                                <span class="ms-2">Las tareas creadas en este proyecto <strong>no cuentan para estadísticas</strong>.</span>
-                            </div>
                             <form id="addTaskForm"> 
                                 <div class="mb-3"> 
                                     <label for="taskName" class="form-label">Nombre de la Tarea</label> 

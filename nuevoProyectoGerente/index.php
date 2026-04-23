@@ -206,7 +206,7 @@ $user_id = $_SESSION['user_id'];
                 <!-- Alert messages -->
                 <div id="alertContainer"></div>
 
-                <!-- Project Form -->
+                <!--Form -->
                 <form id="proyectoForm">
                   <div class="row">
                     <div class="col-md-6">
@@ -242,7 +242,7 @@ $user_id = $_SESSION['user_id'];
                   </div>
 
                   <div class="row">
-                    <!-- Department field - enabled for managers with multiple departments -->
+                    <!--campo de departamento para managers con diferentes departamentos-->
                     <div class="col-md-6">
                       <div class="form-group row">
                         <label class="col-sm-3 col-form-label">Departamento<span class="text-danger">*</span></label>
@@ -253,7 +253,7 @@ $user_id = $_SESSION['user_id'];
                                   style="background-color: #ffffff;">
                             <option value="">Cargando departamentos...</option>
                           </select>
-                          <!-- Hidden field para enviar el ID real del departamento -->
+                          <!-- campo escondido para enviar el ID real del departamento -->
                           <input type="hidden" id="id_departamento_hidden" name="id_departamento">
                           <small class="form-text text-muted">
                             <i class="mdi mdi-information-outline"></i> 
@@ -311,9 +311,7 @@ $user_id = $_SESSION['user_id'];
                       </div>
                     </div>
                   </div>
-
                   <div class="row">
-                    <!--add the permisos de edicion here colmd6-->
                     <div class="col-md-6">
                       <div class="form-group row">
                         <label class="col-sm-3 col-form-label">Permisos de edición <span class="text-danger">*</span></label>
@@ -379,7 +377,41 @@ $user_id = $_SESSION['user_id'];
                         </div>
                       </div>
                     </div>
-                  </div>
+                  <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group row">
+                                                    <label class="col-sm-3 col-form-label">
+                                                        Alcance del proyecto
+                                                        <span id="libreBadgePreview" style="display: none; background-color: #009b4a; color: #fff; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; margin-left: 8px;">
+                                                            <i class="mdi mdi-earth"></i> Libre
+                                                        </span>
+                                                    </label>
+                                                    <div class="col-sm-9">
+                                                        <label for="esLibre" id="esLibreBox" style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; border: 2px solid #009b4a; border-radius: 8px; background-color: #f8feff; cursor: pointer; transition: background-color 0.2s; user-select: none;">
+                                                            <input type="checkbox"
+                                                                   name="es_libre"
+                                                                   id="esLibre"
+                                                                   value="1"
+                                                                   style="width: 18px; height: 18px; cursor: pointer; flex-shrink: 0; background:#009b4a"
+                                                                   >
+                                                            <i class="mdi mdi-earth" style="font-size: 22px; color: #009b4a;"></i>
+                                                            <div style="flex-grow: 1;">
+                                                                <strong style="color: #000000; font-size: 1rem;">Proyecto Libre</strong>
+                                                                <div style="font-size: 0.85rem; color: #555; margin-top: 2px;">
+                                                                    Multidepartamental — permite asignar a usuarios de cualquier departamento. No cuenta para estadísticas del sistema.
+                                                                </div>
+                                                            </div>
+                                                        </label>
+
+                                                        <div id="libreNotice" style="display: none; background-color: #e9ecef; border-left: 4px solid #009b4a; padding: 10px 15px; border-radius: 4px; margin-top: 10px; color: #000000; font-size: 0.9rem;">
+                                                            <i class="mdi mdi-information-outline me-1"></i>
+                                                            <strong>Modo Proyecto Libre activo:</strong>
+                                                            el campo Departamento está deshabilitado. Todos los usuarios del sistema están disponibles para asignación.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                   <div class="row">
                     <div class="col-md-6">
                       <div class="form-group row">
@@ -417,7 +449,6 @@ $user_id = $_SESSION['user_id'];
                       </div>
                     </div>
                   </div>
-                  <!-- Hidden fields -->
                   <input type="hidden" id="id_creador" name="id_creador" value="<?php echo htmlspecialchars($user_id); ?>"/>
                   <input type="hidden" id="progreso" name="progreso" value="0"/>
                   <input type="hidden" id="estado" name="estado" value="pendiente"/>
@@ -429,8 +460,7 @@ $user_id = $_SESSION['user_id'];
                       <button type="button" class="btn btn-light" id="btnCancelar">Cancelar</button>
                     </div>
                   </div>
-                  <!-- MODAL FOR GROUP PROJECT USER SELECTION -->
-                  <!-- Modal for Group Project User Selection -->
+                  <!-- modal de seleccion de grupo-->
                   <div class="modal fade" id="grupalUsuariosModal" tabindex="-1" aria-labelledby="grupalUsuariosLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg">
                       <div class="modal-content">
@@ -452,7 +482,7 @@ $user_id = $_SESSION['user_id'];
                             </div>
                           </div>
                           <div id="usuariosListContainer" style="max-height: 400px; overflow-y: auto;">
-                            <!-- Users will be populated here -->
+                            <!-- aqui se llenan los usuarios -->
                           </div>
                         </div>
                         <div class="modal-footer">

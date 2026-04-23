@@ -85,7 +85,7 @@ $user_id = $_SESSION['user_id'];
                           <i class="mdi mdi-check-all me-1"></i>Marcar todas como leídas
                       </a>
                   </div>
-                  <!-- Contenedor de notificaciones (se llena dinámicamente) -->
+                  <!-- Contenedor de notificaciones-->
                   <div id="notificationsContainer" style="max-height: 350px; overflow-y: auto;">
                       <!-- Loading state -->
                       <div class="notification-loading py-4 text-center">
@@ -227,7 +227,7 @@ $user_id = $_SESSION['user_id'];
                       </a>
                     </div>
                   </div>
-                  <!-- Rows Per Page Selector -->
+                  <!--seletor de registros por pagina -->
                   <div class="rows-per-page-control mb-3 d-flex align-items-center gap-2">
                     <label for="rowsPerPageSelect" class="form-label mb-0">Filas por página:</label>
                     <select id="rowsPerPageSelect" class="form-select form-select-sm" style="width: auto;">
@@ -283,9 +283,9 @@ $user_id = $_SESSION['user_id'];
                     </table>
                   </div>
 
-                  <!-- Pagination Controls -->
+                  <!--controles de paginacion -->
                   <div class="pagination-container mt-4">
-                    <!-- Pagination info and buttons are dynamically inserted here -->
+                    <!-- aqui se cargan dinamicamente los botones de paginacion-->
                   </div>
                 </div>
               </div>
