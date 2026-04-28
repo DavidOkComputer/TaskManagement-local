@@ -1,3 +1,5 @@
+//manage_projects.js
+
 const Config = {
   API_ENDPOINTS: {
     DELETE: "../php/delete_project.php",
@@ -34,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
   setupSearch();
   setupSorting();
   setupPagination();
-  setupStatusFilter(); // Nueva función para el filtro de estado
+  setupStatusFilter();
   createProjectUsersModal();
   checkURLFilters(); // Verificar filtros en URL antes de cargar
   cargarProyectos();
@@ -462,7 +464,7 @@ function updatePaginationControls() {
 
   if (startPage > 1) {
     const firstBtn = document.createElement("button");
-    firstBtn.className = "btn btn-sm btn-outline-secondary page-btn";
+    firstBtn.className = "btn btn-sm btn-secondary page-btn";
     firstBtn.textContent = "1";
     firstBtn.addEventListener("click", () => changePage(1));
     pageButtonsContainer.appendChild(firstBtn);
@@ -476,7 +478,7 @@ function updatePaginationControls() {
 
   for (let i = startPage; i <= endPage; i++) {
     const pageBtn = document.createElement("button");
-    pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? "btn-primary" : "btn-outline-secondary"}`;
+    pageBtn.className = `btn btn-sm page-btn ${i === currentPage ? "btn-primary" : "btn-secondary"}`;
     pageBtn.textContent = i;
     pageBtn.addEventListener("click", () => changePage(i));
     pageButtonsContainer.appendChild(pageBtn);
@@ -490,7 +492,7 @@ function updatePaginationControls() {
       pageButtonsContainer.appendChild(ellipsis);
     }
     const lastBtn = document.createElement("button");
-    lastBtn.className = "btn btn-sm btn-outline-secondary page-btn";
+    lastBtn.className = "btn btn-sm btn-secondary page-btn";
     lastBtn.textContent = totalPages;
     lastBtn.addEventListener("click", () => changePage(totalPages));
     pageButtonsContainer.appendChild(lastBtn);
@@ -550,7 +552,6 @@ function displayProjects(proyectos) {
 function createProjectRow(proyecto, index) {
   const row = document.createElement("tr");
 
-  // ★ Store project id on the row for project_task_panel.js
   row.dataset.projectId = proyecto.id_proyecto;
 
   const statusColor = getStatusColor(proyecto.estado);

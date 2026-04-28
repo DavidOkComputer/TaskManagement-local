@@ -1,5 +1,5 @@
 <?php
-// get_projects.php - Obtiene todos los proyectos con conteo de tareas
+// get_projects.php para obtener todos los proyectos con conteo de tareas
 
 header('Content-Type: application/json');
 require_once 'db_config.php';

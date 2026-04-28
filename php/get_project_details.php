@@ -39,6 +39,7 @@ try {
             p.id_departamento,
             p.id_creador,
             p.id_participante,
+            p.puede_editar_otros,
             d.nombre as departamento_nombre,
             tp.nombre as tipo_proyecto_nombre,
             CONCAT(creador.nombre, ' ', creador.apellido) as creador_nombre,
@@ -220,6 +221,7 @@ try {
             'id' => (int)$proyecto['id_creador'],
             'nombre' => $proyecto['creador_nombre'] ?? 'Desconocido'
         ],
+        'puede_editar_otros' => (int)$proyecto['puede_editar_otros'],
         'participante' => $proyecto['id_tipo_proyecto'] == 1 ? null : [
             'id' => (int)$proyecto['id_participante'],
             'nombre' => $proyecto['participante_nombre'],

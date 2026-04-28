@@ -20,7 +20,7 @@ $user_id       = $_SESSION['user_id'];
     <link rel="stylesheet" href="../css/vertical-layout-light/style.css">
     <link rel="shortcut icon" href="../images/Nidec Institutional Logo_Original Version.png" />
     <style>
-        /* ── Split modal layout ── */
+        /*layout del modal dividido*/
         .split-modal-body {
             display: flex;
             gap: 0;
@@ -30,7 +30,7 @@ $user_id       = $_SESSION['user_id'];
             overflow: hidden;
         }
 
-        /* LEFT PANEL — project details */
+        /*panel izuqierdo detalles del proyecto*/
         .split-panel-left {
             width: 52%;
             flex-shrink: 0;
@@ -40,10 +40,10 @@ $user_id       = $_SESSION['user_id'];
             background: #f8fafc;
         }
 
-        /* RIGHT PANEL — task panel */
+        /*panel derecho tareas*/
         .split-panel-right {
             flex: 1;
-            overflow: hidden;           /* panel itself never scrolls */
+            overflow: hidden;
             padding: 20px 22px 14px;
             background: #fff;
             display: flex;
@@ -51,7 +51,7 @@ $user_id       = $_SESSION['user_id'];
             min-width: 0;
         }
 
-        /* Section titles inside panels */
+        /*titulos de seccion dentro de los paneles*/
         .split-section-title {
             font-size: 0.72rem;
             font-weight: 700;
@@ -63,7 +63,7 @@ $user_id       = $_SESSION['user_id'];
         }
         .split-section-title:first-child { margin-top: 0; }
 
-        /* Compact info table */
+        /*tabla de info compacta*/
         .detail-info-table td {
             font-size: 0.82rem;
             padding: 3px 6px 3px 0;
@@ -77,7 +77,7 @@ $user_id       = $_SESSION['user_id'];
         }
         .detail-info-table td:last-child { font-weight: 500; }
 
-        /* Compact stat cards */
+        /*tarjetas de estadisticas compactas*/
         .split-stat-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -104,7 +104,7 @@ $user_id       = $_SESSION['user_id'];
             margin-top: 3px;
         }
 
-        /* Task list inside right panel */
+        /*lista de tareas en el panel derecho*/
         .rp-task-list {
             list-style: none;
             padding: 0;
@@ -142,7 +142,7 @@ $user_id       = $_SESSION['user_id'];
         }
         .rp-task-meta .overdue-text { color: #c0392b; font-weight: 600; }
 
-        /* Add-task inline form */
+        /*form para agregar tareas*/
         .rp-add-task-form {
             border-top: 1px solid #e4e9f0;
             padding-top: 14px;
@@ -161,7 +161,7 @@ $user_id       = $_SESSION['user_id'];
         }
         .rp-form-row .full { grid-column: 1 / -1; }
 
-        /* Usuarios asignados compact table */
+        /*tabla compacta de usuarios asignados*/
         .split-users-table {
             font-size: 0.78rem;
             width: 100%;
@@ -182,7 +182,7 @@ $user_id       = $_SESSION['user_id'];
             vertical-align: middle;
         }
 
-        /* Task-filter tabs */
+        /*pestanias de filtros de tareas*/
         .rp-filter-tabs {
             display: flex;
             gap: 4px;
@@ -206,11 +206,11 @@ $user_id       = $_SESSION['user_id'];
             color: #fff;
         }
 
-        /* Make rows clickable */
+        /*se puede hacer click en los registros*/
         #proyectosTableBody tr { cursor: pointer; }
         #proyectosTableBody tr:hover { background-color: #f0fff4; }
 
-        /* Progress bar compact */
+        /*barra de progreso compacta*/
         .split-progress {
             height: 10px;
             border-radius: 5px;
@@ -223,7 +223,7 @@ $user_id       = $_SESSION['user_id'];
             transition: width 0.4s ease;
         }
 
-        /* Scrollbar styling */
+        /*estilo de la barra de escroll*/
         .split-panel-left::-webkit-scrollbar,
         .split-panel-right::-webkit-scrollbar,
         #rpTaskListWrapper::-webkit-scrollbar { width: 4px; }
@@ -237,7 +237,7 @@ $user_id       = $_SESSION['user_id'];
             border-radius: 2px;
         }
 
-        /* Libre badge */
+        /*insignia de proyecto libre*/
         .libre-badge {
             background: #009b4a;
             color: #fff;
@@ -257,7 +257,7 @@ $user_id       = $_SESSION['user_id'];
 <body>
 <div class="container-scroller">
 
-    <!-- NAVBAR -->
+    <!--barra de navegacion-->
     <nav class="navbar default-layout col-lg-12 col-12 p-0 fixed-top d-flex align-items-top flex-row">
         <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
             <div class="me-3">
@@ -553,7 +553,7 @@ $user_id       = $_SESSION['user_id'];
                     <span id="splitModalStatusBadge" class="badge ms-2">–</span>
                 </div>
                 <div class="d-flex gap-2 ms-auto">
-                    <button type="button" class="btn btn-sm btn-outline-light"
+                    <button type="button" class="btn btn-sm btn-light"
                             id="splitBtnEdit" title="Editar proyecto">
                         <i class="mdi mdi-pencil"></i> Editar
                     </button>
@@ -562,19 +562,19 @@ $user_id       = $_SESSION['user_id'];
                 </div>
             </div>
 
-            <!-- Modal body — split layout -->
+            <!--cuerpo del modal dividido-->
             <div class="split-modal-body" id="splitModalBody">
 
-                <!-- ── LEFT: project details ── -->
+                <!--a la izquierda los detalles del proyecto -->
                 <div class="split-panel-left" id="splitLeftPanel">
-                    <!-- Loading -->
+                    <!--cargando-->
                     <div id="splitLeftLoading" class="text-center py-5">
                         <div class="spinner-border text-success" role="status">
                             <span class="visually-hidden">Cargando...</span>
                         </div>
                         <p class="mt-3 text-muted small">Cargando detalles...</p>
                     </div>
-                    <!-- Content (hidden until loaded) -->
+                    <!--contenido escondido hasta que cargue-->
                     <div id="splitLeftContent" style="display:none;">
 
                         <p class="split-section-title">Estadísticas de Tareas</p>
@@ -634,7 +634,7 @@ $user_id       = $_SESSION['user_id'];
                             </tr>
                         </table>
 
-                        <!-- Grupo users (shown only for grupal) -->
+                        <!--usuarios de grupo-->
                         <div id="spl-users-section" style="display:none;">
                             <p class="split-section-title">
                                 Usuarios Asignados
@@ -655,10 +655,10 @@ $user_id       = $_SESSION['user_id'];
                             </div>
                         </div>
 
-                    </div><!-- /splitLeftContent -->
-                </div><!-- /split-panel-left -->
+                    </div>
+                </div><!-- dividir el panel parte izquierda-->
 
-                <!-- ── RIGHT: task panel ── -->
+                <!--derecha panel de tareas-->
                 <div class="split-panel-right" id="splitRightPanel">
 
                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -671,7 +671,7 @@ $user_id       = $_SESSION['user_id'];
                         </div>
                     </div>
 
-                    <!-- Task list -->
+                    <!--lista de tareas-->
                     <div id="rpTaskListWrapper"
                          style="flex:1; min-height:0; overflow-y:auto; margin-bottom:8px;">
                         <div id="rpTaskLoading" class="text-center py-4" style="display:none;">
@@ -685,7 +685,7 @@ $user_id       = $_SESSION['user_id'];
                         </ul>
                     </div>
 
-                    <!-- Add-task form -->
+                    <!--form para crear nuevas tareas-->
                     <div class="rp-add-task-form flex-shrink-0" id="rpAddTaskForm" style="display:none;">
                         <p class="split-section-title">
                             <i class="mdi mdi-plus-circle-outline text-success me-1"></i>
@@ -693,20 +693,20 @@ $user_id       = $_SESSION['user_id'];
                         </p>
                         <div id="rpTaskFormAlert" class="alert py-2 small" style="display:none;"></div>
 
-                        <!-- Row 1: name (full width) -->
+                        <!--primera fila nombre completo-->
                         <div class="mb-2">
                             <input type="text" class="form-control" id="rpTaskName"
                                    maxlength="100" placeholder="Nombre de la tarea *">
                         </div>
 
-                        <!-- Row 2: description (full width) -->
+                        <!--segunda fila descripcion completa-->
                         <div class="mb-2">
                             <textarea class="form-control" id="rpTaskDesc" rows="2"
                                       maxlength="250"
                                       placeholder="Descripción *"></textarea>
                         </div>
 
-                        <!-- Row 3: date + status -->
+                        <!--fecha y estado-->
                         <div class="rp-form-row mb-2">
                             <div>
                                 <label class="form-label small mb-1">Fecha vencimiento</label>
@@ -721,7 +721,7 @@ $user_id       = $_SESSION['user_id'];
                             </div>
                         </div>
 
-                        <!-- Row 4: assignee (full width) -->
+                        <!--asignados-->
                         <div class="mb-2">
                             <label class="form-label small mb-1">Asignar a</label>
                             <select class="form-select" id="rpTaskAssignee">
@@ -732,7 +732,7 @@ $user_id       = $_SESSION['user_id'];
                             </small>
                         </div>
 
-                        <!-- Submit -->
+                        <!--subir-->
                         <div class="d-flex gap-2">
                             <button class="btn btn-success btn-sm flex-grow-1" id="rpSaveTaskBtn">
                                 <span class="btn-text">
@@ -741,23 +741,23 @@ $user_id       = $_SESSION['user_id'];
                                 <span class="spinner-border spinner-border-sm"
                                       style="display:none;" role="status"></span>
                             </button>
-                            <button class="btn btn-outline-secondary btn-sm" id="rpCancelTaskBtn">
+                            <button class="btn btn-secondary btn-sm" id="rpCancelTaskBtn">
                                 Cancelar
                             </button>
                         </div>
-                    </div><!-- /rpAddTaskForm -->
+                    </div>
 
-                    <!-- "Add task" toggle button (shown when form is hidden) -->
+                    <!--boton de agregar tarea-->
                     <div class="pt-1 flex-shrink-0" id="rpAddTaskToggle">
                         <button class="btn btn-outline-success btn-sm w-100" id="rpShowTaskFormBtn">
                             <i class="mdi mdi-plus me-1"></i>Agregar tarea
                         </button>
                     </div>
 
-                </div><!-- /split-panel-right -->
-            </div><!-- /split-modal-body -->
+                </div><!--dividir el panel parte derecha-->
+            </div><!--cuerpo del modal dividido-->
 
-            <!-- Modal footer -->
+            <!--pie de pagina del modal-->
             <div class="modal-footer py-2">
                 <small class="text-muted me-auto" id="splitModalPermNote" style="display:none;">
                     <i class="mdi mdi-lock text-warning me-1"></i>
@@ -770,7 +770,7 @@ $user_id       = $_SESSION['user_id'];
             </div>
         </div>
     </div>
-</div><!-- /projectSplitModal -->
+</div><!--modal dividido-->
 
 <!-- scripts -->
 <script src="../vendors/js/vendor.bundle.base.js"></script>
@@ -789,7 +789,7 @@ $user_id       = $_SESSION['user_id'];
 <script src="../js/project_task_panel.js"></script>
 <script src="../js/notifications.js"></script>
 <script src="../js/session_timeout.js"></script>
-<!-- Pass current user id to JS -->
+<!--enviar id de usuario actual al js-->
 <script>
     window.APP_CONFIG = {
         userId: <?php echo intval($user_id); ?>,

@@ -38,6 +38,238 @@ $user_id = $_SESSION[ 'user_id']; ?>
         ease; } .sortable-header:hover { background-color: #f8f9fa; } .rows-per-page-control
         { margin-bottom: 15px; } .badge { font-size: 0.75rem; padding: 0.35em 0.65em;
         }
+          /*layout del modal dividido*/
+          .split-modal-body {
+              display: flex;
+              gap: 0;
+              padding: 0;
+              min-height: 520px;
+              max-height: 78vh;
+              overflow: hidden;
+          }
+
+          /*panel izuqierdo detalles del proyecto*/
+          .split-panel-left {
+              width: 52%;
+              flex-shrink: 0;
+              border-right: 1px solid #e4e9f0;
+              overflow-y: auto;
+              padding: 20px 22px;
+              background: #f8fafc;
+          }
+
+          /*panel derecho tareas*/
+          .split-panel-right {
+              flex: 1;
+              overflow: hidden;
+              padding: 20px 22px 14px;
+              background: #fff;
+              display: flex;
+              flex-direction: column;
+              min-width: 0;
+          }
+
+          /*titulos de seccion dentro de los paneles*/
+          .split-section-title {
+              font-size: 0.72rem;
+              font-weight: 700;
+              letter-spacing: 0.07em;
+              text-transform: uppercase;
+              color: #8592a3;
+              margin-bottom: 10px;
+              margin-top: 14px;
+          }
+          .split-section-title:first-child { margin-top: 0; }
+
+          /*tabla de info compacta*/
+          .detail-info-table td {
+              font-size: 0.82rem;
+              padding: 3px 6px 3px 0;
+              vertical-align: top;
+          }
+          .detail-info-table td:first-child {
+              color: #8592a3;
+              white-space: nowrap;
+              padding-right: 12px;
+              width: 38%;
+          }
+          .detail-info-table td:last-child { font-weight: 500; }
+
+          /*tarjetas de estadisticas compactas*/
+          .split-stat-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 8px;
+              margin-bottom: 14px;
+          }
+          .split-stat-card {
+              background: #fff;
+              border: 1px solid #e4e9f0;
+              border-radius: 8px;
+              padding: 10px 12px;
+              text-align: center;
+          }
+          .split-stat-card .stat-num {
+              font-size: 1.4rem;
+              font-weight: 700;
+              line-height: 1;
+          }
+          .split-stat-card .stat-lbl {
+              font-size: 0.68rem;
+              color: #8592a3;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              margin-top: 3px;
+          }
+
+          /*lista de tareas en el panel derecho*/
+          .rp-task-list {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+              flex: 1;
+          }
+          .rp-task-item {
+              display: flex;
+              align-items: flex-start;
+              gap: 10px;
+              padding: 9px 0;
+              border-bottom: 1px solid #f0f3f7;
+          }
+          .rp-task-item:last-child { border-bottom: none; }
+          .rp-task-icon {
+              font-size: 20px;
+              flex-shrink: 0;
+              cursor: pointer;
+              margin-top: 1px;
+              transition: color 0.15s;
+          }
+          .rp-task-icon:hover { opacity: 0.7; }
+          .rp-task-body { flex: 1; min-width: 0; }
+          .rp-task-name {
+              font-size: 0.83rem;
+              font-weight: 600;
+              margin: 0 0 2px 0;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+          }
+          .rp-task-meta {
+              font-size: 0.72rem;
+              color: #8592a3;
+          }
+          .rp-task-meta .overdue-text { color: #c0392b; font-weight: 600; }
+
+          /*form para agregar tareas*/
+          .rp-add-task-form {
+              border-top: 1px solid #e4e9f0;
+              padding-top: 14px;
+              margin-top: 10px;
+          }
+          .rp-add-task-form .form-control,
+          .rp-add-task-form .form-select {
+              font-size: 0.82rem;
+              padding: 5px 10px;
+          }
+          .rp-form-row {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 8px;
+              margin-bottom: 8px;
+          }
+          .rp-form-row .full { grid-column: 1 / -1; }
+
+          /*tabla compacta de usuarios asignados*/
+          .split-users-table {
+              font-size: 0.78rem;
+              width: 100%;
+              border-collapse: collapse;
+          }
+          .split-users-table th {
+              font-size: 0.68rem;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              color: #8592a3;
+              font-weight: 600;
+              padding: 4px 6px;
+              border-bottom: 1px solid #e4e9f0;
+          }
+          .split-users-table td {
+              padding: 5px 6px;
+              border-bottom: 1px solid #f5f7fa;
+              vertical-align: middle;
+          }
+
+          /*pestanias de filtros de tareas*/
+          .rp-filter-tabs {
+              display: flex;
+              gap: 4px;
+              margin-bottom: 10px;
+              flex-wrap: wrap;
+          }
+          .rp-filter-tab {
+              font-size: 0.72rem;
+              padding: 3px 10px;
+              border-radius: 12px;
+              border: 1px solid #dee2e6;
+              background: #fff;
+              cursor: pointer;
+              color: #6c757d;
+              transition: all 0.15s;
+          }
+          .rp-filter-tab.active,
+          .rp-filter-tab:hover {
+              background: #009b4a;
+              border-color: #009b4a;
+              color: #fff;
+          }
+
+          /*se puede hacer click en los registros*/
+          #proyectosTableBody tr { cursor: pointer; }
+          #proyectosTableBody tr:hover { background-color: #f0fff4; }
+
+          /*barra de progreso compacta*/
+          .split-progress {
+              height: 10px;
+              border-radius: 5px;
+              overflow: hidden;
+              background: #e9ecef;
+          }
+          .split-progress-bar {
+              height: 100%;
+              border-radius: 5px;
+              transition: width 0.4s ease;
+          }
+
+          /*estilo de la barra de escroll*/
+          .split-panel-left::-webkit-scrollbar,
+          .split-panel-right::-webkit-scrollbar,
+          #rpTaskListWrapper::-webkit-scrollbar { width: 4px; }
+          .split-panel-left::-webkit-scrollbar-track,
+          .split-panel-right::-webkit-scrollbar-track,
+          #rpTaskListWrapper::-webkit-scrollbar-track { background: transparent; }
+          .split-panel-left::-webkit-scrollbar-thumb,
+          .split-panel-right::-webkit-scrollbar-thumb,
+          #rpTaskListWrapper::-webkit-scrollbar-thumb {
+              background: #c8d0db;
+              border-radius: 2px;
+          }
+
+          /*insignia de proyecto libre*/
+          .libre-badge {
+              background: #009b4a;
+              color: #fff;
+              font-size: 0.68rem;
+              padding: 2px 8px;
+              border-radius: 10px;
+              font-weight: 600;
+              margin-left: 6px;
+          }
+
+          @media (max-width: 768px) {
+              .split-modal-body { flex-direction: column; max-height: none; }
+              .split-panel-left { width: 100%; border-right: none; border-bottom: 1px solid #e4e9f0; }
+          }
       </style>
     </head>
     
@@ -403,6 +635,229 @@ $user_id = $_SESSION[ 'user_id']; ?>
         </div>
         <!-- page-body-wrapper ends -->
       </div>
+        <div class="modal fade" id="projectSplitModal" tabindex="-1"
+             aria-labelledby="projectSplitModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width:1100px;">
+                <div class="modal-content" style="border-radius:10px; overflow:hidden;">
+
+                    <!-- Modal header -->
+                    <div class="modal-header bg-success text-white py-2 px-3">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <i class="mdi mdi-folder-open fs-5"></i>
+                            <span id="splitModalTitle" class="fw-semibold">Detalles del Proyecto</span>
+                            <span id="splitModalLibreBadge" class="libre-badge" style="display:none;">
+                                <i class="mdi mdi-earth"></i> Libre
+                            </span>
+                            <span id="splitModalStatusBadge" class="badge ms-2">–</span>
+                        </div>
+                        <div class="d-flex gap-2 ms-auto">
+                            <button type="button" class="btn btn-sm btn-light"
+                                    id="splitBtnEdit" title="Editar proyecto">
+                                <i class="mdi mdi-pencil"></i> Editar
+                            </button>
+                            <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                    </div>
+
+                    <!--cuerpo del modal dividido-->
+                    <div class="split-modal-body" id="splitModalBody">
+
+                        <!--a la izquierda los detalles del proyecto -->
+                        <div class="split-panel-left" id="splitLeftPanel">
+                            <!--cargando-->
+                            <div id="splitLeftLoading" class="text-center py-5">
+                                <div class="spinner-border text-success" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="mt-3 text-muted small">Cargando detalles...</p>
+                            </div>
+                            <!--contenido escondido hasta que cargue-->
+                            <div id="splitLeftContent" style="display:none;">
+
+                                <p class="split-section-title">Estadísticas de Tareas</p>
+                                <div class="split-stat-grid">
+                                    <div class="split-stat-card">
+                                        <div class="stat-num text-secondary" id="spl-total-tareas">0</div>
+                                        <div class="stat-lbl">Total</div>
+                                    </div>
+                                    <div class="split-stat-card">
+                                        <div class="stat-num text-success" id="spl-completadas">0</div>
+                                        <div class="stat-lbl">Completadas</div>
+                                    </div>
+                                    <div class="split-stat-card">
+                                        <div class="stat-num text-primary" id="spl-en-proceso">0</div>
+                                        <div class="stat-lbl">En Proceso</div>
+                                    </div>
+                                    <div class="split-stat-card">
+                                        <div class="stat-num text-danger" id="spl-vencidas">0</div>
+                                        <div class="stat-lbl">Vencidas</div>
+                                    </div>
+                                </div>
+
+                                <p class="split-section-title">Progreso General</p>
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <div class="split-progress flex-grow-1">
+                                        <div class="split-progress-bar" id="spl-progress-bar"
+                                             style="width:0%; background:#009b4a;"></div>
+                                    </div>
+                                    <span class="fw-bold small" id="spl-progress-pct">0%</span>
+                                </div>
+
+                                <p class="split-section-title">Información General</p>
+                                <table class="detail-info-table w-100 mb-3">
+                                    <tr>
+                                        <td>Departamento</td>
+                                        <td id="spl-departamento">–</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tipo</td>
+                                        <td id="spl-tipo">–</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Creado por</td>
+                                        <td id="spl-creador">–</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fecha inicio</td>
+                                        <td id="spl-fecha-inicio">–</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Fecha límite</td>
+                                        <td id="spl-fecha-limite">–</td>
+                                    </tr>
+                                    <tr id="spl-participante-row">
+                                        <td>Responsable</td>
+                                        <td id="spl-participante">–</td>
+                                    </tr>
+                                </table>
+
+                                <!--usuarios de grupo-->
+                                <div id="spl-users-section" style="display:none;">
+                                    <p class="split-section-title">
+                                        Usuarios Asignados
+                                        (<span id="spl-users-count">0</span>)
+                                    </p>
+                                    <div style="max-height:180px; overflow-y:auto;">
+                                        <table class="split-users-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nombre</th>
+                                                    <th>Emp.</th>
+                                                    <th>Tareas</th>
+                                                    <th style="min-width:80px;">Progreso</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="spl-users-tbody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /split-panel-left -->
+
+                        <!--derecha panel de tareas-->
+                        <div class="split-panel-right" id="splitRightPanel">
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <p class="split-section-title mb-0">Tareas del Proyecto</p>
+                                <div class="rp-filter-tabs" id="rpFilterTabs">
+                                    <button class="rp-filter-tab active" data-filter="all">Todas</button>
+                                    <button class="rp-filter-tab" data-filter="pendiente">Pendientes</button>
+                                    <button class="rp-filter-tab" data-filter="completado">Completadas</button>
+                                    <button class="rp-filter-tab" data-filter="vencido">Vencidas</button>
+                                </div>
+                            </div>
+
+                            <!--lista de tareas-->
+                            <div id="rpTaskListWrapper"
+                                 style="flex:1; min-height:0; overflow-y:auto; margin-bottom:8px;">
+                                <div id="rpTaskLoading" class="text-center py-4" style="display:none;">
+                                    <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+                                    <p class="small text-muted mt-2">Cargando tareas...</p>
+                                </div>
+                                <ul class="rp-task-list" id="rpTaskList">
+                                    <li class="rp-task-item text-muted small text-center py-3">
+                                        Selecciona un proyecto para ver sus tareas.
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!--form para crear nuevas tareas-->
+                            <div class="rp-add-task-form flex-shrink-0" id="rpAddTaskForm" style="display:none;">
+                                <p class="split-section-title">
+                                    <i class="mdi mdi-plus-circle-outline text-success me-1"></i>
+                                    Nueva Tarea
+                                </p>
+                                <div id="rpTaskFormAlert" class="alert py-2 small" style="display:none;"></div>
+
+                                <div class="mb-2">
+                                    <input type="text" class="form-control" id="rpTaskName"
+                                           maxlength="100" placeholder="Nombre de la tarea *">
+                                </div>
+                                <div class="mb-2">
+                                    <textarea class="form-control" id="rpTaskDesc" rows="2"
+                                              maxlength="250" placeholder="Descripción *"></textarea>
+                                </div>
+                                <div class="rp-form-row mb-2">
+                                    <div>
+                                        <label class="form-label small mb-1">Fecha vencimiento</label>
+                                        <input type="date" class="form-control" id="rpTaskDate">
+                                    </div>
+                                    <div>
+                                        <label class="form-label small mb-1">Estado</label>
+                                        <select class="form-select" id="rpTaskStatus">
+                                            <option value="pendiente">Pendiente</option>
+                                            <option value="completado">Completado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small mb-1">Asignar a</label>
+                                    <select class="form-select" id="rpTaskAssignee">
+                                        <option value="">Sin asignar</option>
+                                    </select>
+                                    <small class="text-muted" id="rpAssigneeNote" style="display:none;">
+                                        <i class="mdi mdi-lock"></i> Solo el creador puede asignar tareas
+                                    </small>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-success btn-sm flex-grow-1" id="rpSaveTaskBtn">
+                                        <span class="btn-text">
+                                            <i class="mdi mdi-content-save me-1"></i>Guardar Tarea
+                                        </span>
+                                        <span class="spinner-border spinner-border-sm"
+                                              style="display:none;" role="status"></span>
+                                    </button>
+                                    <button class="btn btn-secondary btn-sm" id="rpCancelTaskBtn">
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!--boton de agregar tarea-->
+                            <div class="pt-1 flex-shrink-0" id="rpAddTaskToggle">
+                                <button class="btn btn-outline-success btn-sm w-100" id="rpShowTaskFormBtn">
+                                    <i class="mdi mdi-plus me-1"></i>Agregar tarea
+                                </button>
+                            </div>
+
+                        </div><!-- /split-panel-right -->
+                    </div><!-- /split-modal-body -->
+
+                    <!--pie de pagina del modal-->
+                    <div class="modal-footer py-2">
+                        <small class="text-muted me-auto" id="splitModalPermNote" style="display:none;">
+                            <i class="mdi mdi-lock text-warning me-1"></i>
+                            Solo el creador puede agregar tareas a este proyecto.
+                        </small>
+                        <button type="button" class="btn btn-secondary btn-sm"
+                                data-bs-dismiss="modal">
+                            <i class="mdi mdi-close me-1"></i>Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
       <!-- container-scroller -->
       <!-- plugins:js -->
       <script src="../vendors/js/vendor.bundle.base.js"></script>
@@ -426,6 +881,7 @@ $user_id = $_SESSION[ 'user_id']; ?>
       <script src="../js/user_manage_projects.js"></script>
       <script src="../js/notifications.js"></script>
       <script src="../js/session_timeout.js"></script>
+      <script src="../js/user_project_task_panel.js"></script>
     </body>
     <footer>
       <p 

@@ -623,7 +623,12 @@ function createProjectRow(proyecto, index) {
         <td>${statusBadge}</td> 
         <td>${proyecto.participante || '-'}</td> 
         <td>${actionButtons}</td> 
-    `; 
+    `;
+    row.addEventListener('click', function(e) {
+        // Ignore clicks on action buttons
+        if (e.target.closest('.action-buttons') || e.target.closest('button')) return;
+        verDetallesProyecto(proyecto.id_proyecto);
+    });
     return row; 
 }
 
@@ -783,12 +788,15 @@ function formatDate(dateString) {
 
 function editarProyecto(idProyecto) { 
     window.location.href = `../nuevoProyectoUser/?edit=${idProyecto}`; 
-} 
+}
 
-function verDetallesProyecto(idProyecto) { 
-    showAlert('Esta funcionalidad estará disponible próximamente', 'info'); 
-} 
-
+function verDetallesProyecto(idProyecto) {
+    if (typeof openSplitModal === 'function') {
+        openSplitModal(idProyecto);
+    } else {
+        showAlert('Funcionalidad no disponible', 'danger');
+    }
+}
 function toggleProjectCompletion(idProyecto, nuevoEstado) {
     const proyecto = allProjects.find(proj => proj.id_proyecto === idProyecto);
     if (!proyecto) return;

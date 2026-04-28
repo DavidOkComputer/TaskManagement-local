@@ -61,6 +61,7 @@ try {
             p.id_tipo_proyecto,
             p.id_creador,
             p.puede_editar_otros,
+            p.es_libre,
             d.nombre as area,
             u.nombre as participante_nombre,
             u.apellido as participante_apellido,
@@ -126,9 +127,8 @@ try {
             }
         }
 
-        // LÓGICA DE PERMISOS:
-        // El CREADOR siempre puede crear tareas
-        // No-creadores solo si puede_editar_otros = 1
+        //LOGICA DE PERMISOS:
+        //El CREADOR siempre puede crear tareas No-creadores solo si puede_editar_otros = 1
         $puede_crear_tareas = $es_creador || ((int)$row['puede_editar_otros'] === 1 && $es_mi_proyecto);
 
         $proyectos[] = [
@@ -144,6 +144,7 @@ try {
             'id_tipo_proyecto' => (int)$row['id_tipo_proyecto'],
             'id_creador' => (int)$row['id_creador'],
             'puede_editar_otros' => (int)$row['puede_editar_otros'],
+            'es_libre' => (int)($row['es_libre'] ?? 0),
             'es_mi_proyecto' => $es_mi_proyecto,
             'es_creador' => $es_creador,
             'puede_crear_tareas' => $puede_crear_tareas,

@@ -2,7 +2,7 @@
 /*update_task_status.php para actualizar el estado de las tareas cuando se marca completado*/
 ob_start();
  
-// Configurar manejo de errores - no mostrar errores en output
+// Configurar manejo de errores
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
