@@ -1,11 +1,11 @@
-/* user_project_task_panel.js – normal user task panel */
+/* user_project_task_panel.js panel de proyecto rapido de usuario normal*/
 
 const PTP = {
     projectId: null,
     projectData: null,
     tasks: [],
     users: [],
-    canAssign: false,        // whether current user can assign tasks / use the add-task form
+    canAssign: false,
     filter: "all",
     modalInstance: null,
     editingTaskId: null,
@@ -61,7 +61,7 @@ function openSplitModal(projectId) {
     PTP.users = [];
     PTP.filter = "all";
     PTP.editingTaskId = null;
-    PTP.canAssign = false; // will be set after loading data
+    PTP.canAssign = false;
 
     showLeftLoading(true);
     resetRightPanel();
@@ -83,7 +83,7 @@ function openSplitModal(projectId) {
     ]).then(() => loadTaskList(projectId));
 }
 
-// Load project details from user-specific endpoint
+//cargar los detalles del proyecto desde el endpoint del usuario
 function loadProjectDetails(projectId) {
     return fetch(`../php/user_get_project_details.php?id=${projectId}`)
         .then((r) => r.json())
@@ -91,12 +91,12 @@ function loadProjectDetails(projectId) {
             if (!data.success || !data.proyecto)
                 throw new Error(data.message || "No se pudo cargar el proyecto");
             PTP.projectData = data.proyecto;
-            // Determine if user can create tasks (from project data)
+            //determinar si el usuario puede crear una tarea
             PTP.canAssign = data.proyecto.puede_crear_tareas;
-            // Show/hide add task button based on permission
+            //mostrar o esconder el boton de agregar tarea basado en permisos
             document.getElementById("rpAddTaskToggle").style.display = PTP.canAssign ? "block" : "none";
             document.getElementById("splitModalPermNote").style.display = PTP.canAssign ? "none" : "inline";
-            // Edit button: visible only if user is admin or creator
+            //boton de editar solo visible si es admin o creador
             const isCreator = data.proyecto.es_creador;
             document.getElementById("splitBtnEdit").style.display = (window.APP_CONFIG?.isAdmin || isCreator) ? "" : "none";
             renderLeftPanel(data.proyecto);
