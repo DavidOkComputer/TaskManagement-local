@@ -1,10 +1,5 @@
 <?php
-/*
- * user_create_project.php
- * Crea proyectos para usuarios normales.
- * Soporta Proyecto Libre (es_libre = 1, id_departamento = NULL)
- * y proyecto grupal (id_tipo_proyecto = 1).
- */
+/*user_create_project.php Crea proyectos para usuarios normales.*/
 
 ob_start();
 header('Content-Type: application/json; charset=UTF-8');
@@ -24,7 +19,6 @@ try {
         throw new Exception('Método de solicitud inválido');
     }
 
-    /* ── Auth ─────────────────────────────────────────── */
     $id_usuario = null;
     if (isset($_SESSION['user_id'])) {
         $id_usuario = intval($_SESSION['user_id']);
@@ -35,13 +29,11 @@ try {
         throw new Exception('Sesión no válida. Por favor, inicie sesión nuevamente.');
     }
 
-    /* ── DB connection ────────────────────────────────── */
     $conn = getDBConnection();
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    /* ── User dept from tbl_usuario_roles ────────────── */
     $stmt_user = $conn->prepare("
         SELECT ur.id_departamento, ur.id_rol, d.nombre AS departamento_nombre
         FROM tbl_usuario_roles ur
@@ -68,16 +60,13 @@ try {
     $id_creador         = $id_usuario;
     $id_dept_usuario    = intval($user_data['id_departamento']);
 
-    /* ── Detect Proyecto Libre ────────────────────────── */
     $es_libre = isset($_POST['es_libre']) && intval($_POST['es_libre']) === 1 ? 1 : 0;
 
-    /* ── Required fields ──────────────────────────────── */
     $required = [
         'nombre', 'descripcion',
         'fecha_creacion', 'fecha_cumplimiento',
         'id_tipo_proyecto'
     ];
-    // dept only required for non-libre projects
     if (!$es_libre) {
         $required[] = 'id_departamento';
     }
@@ -88,7 +77,6 @@ try {
         }
     }
 
-    /* ── Sanitise inputs ──────────────────────────────── */
     $nombre             = trim($_POST['nombre']);
     $descripcion        = trim($_POST['descripcion']);
     $fecha_creacion     = trim($_POST['fecha_creacion']);
@@ -100,22 +88,17 @@ try {
     $id_tipo_proyecto   = intval($_POST['id_tipo_proyecto']);
     $puede_editar_otros = isset($_POST['puede_editar_otros']) ? intval($_POST['puede_editar_otros']) : 0;
 
-    /* ── Determine id_departamento ────────────────────── */
-    // Libre → NULL in DB
-    // Non-libre → verify the POST value equals the user's own dept
     if ($es_libre) {
-        $id_departamento = null;  // will be written as NULL
+        $id_departamento = null;
     } else {
         $id_dept_post = intval($_POST['id_departamento']);
-        // Security: user can only create projects in their own dept
         if ($id_dept_post !== $id_dept_usuario) {
-            $id_departamento = $id_dept_usuario; // silently use real dept
+            $id_departamento = $id_dept_usuario;
         } else {
             $id_departamento = $id_dept_usuario;
         }
     }
 
-    /* ── Validations ──────────────────────────────────── */
     if (strlen($nombre) > 100) {
         throw new Exception('El nombre no puede exceder 100 caracteres');
     }
@@ -144,12 +127,10 @@ try {
         throw new Exception('La fecha de entrega debe ser posterior a la fecha de inicio');
     }
 
-    /* ── Participants ─────────────────────────────────── */
     $usuarios_grupo  = [];
     $id_participante = 0;
 
     if ($id_tipo_proyecto == 1) {
-        // Grupal
         if (!isset($_POST['usuarios_grupo'])) {
             throw new Exception('Debes seleccionar usuarios para el proyecto grupal');
         }
@@ -158,7 +139,6 @@ try {
             throw new Exception('Debes seleccionar al menos un usuario para el proyecto grupal');
         }
 
-        // For non-libre grupales: verify each user belongs to same dept
         if (!$es_libre) {
             foreach ($usuarios_grupo as $uid) {
                 $uid = intval($uid);
@@ -178,12 +158,10 @@ try {
             }
         }
     } else {
-        // Individual
         $id_participante = isset($_POST['id_participante'])
             ? intval($_POST['id_participante'])
             : $id_creador;
 
-        // For non-libre individual: verify participant belongs to same dept
         if (!$es_libre && $id_participante > 0 && $id_participante !== $id_creador) {
             $chk = $conn->prepare("
                 SELECT 1 FROM tbl_usuario_roles
@@ -201,22 +179,7 @@ try {
         }
     }
 
-    /* ── INSERT ───────────────────────────────────────── */
     if ($es_libre) {
-        /*
-         * Libre: id_departamento written as literal NULL
-         * Params (12): s s s s i s s s i i i i
-         *   nombre descripcion fecha_creacion fecha_cumplimiento
-         *   progreso ar estado archivo_adjunto
-         *   id_creador id_participante id_tipo_proyecto
-         *   es_libre puede_editar_otros
-         * Wait — 13 params. Let me count the columns:
-         *   nombre(s) descripcion(s) fecha_inicio(s) fecha_cumplimiento(s)
-         *   progreso(i) ar(s) estado(s) archivo_adjunto(s)
-         *   id_creador(i) id_participante(i) id_tipo_proyecto(i)
-         *   es_libre(i) puede_editar_otros(i)
-         * = s s s s i s s s i i i i i  → 13 chars
-         */
         $sql = "INSERT INTO tbl_proyectos (
                     nombre, descripcion, id_departamento,
                     fecha_inicio, fecha_cumplimiento,
@@ -238,11 +201,6 @@ try {
 
         $stmt->bind_param(
             'ssssisssiiiii',
-            // s:nombre s:descripcion s:fecha_creacion s:fecha_cumplimiento
-            // i:progreso s:ar s:estado s:archivo_adjunto
-            // i:id_creador i:id_participante
-            // i:id_tipo_proyecto i:es_libre i:puede_editar_otros
-            // = s s s s i s s s i i i i i  → 13 chars ✓
             $nombre,            // s 1
             $descripcion,       // s 2
             $fecha_creacion,    // s 3
@@ -258,15 +216,6 @@ try {
             $puede_editar_otros // i 13
         );
     } else {
-        /*
-         * Regular: id_departamento is an integer param
-         * s s i s s i s s s i i i i i → 14 chars
-         *   nombre descripcion id_departamento
-         *   fecha_creacion fecha_cumplimiento progreso
-         *   ar estado archivo_adjunto
-         *   id_creador id_participante id_tipo_proyecto
-         *   es_libre puede_editar_otros
-         */
         $sql = "INSERT INTO tbl_proyectos (
                     nombre, descripcion, id_departamento,
                     fecha_inicio, fecha_cumplimiento,
@@ -288,12 +237,6 @@ try {
 
         $stmt->bind_param(
             'ssississsiiiii',
-            // s:nombre s:descripcion i:id_departamento
-            // s:fecha_creacion s:fecha_cumplimiento i:progreso
-            // s:ar s:estado s:archivo_adjunto
-            // i:id_creador i:id_participante
-            // i:id_tipo_proyecto i:es_libre i:puede_editar_otros
-            // = s s i s s i s s s i i i i i → 14 chars ✓
             $nombre,            // s 1
             $descripcion,       // s 2
             $id_departamento,   // i 3
@@ -318,7 +261,6 @@ try {
     $id_proyecto = $stmt->insert_id;
     $stmt->close();
 
-    /* ── Grupo users ──────────────────────────────────── */
     if ($id_tipo_proyecto == 1 && !empty($usuarios_grupo)) {
         $stmt_pu = $conn->prepare(
             'INSERT INTO tbl_proyecto_usuarios (id_proyecto, id_usuario) VALUES (?, ?)'
@@ -346,7 +288,6 @@ try {
         $stmt_pu->close();
     }
 
-    /* ── Individual notification ──────────────────────── */
     if ($id_tipo_proyecto == 2
         && $id_participante > 0
         && $id_participante !== $id_creador

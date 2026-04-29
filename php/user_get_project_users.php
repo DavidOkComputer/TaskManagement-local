@@ -2,7 +2,8 @@
 /* user_get_project_users.php para obtener usuarios del proyecto  */
 
 header('Content-Type: application/json');
-session_start();
+ob_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
 require_once 'db_config.php';
 
 $response = ['success' => false, 'message' => '', 'usuarios' => [], 'es_libre' => 0];
@@ -13,7 +14,8 @@ try {
         throw new Exception('Usuario no autenticado');
     }
 
-    $id_proyecto = isset($_GET['id']) ? intval($_GET['id']) : 0;
+    $id_proyecto = isset($_GET['id_proyecto']) ? intval($_GET['id_proyecto'])
+                 : (isset($_GET['id']) ? intval($_GET['id']) : 0);
     if ($id_proyecto <= 0) {
         throw new Exception('ID de proyecto inválido');
     }
@@ -97,4 +99,6 @@ try {
     error_log('user_get_project_users.php: ' . $e->getMessage());
 }
 
+ob_clean();
 echo json_encode($response, JSON_UNESCAPED_UNICODE);
+ob_end_flush();

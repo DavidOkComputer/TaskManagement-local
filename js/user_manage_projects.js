@@ -552,8 +552,9 @@ function displayProjects(proyectos) {
     updatePaginationControls(); 
 } 
 
-function createProjectRow(proyecto, index) { 
-    const row = document.createElement('tr'); 
+function createProjectRow(proyecto, index) {
+    const row = document.createElement('tr');
+    row.dataset.projectId = proyecto.id_proyecto;
     const statusColor = getStatusColor(proyecto.estado); 
     const statusBadge = `<span class="badge badge-${statusColor}">${proyecto.estado || 'N/A'}</span>`; 
     const progressBar = createProgressBar(proyecto.progreso || 0); 
