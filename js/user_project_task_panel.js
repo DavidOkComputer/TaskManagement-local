@@ -515,7 +515,7 @@ function updateTask(taskId, name, desc, date, status, asign) {
 }
 
 function loadProjectUsers(projectId) {
-    return fetch(`../php/user_get_project_users.php?id=${projectId}`)
+    return fetch(`../php/user_get_project_users.php?id_proyecto=${projectId}`)
         .then((r) => r.json())
         .then((data) => {
             PTP.users = data.success && data.usuarios ? data.usuarios : [];

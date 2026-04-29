@@ -204,7 +204,7 @@ function renderUsersTable(usuarios) {
 
 //usuarios
 function loadProjectUsers(projectId) {
-    return fetch(`../php/get_project_user.php?id=${projectId}`)
+    return fetch(`../php/get_project_user.php?id_proyecto=${projectId}`)
         .then(r => r.json())
         .then(data => {
             MPTP.users = (data.success && data.usuarios) ? data.usuarios : [];

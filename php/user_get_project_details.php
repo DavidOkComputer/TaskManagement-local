@@ -1,7 +1,7 @@
 <?php
 /* user_get_project_details.php - Detalles del proyecto para el panel izquierdo */
-
 header('Content-Type: application/json');
+ob_start();
 session_start();
 require_once 'db_config.php';
 
@@ -158,4 +158,6 @@ try {
     error_log('user_get_project_details.php: ' . $e->getMessage());
 }
 
+ob_clean();
 echo json_encode($response, JSON_UNESCAPED_UNICODE);
+ob_end_flush();

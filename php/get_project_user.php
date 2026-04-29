@@ -1,4 +1,5 @@
-<?php/* get_project_user.php para  obtener usuarios de un proyecto específico*/
+<?php
+/* get_project_user.php para  obtener usuarios de un proyecto específico*/
 
 header('Content-Type: application/json');
 require_once('db_config.php');

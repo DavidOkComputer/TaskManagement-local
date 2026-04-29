@@ -207,7 +207,7 @@ function renderUsersTable(usuarios) {
 
 //usuarios asignados en select del form
 function loadProjectUsers(projectId) {
-  return fetch(`../php/get_project_user.php?id=${projectId}`)
+  return fetch(`../php/get_project_user.php?id_proyecto=${projectId}`)
       .then((r) => r.json())
       .then((data) => {
         PTP.users = data.success && data.usuarios ? data.usuarios : [];
