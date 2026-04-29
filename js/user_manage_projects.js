@@ -559,11 +559,10 @@ function createProjectRow(proyecto, index) {
     const progressBar = createProgressBar(proyecto.progreso || 0); 
 
     // Verificar si el usuario actual es el creador del proyecto 
-    const esCreador = currentUserId && proyecto.id_creador === currentUserId; 
-    
-    // Verificar si el proyecto tiene tareas
+    const esCreador = currentUserId && proyecto.id_creador === currentUserId;
+    const esLibre = proyecto.es_libre === 1;
+    const puedeEditar = esCreador || esLibre;
     const tieneTareas = proyecto.total_tareas && proyecto.total_tareas > 0;
-
     // Botón de ver usuarios solo para proyectos grupales 
     const viewUsersButton = proyecto.id_tipo_proyecto === 1 
         ? `<button class="btn btn-sm btn-primary btn-action"  
@@ -590,31 +589,37 @@ function createProjectRow(proyecto, index) {
     }
 
     // Solo mostrar botones de editar y eliminar si el usuario es el creador 
-    const actionButtons = esCreador 
+    const deleteButton = esCreador
+        ? `<button class="btn btn-sm btn-danger btn-action"  
+               onclick="confirmDelete(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
+               title="Eliminar"> 
+           <i class="mdi mdi-delete"></i> 
+       </button>`
+        : '';
+
+    const actionButtons = puedeEditar
         ? `<div class="action-buttons"> 
-               <button class="btn btn-sm btn-success btn-action"  
-                       onclick="editarProyecto(${proyecto.id_proyecto})"  
-                       title="Editar"> 
-                   <i class="mdi mdi-pencil"></i> 
-               </button> 
-               <button class="btn btn-sm btn-danger btn-action"  
-                       onclick="confirmDelete(${proyecto.id_proyecto}, '${escapeHtml(proyecto.nombre)}')"  
-                       title="Eliminar"> 
-                   <i class="mdi mdi-delete"></i> 
-               </button> 
-               ${viewUsersButton} 
-               ${toggleCompletionButton}
-           </div>` 
+           <button class="btn btn-sm btn-success btn-action"  
+                   onclick="editarProyecto(${proyecto.id_proyecto})"  
+                   title="Editar"> 
+               <i class="mdi mdi-pencil"></i> 
+           </button>
+           ${deleteButton}
+           ${viewUsersButton} 
+           ${toggleCompletionButton}
+       </div>`
         : `<div class="action-buttons"> 
-               ${viewUsersButton}
-               <small class="text-muted d-block mt-1">Solo lectura</small> 
-           </div>`; 
+           ${viewUsersButton}
+           <small class="text-muted d-block mt-1">Solo lectura</small> 
+       </div>`;
 
     row.innerHTML = ` 
         <td>${index}</td> 
         <td> 
             <strong>${truncateText(proyecto.nombre, 30)}</strong> 
-            ${esCreador ? '<span class="badge badge-success ms-2" style="font-size: 0.7rem;">Creador</span>' : ''} 
+            ${esCreador ? '<span class="badge badge-success ms-2" style="font-size: 0.7rem;">Creador</span>' : ''}
+${!esCreador && esLibre ? '<span class="badge badge-info ms-2" style="font-size: 0.7rem;"><i class="mdi mdi-earth"></i> Libre</span>' : ''}
+
         </td> 
         <td>${truncateText(proyecto.descripcion, 40)}</td> 
         <td>${proyecto.area || '-'}</td> 
@@ -625,7 +630,7 @@ function createProjectRow(proyecto, index) {
         <td>${actionButtons}</td> 
     `;
     row.addEventListener('click', function(e) {
-        // Ignore clicks on action buttons
+        //ignoarar clicks on botones de acion
         if (e.target.closest('.action-buttons') || e.target.closest('button')) return;
         verDetallesProyecto(proyecto.id_proyecto);
     });

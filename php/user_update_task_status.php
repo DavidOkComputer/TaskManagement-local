@@ -89,11 +89,17 @@ try {
     $stmt->close(); 
 
     //verificar que el usuario sea uno asignado 
-    if ($id_participante != $id_usuario) { 
-        throw new Exception( 
-            'No tienes permiso. ' . 'Solo puedes actualizar ' . 'tareas asignadas a ti.' 
-        ); 
-    } 
+    $stmt = $conn->prepare("SELECT es_libre FROM tbl_proyectos WHERE id_proyecto = ?");
+    $stmt->bind_param("i", $id_proyecto);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $proj = $result->fetch_assoc();
+    $stmt->close();
+    $es_libre = (int)($proj['es_libre'] ?? 0);
+
+    if ($id_participante != $id_usuario && !$es_libre) {
+        throw new Exception('No tienes permiso. Solo puedes actualizar tareas asignadas a ti.');
+    }
 
     // cuando el usurio esta autorizado entonces se actualiza 
     $stmt = $conn->prepare( "UPDATE tbl_tareas  

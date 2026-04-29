@@ -127,7 +127,6 @@ try {
             }
         }
 
-        //LOGICA DE PERMISOS:
         //El CREADOR siempre puede crear tareas No-creadores solo si puede_editar_otros = 1
         $puede_crear_tareas = $es_creador || ((int)$row['puede_editar_otros'] === 1 && $es_mi_proyecto);
 

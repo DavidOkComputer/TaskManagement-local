@@ -640,7 +640,7 @@ $user_id = $_SESSION[ 'user_id']; ?>
             <div class="modal-dialog modal-xl modal-dialog-scrollable" style="max-width:1100px;">
                 <div class="modal-content" style="border-radius:10px; overflow:hidden;">
 
-                    <!-- Modal header -->
+                    <!--encabezado del header-->
                     <div class="modal-header bg-success text-white py-2 px-3">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                             <i class="mdi mdi-folder-open fs-5"></i>
@@ -753,7 +753,7 @@ $user_id = $_SESSION[ 'user_id']; ?>
                                     </div>
                                 </div>
                             </div>
-                        </div><!-- /split-panel-left -->
+                        </div><!-- panel dividido izquierda-->
 
                         <!--derecha panel de tareas-->
                         <div class="split-panel-right" id="splitRightPanel">
@@ -841,8 +841,8 @@ $user_id = $_SESSION[ 'user_id']; ?>
                                 </button>
                             </div>
 
-                        </div><!-- /split-panel-right -->
-                    </div><!-- /split-modal-body -->
+                        </div><!--panel dividido derecha-->
+                    </div><!--cuerpo del modal dividido-->
 
                     <!--pie de pagina del modal-->
                     <div class="modal-footer py-2">

@@ -213,27 +213,27 @@ require_once('../php/check_auth.php');
                         <div class="statistics-details d-flex align-items-center justify-content-between">
                           <div>
                             <p class="statistics-title">Mis Proyectos</p>
-                            <h3 class="rate-percentage" id="stat-mis-proyectos">0</h3>
+                            <h3 class="rate-percentage mb-2" id="stat-mis-proyectos">0</h3>
                             <p class="text-muted d-flex"><span>Proyectos asignados</span></p>
                           </div>
                           <div>
                             <p class="statistics-title">Mis Tareas</p>
-                            <h3 class="rate-percentage" id="stat-mis-tareas">0</h3>
+                            <h3 class="rate-percentage mb-2" id="stat-mis-tareas">0</h3>
                             <p class="text-muted d-flex"><span>Total de tareas</span></p>
                           </div>
                           <div>
                             <p class="statistics-title">Tareas Completadas</p>
-                            <h3 class="rate-percentage" id="stat-tareas-completadas">0%</h3>
+                            <h3 class="rate-percentage mb-2" id="stat-tareas-completadas">0%</h3>
                             <p class="text-success d-flex"><i class="mdi mdi-check-circle"></i><span>Completadas</span></p>
                           </div>
                           <div class="d-none d-md-block">
                             <p class="statistics-title">Tareas Pendientes</p>
-                            <h3 class="rate-percentage" id="stat-tareas-pendientes">0</h3>
+                            <h3 class="rate-percentage mb-2" id="stat-tareas-pendientes">0</h3>
                             <p class="text-warning d-flex"><i class="mdi mdi-clock"></i><span>Por hacer</span></p>
                           </div>
                           <div class="d-none d-md-block">
                             <p class="statistics-title">Tareas Vencidas</p>
-                            <h3 class="rate-percentage" id="stat-tareas-vencidas">0</h3>
+                            <h3 class="rate-percentage mb-2" id="stat-tareas-vencidas">0</h3>
                             <p class="text-danger d-flex"><i class="mdi mdi-alert"></i><span>Retrasadas</span></p>
                           </div>
                         </div>

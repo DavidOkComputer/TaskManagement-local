@@ -98,7 +98,8 @@ function loadProjectDetails(projectId) {
             document.getElementById("splitModalPermNote").style.display = PTP.canAssign ? "none" : "inline";
             //boton de editar solo visible si es admin o creador
             const isCreator = data.proyecto.es_creador;
-            document.getElementById("splitBtnEdit").style.display = (window.APP_CONFIG?.isAdmin || isCreator) ? "" : "none";
+            const isLibre = data.proyecto.es_libre === 1;
+            document.getElementById("splitBtnEdit").style.display = (window.APP_CONFIG?.isAdmin || isCreator || isLibre) ? "" : "none";
             renderLeftPanel(data.proyecto);
         })
         .catch((err) => {
@@ -155,7 +156,6 @@ function renderLeftPanel(p) {
         usersSection.style.display = "none";
     }
 
-    // The assignee note in task form: only disable if not a creator/admin
     const canAssignOthers = PTP.canAssign && (window.APP_CONFIG?.isAdmin || p.es_creador || p.puede_editar_otros);
     document.getElementById("rpAssigneeNote").style.display = canAssignOthers ? "none" : "block";
     document.getElementById("rpTaskAssignee").disabled = !canAssignOthers;
@@ -185,7 +185,6 @@ function renderUsersTable(usuarios) {
         .join("");
 }
 
-// Load tasks using user-specific endpoint
 function loadTaskList(projectId) {
     showRpLoading(true);
     fetch(`../php/user_get_project_tasks.php?id_proyecto=${projectId}`)
@@ -223,7 +222,6 @@ function renderTaskList() {
     tasks.forEach((task) => list.appendChild(buildTaskItem(task)));
 }
 
-// Build task item with permission-aware toggle
 function buildTaskItem(task) {
     const li = document.createElement("li");
     li.className = "rp-task-item";
@@ -232,11 +230,10 @@ function buildTaskItem(task) {
     const isCompleted = (task.estado || "").toLowerCase() === "completado";
     const overdue = isOverdue(task.fecha_cumplimiento, task.estado);
 
-    // Permission to toggle: current user is task assignee or admin/creator
     const currentUserId = window.APP_CONFIG?.userId;
-    const canToggle = window.APP_CONFIG?.isAdmin ||
-        PTP.projectData?.es_creador ||
-        task.id_participante == currentUserId;
+    const isLibre = PTP.projectData?.es_libre === 1;
+    const canToggle = window.APP_CONFIG?.isAdmin || PTP.projectData?.es_creador || task.id_participante == currentUserId || isLibre;
+
 
     let iconClass, iconTitle;
     if (canToggle) {
@@ -252,7 +249,7 @@ function buildTaskItem(task) {
     const dateHtml = overdue ? `<span class="overdue-text">${dateStr} · Vencida</span>` : dateStr;
     const assignee = task.participante ? `· ${escPTP(task.participante)}` : "";
 
-    // Edit button only visible if user can assign tasks (creator or admin)
+    //boton de editar solo visible si el usuario puede asignar tareas
     const editBtnHtml = PTP.canAssign
         ? `<button class="btn btn-link p-0 rp-edit-task-btn"
                 data-task-id="${task.id_tarea}"
@@ -278,7 +275,6 @@ function buildTaskItem(task) {
       ${editBtnHtml}
     </div>`;
 
-    // Toggle click
     li.querySelector(".rp-task-icon").addEventListener("click", function () {
         if (!canToggle) {
             showRpToast("No tienes permiso para modificar esta tarea.", "warning");
@@ -287,7 +283,6 @@ function buildTaskItem(task) {
         toggleTaskStatus(task.id_tarea, isCompleted ? "pendiente" : "completado", li);
     });
 
-    // Edit button
     const editBtn = li.querySelector(".rp-edit-task-btn");
     if (editBtn) {
         editBtn.addEventListener("click", function (e) {
@@ -305,7 +300,6 @@ function toggleTaskStatus(taskId, newStatus, liEl) {
     const fd = new FormData();
     fd.append("id_tarea", taskId);
     fd.append("estado", newStatus);
-    // Use the user endpoint that checks permission
     fetch("../php/user_update_task_status.php", { method: "POST", body: fd })
         .then((r) => r.json())
         .then((data) => {
@@ -331,7 +325,6 @@ function toggleTaskStatus(taskId, newStatus, liEl) {
 }
 
 function refreshProjectStats() {
-    // same as admin version, recalc from PTP.tasks
     const total = PTP.tasks.length;
     const completado = PTP.tasks.filter((t) => t.estado === "completado").length;
     const enProceso = PTP.tasks.filter((t) => t.estado === "en proceso").length;
@@ -367,7 +360,20 @@ function refreshAssignedUsersTable() {
     renderUsersTable(updated);
 }
 
-// Task form functions (same logic as admin, but use user_create_task.php for saving)
+function setFormTitle(text, iconClass) {
+    const titleEl = document.querySelector("#rpAddTaskForm .split-section-title");
+    if (titleEl) {
+        titleEl.innerHTML = `<i class="mdi ${iconClass} text-success me-1"></i>${text}`;
+    }
+}
+
+function setSaveButtonLabel(text, iconClass) {
+    const btnText = document.querySelector("#rpSaveTaskBtn .btn-text");
+    if (btnText) {
+        btnText.innerHTML = `<i class="mdi ${iconClass} me-1"></i>${text}`;
+    }
+}
+
 function showTaskForm() {
     PTP.editingTaskId = null;
     setFormTitle("Nueva Tarea", "mdi-plus-circle-outline");
@@ -429,7 +435,6 @@ function saveTask() {
     if (!PTP.projectId) return;
 
     if (PTP.editingTaskId) {
-        // For updating, use the user_update_task.php endpoint (we only have create endpoint now, but we'll create an update endpoint or reuse admin one with permission; for brevity I'll assume we use the same approach as admin but with user permission - we'll create user_update_task.php)
         updateTask(PTP.editingTaskId, name, desc, date, status, asign);
     } else {
         createTask(name, desc, date, status, asign);
@@ -477,7 +482,6 @@ function updateTask(taskId, name, desc, date, status, asign) {
     fd.append("fecha_vencimiento", date);
     fd.append("estado", status);
     fd.append("id_participante", asign || "");
-    // We'll use a user_update_task.php (you need to create it; it should be similar to update_task.php but with session check for creator/participant permission)
     fetch("../php/user_update_task.php", { method: "POST", body: fd })
         .then((r) => r.json())
         .then((data) => {
@@ -510,7 +514,6 @@ function updateTask(taskId, name, desc, date, status, asign) {
         });
 }
 
-// Load project users (for assignee dropdown) - user_get_project_users.php
 function loadProjectUsers(projectId) {
     return fetch(`../php/user_get_project_users.php?id=${projectId}`)
         .then((r) => r.json())

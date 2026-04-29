@@ -73,11 +73,11 @@ try {
     if ($nuevo_estado === 'completado') {
         $nuevo_progreso = 100;
     } elseif ($nuevo_estado === 'pendiente') {
-        // Si se revierte de completado a pendiente, verificar si está vencido
+        // Si se revierte de completado a pendiente verificar si está vencido
         $hoy = date('Y-m-d');
         
         if ($fecha_cumplimiento && $fecha_cumplimiento < $hoy) {
-            // El proyecto está vencido, cambiar estado a vencido en lugar de pendiente
+            //el proyecto está vencido cambiar estado a vencido en lugar de pendiente
             $nuevo_estado = 'vencido';
         }
         

@@ -1,6 +1,6 @@
 
 <?php
-//to kwno all of the tasks corresponding to a project
+//para saber todas las tareas correspondientes al proyecto
 header('Content-Type: application/json');
 session_start();
 require_once 'db_config.php';
@@ -16,7 +16,7 @@ try {
 
     $conn = getDBConnection();
 
-    // Verify user is part of project
+    //verificar que el usuario es parte del proyecto
     $stmt = $conn->prepare("SELECT id_creador, id_participante FROM tbl_proyectos WHERE id_proyecto = ?");
     $stmt->bind_param("i", $id_proyecto);
     $stmt->execute();
@@ -28,7 +28,7 @@ try {
     $allowed = ($proj['id_creador'] == $user_id) || ($proj['id_participante'] == $user_id);
 
     if (!$allowed) {
-        // Check group membership
+        //ver membresia a grupo
         $stmt = $conn->prepare("SELECT 1 FROM tbl_proyecto_usuarios WHERE id_proyecto = ? AND id_usuario = ?");
         $stmt->bind_param("ii", $id_proyecto, $user_id);
         $stmt->execute();
@@ -38,7 +38,7 @@ try {
 
     if (!$allowed) throw new Exception('No tienes acceso a este proyecto');
 
-    // Fetch tasks
+    //obtener tareas
     $stmt = $conn->prepare("
         SELECT t.*, u.nombre AS participante_nombre, u.apellido AS participante_apellido
         FROM tbl_tareas t

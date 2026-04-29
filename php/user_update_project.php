@@ -1,9 +1,5 @@
 <?php
-/*
- * user_update_project.php
- * Actualiza proyectos creados por usuarios normales.
- * Soporta Proyecto Libre (es_libre type-locked, nunca cambia) y proyecto grupal.
- */
+/* user_update_project.php actualiza proyectos */
 
 ob_start();
 header('Content-Type: application/json; charset=UTF-8');
@@ -23,7 +19,7 @@ try {
         throw new Exception('Método de solicitud inválido');
     }
 
-    /* ── Auth ─────────────────────────────────────────── */
+    //autenticacion
     $id_usuario = null;
     if (isset($_SESSION['user_id'])) {
         $id_usuario = intval($_SESSION['user_id']);
@@ -34,7 +30,7 @@ try {
         throw new Exception('Sesión no válida. Por favor, inicie sesión nuevamente.');
     }
 
-    /* ── Required base fields ─────────────────────────── */
+    //campos base requeridos
     $required = [
         'id_proyecto', 'nombre', 'descripcion',
         'fecha_creacion', 'fecha_cumplimiento', 'id_tipo_proyecto'
@@ -60,13 +56,13 @@ try {
         throw new Exception('ID de proyecto inválido');
     }
 
-    /* ── DB connection ────────────────────────────────── */
+    //conexión a la base de datos
     $conn = getDBConnection();
     if (!$conn) {
         throw new Exception('Error de conexión a la base de datos');
     }
 
-    /* ── Load current project ─────────────────────────── */
+    //cargar el proyecto actual
     $stmt_old = $conn->prepare("
         SELECT id_creador, id_participante, id_departamento,
                estado, id_tipo_proyecto, es_libre
@@ -82,13 +78,12 @@ try {
         throw new Exception('El proyecto no existe');
     }
 
-    /* ── Ownership check ──────────────────────────────── */
-    // Allow creator or participant (non-libre individual)
+    //revision de permisos, permitir a creador o participante
     if (
         (int)$old['id_creador'] !== $id_usuario &&
         (int)$old['id_participante'] !== $id_usuario
     ) {
-        // Also allow grupo members if puede_editar_otros = 1
+        //tambien permitir a miembros del grupo si puede_editar_otros = 1
         $chk_grp = $conn->prepare("
             SELECT 1 FROM tbl_proyecto_usuarios
             WHERE id_proyecto = ? AND id_usuario = ?
@@ -103,8 +98,8 @@ try {
         }
     }
 
-    /* ── es_libre is type-locked ──────────────────────── */
-    $es_libre        = (int)$old['es_libre'];    // use DB value always
+       //es libre esta bloquead0
+    $es_libre        = (int)$old['es_libre'];    //siempre usar el valor de la db
     $old_es_libre_req = isset($_POST['es_libre']) ? intval($_POST['es_libre']) : $es_libre;
     if ($old_es_libre_req !== $es_libre) {
         throw new Exception(
@@ -114,11 +109,9 @@ try {
         );
     }
 
-    /* ── id_departamento ──────────────────────────────── */
-    // Keep original — user cannot move a project to another dept
-    $id_departamento = $old['id_departamento'];  // may be NULL for libre
+    $id_departamento = $old['id_departamento'];
 
-    /* ── Validations ──────────────────────────────────── */
+    //validaciones
     if (strlen($nombre) > 100) {
         throw new Exception('El nombre no puede exceder 100 caracteres');
     }
@@ -142,7 +135,7 @@ try {
         throw new Exception('La fecha de entrega debe ser posterior a la fecha de inicio');
     }
 
-    /* ── Auto-calculate estado ────────────────────────── */
+    //autocalcular estado
     $today    = date('Y-m-d');
     $deadline = substr($fecha_cumplimiento, 0, 10);
 
@@ -156,7 +149,7 @@ try {
         $estado = 'pendiente';
     }
 
-    /* ── Get old grupo users (for notification diff) ──── */
+    //obtener usuarios antiguos del grupo
     $old_usuarios_grupo = [];
     if ((int)$old['id_tipo_proyecto'] === 1) {
         $stmt_ou = $conn->prepare(
@@ -171,7 +164,7 @@ try {
         $stmt_ou->close();
     }
 
-    /* ── New participants ─────────────────────────────── */
+    //participantes neuvos
     $usuarios_grupo  = [];
     $id_participante = 0;
 
@@ -189,17 +182,8 @@ try {
             : $id_usuario;
     }
 
-    /* ── UPDATE ───────────────────────────────────────── */
+    //actualizar
     if ($es_libre) {
-        /*
-         * Libre: id_departamento stays NULL
-         * s s s s i s s s i i i i
-         *   nombre descripcion fecha_creacion fecha_cumplimiento
-         *   progreso ar estado archivo_adjunto
-         *   id_participante id_tipo_proyecto puede_editar_otros
-         *   id_proyecto
-         * = s s s s i s s s i i i i → 12 chars
-         */
         $sql = "UPDATE tbl_proyectos SET
                     nombre            = ?,
                     descripcion       = ?,
@@ -221,11 +205,7 @@ try {
         }
 
         $stmt->bind_param(
-            'ssssisssiii' . 'i', // 12 chars ✓
-            // s:nombre s:descripcion s:fecha_creacion s:fecha_cumplimiento
-            // i:progreso s:ar s:estado s:archivo_adjunto
-            // i:id_participante i:id_tipo_proyecto i:puede_editar_otros
-            // i:id_proyecto
+            'ssssisssiii' . 'i',
             $nombre,            // s 1
             $descripcion,       // s 2
             $fecha_creacion,    // s 3
@@ -240,16 +220,6 @@ try {
             $id_proyecto        // i 12
         );
     } else {
-        /*
-         * Regular: id_departamento is an int param (kept from DB)
-         * s s i s s i s s s i i i i
-         *   nombre descripcion id_departamento
-         *   fecha_creacion fecha_cumplimiento progreso
-         *   ar estado archivo_adjunto
-         *   id_participante id_tipo_proyecto puede_editar_otros
-         *   id_proyecto
-         * = s s i s s i s s s i i i i → 13 chars
-         */
         $sql = "UPDATE tbl_proyectos SET
                     nombre             = ?,
                     descripcion        = ?,
@@ -271,12 +241,7 @@ try {
         }
 
         $stmt->bind_param(
-            'ssississsiii' . 'i', // 13 chars ✓
-            // s:nombre s:descripcion i:id_departamento
-            // s:fecha_creacion s:fecha_cumplimiento i:progreso
-            // s:ar s:estado s:archivo_adjunto
-            // i:id_participante i:id_tipo_proyecto i:puede_editar_otros
-            // i:id_proyecto
+            'ssississsiii' . 'i',
             $nombre,            // s 1
             $descripcion,       // s 2
             $id_departamento,   // i 3
@@ -298,12 +263,12 @@ try {
     }
     $stmt->close();
 
-    /* ── Vencido notification ─────────────────────────── */
+    //notificacion de vencido
     if ($old['estado'] !== 'vencido' && $estado === 'vencido') {
         triggerNotificacionProyectoVencido($conn, $id_proyecto, $old['estado']);
     }
 
-    /* ── Individual participant change notification ────── */
+    //participantes individuales cambiar notificacio
     $old_participante = (int)$old['id_participante'];
     if ($id_tipo_proyecto == 2
         && $id_participante > 0
@@ -316,7 +281,6 @@ try {
         $notifier->notifyProjectAssigned($id_proyecto, $id_participante, $id_usuario);
     }
 
-    /* ── Grupo: delete old, insert new, notify new members */
     if ($id_tipo_proyecto == 1) {
         $stmt_del = $conn->prepare(
             'DELETE FROM tbl_proyecto_usuarios WHERE id_proyecto = ?'
@@ -342,7 +306,7 @@ try {
                     throw new Exception('Error al asignar usuarios: ' . $stmt_ins->error);
                 }
 
-                // Notify only newly added members
+                //notificar a solo miembros nuevos
                 if (!in_array($uid, $old_usuarios_grupo) && $uid !== $id_usuario) {
                     triggerNotificacionProyectoGrupal(
                         $conn, $id_proyecto, $uid, $es_libre
